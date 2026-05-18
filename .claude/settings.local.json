@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\solit\\\\Documents\\\\web\\\\budgetapp\\\\MilBudgetBuddy\" -Directory | Where-Object { $_.Name -ne \"node_modules\" })",
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\solit\\\\Documents\\\\web\\\\budgetapp\\\\MilBudgetBuddy\\\\src\" | ForEach-Object { $_.FullName })",
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\solit\\\\Documents\\\\web\\\\budgetapp\\\\MilBudgetBuddy\\\\src\\\\app\" -Recurse | ForEach-Object { $_.FullName })",
+      "PowerShell(Get-ChildItem \"C:\\\\Users\\\\solit\\\\Documents\\\\web\\\\budgetapp\\\\MilBudgetBuddy\\\\src\\\\components\" | ForEach-Object { $_.Name })",
+      "WebSearch",
+      "WebFetch(domain:tricare.mil)",
+      "WebFetch(domain:newsroom.tricare.mil)",
+      "PowerShell($env:PATH += \";C:\\\\Program Files\\\\Git\\\\bin;C:\\\\Program Files\\\\Git\\\\cmd\"; cd \"C:\\\\Users\\\\solit\\\\Documents\\\\web\\\\budgetapp\\\\MilBudgetBuddy\"; git status)",
+      "PowerShell(Get-Command *)",
+      "PowerShell(where.exe git 2>$null; cmd /c \"where git\" 2>$null)",
+      "PowerShell(git *)"
+    ]
+  }
+}
