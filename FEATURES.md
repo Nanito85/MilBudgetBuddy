@@ -1,5 +1,5 @@
 # MilBudgetBuddy — Feature Reference
-**Last updated:** 2026-05-18  
+**Last updated:** 2026-05-18 (session 2)  
 **Stack:** Expo ~55 / React Native 0.83.2 / React 19 / TypeScript / Expo Router / Zustand v5 / AsyncStorage  
 **Build ID:** nanito85 · project efdc8b09-9740-4992-bd14-1200d6d0e133  
 **Bundle ID:** com.nanito85.MilBudgetBuddy
@@ -15,7 +15,8 @@ $env:EAS_NO_VCS=1; eas build --platform android --profile preview
 
 - Downloads as `.apk` — install directly on Android (no Play Store needed)
 - Requires EAS login: `eas login` (account: nanito85)
-- Git is NOT initialized — `EAS_NO_VCS=1` is required every time
+- Git is initialized — `EAS_NO_VCS=1` is no longer needed
+- Repo: https://github.com/Nanito85/MilBudgetBuddy (public)
 
 ---
 
@@ -33,11 +34,12 @@ $env:EAS_NO_VCS=1; eas build --platform android --profile preview
 
 ## 1. App Shell & Navigation ✅
 
-**What it does:** Root layout, tab bar, splash animation, onboarding gate.
+**What it does:** Root layout, tab bar, splash animation, onboarding gate, first-launch disclaimer.
 
 **Files:**
 - `src/app/_layout.tsx` — Tabs + Ionicons icons, all non-tab routes registered with `href: null`
 - `src/components/animated-icon.tsx` — Animated splash overlay on launch
+- `src/components/DisclaimerModal.tsx` — First-launch "not financial advice" modal
 
 **Tab bar icons (Ionicons):**
 | Tab | Icon | Route |
@@ -46,6 +48,12 @@ $env:EAS_NO_VCS=1; eas build --platform android --profile preview
 | KIDS | people-outline | `browse` |
 | AI | hardware-chip-outline | `chat` |
 | MORE | apps-outline | `tools` |
+
+**Launch sequence:**
+1. `hydrate()` loads AsyncStorage → `hydrated: true`
+2. `DisclaimerModal` renders as a full-screen overlay if `disclaimerAcknowledged === false` (one-time, any user)
+3. `OnboardingFlow` renders if `onboarded === false`
+4. Main tab navigator
 
 **Notes:**
 - All sub-screens are registered here as hidden tabs. When adding a new screen, add `<Tabs.Screen name="..." options={{ href: null }} />` here.
@@ -77,6 +85,7 @@ $env:EAS_NO_VCS=1; eas build --platform android --profile preview
 **Notes:**
 - Skipping any step is allowed via "Skip for now" — fields remain blank, can be filled in Profile later.
 - `setOnboarded()` on finish writes `onboarded: true` to AsyncStorage; `_layout.tsx` checks this on every launch.
+- `disclaimerAcknowledged` is a separate boolean in `UserPreferences` — set by `setDisclaimerAcknowledged()` when the user taps "I UNDERSTAND" on the disclaimer modal. Checked independently of `onboarded` so existing users see it on app update.
 
 ---
 
@@ -98,7 +107,7 @@ $env:EAS_NO_VCS=1; eas build --platform android --profile preview
 - Budget snapshot: progress bars per category
 - Daily finance tip card with save/dismiss
 
-**Pay data:** FY2026 — Basic Pay (4.5% raise applied), BAS ($492 enlisted / $325.71 officer). BAH is ZIP-keyed at FY2025 rates.
+**Pay data:** FY2026 — Basic Pay (4.5% raise applied), BAS ($492 enlisted / $325.71 officer). BAH is ZIP-keyed at FY2026 rates (4.2% increase applied).
 
 ---
 
@@ -198,21 +207,22 @@ $env:EAS_NO_VCS=1; eas build --platform android --profile preview
 **Add kid flow:** Nickname → Theme (Blue/Sky or Pink/Purple) → Activate Profile  
 **Remove kid:** Long-press card → confirmation alert
 
----
+**Kid avatar emojis:** 🚀 (boy) · 🌸 (girl) — consistent across browse.tsx and profile.tsx  
+**Name display:** Nickname only (no "CADET" prefix) in profile kid rows
 
 ---
 
-## 7. AI Chat Tab 🔒
+---
 
-**What it does:** Anthropic-powered finance assistant. Currently shows a locked/disabled state.
+## 7. AI Chat Tab ✅
+
+**What it does:** Anthropic-powered finance assistant. API key is set — will be active on next build.
 
 **Files:**
-- `src/app/chat.tsx` — Chat screen (complete but gated)
+- `src/app/chat.tsx` — Chat screen
 - `src/store/chat.store.ts` — Message history
 
-**To activate:** Insert `EXPO_PUBLIC_ANTHROPIC_API_KEY=sk-ant-...` into `.env` (or `app.config.js` extra), then rebuild.
-
-**⚠️ DO NOT insert the key until ready to launch.** This is intentional — the tab is visible and accessible but non-functional without the key.
+**Status:** `EXPO_PUBLIC_ANTHROPIC_API_KEY` is set in `.env`. Rebuild with `eas build` to activate.
 
 ---
 
@@ -244,9 +254,9 @@ $env:EAS_NO_VCS=1; eas build --platform android --profile preview
 - `src/features/pcs/components/GradePicker.tsx` — Reusable pay grade selector
 - `src/features/pcs/components/StationPicker.tsx` — Searchable installation selector
 - `src/data/installations.ts` — 190 installations (CONUS + OCONUS)
-- `src/data/bah-rates.ts` — BAH by ZIP + dependency status (FY2025 rates)
+- `src/data/bah-rates.ts` — BAH by ZIP + dependency status (FY2026 rates)
 
-**Notes:** BAH is FY2025. To update: replace the ZIP-keyed rate table in `bah-rates.ts` with the DoD BAH tables published each January at militarypay.defense.gov.
+**Notes:** BAH is FY2026 (4.2% average DoD increase applied). To update next January: replace the ZIP-keyed rate table in `bah-rates.ts` with the DoD BAH tables at militarypay.defense.gov and update `BAH_DATA_YEAR`.
 
 ---
 
@@ -421,11 +431,13 @@ $env:EAS_NO_VCS=1; eas build --platform android --profile preview
 
 | | Active Prime | Active Select | Retired Prime | Retired Select | TRS |
 |-|---|---|---|---|---|
-| Enrollment fee | $0 | $0 | ~$650/yr | $0 | ~$675/yr individual |
+| Enrollment fee | $0 | $0 | $463 ind / $927 fam/yr (Group B) | $0 | $57.88/mo ind / $286.66/mo fam |
 | Deductible | None | $50–$150 ind | None | $150 ind | $150 ind |
 | PCM copay | $0 MTF | 20% after ded | $22 | 20% after ded | $22 |
 | Specialist | $0 | 20% after ded | $33 | 20% after ded | $33 |
 | Catastrophic cap | $1,000 | $1,000 | $3,500 | $3,500 | $3,500 |
+
+**Retired Prime note:** Group A (retired before 1 Jan 2018) = $381.96 ind / $765 fam. Code defaults to Group B (retired on/after 1 Jan 2018) as the more conservative estimate.
 
 **Output:** Side-by-side plan cards with enrollment + deductible + estimated copays + Rx + dental = total annual estimate. "★ BEST FIT" banner on the cheaper plan. Savings callout in dollars.
 
@@ -485,7 +497,7 @@ $env:EAS_NO_VCS=1; eas build --platform android --profile preview
 |------|----------|------|
 | `src/data/basic-pay-rates.ts` | Basic pay table, all grades E1–O10 | FY2026 (4.5% raise) |
 | `src/data/bas-rates.ts` | BAS enlisted $492 / officer $325.71 | FY2026 |
-| `src/data/bah-rates.ts` | BAH by ZIP, with/without dependents | FY2025 |
+| `src/data/bah-rates.ts` | BAH by ZIP, with/without dependents | FY2026 (4.2% avg increase) |
 | `src/data/installations.ts` | 190 installations, ZIP + lat/lon | Current |
 | `src/data/state-tax.ts` | 50 states + DC, effective rates, military exemptions | Current |
 | `src/data/tips.ts` | 40+ finance tips, 6 categories | Current |
@@ -494,8 +506,8 @@ $env:EAS_NO_VCS=1; eas build --platform android --profile preview
 | `src/data/rank-insignia.ts` | Insignia rows for all branches/grades + dual-rank map | Current |
 
 **BAH update note:** BAH rates change annually each January. When ready to update:
-1. Download the DoD BAH rate tables from militarypay.defense.gov
-2. Replace the ZIP-keyed lookup in `src/data/bah-rates.ts`
+1. Download the DoD BAH rate tables from militarypay.defense.gov (or apply the announced % increase)
+2. Replace the ZIP-keyed lookup in `src/data/bah-rates.ts` (rates are always in $3 increments)
 3. Update `BAH_DATA_YEAR` constant
 
 ---
@@ -534,13 +546,16 @@ These were identified as high-value additions not yet started:
 
 **Environment variables (`.env`):**
 ```
-# DO NOT add until ready to enable AI chat
-EXPO_PUBLIC_ANTHROPIC_API_KEY=
+EXPO_PUBLIC_ANTHROPIC_API_KEY=sk-ant-...   # set — AI chat active on next build
 ```
 
 **EAS profiles (`eas.json`):**
 - `preview` → Android APK (direct install, no store)
 - `production` → AAB for Google Play submission
+
+**GitHub:**
+- Repo: https://github.com/Nanito85/MilBudgetBuddy (public)
+- Privacy policy: https://nanito85.github.io/MilBudgetBuddy/privacy-policy.html (GitHub Pages, served from `/docs`)
 
 ---
 
@@ -548,11 +563,12 @@ EXPO_PUBLIC_ANTHROPIC_API_KEY=
 
 ## 25. Known Limitations / Before Store Submission
 
-- [ ] BAH rates are FY2025 — update to FY2026 when DoD publishes (Jan each year)
+- [x] ~~BAH rates are FY2025~~ — updated to FY2026 (4.2% DoD increase, 2026-05-18)
+- [x] ~~AI Chat tab shows locked state~~ — API key set in `.env`, active on next build
+- [x] ~~TRICARE rates need verification~~ — corrected to actual FY2026 values from tricare.mil (2026-05-18)
+- [x] ~~Privacy policy URL required~~ — live at https://nanito85.github.io/MilBudgetBuddy/privacy-policy.html
 - [ ] Schools data is static — no live ratings feed
-- [ ] AI Chat tab shows locked state — insert API key + rebuild when ready
-- [ ] TRICARE rates are FY2026 estimates — verify at tricare.mil before each open season
 - [ ] No push notifications wired for pay day reminders yet (notification service exists, daily tip only)
 - [ ] App icon and splash screen — confirm final assets in `assets/` before store submission
-- [ ] Privacy policy URL required for Play Store listing
 - [ ] Test on physical device for safe area / notch handling on various Android sizes
+- [ ] Store listing assets — screenshots (EAS can generate), short description (80 chars), keywords ready (see session 2 notes)
