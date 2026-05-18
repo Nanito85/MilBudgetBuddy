@@ -11,7 +11,23 @@
       "PowerShell($env:PATH += \";C:\\\\Program Files\\\\Git\\\\bin;C:\\\\Program Files\\\\Git\\\\cmd\"; cd \"C:\\\\Users\\\\solit\\\\Documents\\\\web\\\\budgetapp\\\\MilBudgetBuddy\"; git status)",
       "PowerShell(Get-Command *)",
       "PowerShell(where.exe git 2>$null; cmd /c \"where git\" 2>$null)",
-      "PowerShell(git *)"
+      "PowerShell(git *)",
+      "PowerShell($env:PATH += \";C:\\\\Program Files\\\\Git\\\\cmd\"; cd \"C:\\\\Users\\\\solit\\\\Documents\\\\web\\\\budgetapp\\\\MilBudgetBuddy\"; Select-String -Path \".gitignore\" -Pattern \"\\\\.env\")",
+      "PowerShell(winget install *)",
+      "PowerShell(gh *)",
+      "PowerShell(gh auth *)",
+      "PowerShell(gh repo *)",
+      "PowerShell(Get-ChildItem \"C:\\\\Users\\\\solit\\\\Documents\\\\web\\\\budgetapp\\\\MilBudgetBuddy\\\\docs\" | ForEach-Object { $_.Name })",
+      "PowerShell(gh api *)",
+      "PowerShell($env:PATH += \";C:\\\\Program Files\\\\GitHub CLI\"; $body = '{\"source\":{\"branch\":\"master\",\"path\":\"/docs\"}}'; $body | & \"C:\\\\Program Files\\\\GitHub CLI\\\\gh.exe\" api repos/Nanito85/MilBudgetBuddy/pages --method POST --input -)",
+      "PowerShell($env:PATH += \";C:\\\\Program Files\\\\GitHub CLI\"; & \"C:\\\\Program Files\\\\GitHub CLI\\\\gh.exe\" api repos/Nanito85/MilBudgetBuddy/pages --method POST -f \"source[branch]=master\" -f \"source[path]=/docs\")",
+      "PowerShell(Get-Content *)",
+      "WebFetch(domain:www.travel.dod.mil)",
+      "WebFetch(domain:www.military.com)",
+      "WebFetch(domain:veteran.com)",
+      "WebFetch(domain:militarypay.defense.gov)",
+      "WebFetch(domain:www.veteransunited.com)",
+      "PowerShell(eas build *)"
     ]
   }
 }

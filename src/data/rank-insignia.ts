@@ -78,133 +78,113 @@ export function getVariantAbbrev(
 
 export type InsigniaRows = string[];
 
+// Shared officer rows — identical across all branches at the grade level
+// O1/O2: 1 bar; O3: 2 bars; O4/O5: oak leaf; O6: eagle; O7-O10: stars
+function officerRows(grade: PayGrade): InsigniaRows {
+  switch (grade) {
+    case 'O1':  return ['▬'];         // Gold bar (2LT / ENS / 2d Lt)
+    case 'O2':  return ['▬', '▬'];    // Silver bar (1LT / LTJG / 1st Lt)
+    case 'O3':  return ['▬▬'];        // Two bars (CPT / LT / Capt)
+    case 'O4':  return ['❋'];         // Oak leaf — Major / LCDR
+    case 'O5':  return ['❋', '❋'];    // Oak leaf — LTC / CDR
+    case 'O6':  return ['⚔'];         // Eagle — COL / CAPT
+    case 'O7':  return ['★'];
+    case 'O8':  return ['★', '★'];
+    case 'O9':  return ['★', '★', '★'];
+    case 'O10': return ['★', '★', '★', '★'];
+    default:    return [];
+  }
+}
+
+// Warrant officer rows — same across all branches
+function warrantRows(grade: PayGrade): InsigniaRows {
+  switch (grade) {
+    case 'W1': return ['◻'];
+    case 'W2': return ['◻', '◻'];
+    case 'W3': return ['◻', '◻', '◻'];
+    case 'W4': return ['◻', '◻', '◻', '◻'];
+    case 'W5': return ['◻', '◻', '◻', '◻', '◻'];
+    default:   return [];
+  }
+}
+
 // ── Army ──────────────────────────────────────────────────────────────────────
+// Chevrons (∧) stack upward; rockers (⌣) appear below; devices on top row
 function armyRows(grade: PayGrade, variant: RankVariant): InsigniaRows {
   switch (grade) {
-    case 'E1': return [];
-    case 'E2': return ['^'];
-    case 'E3': return ['^', '⌣'];
-    case 'E4': return variant === 'army_e4_cpl' ? ['^^'] : ['⊙'];
-    case 'E5': return ['^^^'];
-    case 'E6': return ['^^^', '⌣'];
-    case 'E7': return ['^^^', '⌣⌣'];
+    case 'E1': return [];                                          // PVT — no insignia
+    case 'E2': return ['∧'];                                       // PV2 — 1 chevron
+    case 'E3': return ['∧', '⌣'];                                  // PFC — 1 chevron + 1 rocker
+    case 'E4': return variant === 'army_e4_cpl'
+      ? ['∧', '∧']                                                 // CPL — 2 chevrons
+      : ['◉'];                                                     // SPC — eagle device
+    case 'E5': return ['∧', '∧', '∧'];                            // SGT — 3 chevrons
+    case 'E6': return ['∧', '∧', '∧', '⌣'];                       // SSG — 3 + 1 rocker
+    case 'E7': return ['∧', '∧', '∧', '⌣', '⌣'];                  // SFC — 3 + 2 rockers
     case 'E8': return variant === 'army_e8_1sg'
-      ? ['^^^', '⌣⌣⌣', '◆']
-      : ['^^^', '⌣⌣⌣'];
+      ? ['◆', '∧', '∧', '∧', '⌣', '⌣', '⌣']                      // 1SG — diamond + 3 + 3 rockers
+      : ['∧', '∧', '∧', '⌣', '⌣', '⌣'];                          // MSG — 3 + 3 rockers
     case 'E9':
-      if (variant === 'army_e9_csm')  return ['^^^', '⌣⌣⌣', '⊛'];
-      if (variant === 'army_e9_sma')  return ['^^^', '⌣⌣⌣', '✦'];
-      return ['^^^', '⌣⌣⌣', '★'];
-    case 'W1': return ['◻'];
-    case 'W2': return ['◻◻'];
-    case 'W3': return ['◻◻◻'];
-    case 'W4': return ['◻◻◻◻'];
-    case 'W5': return ['◻◻◻◻◻'];
-    case 'O1': return ['|'];
-    case 'O2': return ['|'];
-    case 'O3': return ['| |'];
-    case 'O4': return ['❧'];
-    case 'O5': return ['❧'];
-    case 'O6': return ['✵'];
-    case 'O7': return ['★'];
-    case 'O8': return ['★★'];
-    case 'O9': return ['★★★'];
-    case 'O10': return ['★★★★'];
-    default: return [];
+      if (variant === 'army_e9_csm') return ['⊛', '∧', '∧', '∧', '⌣', '⌣', '⌣']; // CSM — wreath star
+      if (variant === 'army_e9_sma') return ['✦', '∧', '∧', '∧', '⌣', '⌣', '⌣']; // SMA — special device
+      return ['★', '∧', '∧', '∧', '⌣', '⌣', '⌣'];                // SGM — star
+    default: return grade.startsWith('W') ? warrantRows(grade) : officerRows(grade);
   }
 }
 
 // ── Marines ───────────────────────────────────────────────────────────────────
+// Eagle, Globe & Anchor (✚) device distinguishes USMC enlisted; rockers below
 function marinesRows(grade: PayGrade, variant: RankVariant): InsigniaRows {
   switch (grade) {
-    case 'E1': return [];
-    case 'E2': return ['^'];
-    case 'E3': return ['^', '✚'];
-    case 'E4': return ['^^', '✚'];
-    case 'E5': return ['^^^', '✚'];
-    case 'E6': return ['^^^', '⌣⌣'];
-    case 'E7': return ['^^^', '⌣⌣', '✚'];
+    case 'E1': return [];                                          // Pvt — no insignia
+    case 'E2': return ['∧'];                                       // PFC — 1 chevron
+    case 'E3': return ['∧', '✚'];                                  // LCpl — 1 chevron + EGA
+    case 'E4': return ['∧', '∧', '✚'];                            // Cpl — 2 chevrons + EGA
+    case 'E5': return ['∧', '∧', '∧', '✚'];                       // Sgt — 3 chevrons + EGA
+    case 'E6': return ['∧', '∧', '∧', '⌣', '⌣'];                  // SSgt — 3 + 2 rockers
+    case 'E7': return ['✚', '∧', '∧', '∧', '⌣', '⌣'];            // GySgt — EGA + 3 + 2 rockers
     case 'E8': return variant === 'marines_e8_1stsgt'
-      ? ['^^^', '⌣⌣⌣⌣', '◆']
-      : ['^^^', '⌣⌣⌣⌣'];
+      ? ['◆', '∧', '∧', '∧', '⌣', '⌣', '⌣']                      // 1stSgt — diamond device
+      : ['✚', '∧', '∧', '∧', '⌣', '⌣', '⌣'];                     // MSgt — EGA device
     case 'E9': return variant === 'marines_e9_sgtmaj'
-      ? ['^^^', '⌣⌣⌣⌣', '★', '✚']
-      : ['^^^', '⌣⌣⌣⌣', '✦'];
-    case 'W1': return ['◻'];
-    case 'W2': return ['◻◻'];
-    case 'W3': return ['◻◻◻'];
-    case 'W4': return ['◻◻◻◻'];
-    case 'W5': return ['◻◻◻◻◻'];
-    case 'O1': return ['|'];
-    case 'O2': return ['|'];
-    case 'O3': return ['| |'];
-    case 'O4': return ['❧'];
-    case 'O5': return ['❧'];
-    case 'O6': return ['✵'];
-    case 'O7': return ['★'];
-    case 'O8': return ['★★'];
-    case 'O9': return ['★★★'];
-    case 'O10': return ['★★★★'];
-    default: return [];
+      ? ['★', '∧', '∧', '∧', '⌣', '⌣', '⌣', '✚']                 // SgtMaj — star + EGA
+      : ['✦', '∧', '∧', '∧', '⌣', '⌣', '⌣', '✚'];               // MGySgt — burst device + EGA
+    default: return grade.startsWith('W') ? warrantRows(grade) : officerRows(grade);
   }
 }
 
 // ── Air Force / Space Force ───────────────────────────────────────────────────
-// E1–E4: chevron stripes (0–3); E5–E7: NCO "rocker" stripes; E8/E9: + emblem
+// E1–E4: 0–3 chevrons; E5–E9: NCO/SNCO stripes (—) + device for E8/E9
 function airForceRows(grade: PayGrade): InsigniaRows {
   switch (grade) {
-    case 'E1': return [];
-    case 'E2': return ['^'];
-    case 'E3': return ['^^'];
-    case 'E4': return ['^^^'];
-    case 'E5': return ['—'];
-    case 'E6': return ['——'];
-    case 'E7': return ['———'];
-    case 'E8': return ['———', '◆'];
-    case 'E9': return ['———', '★'];
-    case 'O1': return ['|'];
-    case 'O2': return ['|'];
-    case 'O3': return ['| |'];
-    case 'O4': return ['❧'];
-    case 'O5': return ['❧'];
-    case 'O6': return ['✵'];
-    case 'O7': return ['★'];
-    case 'O8': return ['★★'];
-    case 'O9': return ['★★★'];
-    case 'O10': return ['★★★★'];
-    default: return [];
+    case 'E1': return [];                  // Amn Basic — no insignia
+    case 'E2': return ['∧'];              // Amn
+    case 'E3': return ['∧', '∧'];         // A1C
+    case 'E4': return ['∧', '∧', '∧'];   // SrA
+    case 'E5': return ['—'];              // SSgt — 1 rocker stripe
+    case 'E6': return ['—', '—'];         // TSgt — 2 rocker stripes
+    case 'E7': return ['—', '—', '—'];    // MSgt — 3 rocker stripes
+    case 'E8': return ['◆', '—', '—', '—']; // SMSgt — diamond + 3 stripes
+    case 'E9': return ['★', '—', '—', '—']; // CMSgt — star + 3 stripes
+    default:   return officerRows(grade);
   }
 }
 
 // ── Navy / Coast Guard ────────────────────────────────────────────────────────
-// Chevrons point DOWN (∨) for petty officers; chiefs use anchor device.
+// E1–E3: rating badge chevrons (∨ pointing down); E4–E6: anchor + chevrons;
+// E7–E9 (chiefs): anchor + arcs; officers same as all branches
 function navyRows(grade: PayGrade): InsigniaRows {
   switch (grade) {
-    case 'E1': return [];
-    case 'E2': return ['∨∨'];
-    case 'E3': return ['∨∨∨'];
-    case 'E4': return ['⚓', '∨'];
-    case 'E5': return ['⚓', '∨∨'];
-    case 'E6': return ['⚓', '∨∨∨'];
-    case 'E7': return ['⚓', '⌣'];
-    case 'E8': return ['⚓', '⌣', '★'];
-    case 'E9': return ['⚓', '⌣', '★★'];
-    case 'W1': return ['◻'];
-    case 'W2': return ['◻◻'];
-    case 'W3': return ['◻◻◻'];
-    case 'W4': return ['◻◻◻◻'];
-    case 'W5': return ['◻◻◻◻◻'];
-    case 'O1': return ['|'];
-    case 'O2': return ['|'];
-    case 'O3': return ['| |'];
-    case 'O4': return ['❧'];
-    case 'O5': return ['❧'];
-    case 'O6': return ['✵'];
-    case 'O7': return ['★'];
-    case 'O8': return ['★★'];
-    case 'O9': return ['★★★'];
-    case 'O10': return ['★★★★'];
-    default: return [];
+    case 'E1': return [];                      // SR/Rec — no insignia
+    case 'E2': return ['∨'];                   // SA — 1 chevron down
+    case 'E3': return ['∨', '∨'];              // SN — 2 chevrons down
+    case 'E4': return ['⚓', '∨'];             // PO3 — anchor + 1 chevron
+    case 'E5': return ['⚓', '∨', '∨'];        // PO2 — anchor + 2 chevrons
+    case 'E6': return ['⚓', '∨', '∨', '∨'];   // PO1 — anchor + 3 chevrons
+    case 'E7': return ['⚓', '⌣'];             // CPO — anchor + 1 arc
+    case 'E8': return ['★', '⚓', '⌣'];        // SCPO — star + anchor + arc
+    case 'E9': return ['★', '★', '⚓', '⌣'];   // MCPO/MCPON — 2 stars + anchor + arc
+    default:   return grade.startsWith('W') ? warrantRows(grade) : officerRows(grade);
   }
 }
 

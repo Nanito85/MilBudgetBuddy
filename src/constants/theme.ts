@@ -2,14 +2,13 @@ import '@/global.css';
 
 import { Platform } from 'react-native';
 
-// ── Tactical Dark Palette (both light and dark = always dark military) ─────────
 export const Colors = {
   light: {
-    text: '#C8D8E8',
-    background: '#0A1628',
-    backgroundElement: '#0F2040',
-    backgroundSelected: '#1A3560',
-    textSecondary: '#5580A0',
+    text: '#0D1E2E',
+    background: '#F0F4F8',
+    backgroundElement: '#FFFFFF',
+    backgroundSelected: '#D8E8F4',
+    textSecondary: '#4A6A84',
   },
   dark: {
     text: '#C8D8E8',

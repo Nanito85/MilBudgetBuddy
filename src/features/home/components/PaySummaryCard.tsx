@@ -45,7 +45,7 @@ export function PaySummaryCard({ breakdown }: Props) {
           <View style={styles.headerDot} />
           <ThemedText type="label" style={styles.headerLabel}>PAY STATEMENT // MONTHLY EST.</ThemedText>
         </View>
-        <ThemedText type="label" style={styles.headerLabel}>FY2025</ThemedText>
+        <ThemedText type="label" style={styles.headerLabel}>FY2026</ThemedText>
       </View>
 
       {/* Net pay hero */}
@@ -76,6 +76,11 @@ export function PaySummaryCard({ breakdown }: Props) {
           <View style={styles.quickItem}>
             <ThemedText type="label" style={styles.quickLabel}>TSP</ThemedText>
             <ThemedText style={[styles.quickValue, { color: Brand.accent }]}>{fmtPay(breakdown.tsp)}</ThemedText>
+          </View>
+          <View style={styles.quickSep} />
+          <View style={styles.quickItem}>
+            <ThemedText type="label" style={styles.quickLabel}>SAVINGS</ThemedText>
+            <ThemedText style={[styles.quickValue, { color: Brand.success }]}>{fmtPay(breakdown.netPay * 0.10)}</ThemedText>
           </View>
         </View>
       )}
@@ -144,7 +149,7 @@ const styles = StyleSheet.create({
   },
   netLabel: { color: '#4D7A9A', marginBottom: 4 },
   netAmount: {
-    fontSize: 36,
+    fontSize: 26,
     fontWeight: '900',
     letterSpacing: -0.5,
     color: Brand.accent,

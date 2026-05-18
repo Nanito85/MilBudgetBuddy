@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
+import { useTheme } from '@/hooks/use-theme';
 import { Chore, Goal } from '@/types/kids.types';
 
 interface Props {
@@ -21,11 +22,14 @@ function today() {
 export function ChoresList({ chores, goals, accentColor, onComplete, onUncomplete }: Props) {
   const date = today();
   const primaryGoal = goals[0];
+  const theme = useTheme();
 
   if (chores.length === 0) {
     return (
       <View style={styles.empty}>
-        <ThemedText style={styles.emptyText}>No chores yet. Ask a parent to add some!</ThemedText>
+        <ThemedText style={[styles.emptyText, { color: theme.textSecondary }]}>
+          No chores yet. Ask a parent to add some!
+        </ThemedText>
       </View>
     );
   }
@@ -44,16 +48,21 @@ export function ChoresList({ chores, goals, accentColor, onComplete, onUncomplet
                 onComplete(chore.id, primaryGoal.id);
               }
             }}
-            style={({ pressed }) => [styles.row, done && styles.rowDone, pressed && styles.pressed]}>
-            <View style={[styles.checkbox, done && { backgroundColor: accentColor, borderColor: accentColor }]}>
+            style={({ pressed }) => [
+              styles.row,
+              { backgroundColor: theme.backgroundElement + 'CC', borderColor: accentColor + '40' },
+              done && styles.rowDone,
+              pressed && styles.pressed,
+            ]}>
+            <View style={[styles.checkbox, { borderColor: accentColor }, done && { backgroundColor: accentColor }]}>
               {done && <ThemedText style={styles.checkmark}>✓</ThemedText>}
             </View>
             <View style={styles.info}>
-              <ThemedText style={[styles.choreName, done && styles.doneText]}>
+              <ThemedText style={[styles.choreName, { color: theme.text }, done && styles.doneText]}>
                 {chore.name}
               </ThemedText>
             </View>
-            <View style={[styles.badge, { borderColor: accentColor }]}>
+            <View style={[styles.badge, { borderColor: accentColor, backgroundColor: accentColor + '20' }]}>
               <ThemedText style={[styles.badgeText, { color: accentColor }]}>
                 +${chore.value.toFixed(2)}
               </ThemedText>
@@ -73,7 +82,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.two,
-    backgroundColor: 'rgba(255,255,255,0.08)',
+    borderWidth: 1,
     borderRadius: Spacing.two,
     padding: Spacing.two + 4,
   },
@@ -90,7 +99,7 @@ const styles = StyleSheet.create({
   },
   checkmark: { color: '#FFFFFF', fontSize: 14, fontWeight: '700' },
   info: { flex: 1 },
-  choreName: { fontSize: 15, fontWeight: '600', color: '#FFFFFF' },
+  choreName: { fontSize: 15, fontWeight: '600' },
   doneText: { textDecorationLine: 'line-through', opacity: 0.7 },
   badge: {
     borderWidth: 1.5,

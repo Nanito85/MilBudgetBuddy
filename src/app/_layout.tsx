@@ -84,6 +84,9 @@ export default function TabLayout() {
           }}
         />
         {/* ── Non-tab screens (hidden from tab bar) ──── */}
+        <Tabs.Screen name="category/[slug]"       options={{ href: null }} />
+        <Tabs.Screen name="kids/[id]"             options={{ href: null }} />
+        <Tabs.Screen name="tip/[id]"              options={{ href: null }} />
         <Tabs.Screen name="budget"                options={{ href: null }} />
         <Tabs.Screen name="credit-score"          options={{ href: null }} />
         <Tabs.Screen name="dity-calculator"       options={{ href: null }} />
