@@ -81,8 +81,9 @@ export function PayDayCountdown({ netPay }: Props) {
       {netPay > 0 && (
         <View style={styles.right}>
           <ThemedText style={styles.payLabel}>EST. TAKE-HOME</ThemedText>
-          <ThemedText style={styles.payAmount}>{fmtPay(netPay)}</ThemedText>
-          <ThemedText style={styles.payNote}>per period</ThemedText>
+          <ThemedText style={styles.payAmount}>{fmtPay(netPay / 2)}</ThemedText>
+          <ThemedText style={styles.payNote}>per paycheck</ThemedText>
+          <ThemedText style={styles.payMonthly}>{fmtPay(netPay)}/mo</ThemedText>
         </View>
       )}
     </View>
@@ -122,4 +123,5 @@ const styles = StyleSheet.create({
   payLabel: { fontSize: 8, fontWeight: '700', letterSpacing: 1, color: '#4D7A9A' },
   payAmount: { fontSize: 20, fontWeight: '900', color: Brand.accent },
   payNote: { fontSize: 8, color: '#3D6080', fontWeight: '600' },
+  payMonthly: { fontSize: 9, color: '#3D6080', marginTop: 1 },
 });

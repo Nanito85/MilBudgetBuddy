@@ -14,6 +14,7 @@ const DEFAULTS: UserPreferences = {
   onboarded: false,
   disclaimerAcknowledged: false,
   specialPays: [],
+  spouseMonthlyIncome: 0,
   payGrade: undefined,
   rankVariant: undefined,
   lastName: undefined,
@@ -45,6 +46,7 @@ interface UserState extends UserPreferences {
   addSpecialPay: (type: SpecialPayType, monthlyAmount: number, customLabel?: string) => void;
   removeSpecialPay: (id: string) => void;
   setQuickAccessIds: (ids: string[]) => void;
+  setSpouseMonthlyIncome: (amount: number) => void;
 }
 
 function save(prefs: UserPreferences) {
@@ -74,6 +76,7 @@ function snapshot(get: () => UserState): UserPreferences {
     sglOptOut: s.sglOptOut,
     stateResidence: s.stateResidence,
     quickAccessIds: s.quickAccessIds,
+    spouseMonthlyIncome: s.spouseMonthlyIncome,
   };
 }
 
@@ -162,5 +165,10 @@ export const useUserStore = create<UserState>((set, get) => ({
   setQuickAccessIds: (quickAccessIds) => {
     set({ quickAccessIds });
     save({ ...snapshot(get), quickAccessIds });
+  },
+
+  setSpouseMonthlyIncome: (spouseMonthlyIncome) => {
+    set({ spouseMonthlyIncome });
+    save({ ...snapshot(get), spouseMonthlyIncome });
   },
 }));

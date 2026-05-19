@@ -35,7 +35,9 @@
       "PowerShell($git = \"C:\\\\Program Files\\\\Git\\\\cmd\\\\git.exe\"; cd \"C:\\\\Users\\\\solit\\\\Documents\\\\web\\\\budgetapp\\\\MilBudgetBuddy\"; & $git add -A; & $git commit -m \"Add expense logging, net worth history, SBP calc, pay chart, tax guide, pay day notifications, store prep\" 2>&1)",
       "PowerShell($git = \"C:\\\\Program Files\\\\Git\\\\cmd\\\\git.exe\"; cd \"C:\\\\Users\\\\solit\\\\Documents\\\\web\\\\budgetapp\\\\MilBudgetBuddy\"; & $git push 2>&1)",
       "PowerShell($git = \"C:\\\\Program Files\\\\Git\\\\cmd\\\\git.exe\"; cd \"C:\\\\Users\\\\solit\\\\Documents\\\\web\\\\budgetapp\\\\MilBudgetBuddy\"; & $git add -A; & $git commit -m \"Normalize number font sizes to 26px max across all screens; BAH data verified FY2026\" 2>&1; & $git push 2>&1)",
-      "PowerShell($git = \"C:\\\\Program Files\\\\Git\\\\cmd\\\\git.exe\"; cd \"C:\\\\Users\\\\solit\\\\Documents\\\\web\\\\budgetapp\\\\MilBudgetBuddy\"; & $git add -A; & $git commit -m \"Home screen section layout redesign; fix back button fallbacks across all tool screens\" 2>&1; & $git push 2>&1)"
+      "PowerShell($git = \"C:\\\\Program Files\\\\Git\\\\cmd\\\\git.exe\"; cd \"C:\\\\Users\\\\solit\\\\Documents\\\\web\\\\budgetapp\\\\MilBudgetBuddy\"; & $git add -A; & $git commit -m \"Home screen section layout redesign; fix back button fallbacks across all tool screens\" 2>&1; & $git push 2>&1)",
+      "PowerShell($git = \"C:\\\\Program Files\\\\Git\\\\cmd\\\\git.exe\"; cd \"C:\\\\Users\\\\solit\\\\Documents\\\\web\\\\budgetapp\\\\MilBudgetBuddy\"; & $git push origin master 2>&1)",
+      "PowerShell($git = \"C:\\\\Program Files\\\\Git\\\\cmd\\\\git.exe\"; cd \"C:\\\\Users\\\\solit\\\\Documents\\\\web\\\\budgetapp\\\\MilBudgetBuddy\"; & $git add -A; & $git commit -m \"feat: show per-paycheck net pay, add spouse income to pay statement\"; & $git push origin master 2>&1 | Select-String -NotMatch \"warning\")"
     ]
   }
 }
