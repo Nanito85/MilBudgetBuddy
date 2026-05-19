@@ -50,14 +50,14 @@ const shStyles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: Spacing.one + 2,
-    borderLeftWidth: 2,
-    paddingLeft: Spacing.one + 2,
+    gap: Spacing.two,
+    borderLeftWidth: 3,
+    paddingLeft: Spacing.two,
   },
-  dot: { width: 5, height: 5, borderRadius: 1 },
-  label: { fontSize: 9, fontWeight: '800', letterSpacing: 1.2 },
+  dot: { width: 6, height: 6, borderRadius: 2 },
+  label: { fontSize: 14, fontWeight: '800', letterSpacing: 0.8 },
   line: { flex: 1, height: StyleSheet.hairlineWidth, backgroundColor: '#0D2030' },
-  action: { fontSize: 9, fontWeight: '700', letterSpacing: 0.5 },
+  action: { fontSize: 12, fontWeight: '700', letterSpacing: 0.3 },
 });
 
 // ── Budget snapshot bars ──────────────────────────────────────────────────────
@@ -114,6 +114,7 @@ export default function DashboardScreen() {
   const sglOptOut = useUserStore((s) => s.sglOptOut);
   const stateResidence = useUserStore((s) => s.stateResidence);
   const specialPays = useUserStore((s) => s.specialPays);
+  const lesOverrides = useUserStore((s) => s.lesOverrides);
   const tip = useDailyTip();
 
   React.useEffect(() => {
@@ -144,8 +145,9 @@ export default function DashboardScreen() {
     return calcLES({
       payGrade, yos, mhaZip, hasSpouse, specialPaysTotal,
       tspContribPct, hasDentalFamily, sglOptOut, stateResidence,
+      overrides: lesOverrides,
     });
-  }, [payGrade, yos, mhaZip, hasSpouse, specialPaysTotal, tspContribPct, hasDentalFamily, sglOptOut, stateResidence]);
+  }, [payGrade, yos, mhaZip, hasSpouse, specialPaysTotal, tspContribPct, hasDentalFamily, sglOptOut, stateResidence, lesOverrides]);
 
   return (
     <ThemedView style={styles.container}>
@@ -153,7 +155,9 @@ export default function DashboardScreen() {
 
       <ScrollView
         contentContainerStyle={[styles.content, { paddingBottom: BottomTabInset + Spacing.five }]}
-        showsVerticalScrollIndicator={false}>
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag">
 
         {/* ── PAY STATEMENT ─────────────────────────────────────────── */}
         <View style={styles.section}>
@@ -265,7 +269,7 @@ const styles = StyleSheet.create({
   setupRight: { flex: 1, gap: 4 },
   setupIcon: { fontSize: 20, color: Brand.warning },
   setupTitle: { color: Brand.warning, fontSize: 10 },
-  setupBody: { fontSize: 12, lineHeight: 18, color: '#4D7A9A' },
+  setupBody: { fontSize: 12, lineHeight: 18, color: '#6B92B0' },
 
   budgetSnapshot: {
     backgroundColor: '#050B14',
@@ -276,5 +280,5 @@ const styles = StyleSheet.create({
     gap: Spacing.two,
   },
   budgetBars: { gap: Spacing.two },
-  budgetTapHint: { color: Brand.tactical, fontSize: 8, textAlign: 'right', marginTop: 2 },
+  budgetTapHint: { color: Brand.tactical, fontSize: 10, textAlign: 'right', marginTop: 2 },
 });

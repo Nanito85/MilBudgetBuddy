@@ -2,6 +2,7 @@ import { getBahRate } from '@/data/bah-rates';
 import { getBAS } from '@/data/bas-rates';
 import { getBasicPay } from '@/data/basic-pay-rates';
 import { getStateTaxRate } from '@/data/state-tax';
+import { LESOverrides } from '@/types/user.types';
 
 export const SGLI_MONTHLY = 29;    // $500k coverage standard
 export const DENTAL_FAMILY = 36.14; // TDP family plan $/month (FY2025 approx)
@@ -49,6 +50,7 @@ export interface LESBreakdown {
   bah: number;
   bas: number;
   specialPays: number;
+  extraIncome: number;
   grossPay: number;
   // Deductions
   fica: number;
@@ -57,9 +59,16 @@ export interface LESBreakdown {
   tsp: number;
   sgli: number;
   dental: number;
+  extraDeductions: number;
   totalDeductions: number;
   // Net
   netPay: number;
+  // Override flags (for display)
+  bahOverridden: boolean;
+  basOverridden: boolean;
+  basePayOverridden: boolean;
+  extraIncomeItems: { id: string; label: string; amount: number }[];
+  extraDeductionItems: { id: string; label: string; amount: number }[];
 }
 
 export interface LESInputs {
@@ -72,28 +81,50 @@ export interface LESInputs {
   hasDentalFamily: boolean;
   sglOptOut: boolean;
   stateResidence?: string;
+  overrides?: LESOverrides;
 }
 
 export function calcLES(inputs: LESInputs): LESBreakdown {
-  const { payGrade, yos, mhaZip, hasSpouse, specialPaysTotal, tspContribPct, hasDentalFamily, sglOptOut, stateResidence } = inputs;
+  const { payGrade, yos, mhaZip, hasSpouse, specialPaysTotal, tspContribPct, hasDentalFamily, sglOptOut, stateResidence, overrides } = inputs;
 
-  const basePay = getBasicPay(payGrade as any, yos);
-  const bah = mhaZip ? (getBahRate(mhaZip, payGrade as any, hasSpouse) ?? 0) : 0;
-  const bas = getBAS(payGrade);
-  const grossPay = basePay + bah + bas + specialPaysTotal;
+  const calcBasePay = getBasicPay(payGrade as any, yos);
+  const calcBah = mhaZip ? (getBahRate(mhaZip, payGrade as any, hasSpouse) ?? 0) : 0;
+  const calcBas = getBAS(payGrade);
 
-  const fica = basePay * 0.0765;
-  const fedTax = estimateFedTax(basePay * 12, hasSpouse);
+  const basePay = overrides?.basePayOverride ?? calcBasePay;
+  const bah     = overrides?.bahOverride     ?? calcBah;
+  const bas     = overrides?.basOverride     ?? calcBas;
+
+  const extraIncomeItems  = overrides?.extraIncome      ?? [];
+  const extraDeductionItems = overrides?.extraDeductions ?? [];
+  const extraIncome     = extraIncomeItems.reduce((s, i) => s + i.amount, 0);
+  const extraDeductions = extraDeductionItems.reduce((s, i) => s + i.amount, 0);
+
+  const grossPay = basePay + bah + bas + specialPaysTotal + extraIncome;
+
+  const fica     = basePay * 0.0765;
+  const fedTax   = estimateFedTax(basePay * 12, hasSpouse);
   const stateRate = getStateTaxRate(stateResidence);
-  const stateTax = (basePay * stateRate);
-  const tsp = basePay * (tspContribPct / 100);
-  const sgli = sglOptOut ? 0 : SGLI_MONTHLY;
-  const dental = hasDentalFamily ? DENTAL_FAMILY : 0;
+  const stateTax = basePay * stateRate;
+  const tsp      = basePay * (tspContribPct / 100);
+  const sgli     = sglOptOut ? 0 : SGLI_MONTHLY;
+  const dental   = hasDentalFamily ? DENTAL_FAMILY : 0;
 
-  const totalDeductions = fica + fedTax + stateTax + tsp + sgli + dental;
+  const totalDeductions = fica + fedTax + stateTax + tsp + sgli + dental + extraDeductions;
   const netPay = grossPay - totalDeductions;
 
-  return { basePay, bah, bas, specialPays: specialPaysTotal, grossPay, fica, fedTax, stateTax, tsp, sgli, dental, totalDeductions, netPay };
+  return {
+    basePay, bah, bas,
+    specialPays: specialPaysTotal,
+    extraIncome, grossPay,
+    fica, fedTax, stateTax, tsp, sgli, dental,
+    extraDeductions, totalDeductions, netPay,
+    bahOverridden: overrides?.bahOverride != null,
+    basOverridden: overrides?.basOverride != null,
+    basePayOverridden: overrides?.basePayOverride != null,
+    extraIncomeItems,
+    extraDeductionItems,
+  };
 }
 
 export function fmtPay(n: number): string {

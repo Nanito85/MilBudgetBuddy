@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 
 import { PayGrade } from '@/data/bah-rates';
-import { MilitaryBranch, RankVariant, SpecialPay, SpecialPayType, UserPreferences } from '@/types/user.types';
+import { LESOverrides, MilitaryBranch, RankVariant, SpecialPay, SpecialPayType, UserPreferences } from '@/types/user.types';
 
 const STORAGE_KEY = 'mbb_user_prefs';
 
@@ -30,6 +30,7 @@ const DEFAULTS: UserPreferences = {
   quickAccessIds: ['budget', 'debt', 'credit', 'retirement'],
   appTheme: 'dark',
   fontScale: 1.0,
+  lesOverrides: { extraIncome: [], extraDeductions: [] },
 };
 
 interface UserState extends UserPreferences {
@@ -51,6 +52,7 @@ interface UserState extends UserPreferences {
   setSpouseMonthlyIncome: (amount: number) => void;
   setAppTheme: (theme: 'dark' | 'light') => void;
   setFontScale: (scale: number) => void;
+  setLesOverrides: (overrides: LESOverrides) => void;
   resetAll: () => void;
 }
 
@@ -84,6 +86,7 @@ function snapshot(get: () => UserState): UserPreferences {
     spouseMonthlyIncome: s.spouseMonthlyIncome,
     appTheme: s.appTheme,
     fontScale: s.fontScale,
+    lesOverrides: s.lesOverrides,
   };
 }
 
@@ -187,6 +190,11 @@ export const useUserStore = create<UserState>((set, get) => ({
   setFontScale: (fontScale) => {
     set({ fontScale });
     save({ ...snapshot(get), fontScale });
+  },
+
+  setLesOverrides: (lesOverrides) => {
+    set({ lesOverrides });
+    save({ ...snapshot(get), lesOverrides });
   },
 
   resetAll: () => {

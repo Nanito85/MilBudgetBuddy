@@ -109,6 +109,24 @@ export interface UserPreferences {
   // Appearance
   appTheme: 'dark' | 'light';
   fontScale: number; // 1.0 | 1.15 | 1.3 | 1.5
+  // LES manual overrides
+  lesOverrides: LESOverrides;
+}
+
+// ─── LES Manual Overrides ─────────────────────────────────────────────────────
+
+export interface LESLineItem {
+  id: string;
+  label: string;
+  amount: number; // monthly $
+}
+
+export interface LESOverrides {
+  bahOverride?: number;    // actual BAH from LES (overrides calculated)
+  basOverride?: number;    // actual BAS if different
+  basePayOverride?: number; // actual base pay if different
+  extraIncome: LESLineItem[];      // OHA, clothing, COLA, FSA, etc.
+  extraDeductions: LESLineItem[];  // BOP, allotments, etc.
 }
 
 // ─── Special Pays ─────────────────────────────────────────────────────────────
