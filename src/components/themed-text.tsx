@@ -1,6 +1,7 @@
-import { Platform, StyleSheet, Text, type TextProps } from 'react-native';
+import { Platform, Text, type TextProps } from 'react-native';
 
 import { Brand, Fonts, ThemeColor } from '@/constants/theme';
+import { useFontScale } from '@/hooks/use-font-scale';
 import { useTheme } from '@/hooks/use-theme';
 
 export type ThemedTextProps = TextProps & {
@@ -10,97 +11,33 @@ export type ThemedTextProps = TextProps & {
 
 export function ThemedText({ style, type = 'default', themeColor, ...rest }: ThemedTextProps) {
   const theme = useTheme();
+  const scale = useFontScale();
+
+  const baseStyle = (() => {
+    switch (type) {
+      case 'default':    return { fontSize: 15 * scale, lineHeight: 22 * scale, fontWeight: '500' as const, letterSpacing: 0.1 };
+      case 'small':      return { fontSize: 13 * scale, lineHeight: 18 * scale, fontWeight: '500' as const, letterSpacing: 0.2 };
+      case 'smallBold':  return { fontSize: 13 * scale, lineHeight: 18 * scale, fontWeight: '700' as const, letterSpacing: 0.5, textTransform: 'uppercase' as const };
+      case 'title':      return { fontSize: 44 * scale, lineHeight: 48 * scale, fontWeight: '900' as const, letterSpacing: -1 };
+      case 'subtitle':   return { fontSize: 28 * scale, lineHeight: 34 * scale, fontWeight: '800' as const, letterSpacing: -0.5 };
+      case 'link':       return { lineHeight: 30 * scale, fontSize: 14 * scale };
+      case 'linkPrimary':return { lineHeight: 30 * scale, fontSize: 14 * scale, color: Brand.tactical };
+      case 'code':       return { fontFamily: Fonts.mono, fontWeight: (Platform.OS === 'android' ? '700' : '500') as '700' | '500', fontSize: 12 * scale, letterSpacing: 0.5 };
+      case 'data':       return { fontFamily: Fonts.data, fontSize: 15 * scale, fontWeight: '700' as const, letterSpacing: 0.5, color: Brand.tactical };
+      case 'label':      return { fontSize: Math.max(10, 10 * scale), fontWeight: '700' as const, letterSpacing: 1.5, textTransform: 'uppercase' as const };
+      case 'classified': return { fontSize: 9 * scale, fontWeight: '800' as const, letterSpacing: 3, textTransform: 'uppercase' as const, color: Brand.classified };
+      default:           return {};
+    }
+  })();
 
   return (
     <Text
       style={[
         { color: theme[themeColor ?? 'text'] },
-        type === 'default' && styles.default,
-        type === 'title' && styles.title,
-        type === 'small' && styles.small,
-        type === 'smallBold' && styles.smallBold,
-        type === 'subtitle' && styles.subtitle,
-        type === 'link' && styles.link,
-        type === 'linkPrimary' && styles.linkPrimary,
-        type === 'code' && styles.code,
-        type === 'data' && styles.data,
-        type === 'label' && styles.label,
-        type === 'classified' && styles.classified,
+        baseStyle,
         style,
       ]}
       {...rest}
     />
   );
 }
-
-const styles = StyleSheet.create({
-  default: {
-    fontSize: 15,
-    lineHeight: 22,
-    fontWeight: '500',
-    letterSpacing: 0.1,
-  },
-  small: {
-    fontSize: 13,
-    lineHeight: 18,
-    fontWeight: '500',
-    letterSpacing: 0.2,
-  },
-  smallBold: {
-    fontSize: 13,
-    lineHeight: 18,
-    fontWeight: '700',
-    letterSpacing: 0.5,
-    textTransform: 'uppercase',
-  },
-  title: {
-    fontSize: 44,
-    fontWeight: '900',
-    lineHeight: 48,
-    letterSpacing: -1,
-  },
-  subtitle: {
-    fontSize: 28,
-    lineHeight: 34,
-    fontWeight: '800',
-    letterSpacing: -0.5,
-  },
-  link: {
-    lineHeight: 30,
-    fontSize: 14,
-  },
-  linkPrimary: {
-    lineHeight: 30,
-    fontSize: 14,
-    color: Brand.tactical,
-  },
-  code: {
-    fontFamily: Fonts.mono,
-    fontWeight: Platform.select({ android: '700' }) ?? '500',
-    fontSize: 12,
-    letterSpacing: 0.5,
-  },
-  // Monospace number display — used for pay amounts and data
-  data: {
-    fontFamily: Fonts.data,
-    fontSize: 15,
-    fontWeight: '700',
-    letterSpacing: 0.5,
-    color: Brand.tactical,
-  },
-  // All-caps tactical label
-  label: {
-    fontSize: 10,
-    fontWeight: '700',
-    letterSpacing: 1.5,
-    textTransform: 'uppercase',
-  },
-  // CLASSIFICATION banner text
-  classified: {
-    fontSize: 9,
-    fontWeight: '800',
-    letterSpacing: 3,
-    textTransform: 'uppercase',
-    color: Brand.classified,
-  },
-});

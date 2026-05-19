@@ -2,7 +2,10 @@ import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
   Alert,
+  Keyboard,
+  KeyboardAvoidingView,
   Modal,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -12,12 +15,11 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { RankInsignia } from '@/components/RankInsignia';
-import { RankVariantPicker } from '@/components/RankVariantPicker';
 import { TacticalCard } from '@/components/TacticalCard';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { BottomTabInset, Brand, Fonts, Spacing } from '@/constants/theme';
+import { useAppTheme } from '@/hooks/use-theme';
 import { getStateTaxInfo, US_STATES } from '@/data/state-tax';
 import { TIPS } from '@/data/tips';
 import { GradePicker } from '@/features/pcs/components/GradePicker';
@@ -38,7 +40,6 @@ import { KidGender, KidProfile } from '@/types/kids.types';
 import {
   BRANCH_LABELS,
   MilitaryBranch,
-  RankVariant,
   SPECIAL_PAY_LABELS,
   SPECIAL_PAY_RANGES,
   SpecialPayType,
@@ -233,9 +234,115 @@ const stateStyles = StyleSheet.create({
   check: { color: Brand.accent, fontSize: 16, width: 20, textAlign: 'center' },
 });
 
+// ── Special Pay Type Picker Modal ─────────────────────────────────────────────
+
+const PAY_TYPE_ICONS: Record<SpecialPayType, string> = {
+  language: '🗣️',
+  aviation_acip: '✈️',
+  submarine: '🌊',
+  diving: '🤿',
+  parachute: '🪂',
+  sdap: '⭐',
+  hazardous_hdip: '⚠️',
+  sea_pay: '⚓',
+  hostile_fire: '🪖',
+  nuclear: '⚛️',
+  foreign_language_bonus: '🌐',
+  assignment_incentive: '🎯',
+  other: '💰',
+};
+
+function PayTypePickerModal({
+  visible,
+  selected,
+  onSelect,
+  onClose,
+}: {
+  visible: boolean;
+  selected: SpecialPayType;
+  onSelect: (type: SpecialPayType) => void;
+  onClose: () => void;
+}) {
+  const ALL_TYPES = Object.keys(SPECIAL_PAY_LABELS) as SpecialPayType[];
+  return (
+    <Modal visible={visible} animationType="slide" presentationStyle="pageSheet">
+      <View style={ptStyles.bg}>
+        <SafeAreaView style={ptStyles.safe}>
+          <View style={ptStyles.header}>
+            <ThemedText style={ptStyles.title}>// SELECT PAY TYPE</ThemedText>
+            <Pressable onPress={onClose}>
+              <ThemedText style={ptStyles.done}>DONE</ThemedText>
+            </Pressable>
+          </View>
+          <ThemedText type="label" style={ptStyles.hint}>
+            Select the type of special or incentive pay to add.
+          </ThemedText>
+          <ScrollView showsVerticalScrollIndicator={false}>
+            {ALL_TYPES.map((type) => {
+              const isSelected = selected === type;
+              return (
+                <Pressable
+                  key={type}
+                  onPress={() => { onSelect(type); onClose(); }}
+                  style={[ptStyles.row, isSelected && ptStyles.rowSelected]}>
+                  <ThemedText style={ptStyles.icon}>{PAY_TYPE_ICONS[type]}</ThemedText>
+                  <View style={ptStyles.rowText}>
+                    <ThemedText style={[ptStyles.label, isSelected && { color: Brand.accent }]}>
+                      {SPECIAL_PAY_LABELS[type]}
+                    </ThemedText>
+                    <ThemedText type="label" style={ptStyles.range}>
+                      Typical: {SPECIAL_PAY_RANGES[type]}
+                    </ThemedText>
+                  </View>
+                  {isSelected && <ThemedText style={ptStyles.check}>✓</ThemedText>}
+                </Pressable>
+              );
+            })}
+          </ScrollView>
+        </SafeAreaView>
+      </View>
+    </Modal>
+  );
+}
+
+const ptStyles = StyleSheet.create({
+  bg: { flex: 1, backgroundColor: '#04080F' },
+  safe: { flex: 1, paddingHorizontal: Spacing.three, paddingTop: Spacing.three },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: Spacing.two,
+  },
+  title: { fontSize: 14, fontWeight: '800', letterSpacing: 1, color: '#C8D8E8' },
+  done: { fontSize: 12, fontWeight: '700', color: Brand.tactical, letterSpacing: 1 },
+  hint: { color: '#3D6080', fontSize: 10, marginBottom: Spacing.two },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
+    paddingVertical: Spacing.two + 2,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderColor: Brand.border,
+  },
+  rowSelected: { backgroundColor: Brand.accent + '10' },
+  icon: { fontSize: 22, width: 32, textAlign: 'center', lineHeight: 28 },
+  rowText: { flex: 1, gap: 2 },
+  label: { fontSize: 14, fontWeight: '600', color: '#C8D8E8' },
+  range: { color: '#3D6080', fontSize: 10 },
+  check: { color: Brand.accent, fontSize: 18 },
+});
+
 // ── Edit Service Info Modal ────────────────────────────────────────────────────
 
 function EditServiceModal({ visible, onClose }: { visible: boolean; onClose: () => void }) {
+  const appTheme = useAppTheme();
+  const isDark = appTheme === 'dark';
+  const modalBg   = isDark ? '#04080F' : '#F0F4F8';
+  const inputBg   = isDark ? '#080E1C' : '#FFFFFF';
+  const inputText = isDark ? '#C8D8E8' : '#0D1E2E';
+  const placeholder = '#4A6A84';
+
   const payGrade = useUserStore((s) => s.payGrade);
   const lastName = useUserStore((s) => s.lastName);
   const nickname = useUserStore((s) => s.nickname);
@@ -262,6 +369,7 @@ function EditServiceModal({ visible, onClose }: { visible: boolean; onClose: () 
   const [sgl, setSgl] = useState(sglOptOut);
 
   const save = () => {
+    Keyboard.dismiss();
     setServiceInfo(grade, ln, nn, y);
     setLocationFamily(station?.mhaZip ?? mhaZip ?? '', spouse, children);
     setPaySetup(tsp, dental, sgl);
@@ -270,25 +378,49 @@ function EditServiceModal({ visible, onClose }: { visible: boolean; onClose: () 
 
   return (
     <Modal visible={visible} animationType="slide" presentationStyle="pageSheet">
-      <View style={{ flex: 1, backgroundColor: '#04080F' }}>
+      <KeyboardAvoidingView
+        style={{ flex: 1, backgroundColor: modalBg }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <SafeAreaView style={{ flex: 1 }}>
           <View style={editStyles.header}>
-            <Pressable onPress={onClose}><ThemedText style={editStyles.cancel}>CANCEL</ThemedText></Pressable>
+            <Pressable onPress={() => { Keyboard.dismiss(); onClose(); }}>
+              <ThemedText style={editStyles.cancel}>CANCEL</ThemedText>
+            </Pressable>
             <ThemedText style={editStyles.title}>// EDIT SERVICE INFO</ThemedText>
             <Pressable onPress={save}><ThemedText style={editStyles.save}>SAVE</ThemedText></Pressable>
           </View>
-          <ScrollView contentContainerStyle={editStyles.content} showsVerticalScrollIndicator={false}>
+          <ScrollView
+            contentContainerStyle={editStyles.content}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="interactive">
             <ThemedText type="label" style={editStyles.fieldLabel}>PAY GRADE</ThemedText>
             <GradePicker selected={grade} onSelect={setGrade} />
 
             <ThemedText type="label" style={editStyles.fieldLabel}>LAST NAME</ThemedText>
-            <View style={editStyles.inputWrap}>
-              <TextInput value={ln} onChangeText={setLn} placeholder="SMITH" placeholderTextColor="#2A4A60" style={editStyles.input} autoCapitalize="characters" />
+            <View style={[editStyles.inputWrap, { backgroundColor: inputBg }]}>
+              <TextInput
+                value={ln}
+                onChangeText={setLn}
+                placeholder="SMITH"
+                placeholderTextColor={placeholder}
+                style={[editStyles.input, { color: inputText }]}
+                autoCapitalize="characters"
+                returnKeyType="next"
+              />
             </View>
 
             <ThemedText type="label" style={editStyles.fieldLabel}>NICKNAME (OPTIONAL)</ThemedText>
-            <View style={editStyles.inputWrap}>
-              <TextInput value={nn} onChangeText={setNn} placeholder="Maverick" placeholderTextColor="#2A4A60" style={editStyles.input} />
+            <View style={[editStyles.inputWrap, { backgroundColor: inputBg }]}>
+              <TextInput
+                value={nn}
+                onChangeText={setNn}
+                placeholder="Maverick"
+                placeholderTextColor={placeholder}
+                style={[editStyles.input, { color: inputText }]}
+                returnKeyType="done"
+                onSubmitEditing={Keyboard.dismiss}
+              />
             </View>
 
             <NumberStepper label="Years of Service" value={y} min={0} max={40} onChange={setY} unit="yrs" />
@@ -314,7 +446,7 @@ function EditServiceModal({ visible, onClose }: { visible: boolean; onClose: () 
             </View>
           </ScrollView>
         </SafeAreaView>
-      </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }
@@ -339,8 +471,6 @@ export default function ProfileScreen() {
 
   const branch = useUserStore((s) => s.branch);
   const payGrade = useUserStore((s) => s.payGrade);
-  const rankVariant = useUserStore((s) => s.rankVariant);
-  const setRankVariant = useUserStore((s) => s.setRankVariant);
   const lastName = useUserStore((s) => s.lastName);
   const nickname = useUserStore((s) => s.nickname);
   const yos = useUserStore((s) => s.yos);
@@ -364,6 +494,7 @@ export default function ProfileScreen() {
   const [showEditService, setShowEditService] = useState(false);
   const [showStatePicker, setShowStatePicker] = useState(false);
   const [showAddPay, setShowAddPay] = useState(false);
+  const [showPayTypePicker, setShowPayTypePicker] = useState(false);
   const [selectedPayType, setSelectedPayType] = useState<SpecialPayType>('language');
   const [payAmountInput, setPayAmountInput] = useState('');
   const [showAddKid, setShowAddKid] = useState(false);
@@ -380,7 +511,7 @@ export default function ProfileScreen() {
     useKidsStore.getState().hydrate();
   }, []);
 
-  const rankAbbrev = getRankAbbrev(branch, payGrade, rankVariant);
+  const rankAbbrev = getRankAbbrev(branch, payGrade);
   const displayName = nickname || lastName?.toUpperCase() || 'UNNAMED';
   const stateInfo = getStateTaxInfo(stateResidence);
   const totalSpecialPay = specialPays.reduce((sum, p) => sum + p.monthlyAmount, 0);
@@ -431,7 +562,9 @@ export default function ProfileScreen() {
     <ThemedView style={styles.container}>
       <ScrollView
         contentContainerStyle={[styles.content, { paddingBottom: BottomTabInset + Spacing.five }]}
-        showsVerticalScrollIndicator={false}>
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag">
         <SafeAreaView>
           <ThemedText type="label" style={styles.eyebrow}>// PERSONNEL FILE</ThemedText>
           <ThemedText style={styles.heading}>PROFILE</ThemedText>
@@ -440,7 +573,6 @@ export default function ProfileScreen() {
         {/* Identity Card */}
         <TacticalCard accentColor={Brand.accent} style={styles.identityCard}>
           <View style={styles.identityTop}>
-            <RankInsignia branch={branch} grade={payGrade} variant={rankVariant} size="md" />
             <View style={styles.identityLeft}>
               <ThemedText type="label" style={styles.identityRank}>{rankAbbrev || '—'}</ThemedText>
               <ThemedText style={styles.identityName}>{displayName}</ThemedText>
@@ -452,13 +584,6 @@ export default function ProfileScreen() {
               <ThemedText type="label" style={styles.editBtnText}>EDIT ›</ThemedText>
             </Pressable>
           </View>
-          {/* Variant picker shown inline when a dual-rank grade is set */}
-          <RankVariantPicker
-            branch={branch}
-            grade={payGrade}
-            selected={rankVariant ?? 'default'}
-            onSelect={(v: RankVariant) => setRankVariant(v)}
-          />
           <View style={styles.identityStats}>
             <View style={styles.identityStat}>
               <ThemedText style={[styles.identityStatVal, { fontFamily: Fonts.data }]}>{yos}</ThemedText>
@@ -539,22 +664,22 @@ export default function ProfileScreen() {
           {showAddPay && (
             <View style={styles.addPayForm}>
               <ThemedText type="label" style={styles.formLabel}>PAY TYPE</ThemedText>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginHorizontal: -Spacing.three }}>
-                <View style={{ flexDirection: 'row', gap: 6, paddingHorizontal: Spacing.three }}>
-                  {(Object.keys(SPECIAL_PAY_LABELS) as SpecialPayType[]).map((type) => (
-                    <Pressable
-                      key={type}
-                      onPress={() => setSelectedPayType(type)}
-                      style={[styles.payChip, selectedPayType === type && styles.payChipSelected]}>
-                      <ThemedText type="label" style={[styles.payChipText, selectedPayType === type && { color: '#04080F' }]}>
-                        {SPECIAL_PAY_LABELS[type]}
-                      </ThemedText>
-                    </Pressable>
-                  ))}
+              {/* Dropdown button to open pay type picker */}
+              <Pressable
+                onPress={() => setShowPayTypePicker(true)}
+                style={styles.payTypeDropdown}>
+                <View style={{ flex: 1 }}>
+                  <ThemedText style={styles.payTypeDropdownLabel}>
+                    {SPECIAL_PAY_LABELS[selectedPayType]}
+                  </ThemedText>
+                  <ThemedText type="label" style={styles.payTypeDropdownRange}>
+                    Typical: {SPECIAL_PAY_RANGES[selectedPayType]}
+                  </ThemedText>
                 </View>
-              </ScrollView>
-              <ThemedText type="label" style={styles.rangeHint}>Typical: {SPECIAL_PAY_RANGES[selectedPayType]}</ThemedText>
-              <ThemedText type="label" style={styles.formLabel}>MONTHLY AMOUNT ($)</ThemedText>
+                <ThemedText style={styles.payTypeDropdownChevron}>▼</ThemedText>
+              </Pressable>
+
+              <ThemedText type="label" style={[styles.formLabel, { marginTop: Spacing.two }]}>MONTHLY AMOUNT ($)</ThemedText>
               <View style={styles.numpadGrid}>
                 {['1','2','3','4','5','6','7','8','9','','0','⌫'].map((key) => (
                   <Pressable
@@ -693,6 +818,12 @@ export default function ProfileScreen() {
         onClose={() => setShowStatePicker(false)}
       />
       <AddKidModal visible={showAddKid} onClose={() => setShowAddKid(false)} onAdd={addKid} />
+      <PayTypePickerModal
+        visible={showPayTypePicker}
+        selected={selectedPayType}
+        onSelect={setSelectedPayType}
+        onClose={() => setShowPayTypePicker(false)}
+      />
     </ThemedView>
   );
 }
@@ -718,7 +849,7 @@ const styles = StyleSheet.create({
   identityStats: { flexDirection: 'row', alignItems: 'center' },
   identityStat: { flex: 1, alignItems: 'center', gap: 2 },
   identityStatVal: { fontSize: 18, fontWeight: '800', color: '#C8D8E8' },
-  identityStatLabel: { color: '#3D6080', fontSize: 7 },
+  identityStatLabel: { color: '#6B92B0', fontSize: 10 },
   identityDivider: { width: 1, height: 30, backgroundColor: Brand.border },
 
   sectionCard: { gap: Spacing.two },
@@ -731,9 +862,9 @@ const styles = StyleSheet.create({
   stateTaxNote: { color: Brand.tactical, fontSize: 9 },
   stateChevron: { color: Brand.accent, fontSize: 20, paddingLeft: Spacing.two },
   stateDivider: { height: StyleSheet.hairlineWidth, backgroundColor: Brand.border, marginVertical: Spacing.one },
-  stateDisclaimer: { color: '#3D6080', fontSize: 8, lineHeight: 13 },
+  stateDisclaimer: { color: '#6B92B0', fontSize: 11, lineHeight: 16 },
 
-  emptyText: { color: '#3D6080', fontSize: 10, lineHeight: 15, textAlign: 'center', paddingVertical: Spacing.two },
+  emptyText: { color: '#6B92B0', fontSize: 11, lineHeight: 17, textAlign: 'center', paddingVertical: Spacing.two },
 
   payRow: { flexDirection: 'row', alignItems: 'center' },
   payLabel: { fontSize: 14, fontWeight: '600', color: '#C8D8E8' },
@@ -743,9 +874,22 @@ const styles = StyleSheet.create({
 
   addPayForm: { gap: Spacing.two },
   formLabel: { color: '#3D6080', fontSize: 9 },
-  payChip: { paddingHorizontal: Spacing.two, paddingVertical: Spacing.one, borderRadius: 99, borderWidth: 1, borderColor: Brand.border },
-  payChipSelected: { backgroundColor: Brand.accent, borderColor: Brand.accent },
-  payChipText: { fontSize: 11, color: '#C8D8E8' },
+
+  payTypeDropdown: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#050B14',
+    borderWidth: 1,
+    borderColor: Brand.border,
+    borderRadius: 6,
+    paddingHorizontal: Spacing.two + 2,
+    paddingVertical: Spacing.two,
+    gap: Spacing.two,
+  },
+  payTypeDropdownLabel: { fontSize: 14, fontWeight: '600', color: '#C8D8E8' },
+  payTypeDropdownRange: { color: '#3D6080', fontSize: 9, marginTop: 2 },
+  payTypeDropdownChevron: { fontSize: 12, color: Brand.accent },
+
   rangeHint: { color: '#3D6080', fontSize: 9, fontStyle: 'italic' },
   numpadGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.one },
   numpadKey: { width: '30.5%', paddingVertical: Spacing.two, alignItems: 'center', borderRadius: 4, backgroundColor: 'rgba(255,255,255,0.05)' },
@@ -774,7 +918,7 @@ const styles = StyleSheet.create({
   statsRow: { flexDirection: 'row', gap: Spacing.two },
   statCard: { flex: 1, alignItems: 'center', gap: 4 },
   statVal: { fontSize: 24, fontWeight: '800', color: Brand.accent },
-  statLabel: { color: '#3D6080', fontSize: 7 },
+  statLabel: { color: '#6B92B0', fontSize: 10 },
 
   aboutRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   aboutLabel: { color: '#4D7A9A', fontSize: 10 },

@@ -106,6 +106,9 @@ export interface UserPreferences {
   spouseMonthlyIncome: number;
   // Home screen quick-access tile IDs (4 items)
   quickAccessIds: string[];
+  // Appearance
+  appTheme: 'dark' | 'light';
+  fontScale: number; // 1.0 | 1.15 | 1.3 | 1.5
 }
 
 // ─── Special Pays ─────────────────────────────────────────────────────────────

@@ -2,7 +2,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { Tabs } from 'expo-router';
 import React, { useEffect } from 'react';
-import { useColorScheme } from 'react-native';
 
 import { AnimatedSplashOverlay } from '@/components/animated-icon';
 import { DisclaimerModal } from '@/components/DisclaimerModal';
@@ -12,9 +11,9 @@ import { useTipsStore } from '@/store/tips.store';
 import { useUserStore } from '@/store/user.store';
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
   const hydrated = useUserStore((s) => s.hydrated);
   const onboarded = useUserStore((s) => s.onboarded);
+  const appTheme = useUserStore((s) => s.appTheme ?? 'dark');
 
   useEffect(() => {
     useTipsStore.getState().hydrate();
@@ -26,7 +25,7 @@ export default function TabLayout() {
   if (!onboarded) return <OnboardingFlow />;
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+    <ThemeProvider value={appTheme === 'light' ? DefaultTheme : DarkTheme}>
       <AnimatedSplashOverlay />
       <DisclaimerModal />
       <Tabs
@@ -37,6 +36,9 @@ export default function TabLayout() {
             backgroundColor: '#04080F',
             borderTopColor: '#0D1E2E',
             borderTopWidth: 1,
+            height: 64,
+            paddingBottom: 8,
+            paddingTop: 6,
           },
           tabBarLabelStyle: {
             fontFamily: 'monospace',
@@ -57,20 +59,20 @@ export default function TabLayout() {
           }}
         />
         <Tabs.Screen
+          name="budget"
+          options={{
+            title: 'BUDGET',
+            tabBarIcon: ({ color, size }) => (
+              <Ionicons name="wallet-outline" size={size} color={color} />
+            ),
+          }}
+        />
+        <Tabs.Screen
           name="browse"
           options={{
             title: 'KIDS',
             tabBarIcon: ({ color, size }) => (
               <Ionicons name="people-outline" size={size} color={color} />
-            ),
-          }}
-        />
-        <Tabs.Screen
-          name="chat"
-          options={{
-            title: 'AI',
-            tabBarIcon: ({ color, size }) => (
-              <Ionicons name="hardware-chip-outline" size={size} color={color} />
             ),
           }}
         />
@@ -84,10 +86,10 @@ export default function TabLayout() {
           }}
         />
         {/* ── Non-tab screens (hidden from tab bar) ──── */}
+        <Tabs.Screen name="chat"                  options={{ href: null }} />
         <Tabs.Screen name="category/[slug]"       options={{ href: null }} />
         <Tabs.Screen name="kids/[id]"             options={{ href: null }} />
         <Tabs.Screen name="tip/[id]"              options={{ href: null }} />
-        <Tabs.Screen name="budget"                options={{ href: null }} />
         <Tabs.Screen name="credit-score"          options={{ href: null }} />
         <Tabs.Screen name="dity-calculator"       options={{ href: null }} />
         <Tabs.Screen name="explore"               options={{ href: null }} />

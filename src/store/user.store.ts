@@ -28,6 +28,8 @@ const DEFAULTS: UserPreferences = {
   sglOptOut: false,
   stateResidence: undefined,
   quickAccessIds: ['budget', 'credit', 'pcs', 'va_loan'],
+  appTheme: 'dark',
+  fontScale: 1.0,
 };
 
 interface UserState extends UserPreferences {
@@ -47,6 +49,8 @@ interface UserState extends UserPreferences {
   removeSpecialPay: (id: string) => void;
   setQuickAccessIds: (ids: string[]) => void;
   setSpouseMonthlyIncome: (amount: number) => void;
+  setAppTheme: (theme: 'dark' | 'light') => void;
+  setFontScale: (scale: number) => void;
 }
 
 function save(prefs: UserPreferences) {
@@ -77,6 +81,8 @@ function snapshot(get: () => UserState): UserPreferences {
     stateResidence: s.stateResidence,
     quickAccessIds: s.quickAccessIds,
     spouseMonthlyIncome: s.spouseMonthlyIncome,
+    appTheme: s.appTheme,
+    fontScale: s.fontScale,
   };
 }
 
@@ -170,5 +176,15 @@ export const useUserStore = create<UserState>((set, get) => ({
   setSpouseMonthlyIncome: (spouseMonthlyIncome) => {
     set({ spouseMonthlyIncome });
     save({ ...snapshot(get), spouseMonthlyIncome });
+  },
+
+  setAppTheme: (appTheme) => {
+    set({ appTheme });
+    save({ ...snapshot(get), appTheme });
+  },
+
+  setFontScale: (fontScale) => {
+    set({ fontScale });
+    save({ ...snapshot(get), fontScale });
   },
 }));

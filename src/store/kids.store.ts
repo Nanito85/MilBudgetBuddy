@@ -14,9 +14,10 @@ interface KidsState {
   addGoal: (kidId: string, name: string, emoji: string, targetAmount: number) => void;
   updateGoalProgress: (kidId: string, goalId: string, amount: number) => void;
   removeGoal: (kidId: string, goalId: string) => void;
+  updateGoal: (kidId: string, goalId: string, name: string, emoji: string, targetAmount: number, currentAmount: number) => void;
   addChore: (kidId: string, name: string, value: number, frequency: ChoreFrequency) => void;
   completeChore: (kidId: string, choreId: string, goalId: string) => void;
-  uncompleteChore: (kidId: string, choreId: string) => void;
+  uncompleteChore: (kidId: string, choreId: string, goalId?: string) => void;
   removeChore: (kidId: string, choreId: string) => void;
 }
 
@@ -100,6 +101,22 @@ export const useKidsStore = create<KidsState>((set, get) => ({
     saveKids(kids);
   },
 
+  updateGoal: (kidId, goalId, name, emoji, targetAmount, currentAmount) => {
+    const kids = get().kids.map((k) => {
+      if (k.id !== kidId) return k;
+      return {
+        ...k,
+        goals: k.goals.map((g) =>
+          g.id === goalId
+            ? { ...g, name, emoji, targetAmount, currentAmount: Math.min(currentAmount, targetAmount) }
+            : g,
+        ),
+      };
+    });
+    set({ kids });
+    saveKids(kids);
+  },
+
   removeGoal: (kidId, goalId) => {
     const kids = get().kids.map((k) =>
       k.id === kidId ? { ...k, goals: k.goals.filter((g) => g.id !== goalId) } : k,
@@ -139,21 +156,26 @@ export const useKidsStore = create<KidsState>((set, get) => ({
     saveKids(kids);
   },
 
-  uncompleteChore: (kidId, choreId) => {
+  uncompleteChore: (kidId, choreId, goalId) => {
     const kids = get().kids.map((k) => {
       if (k.id !== kidId) return k;
       const chore = k.chores.find((c) => c.id === choreId);
       if (!chore) return k;
       const dateToRemove = getCompletedDateInPeriod(chore.completedDates, chore.frequency ?? 'daily');
       if (!dateToRemove) return k;
-      return {
-        ...k,
-        chores: k.chores.map((c) =>
-          c.id === choreId
-            ? { ...c, completedDates: c.completedDates.filter((d) => d !== dateToRemove) }
-            : c,
-        ),
-      };
+      const updatedChores = k.chores.map((c) =>
+        c.id === choreId
+          ? { ...c, completedDates: c.completedDates.filter((d) => d !== dateToRemove) }
+          : c,
+      );
+      const updatedGoals = goalId
+        ? k.goals.map((g) =>
+            g.id === goalId
+              ? { ...g, currentAmount: Math.max(0, g.currentAmount - chore.value) }
+              : g,
+          )
+        : k.goals;
+      return { ...k, chores: updatedChores, goals: updatedGoals };
     });
     set({ kids });
     saveKids(kids);
