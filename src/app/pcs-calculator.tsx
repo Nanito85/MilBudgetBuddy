@@ -14,35 +14,35 @@ import { calcPCS } from '@/features/pcs/utils/pcsCalc';
 import { BottomTabInset, Brand, Fonts, Spacing } from '@/constants/theme';
 import { getBahRate } from '@/data/bah-rates';
 
-// ── DLA Tables (FY2025) ────────────────────────────────────────────────────────
+// ── DLA Tables (FY2026, effective Jan 1 2026) ──────────────────────────────────
 const DLA: Record<string, { noDep: number; withDep: number }> = {
-  E1: { noDep: 748.84,  withDep: 1198.14 },
-  E2: { noDep: 748.84,  withDep: 1198.14 },
-  E3: { noDep: 748.84,  withDep: 1198.14 },
-  E4: { noDep: 748.84,  withDep: 1198.14 },
-  E5: { noDep: 748.84,  withDep: 1198.14 },
-  E6: { noDep: 939.69,  withDep: 1502.91 },
-  E7: { noDep: 939.69,  withDep: 1502.91 },
-  E8: { noDep: 939.69,  withDep: 1502.91 },
-  E9: { noDep: 939.69,  withDep: 1502.91 },
-  W1: { noDep: 939.69,  withDep: 1502.91 },
-  W2: { noDep: 939.69,  withDep: 1502.91 },
-  W3: { noDep: 939.69,  withDep: 1502.91 },
-  W4: { noDep: 939.69,  withDep: 1502.91 },
-  W5: { noDep: 939.69,  withDep: 1502.91 },
-  O1: { noDep: 939.69,  withDep: 1502.91 },
-  O2: { noDep: 939.69,  withDep: 1502.91 },
-  O3: { noDep: 939.69,  withDep: 1502.91 },
-  O4: { noDep: 1150.72, withDep: 1809.20 },
-  O5: { noDep: 1150.72, withDep: 1809.20 },
-  O6: { noDep: 1150.72, withDep: 1809.20 },
-  O7: { noDep: 1150.72, withDep: 1809.20 },
-  O8: { noDep: 1150.72, withDep: 1809.20 },
-  O9: { noDep: 1150.72, withDep: 1809.20 },
-  O10: { noDep: 1150.72, withDep: 1809.20 },
+  E1: { noDep: 782.54,  withDep: 1252.06 },
+  E2: { noDep: 782.54,  withDep: 1252.06 },
+  E3: { noDep: 782.54,  withDep: 1252.06 },
+  E4: { noDep: 782.54,  withDep: 1252.06 },
+  E5: { noDep: 782.54,  withDep: 1252.06 },
+  E6: { noDep: 981.97,  withDep: 1570.54 },
+  E7: { noDep: 981.97,  withDep: 1570.54 },
+  E8: { noDep: 981.97,  withDep: 1570.54 },
+  E9: { noDep: 981.97,  withDep: 1570.54 },
+  W1: { noDep: 981.97,  withDep: 1570.54 },
+  W2: { noDep: 981.97,  withDep: 1570.54 },
+  W3: { noDep: 981.97,  withDep: 1570.54 },
+  W4: { noDep: 981.97,  withDep: 1570.54 },
+  W5: { noDep: 981.97,  withDep: 1570.54 },
+  O1: { noDep: 981.97,  withDep: 1570.54 },
+  O2: { noDep: 981.97,  withDep: 1570.54 },
+  O3: { noDep: 981.97,  withDep: 1570.54 },
+  O4: { noDep: 1202.50, withDep: 1890.61 },
+  O5: { noDep: 1202.50, withDep: 1890.61 },
+  O6: { noDep: 1202.50, withDep: 1890.61 },
+  O7: { noDep: 1202.50, withDep: 1890.61 },
+  O8: { noDep: 1202.50, withDep: 1890.61 },
+  O9: { noDep: 1202.50, withDep: 1890.61 },
+  O10: { noDep: 1202.50, withDep: 1890.61 },
 };
 
-const MALT_RATE = 0.21; // FY2025, $/mile per vehicle
+const MALT_RATE = 0.21; // FY2026, $/mile per vehicle
 
 const fmt = (n: number) => `$${Math.round(n).toLocaleString()}`;
 

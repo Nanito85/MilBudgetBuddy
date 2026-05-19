@@ -9,13 +9,25 @@ export const Colors = {
     backgroundElement: '#FFFFFF',
     backgroundSelected: '#D8E8F4',
     textSecondary: '#4A6A84',
+    // Extended semantic colors for light mode
+    cardInner: '#EEF3F8',
+    inputBg: '#E4ECF4',
+    border: '#B8CDD8',
+    textHint: '#5A7A9A',
+    textMuted: '#7A9AB0',
   },
   dark: {
     text: '#C8D8E8',
     background: '#04080F',
     backgroundElement: '#080E1C',
     backgroundSelected: '#0D1A2E',
-    textSecondary: '#3D6080',
+    textSecondary: '#6B92B0',
+    // Extended semantic colors for dark mode
+    cardInner: '#04080F',
+    inputBg: '#04080F',
+    border: '#1A3A5C',
+    textHint: '#4D7A9A',
+    textMuted: '#3D6080',
   },
 } as const;
 

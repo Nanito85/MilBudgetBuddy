@@ -119,7 +119,7 @@ const CALCULATORS: MenuItem[] = [
     id: 'pay_chart',
     icon: '💰',
     title: 'Pay Chart',
-    description: 'FY2025 basic pay lookup by grade and years of service',
+    description: 'FY2026 basic pay lookup by grade and years of service',
     route: '/pay-chart',
     available: true,
     badge: 'New',
@@ -435,18 +435,8 @@ export default function MoreScreen() {
           ))}
         </View>
 
-        {/* Budget + Net Worth */}
-        <SectionLabel text="BUDGET" />
-        <Pressable
-          onPress={() => router.push('/budget' as any)}
-          style={({ pressed }) => [styles.budgetShortcut, pressed && { opacity: 0.7 }]}>
-          <ThemedText style={styles.budgetIcon}>💰</ThemedText>
-          <View style={styles.budgetText}>
-            <ThemedText style={styles.budgetTitle}>MONTHLY BUDGET</ThemedText>
-            <ThemedText type="label" style={styles.budgetDesc}>Set and track your spending categories</ThemedText>
-          </View>
-          <ThemedText style={styles.chevron}>›</ThemedText>
-        </Pressable>
+        {/* Net Worth */}
+        <SectionLabel text="FINANCIAL TRACKING" />
         <Pressable
           onPress={() => router.push('/net-worth' as any)}
           style={({ pressed }) => [styles.budgetShortcut, { borderColor: Brand.tactical + '40' }, pressed && { opacity: 0.7 }]}>
@@ -498,13 +488,13 @@ const styles = StyleSheet.create({
   profileRight: { alignItems: 'flex-end' },
   profileEditHint: { color: Brand.tactical, fontSize: 8 },
 
-  eyebrow: { color: Brand.tactical, fontSize: 9, marginTop: Spacing.two },
+  eyebrow: { color: Brand.tactical, fontSize: 10, marginTop: Spacing.two },
   heading: { fontSize: 30, fontWeight: '900', letterSpacing: 1, color: '#C8D8E8', marginTop: 4 },
-  subhead: { color: '#3D6080', fontSize: 9, marginTop: 2 },
+  subhead: { color: '#6B92B0', fontSize: 10, marginTop: 2 },
 
   sectionLabelRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
   sectionLine: { flex: 1, height: StyleSheet.hairlineWidth, backgroundColor: Brand.border },
-  sectionLabel: { color: '#3D6080', fontSize: 9 },
+  sectionLabel: { color: '#6B92B0', fontSize: 10, letterSpacing: 0.5 },
 
   list: { gap: Spacing.two },
   card: {
@@ -530,8 +520,8 @@ const styles = StyleSheet.create({
   cardIcon: { fontSize: 22 },
   cardText: { flex: 1, gap: 2, paddingVertical: Spacing.two },
   cardTitle: { fontSize: 12, fontWeight: '800', letterSpacing: 0.5, color: '#C8D8E8' },
-  cardTitleLocked: { color: '#3D6080' },
-  cardDesc: { color: '#4D7A9A', fontSize: 9, lineHeight: 13 },
+  cardTitleLocked: { color: '#6B92B0' },
+  cardDesc: { color: '#6B92B0', fontSize: 11, lineHeight: 15 },
   badge: {
     paddingHorizontal: 6,
     paddingVertical: 2,
@@ -540,9 +530,9 @@ const styles = StyleSheet.create({
   },
   badgeNew: { backgroundColor: Brand.accent + '20' },
   badgeSoon: { backgroundColor: Brand.border },
-  badgeText: { fontSize: 7, fontWeight: '800', letterSpacing: 0.5 },
+  badgeText: { fontSize: 9, fontWeight: '800', letterSpacing: 0.5 },
   badgeTextNew: { color: Brand.accent },
-  badgeTextSoon: { color: '#3D6080' },
+  badgeTextSoon: { color: '#6B92B0' },
   chevron: { color: Brand.accent, fontSize: 20, paddingRight: Spacing.two },
 
   budgetShortcut: {
@@ -558,5 +548,5 @@ const styles = StyleSheet.create({
   budgetIcon: { fontSize: 24 },
   budgetText: { flex: 1, gap: 2 },
   budgetTitle: { fontSize: 13, fontWeight: '800', letterSpacing: 0.5, color: '#C8D8E8' },
-  budgetDesc: { color: '#4D7A9A', fontSize: 9 },
+  budgetDesc: { color: '#6B92B0', fontSize: 11 },
 });
