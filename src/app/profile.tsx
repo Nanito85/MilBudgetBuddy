@@ -142,7 +142,7 @@ const modalStyles = StyleSheet.create({
   genderRow: { flexDirection: 'row', gap: Spacing.two },
   genderBtn: { flex: 1, borderWidth: 1.5, borderColor: Brand.border, borderRadius: 4, padding: Spacing.three, alignItems: 'center', gap: 4 },
   genderBtnActive: { borderColor: Brand.accent },
-  genderEmoji: { fontSize: 28 },
+  genderEmoji: { fontSize: 32, lineHeight: 40 },
   genderLabel: { fontSize: 9, fontWeight: '800', letterSpacing: 1, color: '#3D6080' },
   addBtn: { backgroundColor: Brand.accent, borderRadius: 4, padding: Spacing.three, alignItems: 'center', marginTop: 'auto' },
   addBtnText: { color: '#04080F', fontWeight: '900', fontSize: 13, letterSpacing: 1 },
@@ -935,7 +935,7 @@ const styles = StyleSheet.create({
   addRowBtnText: { color: Brand.tactical, fontSize: 10 },
 
   kidRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
-  kidEmoji: { fontSize: 22, width: 32, textAlign: 'center' },
+  kidEmoji: { fontSize: 24, width: 36, lineHeight: 32, textAlign: 'center' },
   kidName: { fontSize: 13, fontWeight: '800', letterSpacing: 0.3, color: '#C8D8E8' },
   kidMeta: { color: '#3D6080', fontSize: 9 },
   kidChevron: { color: '#4D7A9A', fontSize: 20 },
