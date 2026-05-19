@@ -109,10 +109,10 @@ const styles = StyleSheet.create({
   },
   countdownRow: { flexDirection: 'row', alignItems: 'flex-end', gap: Spacing.one },
   countdownBig: {
-    fontSize: 36,
+    fontSize: 26,
     fontWeight: '900',
     color: '#C8D8E8',
-    lineHeight: 40,
+    lineHeight: 30,
   },
   countdownSub: { gap: 1, paddingBottom: 4 },
   countdownUnit: { fontSize: 10, fontWeight: '800', color: Brand.tactical, letterSpacing: 1 },

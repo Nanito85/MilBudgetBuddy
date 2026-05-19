@@ -439,7 +439,7 @@ const styles = StyleSheet.create({
   taxNote: { lineHeight: 18 },
   resultsCard: { borderRadius: Spacing.three, padding: Spacing.three, gap: Spacing.three },
   bigResultRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
-  bigValue: { fontSize: 32, fontWeight: '800', lineHeight: 38 },
+  bigValue: { fontSize: 26, fontWeight: '800', lineHeight: 30 },
   afterTaxBlock: { alignItems: 'flex-end' },
   breakdownSection: { gap: Spacing.two },
   totalDivider: { height: StyleSheet.hairlineWidth, backgroundColor: 'rgba(128,128,128,0.2)' },

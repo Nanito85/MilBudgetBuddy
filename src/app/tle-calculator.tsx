@@ -480,7 +480,7 @@ const styles = StyleSheet.create({
 
   resultsCard: { borderRadius: Spacing.three, padding: Spacing.three, gap: Spacing.three },
   bigRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
-  bigValue: { fontSize: 32, fontWeight: '800', lineHeight: 38 },
+  bigValue: { fontSize: 26, fontWeight: '800', lineHeight: 30 },
   dailyBlock: { alignItems: 'flex-end' },
   dailyValue: { fontSize: 18, fontWeight: '700' },
   textRight: { textAlign: 'right' },

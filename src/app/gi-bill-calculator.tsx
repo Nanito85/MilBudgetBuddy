@@ -363,7 +363,7 @@ const styles = StyleSheet.create({
 
   resultCard: { borderRadius: 4, padding: Spacing.three, gap: Spacing.two, borderLeftWidth: 3 },
   resultEyebrow: { fontSize: 8, fontWeight: '800', color: Brand.tactical, letterSpacing: 1.5 },
-  resultBig: { fontSize: 36, fontWeight: '900', color: '#C8D8E8' },
+  resultBig: { fontSize: 26, fontWeight: '900', color: '#C8D8E8' },
 
   breakdown: { gap: Spacing.one + 2 },
   breakdownRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },

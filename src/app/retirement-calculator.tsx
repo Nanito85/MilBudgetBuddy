@@ -301,7 +301,7 @@ const styles = StyleSheet.create({
   payPreview: { fontSize: 20, fontWeight: '700', color: Brand.primary },
   quickStats: { flexDirection: 'row', gap: Spacing.two },
   quickStat: { flex: 1, borderRadius: Spacing.three, padding: Spacing.three, alignItems: 'center', gap: Spacing.one },
-  quickStatVal: { fontSize: 28, fontWeight: '800', lineHeight: 34 },
+  quickStatVal: { fontSize: 26, fontWeight: '800', lineHeight: 30 },
   systemToggle: { flexDirection: 'row', gap: Spacing.two },
   systemBtn: {
     flex: 1,

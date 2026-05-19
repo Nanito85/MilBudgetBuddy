@@ -446,7 +446,7 @@ const styles = StyleSheet.create({
 
   resultCard: { borderRadius: 4, padding: Spacing.three, gap: Spacing.two, borderLeftWidth: 3 },
   resultEyebrow: { fontSize: 8, fontWeight: '800', color: '#4D7A9A', letterSpacing: 1.5 },
-  resultBig: { fontSize: 32, fontWeight: '900' },
+  resultBig: { fontSize: 26, fontWeight: '900' },
   resultSub: { fontSize: 11, color: '#4D7A9A', marginTop: -6 },
   resultRows: { gap: Spacing.one },
   resultRow: { flexDirection: 'row', justifyContent: 'space-between' },

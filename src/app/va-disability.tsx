@@ -330,10 +330,10 @@ const styles = StyleSheet.create({
   resultEyebrow: { fontSize: 8, fontWeight: '800', color: '#4D7A9A', letterSpacing: 1.5 },
   resultRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
   resultExact: { fontSize: 14, color: '#4D7A9A' },
-  resultRounded: { fontSize: 36, fontWeight: '900' },
+  resultRounded: { fontSize: 26, fontWeight: '900' },
   resultRight: { alignItems: 'flex-end', gap: 2 },
   resultMonthlyLabel: { fontSize: 8, fontWeight: '800', color: '#4D7A9A', letterSpacing: 1 },
-  resultMonthly: { fontSize: 28, fontWeight: '900' },
+  resultMonthly: { fontSize: 26, fontWeight: '900' },
   resultAnnual: { fontSize: 11, color: '#4D7A9A' },
 
   breakdownBox: { backgroundColor: '#04080F', borderRadius: 4, padding: Spacing.two, gap: 4 },

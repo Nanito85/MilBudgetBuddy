@@ -435,7 +435,7 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.two,
   },
   summaryEyebrow: { fontSize: 8, fontWeight: '800', letterSpacing: 1.5, color: '#4D7A9A' },
-  summaryTotal: { fontSize: 34, fontWeight: '900', lineHeight: 40 },
+  summaryTotal: { fontSize: 26, fontWeight: '900', lineHeight: 32 },
   barRow: { marginTop: Spacing.two },
   barTrack: { height: 6, backgroundColor: Brand.danger + '40', borderRadius: 3, overflow: 'hidden' },
   barFill: { height: '100%', borderRadius: 3 },
@@ -496,7 +496,7 @@ const styles = StyleSheet.create({
   // History mode
   cardLabel: { fontSize: 9, fontWeight: '800', color: '#4D7A9A', letterSpacing: 1 },
   changeCard: { borderRadius: 4, padding: Spacing.three, gap: Spacing.one },
-  changeValue: { fontSize: 32, fontWeight: '900', lineHeight: 38 },
+  changeValue: { fontSize: 26, fontWeight: '900', lineHeight: 32 },
 
   chartCard: { borderRadius: 4, padding: Spacing.three, gap: Spacing.two },
   chartWrap: { flexDirection: 'row', alignItems: 'flex-end', gap: Spacing.two, paddingVertical: Spacing.one },

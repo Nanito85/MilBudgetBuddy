@@ -228,8 +228,8 @@ const styles = StyleSheet.create({
 
   resultCard: { borderRadius: 4, padding: Spacing.three, gap: Spacing.one, borderLeftWidth: 3 },
   resultEyebrow: { fontSize: 9, fontWeight: '800', color: Brand.tactical, letterSpacing: 1.5 },
-  resultMonthly: { fontSize: 44, fontWeight: '900', color: '#C8D8E8', lineHeight: 48 },
-  resultUnit: { fontSize: 18, fontWeight: '400', color: '#4D7A9A' },
+  resultMonthly: { fontSize: 26, fontWeight: '900', color: '#C8D8E8', lineHeight: 32 },
+  resultUnit: { fontSize: 13, fontWeight: '400', color: '#4D7A9A' },
   resultAnnual: { fontSize: 16, color: '#4D7A9A', fontWeight: '600' },
   resultNote: { fontSize: 10, color: '#3D6080', marginTop: 2 },
 

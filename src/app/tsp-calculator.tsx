@@ -340,7 +340,7 @@ const styles = StyleSheet.create({
 
   resultCard: { borderRadius: 4, padding: Spacing.three, gap: Spacing.two, borderLeftWidth: 3, borderLeftColor: Brand.tactical },
   resultEyebrow: { fontSize: 8, fontWeight: '800', color: Brand.tactical, letterSpacing: 1.5 },
-  resultBig: { fontSize: 40, fontWeight: '900', color: '#C8D8E8' },
+  resultBig: { fontSize: 26, fontWeight: '900', color: '#C8D8E8' },
   resultRows: { gap: Spacing.one },
   resultRow: { flexDirection: 'row', justifyContent: 'space-between' },
   resultLabel: { fontSize: 12, color: '#4D7A9A' },
