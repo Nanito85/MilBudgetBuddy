@@ -113,6 +113,14 @@ export default function TabLayout() {
         <Tabs.Screen name="pay-chart"              options={{ href: null }} />
         <Tabs.Screen name="tax-guide"              options={{ href: null }} />
         <Tabs.Screen name="sbp-calculator"         options={{ href: null }} />
+        <Tabs.Screen name="car-loan"               options={{ href: null }} />
+        <Tabs.Screen name="offbase-calculator"     options={{ href: null }} />
+        <Tabs.Screen name="money-flowchart"        options={{ href: null }} />
+        <Tabs.Screen name="roth-ira"               options={{ href: null }} />
+        <Tabs.Screen name="deployment-savings"     options={{ href: null }} />
+        <Tabs.Screen name="tdy-optimizer"          options={{ href: null }} />
+        <Tabs.Screen name="savings-rate"           options={{ href: null }} />
+        <Tabs.Screen name="bah-guide"              options={{ href: null }} />
       </Tabs>
     </ThemeProvider>
   );

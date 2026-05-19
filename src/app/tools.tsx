@@ -137,6 +137,89 @@ const CALCULATORS: MenuItem[] = [
   },
 ];
 
+const SINGLE_SM: MenuItem[] = [
+  {
+    id: 'car_loan',
+    icon: '🚗',
+    title: 'Car Loan Reality Check',
+    description: 'See if that car payment wrecks your finances — dealer survival tips included',
+    route: '/car-loan',
+    available: true,
+    badge: 'New',
+    color: '#D32F2F',
+  },
+  {
+    id: 'offbase',
+    icon: '🏠',
+    title: 'Off-Base vs Barracks',
+    description: 'BAH eligibility by grade, break-even on setup costs, monthly net',
+    route: '/offbase-calculator',
+    available: true,
+    badge: 'New',
+    color: '#1565C0',
+  },
+  {
+    id: 'money_flow',
+    icon: '🗺️',
+    title: 'Money Decision Flowchart',
+    description: '6-step military money order: TSP match → E-fund → debt → Roth → FI',
+    route: '/money-flowchart',
+    available: true,
+    badge: 'New',
+    color: '#00B27A',
+  },
+  {
+    id: 'roth_ira',
+    icon: '📈',
+    title: 'Roth IRA Tracker',
+    description: 'Balance, monthly contribution, 20/30/59.5-year projections, Roth vs Traditional',
+    route: '/roth-ira',
+    available: true,
+    badge: 'New',
+    color: '#6A1B9A',
+  },
+  {
+    id: 'deployment_savings',
+    icon: '🪖',
+    title: 'Deployment Savings Planner',
+    description: 'CZTE toggle, IDP, SDP, goal tracker — make your deployment count',
+    route: '/deployment-savings',
+    available: true,
+    badge: 'New',
+    color: '#2E7D32',
+  },
+  {
+    id: 'tdy_optimizer',
+    icon: '✈️',
+    title: 'TDY Per Diem Optimizer',
+    description: 'Location picker, authorized rates, pocket savings calculator',
+    route: '/tdy-optimizer',
+    available: true,
+    badge: 'New',
+    color: '#C8A800',
+  },
+  {
+    id: 'savings_rate',
+    icon: '🎯',
+    title: 'Savings Rate & FI Tracker',
+    description: 'Savings rate %, FI number (25×), years to financial independence',
+    route: '/savings-rate',
+    available: true,
+    badge: 'New',
+    color: '#0277BD',
+  },
+  {
+    id: 'bah_guide',
+    icon: '🏛️',
+    title: 'BAH Eligibility Guide',
+    description: 'FY2026 rates, eligibility by grade, barracks rules, BAH strategy',
+    route: '/bah-guide',
+    available: true,
+    badge: 'New',
+    color: '#1565C0',
+  },
+];
+
 const RESOURCES: MenuItem[] = [
   {
     id: 'tax_guide',
@@ -332,6 +415,14 @@ export default function MoreScreen() {
         <SectionLabel text="CALCULATORS" />
         <View style={styles.list}>
           {CALCULATORS.map((item) => (
+            <MenuCard key={item.id} item={item} onPress={() => handlePress(item)} />
+          ))}
+        </View>
+
+        {/* Single SM */}
+        <SectionLabel text="SINGLE SERVICE MEMBER" />
+        <View style={styles.list}>
+          {SINGLE_SM.map((item) => (
             <MenuCard key={item.id} item={item} onPress={() => handlePress(item)} />
           ))}
         </View>
