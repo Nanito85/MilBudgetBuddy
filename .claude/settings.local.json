@@ -27,7 +27,12 @@
       "WebFetch(domain:veteran.com)",
       "WebFetch(domain:militarypay.defense.gov)",
       "WebFetch(domain:www.veteransunited.com)",
-      "PowerShell(eas build *)"
+      "PowerShell(eas build *)",
+      "PowerShell(Select-String -Path \"C:\\\\Users\\\\solit\\\\Documents\\\\web\\\\budgetapp\\\\MilBudgetBuddy\\\\src\\\\data\\\\installations.ts\" -Pattern \"id:\" | Select-Object -First 80 | ForEach-Object { $_.Line.Trim\\(\\) })",
+      "PowerShell(cd \"C:\\\\Users\\\\solit\\\\Documents\\\\web\\\\budgetapp\\\\MilBudgetBuddy\"; Write-Host \"=== kids.types.ts ===\" ; Select-String -Path \"src\\\\types\\\\kids.types.ts\" -Pattern \"ChoreFrequency|frequency\" | ForEach-Object { $_.Line.Trim\\(\\) }; Write-Host \"`n=== kids.store.ts addChore ===\" ; \\(Get-Content \"src\\\\store\\\\kids.store.ts\" | Select-String -Pattern \"addChore|weekStart|getCompleted\" -Context 0,0\\).Line.Trim\\(\\) | Select-Object -First 10; Write-Host \"`n=== settings.tsx exists ===\" ; Test-Path \"src\\\\app\\\\settings.tsx\"; Write-Host \"`n=== quick-actions.ts exists ===\" ; Test-Path \"src\\\\data\\\\quick-actions.ts\"; Write-Host \"`n=== cola.ts exists ===\" ; Test-Path \"src\\\\data\\\\cola.ts\")",
+      "PowerShell(cd \"C:\\\\Users\\\\solit\\\\Documents\\\\web\\\\budgetapp\\\\MilBudgetBuddy\"; \\(Select-String -Path \"src\\\\data\\\\schools.ts\" -Pattern \"installationId:\"\\).Count)",
+      "PowerShell($git = \"C:\\\\Program Files\\\\Git\\\\cmd\\\\git.exe\"; cd \"C:\\\\Users\\\\solit\\\\Documents\\\\web\\\\budgetapp\\\\MilBudgetBuddy\"; & $git status 2>&1)",
+      "PowerShell($git = \"C:\\\\Program Files\\\\Git\\\\cmd\\\\git.exe\"; cd \"C:\\\\Users\\\\solit\\\\Documents\\\\web\\\\budgetapp\\\\MilBudgetBuddy\"; & $git add -A; & $git commit -m \"Add expense logging, net worth history, SBP calc, pay chart, tax guide, pay day notifications, store prep\" 2>&1)"
     ]
   }
 }

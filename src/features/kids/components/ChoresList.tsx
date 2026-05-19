@@ -4,7 +4,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
-import { Chore, Goal } from '@/types/kids.types';
+import { Chore, ChoreFrequency, Goal } from '@/types/kids.types';
 
 interface Props {
   chores: Chore[];
@@ -19,8 +19,23 @@ function today() {
   return new Date().toISOString().slice(0, 10);
 }
 
+function weekStart(date: string): string {
+  const d = new Date(date + 'T00:00:00Z');
+  const day = d.getUTCDay();
+  d.setUTCDate(d.getUTCDate() - (day === 0 ? 6 : day - 1));
+  return d.toISOString().slice(0, 10);
+}
+
+function isDoneInPeriod(completedDates: string[], frequency: ChoreFrequency): boolean {
+  const t = today();
+  switch (frequency) {
+    case 'daily': return completedDates.includes(t);
+    case 'weekly': { const ws = weekStart(t); return completedDates.some((d) => weekStart(d) === ws); }
+    case 'monthly': return completedDates.some((d) => d.slice(0, 7) === t.slice(0, 7));
+  }
+}
+
 export function ChoresList({ chores, goals, accentColor, onComplete, onUncomplete }: Props) {
-  const date = today();
   const primaryGoal = goals[0];
   const theme = useTheme();
 
@@ -37,7 +52,7 @@ export function ChoresList({ chores, goals, accentColor, onComplete, onUncomplet
   return (
     <View style={styles.container}>
       {chores.map((chore) => {
-        const done = chore.completedDates.includes(date);
+        const done = isDoneInPeriod(chore.completedDates, chore.frequency ?? 'daily');
         return (
           <Pressable
             key={chore.id}

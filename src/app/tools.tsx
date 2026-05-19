@@ -95,9 +95,79 @@ const CALCULATORS: MenuItem[] = [
     badge: 'New',
     color: '#0277BD',
   },
+  {
+    id: 'tsp',
+    icon: '📊',
+    title: 'TSP Deep Dive',
+    description: 'Fund guide, BRS matching gap, annual limit & growth projection',
+    route: '/tsp-calculator',
+    available: true,
+    badge: 'New',
+    color: '#00695C',
+  },
+  {
+    id: 'debt',
+    icon: '💳',
+    title: 'Debt Payoff Planner',
+    description: 'Avalanche vs snowball — see payoff date and interest saved',
+    route: '/debt-payoff',
+    available: true,
+    badge: 'New',
+    color: '#B71C1C',
+  },
+  {
+    id: 'pay_chart',
+    icon: '💰',
+    title: 'Pay Chart',
+    description: 'FY2025 basic pay lookup by grade and years of service',
+    route: '/pay-chart',
+    available: true,
+    badge: 'New',
+    color: '#00695C',
+  },
+  {
+    id: 'sbp',
+    icon: '🛡️',
+    title: 'SBP Calculator',
+    description: 'Survivor Benefit Plan premium, annuity & break-even analysis',
+    route: '/sbp-calculator',
+    available: true,
+    badge: 'New',
+    color: '#1A237E',
+  },
 ];
 
 const RESOURCES: MenuItem[] = [
+  {
+    id: 'tax_guide',
+    icon: '🧾',
+    title: 'Military Tax Guide',
+    description: 'CZTE, state exemptions, MilTax, PCS deductions, filing extensions',
+    route: '/tax-guide',
+    available: true,
+    badge: 'New',
+    color: '#1A237E',
+  },
+  {
+    id: 'scra',
+    icon: '⚖️',
+    title: 'SCRA Rights Guide',
+    description: '6% interest cap, eviction & lease protections, and more',
+    route: '/scra-guide',
+    available: true,
+    badge: 'New',
+    color: '#1A237E',
+  },
+  {
+    id: 'ets',
+    icon: '🎖️',
+    title: 'ETS / Separation Checklist',
+    description: 'Step-by-step transition checklist from 12 months out to post-ETS',
+    route: '/ets-checklist',
+    available: true,
+    badge: 'New',
+    color: '#2E7D32',
+  },
   {
     id: 'tricare',
     icon: '🏥',
@@ -147,6 +217,26 @@ const RESOURCES: MenuItem[] = [
     available: true,
     badge: 'New',
     color: '#5C3D11',
+  },
+  {
+    id: 'va_disability',
+    icon: '🎖️',
+    title: 'VA Disability Calculator',
+    description: 'Combined rating math (VA formula) + monthly compensation',
+    route: '/va-disability',
+    available: true,
+    badge: 'New',
+    color: '#B71C1C',
+  },
+  {
+    id: 'gi_bill',
+    icon: '🎓',
+    title: 'GI Bill Calculator',
+    description: 'Post-9/11 housing allowance, tuition, book stipend & time left',
+    route: '/gi-bill-calculator',
+    available: true,
+    badge: 'New',
+    color: '#1A237E',
   },
 ];
 
@@ -254,7 +344,7 @@ export default function MoreScreen() {
           ))}
         </View>
 
-        {/* Budget shortcut */}
+        {/* Budget + Net Worth */}
         <SectionLabel text="BUDGET" />
         <Pressable
           onPress={() => router.push('/budget' as any)}
@@ -263,6 +353,29 @@ export default function MoreScreen() {
           <View style={styles.budgetText}>
             <ThemedText style={styles.budgetTitle}>MONTHLY BUDGET</ThemedText>
             <ThemedText type="label" style={styles.budgetDesc}>Set and track your spending categories</ThemedText>
+          </View>
+          <ThemedText style={styles.chevron}>›</ThemedText>
+        </Pressable>
+        <Pressable
+          onPress={() => router.push('/net-worth' as any)}
+          style={({ pressed }) => [styles.budgetShortcut, { borderColor: Brand.tactical + '40' }, pressed && { opacity: 0.7 }]}>
+          <ThemedText style={styles.budgetIcon}>📈</ThemedText>
+          <View style={styles.budgetText}>
+            <ThemedText style={styles.budgetTitle}>NET WORTH TRACKER</ThemedText>
+            <ThemedText type="label" style={styles.budgetDesc}>Assets vs liabilities — your one number</ThemedText>
+          </View>
+          <ThemedText style={styles.chevron}>›</ThemedText>
+        </Pressable>
+
+        {/* Settings */}
+        <SectionLabel text="APP" />
+        <Pressable
+          onPress={() => router.push('/settings' as any)}
+          style={({ pressed }) => [styles.budgetShortcut, { borderColor: Brand.border }, pressed && { opacity: 0.7 }]}>
+          <ThemedText style={styles.budgetIcon}>⚙️</ThemedText>
+          <View style={styles.budgetText}>
+            <ThemedText style={styles.budgetTitle}>SETTINGS</ThemedText>
+            <ThemedText type="label" style={styles.budgetDesc}>Customize home screen quick-access tiles</ThemedText>
           </View>
           <ThemedText style={styles.chevron}>›</ThemedText>
         </Pressable>

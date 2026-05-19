@@ -102,6 +102,17 @@ export default function TabLayout() {
         <Tabs.Screen name="schools-finder"         options={{ href: null }} />
         <Tabs.Screen name="les-decoder"            options={{ href: null }} />
         <Tabs.Screen name="tricare-estimator"     options={{ href: null }} />
+        <Tabs.Screen name="settings"               options={{ href: null }} />
+        <Tabs.Screen name="scra-guide"             options={{ href: null }} />
+        <Tabs.Screen name="net-worth"              options={{ href: null }} />
+        <Tabs.Screen name="ets-checklist"          options={{ href: null }} />
+        <Tabs.Screen name="tsp-calculator"         options={{ href: null }} />
+        <Tabs.Screen name="va-disability"          options={{ href: null }} />
+        <Tabs.Screen name="gi-bill-calculator"     options={{ href: null }} />
+        <Tabs.Screen name="debt-payoff"            options={{ href: null }} />
+        <Tabs.Screen name="pay-chart"              options={{ href: null }} />
+        <Tabs.Screen name="tax-guide"              options={{ href: null }} />
+        <Tabs.Screen name="sbp-calculator"         options={{ href: null }} />
       </Tabs>
     </ThemeProvider>
   );

@@ -8,6 +8,7 @@ import { BottomTabInset, Brand, Spacing } from '@/constants/theme';
 import { TIPS } from '@/data/tips';
 import { BudgetCard } from '@/features/home/components/BudgetCard';
 import { DashboardHeader } from '@/features/home/components/DashboardHeader';
+import { PayDayCountdown } from '@/features/home/components/PayDayCountdown';
 import { PaySummaryCard } from '@/features/home/components/PaySummaryCard';
 import { QuickActionsGrid } from '@/features/home/components/QuickActionsGrid';
 import { calcLES } from '@/features/home/utils/lesCalc';
@@ -128,6 +129,9 @@ export default function DashboardScreen() {
             </View>
           </View>
         )}
+
+        {/* Pay Day Countdown */}
+        <PayDayCountdown netPay={breakdown?.netPay ?? 0} />
 
         {/* Budget */}
         {breakdown && <BudgetCard netPay={breakdown.netPay} />}

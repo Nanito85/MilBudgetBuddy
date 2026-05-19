@@ -5,7 +5,7 @@
  *  - IDP/HFP: DoD FMR Vol 7A Ch 10 — $225/month flat, any portion of month counts.
  *  - CZTE: 26 U.S.C. §112 — Enlisted & WO: all basic pay excluded; Officers: capped at
  *    highest enlisted (E9) pay + IDP ($225).
- *  - FSA: DoD FMR Vol 7A Ch 27 — $250/month after 30 consecutive days of separation.
+ *  - FSA: DoD FMR Vol 7A Ch 27 — $300/month after 30 consecutive days of separation (FY2026 rate).
  *  - HDP-L: DoD FMR Vol 7A Ch 17 — $50/$100/$150/month by location designation.
  *  - SDP: DoD FMR Vol 7A Ch 51 — 10% APR on deposits up to $10,000 while in combat zone.
  *  - BAH continues to a member's dependent household during deployment (DoD FMR Vol 7A Ch 26).
@@ -65,7 +65,7 @@ export interface DeploymentResult {
 // E9 max pay (FY2026) = $7,644 — CZTE officer cap = E9 max + $225 IDP
 const E9_MAX_PAY = 7644;
 const IDP_MONTHLY = 225;
-const FSA_MONTHLY = 250;
+const FSA_MONTHLY = 300;
 const SDP_APR = 0.10;
 
 export function calcDeployment(inputs: DeploymentInputs): DeploymentResult {

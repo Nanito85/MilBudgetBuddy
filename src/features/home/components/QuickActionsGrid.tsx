@@ -4,16 +4,17 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { Brand, Spacing } from '@/constants/theme';
-
-const ACTIONS = [
-  { icon: '💰', label: 'BUDGET',    sublabel: 'MANAGE',    route: '/budget',              color: '#00C8A8' },
-  { icon: '📊', label: 'CREDIT',    sublabel: 'SCORE',     route: '/credit-score',        color: '#C8A800' },
-  { icon: '🚚', label: 'PCS',       sublabel: 'TRANSFER',  route: '/pcs-calculator',      color: '#1565C0' },
-  { icon: '🏠', label: 'VA LOAN',   sublabel: 'CALC',      route: '/va-loan-calculator',  color: '#B71C1C' },
-] as const;
+import { ALL_QUICK_ACTIONS } from '@/data/quick-actions';
+import { useUserStore } from '@/store/user.store';
 
 export function QuickActionsGrid() {
   const router = useRouter();
+  const quickAccessIds = useUserStore((s) => s.quickAccessIds);
+
+  const actions = quickAccessIds
+    .map((id) => ALL_QUICK_ACTIONS.find((a) => a.id === id))
+    .filter(Boolean) as typeof ALL_QUICK_ACTIONS;
+
   return (
     <View style={styles.container}>
       <View style={styles.labelRow}>
@@ -22,9 +23,9 @@ export function QuickActionsGrid() {
         <View style={styles.labelLine} />
       </View>
       <View style={styles.grid}>
-        {ACTIONS.map((a) => (
+        {actions.map((a) => (
           <Pressable
-            key={a.label}
+            key={a.id}
             onPress={() => router.push(a.route as any)}
             style={({ pressed }) => [styles.tile, pressed && styles.pressed]}>
             <View style={[styles.tileInner, { borderColor: a.color + '40' }]}>

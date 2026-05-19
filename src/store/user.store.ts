@@ -26,6 +26,7 @@ const DEFAULTS: UserPreferences = {
   hasDentalFamily: false,
   sglOptOut: false,
   stateResidence: undefined,
+  quickAccessIds: ['budget', 'credit', 'pcs', 'va_loan'],
 };
 
 interface UserState extends UserPreferences {
@@ -43,6 +44,7 @@ interface UserState extends UserPreferences {
   setStateResidence: (stateCode: string) => void;
   addSpecialPay: (type: SpecialPayType, monthlyAmount: number, customLabel?: string) => void;
   removeSpecialPay: (id: string) => void;
+  setQuickAccessIds: (ids: string[]) => void;
 }
 
 function save(prefs: UserPreferences) {
@@ -71,6 +73,7 @@ function snapshot(get: () => UserState): UserPreferences {
     hasDentalFamily: s.hasDentalFamily,
     sglOptOut: s.sglOptOut,
     stateResidence: s.stateResidence,
+    quickAccessIds: s.quickAccessIds,
   };
 }
 
@@ -154,5 +157,10 @@ export const useUserStore = create<UserState>((set, get) => ({
     const specialPays = get().specialPays.filter((p) => p.id !== id);
     set({ specialPays });
     save({ ...snapshot(get), specialPays });
+  },
+
+  setQuickAccessIds: (quickAccessIds) => {
+    set({ quickAccessIds });
+    save({ ...snapshot(get), quickAccessIds });
   },
 }));

@@ -16,12 +16,22 @@ import { ChoresList } from '@/features/kids/components/ChoresList';
 import { GoalMeter } from '@/features/kids/components/GoalMeter';
 import { getDailyKidsTip } from '@/data/kids-tips';
 import { useKidsStore } from '@/store/kids.store';
-import { getKidTheme } from '@/types/kids.types';
+import { ChoreFrequency, getKidTheme } from '@/types/kids.types';
 import { Spacing } from '@/constants/theme';
 
 const GOAL_EMOJIS = ['🎮', '🚲', '👟', '📚', '🎸', '🏀', '🎨', '✈️', '🏄', '🐶', '🎃', '💎'];
 
-function AddGoalModal({ visible, onClose, onAdd }: { visible: boolean; onClose: () => void; onAdd: (name: string, emoji: string, target: number) => void }) {
+const FREQ_OPTIONS: { key: ChoreFrequency; label: string; emoji: string }[] = [
+  { key: 'daily',   label: 'Daily',   emoji: '⚡' },
+  { key: 'weekly',  label: 'Weekly',  emoji: '📅' },
+  { key: 'monthly', label: 'Monthly', emoji: '🗓️' },
+];
+
+function AddGoalModal({ visible, onClose, onAdd }: {
+  visible: boolean;
+  onClose: () => void;
+  onAdd: (name: string, emoji: string, target: number) => void;
+}) {
   const [name, setName] = useState('');
   const [target, setTarget] = useState('');
   const [emoji, setEmoji] = useState('🎮');
@@ -58,14 +68,20 @@ function AddGoalModal({ visible, onClose, onAdd }: { visible: boolean; onClose: 
   );
 }
 
-function AddChoreModal({ visible, onClose, onAdd }: { visible: boolean; onClose: () => void; onAdd: (name: string, value: number) => void }) {
+function AddChoreModal({ visible, defaultFrequency, onClose, onAdd }: {
+  visible: boolean;
+  defaultFrequency: ChoreFrequency;
+  onClose: () => void;
+  onAdd: (name: string, value: number, frequency: ChoreFrequency) => void;
+}) {
   const [name, setName] = useState('');
   const [value, setValue] = useState('');
+  const [frequency, setFrequency] = useState<ChoreFrequency>(defaultFrequency);
 
   const submit = () => {
     const v = parseFloat(value);
     if (!name.trim() || isNaN(v) || v <= 0) return;
-    onAdd(name.trim(), v);
+    onAdd(name.trim(), v, frequency);
     setName(''); setValue('');
     onClose();
   };
@@ -74,13 +90,36 @@ function AddChoreModal({ visible, onClose, onAdd }: { visible: boolean; onClose:
     <Modal visible={visible} animationType="slide" presentationStyle="pageSheet">
       <SafeAreaView style={styles.modal}>
         <View style={styles.modalHeader}>
-          <ThemedText style={styles.modalTitle}>New Chore</ThemedText>
+          <ThemedText style={styles.modalTitle}>New Mission</ThemedText>
           <Pressable onPress={onClose}><ThemedText style={styles.modalClose}>Cancel</ThemedText></Pressable>
         </View>
-        <TextInput placeholder="Chore name (e.g. Clean room)" value={name} onChangeText={setName} style={styles.textInput} />
-        <TextInput placeholder="Value per completion ($)" value={value} onChangeText={setValue} keyboardType="decimal-pad" style={styles.textInput} />
+        <ThemedText style={styles.modalLabel}>FREQUENCY</ThemedText>
+        <View style={styles.freqRow}>
+          {FREQ_OPTIONS.map((f) => (
+            <Pressable
+              key={f.key}
+              onPress={() => setFrequency(f.key)}
+              style={[styles.freqBtn, frequency === f.key && styles.freqBtnActive]}>
+              <ThemedText style={styles.freqEmoji}>{f.emoji}</ThemedText>
+              <ThemedText style={[styles.freqLabel, frequency === f.key && styles.freqLabelActive]}>{f.label}</ThemedText>
+            </Pressable>
+          ))}
+        </View>
+        <TextInput
+          placeholder="Mission name (e.g. Clean room)"
+          value={name}
+          onChangeText={setName}
+          style={styles.textInput}
+        />
+        <TextInput
+          placeholder="Value per completion ($)"
+          value={value}
+          onChangeText={setValue}
+          keyboardType="decimal-pad"
+          style={styles.textInput}
+        />
         <Pressable onPress={submit} style={styles.addBtn}>
-          <ThemedText style={styles.addBtnText}>Add Chore</ThemedText>
+          <ThemedText style={styles.addBtnText}>Add Mission</ThemedText>
         </Pressable>
       </SafeAreaView>
     </Modal>
@@ -98,6 +137,7 @@ export default function KidScreen() {
 
   const [showAddGoal, setShowAddGoal] = useState(false);
   const [showAddChore, setShowAddChore] = useState(false);
+  const [addChoreFreq, setAddChoreFreq] = useState<ChoreFrequency>('daily');
 
   const kid = kids.find((k) => k.id === id);
   if (!kid) return null;
@@ -106,6 +146,21 @@ export default function KidScreen() {
   const tip = getDailyKidsTip();
 
   const totalEarned = kid.chores.reduce((sum, c) => sum + c.completedDates.length * c.value, 0);
+
+  const dailyChores   = kid.chores.filter((c) => (c.frequency ?? 'daily') === 'daily');
+  const weeklyChores  = kid.chores.filter((c) => c.frequency === 'weekly');
+  const monthlyChores = kid.chores.filter((c) => c.frequency === 'monthly');
+
+  // History: last 15 completions across all chores, newest first
+  const historyEntries = kid.chores
+    .flatMap((c) => c.completedDates.map((d) => ({ name: c.name, date: d, value: c.value })))
+    .sort((a, b) => b.date.localeCompare(a.date))
+    .slice(0, 15);
+
+  const openAddChore = (freq: ChoreFrequency) => {
+    setAddChoreFreq(freq);
+    setShowAddChore(true);
+  };
 
   return (
     <View style={[styles.screen, { backgroundColor: theme.bg }]}>
@@ -153,16 +208,16 @@ export default function KidScreen() {
           )}
         </View>
 
-        {/* Chores */}
+        {/* Daily Missions */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <ThemedText style={styles.sectionTitle}>⚡ DAILY MISSIONS</ThemedText>
-            <Pressable onPress={() => setShowAddChore(true)} style={[styles.addPill, { borderColor: theme.accent }]}>
+            <Pressable onPress={() => openAddChore('daily')} style={[styles.addPill, { borderColor: theme.accent }]}>
               <ThemedText style={[styles.addPillText, { color: theme.accent }]}>+ Add</ThemedText>
             </Pressable>
           </View>
           <ChoresList
-            chores={kid.chores}
+            chores={dailyChores}
             goals={kid.goals}
             kidId={kid.id}
             accentColor={theme.accent}
@@ -170,6 +225,76 @@ export default function KidScreen() {
             onUncomplete={(choreId) => uncompleteChore(kid.id, choreId)}
           />
         </View>
+
+        {/* Weekly Missions */}
+        {(weeklyChores.length > 0) && (
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <ThemedText style={styles.sectionTitle}>📅 WEEKLY MISSIONS</ThemedText>
+              <Pressable onPress={() => openAddChore('weekly')} style={[styles.addPill, { borderColor: theme.accent }]}>
+                <ThemedText style={[styles.addPillText, { color: theme.accent }]}>+ Add</ThemedText>
+              </Pressable>
+            </View>
+            <ChoresList
+              chores={weeklyChores}
+              goals={kid.goals}
+              kidId={kid.id}
+              accentColor={theme.accent}
+              onComplete={(choreId, goalId) => completeChore(kid.id, choreId, goalId)}
+              onUncomplete={(choreId) => uncompleteChore(kid.id, choreId)}
+            />
+          </View>
+        )}
+        {weeklyChores.length === 0 && (
+          <Pressable onPress={() => openAddChore('weekly')} style={[styles.freqEmptyRow, { borderColor: theme.accent + '40' }]}>
+            <ThemedText style={styles.freqEmptyIcon}>📅</ThemedText>
+            <ThemedText style={styles.freqEmptyText}>Add a weekly mission</ThemedText>
+            <ThemedText style={[styles.freqEmptyPlus, { color: theme.accent }]}>+</ThemedText>
+          </Pressable>
+        )}
+
+        {/* Monthly Missions */}
+        {(monthlyChores.length > 0) && (
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <ThemedText style={styles.sectionTitle}>🗓️ MONTHLY MISSIONS</ThemedText>
+              <Pressable onPress={() => openAddChore('monthly')} style={[styles.addPill, { borderColor: theme.accent }]}>
+                <ThemedText style={[styles.addPillText, { color: theme.accent }]}>+ Add</ThemedText>
+              </Pressable>
+            </View>
+            <ChoresList
+              chores={monthlyChores}
+              goals={kid.goals}
+              kidId={kid.id}
+              accentColor={theme.accent}
+              onComplete={(choreId, goalId) => completeChore(kid.id, choreId, goalId)}
+              onUncomplete={(choreId) => uncompleteChore(kid.id, choreId)}
+            />
+          </View>
+        )}
+        {monthlyChores.length === 0 && (
+          <Pressable onPress={() => openAddChore('monthly')} style={[styles.freqEmptyRow, { borderColor: theme.accent + '40' }]}>
+            <ThemedText style={styles.freqEmptyIcon}>🗓️</ThemedText>
+            <ThemedText style={styles.freqEmptyText}>Add a monthly mission</ThemedText>
+            <ThemedText style={[styles.freqEmptyPlus, { color: theme.accent }]}>+</ThemedText>
+          </Pressable>
+        )}
+
+        {/* Completed History */}
+        {historyEntries.length > 0 && (
+          <View style={styles.section}>
+            <ThemedText style={styles.sectionTitle}>📋 COMPLETED HISTORY</ThemedText>
+            <View style={[styles.historyCard, { backgroundColor: theme.card }]}>
+              {historyEntries.map((entry, i) => (
+                <View key={`${entry.name}-${entry.date}-${i}`} style={[styles.historyRow, i > 0 && styles.historyRowBorder]}>
+                  <ThemedText style={styles.historyDate}>{entry.date}</ThemedText>
+                  <ThemedText style={styles.historyName}>{entry.name}</ThemedText>
+                  <ThemedText style={[styles.historyValue, { color: theme.badge }]}>+${entry.value.toFixed(2)}</ThemedText>
+                </View>
+              ))}
+            </View>
+          </View>
+        )}
 
         {/* Finance Tip */}
         <View style={[styles.tipCard, { backgroundColor: theme.card }]}>
@@ -190,8 +315,9 @@ export default function KidScreen() {
       />
       <AddChoreModal
         visible={showAddChore}
+        defaultFrequency={addChoreFreq}
         onClose={() => setShowAddChore(false)}
-        onAdd={(name, value) => addChore(kid.id, name, value)}
+        onAdd={(name, value, frequency) => addChore(kid.id, name, value, frequency)}
       />
     </View>
   );
@@ -234,6 +360,31 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   emptyCardText: { color: 'rgba(255,255,255,0.4)', fontSize: 14 },
+  freqEmptyRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderStyle: 'dashed',
+    borderRadius: Spacing.two,
+    paddingHorizontal: Spacing.three,
+    paddingVertical: Spacing.two,
+    gap: Spacing.two,
+  },
+  freqEmptyIcon: { fontSize: 16 },
+  freqEmptyText: { flex: 1, color: 'rgba(255,255,255,0.3)', fontSize: 13 },
+  freqEmptyPlus: { fontSize: 20, fontWeight: '700' },
+  historyCard: { borderRadius: Spacing.two, overflow: 'hidden' },
+  historyRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: Spacing.three,
+    paddingVertical: Spacing.two,
+    gap: Spacing.two,
+  },
+  historyRowBorder: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: 'rgba(255,255,255,0.08)' },
+  historyDate: { fontSize: 10, color: 'rgba(255,255,255,0.35)', fontFamily: 'monospace', width: 78 },
+  historyName: { flex: 1, fontSize: 13, color: 'rgba(255,255,255,0.75)' },
+  historyValue: { fontSize: 13, fontWeight: '700' },
   tipCard: {
     borderRadius: Spacing.three,
     padding: Spacing.three,
@@ -251,6 +402,21 @@ const styles = StyleSheet.create({
   modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   modalTitle: { fontSize: 20, fontWeight: '700' },
   modalClose: { fontSize: 16, color: '#2E5FA3' },
+  modalLabel: { fontSize: 11, fontWeight: '700', letterSpacing: 1, color: 'rgba(128,128,128,0.8)', marginBottom: -Spacing.one },
+  freqRow: { flexDirection: 'row', gap: Spacing.two },
+  freqBtn: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: Spacing.two,
+    borderWidth: 1.5,
+    borderColor: 'rgba(128,128,128,0.2)',
+    borderRadius: Spacing.two,
+    gap: 4,
+  },
+  freqBtnActive: { borderColor: '#1B3A6B', backgroundColor: '#1B3A6B30' },
+  freqEmoji: { fontSize: 20 },
+  freqLabel: { fontSize: 12, fontWeight: '600', color: 'rgba(128,128,128,0.7)' },
+  freqLabelActive: { color: '#6BA3D6' },
   emojiRow: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two },
   emojiBtn: {
     width: 44,

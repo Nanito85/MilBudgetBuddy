@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 
-import { Chore, Goal, KidGender, KidProfile } from '@/types/kids.types';
+import { Chore, ChoreFrequency, Goal, KidGender, KidProfile } from '@/types/kids.types';
 
 const STORAGE_KEY = 'mbb_kids';
 
@@ -14,7 +14,7 @@ interface KidsState {
   addGoal: (kidId: string, name: string, emoji: string, targetAmount: number) => void;
   updateGoalProgress: (kidId: string, goalId: string, amount: number) => void;
   removeGoal: (kidId: string, goalId: string) => void;
-  addChore: (kidId: string, name: string, value: number) => void;
+  addChore: (kidId: string, name: string, value: number, frequency: ChoreFrequency) => void;
   completeChore: (kidId: string, choreId: string, goalId: string) => void;
   uncompleteChore: (kidId: string, choreId: string) => void;
   removeChore: (kidId: string, choreId: string) => void;
@@ -26,6 +26,22 @@ function uid() {
 
 function today() {
   return new Date().toISOString().slice(0, 10);
+}
+
+function weekStart(date: string): string {
+  const d = new Date(date + 'T00:00:00Z');
+  const day = d.getUTCDay();
+  d.setUTCDate(d.getUTCDate() - (day === 0 ? 6 : day - 1));
+  return d.toISOString().slice(0, 10);
+}
+
+function getCompletedDateInPeriod(dates: string[], frequency: ChoreFrequency): string | null {
+  const t = today();
+  switch (frequency) {
+    case 'daily': return dates.includes(t) ? t : null;
+    case 'weekly': { const ws = weekStart(t); return dates.find((d) => weekStart(d) === ws) ?? null; }
+    case 'monthly': return dates.find((d) => d.slice(0, 7) === t.slice(0, 7)) ?? null;
+  }
 }
 
 function saveKids(kids: KidProfile[]) {
@@ -92,8 +108,8 @@ export const useKidsStore = create<KidsState>((set, get) => ({
     saveKids(kids);
   },
 
-  addChore: (kidId, name, value) => {
-    const chore: Chore = { id: uid(), name, value, completedDates: [] };
+  addChore: (kidId, name, value, frequency) => {
+    const chore: Chore = { id: uid(), name, value, frequency, completedDates: [] };
     const kids = get().kids.map((k) =>
       k.id === kidId ? { ...k, chores: [...k.chores, chore] } : k,
     );
@@ -106,7 +122,9 @@ export const useKidsStore = create<KidsState>((set, get) => ({
     const kids = get().kids.map((k) => {
       if (k.id !== kidId) return k;
       const chore = k.chores.find((c) => c.id === choreId);
-      if (!chore || chore.completedDates.includes(date)) return k;
+      if (!chore) return k;
+      const freq = chore.frequency ?? 'daily';
+      if (getCompletedDateInPeriod(chore.completedDates, freq) !== null) return k;
       const updatedChores = k.chores.map((c) =>
         c.id === choreId ? { ...c, completedDates: [...c.completedDates, date] } : c,
       );
@@ -122,14 +140,17 @@ export const useKidsStore = create<KidsState>((set, get) => ({
   },
 
   uncompleteChore: (kidId, choreId) => {
-    const date = today();
     const kids = get().kids.map((k) => {
       if (k.id !== kidId) return k;
+      const chore = k.chores.find((c) => c.id === choreId);
+      if (!chore) return k;
+      const dateToRemove = getCompletedDateInPeriod(chore.completedDates, chore.frequency ?? 'daily');
+      if (!dateToRemove) return k;
       return {
         ...k,
         chores: k.chores.map((c) =>
           c.id === choreId
-            ? { ...c, completedDates: c.completedDates.filter((d) => d !== date) }
+            ? { ...c, completedDates: c.completedDates.filter((d) => d !== dateToRemove) }
             : c,
         ),
       };

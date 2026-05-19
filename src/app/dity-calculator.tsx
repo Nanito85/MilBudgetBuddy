@@ -1,15 +1,18 @@
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { PayGrade } from '@/data/bah-rates';
+import { estimateDrivingMiles } from '@/data/installation-coords';
+import { Installation } from '@/data/installations';
 import { PPM_DATA_YEAR } from '@/data/weight-allowances';
 import { WeightBar } from '@/features/dity/components/WeightBar';
 import { calcDITY, fmtLbs, fmtMoney, MoveType, TAX_BRACKETS, TaxBracket } from '@/features/dity/utils/dityCalc';
 import { GradePicker } from '@/features/pcs/components/GradePicker';
+import { StationPicker } from '@/features/pcs/components/StationPicker';
 import { NumberStepper } from '@/features/retirement/components/NumberStepper';
 import { BottomTabInset, Brand, Spacing } from '@/constants/theme';
 
@@ -20,9 +23,36 @@ export default function DITYCalculatorScreen() {
   const [grade, setGrade] = useState<PayGrade>('E5');
   const [withDep, setWithDep] = useState(true);
   const [moveType, setMoveType] = useState<MoveType>('full');
-  const [actualWeight, setActualWeight] = useState(5_000);
-  const [distanceMiles, setDistanceMiles] = useState(500);
   const [taxBracket, setTaxBracket] = useState<TaxBracket>(22);
+  const [fromStation, setFromStation] = useState<Installation | null>(null);
+  const [toStation, setToStation] = useState<Installation | null>(null);
+
+  // Always start at the authorized weight for this grade/dep combo
+  const baseResult = calcDITY({ grade, withDep, actualWeight: 0, distanceMiles: 500, moveType, taxBracket });
+  const [actualWeight, setActualWeight] = useState(baseResult.authorizedWeight);
+  const [distanceMiles, setDistanceMiles] = useState(500);
+  const [distanceFromStations, setDistanceFromStations] = useState(false);
+
+  // When grade or dep status changes, reset weight to the new max allowance
+  useEffect(() => {
+    const auth = calcDITY({ grade, withDep, actualWeight: 0, distanceMiles, moveType, taxBracket }).authorizedWeight;
+    setActualWeight(auth);
+  }, [grade, withDep]);
+
+  // When both stations are set, compute estimated distance
+  useEffect(() => {
+    if (fromStation && toStation) {
+      const est = estimateDrivingMiles(fromStation.id, toStation.id);
+      if (est != null) {
+        setDistanceMiles(est);
+        setDistanceFromStations(true);
+      } else {
+        setDistanceFromStations(false);
+      }
+    } else {
+      setDistanceFromStations(false);
+    }
+  }, [fromStation, toStation]);
 
   const result = calcDITY({ grade, withDep, actualWeight, distanceMiles, moveType, taxBracket });
 
@@ -67,10 +97,7 @@ export default function DITYCalculatorScreen() {
               <ThemedText type="small" themeColor="textSecondary" style={styles.fieldLabel}>
                 Pay Grade
               </ThemedText>
-              <GradePicker selected={grade} onSelect={(g) => {
-                setGrade(g);
-                setActualWeight(Math.min(actualWeight, result.authorizedWeight));
-              }} />
+              <GradePicker selected={grade} onSelect={setGrade} />
             </View>
 
             <View style={styles.divider} />
@@ -121,6 +148,50 @@ export default function DITYCalculatorScreen() {
           </ThemedView>
         </View>
 
+        {/* DUTY STATIONS */}
+        <View style={styles.section}>
+          <ThemedText type="smallBold" themeColor="textSecondary" style={styles.sectionLabel}>
+            DUTY STATIONS
+          </ThemedText>
+          <ThemedView type="backgroundElement" style={styles.card}>
+            <View style={styles.cardPadded}>
+              <ThemedText type="small" themeColor="textSecondary" style={styles.fieldLabel}>
+                FROM (Current Station)
+              </ThemedText>
+              <StationPicker
+                label="Select current station"
+                selected={fromStation}
+                onSelect={setFromStation}
+              />
+            </View>
+            <View style={styles.divider} />
+            <View style={styles.cardPadded}>
+              <ThemedText type="small" themeColor="textSecondary" style={styles.fieldLabel}>
+                TO (Gaining Station)
+              </ThemedText>
+              <StationPicker
+                label="Select gaining station"
+                selected={toStation}
+                onSelect={setToStation}
+              />
+            </View>
+          </ThemedView>
+          {distanceFromStations && fromStation && toStation && (
+            <ThemedView type="backgroundElement" style={styles.distanceChip}>
+              <ThemedText style={styles.distanceChipIcon}>📍</ThemedText>
+              <ThemedText type="small" style={styles.distanceChipText}>
+                Est. driving distance: <ThemedText style={{ fontWeight: '700', color: Brand.accent }}>{distanceMiles} miles</ThemedText>
+                {' '}({fromStation.name} → {toStation.name})
+              </ThemedText>
+            </ThemedView>
+          )}
+          {fromStation && toStation && !distanceFromStations && (
+            <ThemedText type="small" themeColor="textSecondary" style={styles.noCoordNote}>
+              Distance estimate unavailable for this pair — enter manually below.
+            </ThemedText>
+          )}
+        </View>
+
         {/* WEIGHT */}
         <View style={styles.section}>
           <View style={styles.sectionHeaderRow}>
@@ -128,14 +199,14 @@ export default function DITYCalculatorScreen() {
               WEIGHT
             </ThemedText>
             <ThemedText type="small" themeColor="textSecondary">
-              Authorized: {fmtLbs(result.authorizedWeight)}
+              Authorized max: {fmtLbs(result.authorizedWeight)}
             </ThemedText>
           </View>
 
           <ThemedView type="backgroundElement" style={styles.card}>
             <View style={[styles.cardPadded, { gap: Spacing.three }]}>
               <NumberStepper
-                label="Estimated weight to ship"
+                label="Weight to ship (defaults to your max allowance)"
                 value={actualWeight}
                 min={100}
                 max={20_000}
@@ -154,7 +225,7 @@ export default function DITYCalculatorScreen() {
           />
         </View>
 
-        {/* DISTANCE */}
+        {/* DISTANCE (manual override or display) */}
         <View style={styles.section}>
           <ThemedText type="smallBold" themeColor="textSecondary" style={styles.sectionLabel}>
             DISTANCE
@@ -162,17 +233,19 @@ export default function DITYCalculatorScreen() {
           <ThemedView type="backgroundElement" style={styles.card}>
             <View style={[styles.cardPadded, { gap: Spacing.three }]}>
               <NumberStepper
-                label="Door-to-door distance"
+                label={distanceFromStations ? 'Est. driving distance (adjust if needed)' : 'Door-to-door distance'}
                 value={distanceMiles}
                 min={50}
                 max={5_000}
-                step={50}
+                step={25}
                 unit="mi"
-                onChange={setDistanceMiles}
+                onChange={(v) => { setDistanceMiles(v); }}
               />
               <ThemedText type="small" themeColor="textSecondary" style={styles.distanceNote}>
-                Use Google Maps to find the driving distance between your old and new residences.
-                Rate used: ${result.ratePerLb.toFixed(2)}/lb for {distanceMiles} miles.
+                {distanceFromStations
+                  ? `Estimated via straight-line × 1.25 driving factor. Adjust if your actual route differs. Rate: $${result.ratePerLb.toFixed(2)}/lb.`
+                  : `Select both duty stations above for auto-fill, or use Google Maps to get the driving distance. Rate: $${result.ratePerLb.toFixed(2)}/lb for ${distanceMiles} miles.`
+                }
               </ThemedText>
             </View>
           </ThemedView>
@@ -267,10 +340,10 @@ export default function DITYCalculatorScreen() {
         {/* Disclaimer */}
         <ThemedText type="small" themeColor="textSecondary" style={styles.disclaimer}>
           Rates are approximate {PPM_DATA_YEAR} DTMO baseline values for planning purposes only.
-          Actual PPM incentive is calculated by your Transportation Office using verified weight
-          tickets and current DTMO rates. Weight allowances from JTR Table 5-A — verify with your
-          TMO/PPPO before your move. Always coordinate your PPM with your local Transportation
-          Management Office.
+          Driving distance estimates use straight-line × 1.25 factor — verify with your actual route.
+          Actual PPM incentive is calculated by your Transportation Office using verified weight tickets
+          and current DTMO rates. Weight allowances from JTR Table 5-A — verify with your TMO/PPPO
+          before your move.
         </ThemedText>
       </ScrollView>
     </ThemedView>
@@ -345,6 +418,18 @@ const styles = StyleSheet.create({
   toggleText: { fontSize: 13, fontWeight: '600' },
   toggleTextActive: { color: '#FFFFFF' },
   moveTypeNote: { lineHeight: 18, marginTop: Spacing.one },
+  distanceChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
+    borderRadius: Spacing.two,
+    padding: Spacing.two + 2,
+    borderLeftWidth: 3,
+    borderLeftColor: Brand.accent,
+  },
+  distanceChipIcon: { fontSize: 16 },
+  distanceChipText: { flex: 1, lineHeight: 18 },
+  noCoordNote: { textAlign: 'center', lineHeight: 18, paddingHorizontal: Spacing.two },
   distanceNote: { lineHeight: 18 },
   chipRow: { flexDirection: 'row', gap: Spacing.two },
   chip: { flex: 1, paddingVertical: Spacing.two, borderRadius: Spacing.two, alignItems: 'center', borderWidth: 1, borderColor: 'rgba(128,128,128,0.25)' },

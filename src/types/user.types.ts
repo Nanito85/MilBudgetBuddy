@@ -102,6 +102,8 @@ export interface UserPreferences {
   sglOptOut: boolean;
   // State residence (for state income tax estimate)
   stateResidence?: string; // 2-letter state code, e.g. 'TX'
+  // Home screen quick-access tile IDs (4 items)
+  quickAccessIds: string[];
 }
 
 // ─── Special Pays ─────────────────────────────────────────────────────────────

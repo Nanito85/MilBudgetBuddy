@@ -20,15 +20,17 @@ const DEFAULT_CATEGORIES: BudgetCategory[] = [
   { id: 'clothing',      name: 'Clothing',         emoji: '👗', monthlyBudget: 0 },
   { id: 'entertainment', name: 'Entertainment',    emoji: '🎭', monthlyBudget: 0 },
   { id: 'savings_goal',  name: 'Savings Goal',     emoji: '💰', monthlyBudget: 0 },
-  { id: 'other',         name: 'Other',            emoji: '📦', monthlyBudget: 0 },
 ];
+
+export const MAX_CUSTOM_CATEGORIES = 10;
+export const CUSTOM_PREFIX = 'custom_';
 
 interface BudgetState {
   categories: BudgetCategory[];
   hydrated: boolean;
   hydrate: () => Promise<void>;
-  updateCategory: (id: string, monthlyBudget: number) => void;
-  addCategory: (name: string, emoji: string) => void;
+  updateCategory: (id: string, monthlyBudget: number, name?: string) => void;
+  addCategory: (name: string, emoji: string, idPrefix?: string) => void;
   removeCategory: (id: string) => void;
   totalBudgeted: () => number;
 }
@@ -55,16 +57,16 @@ export const useBudgetStore = create<BudgetState>((set, get) => ({
     }
   },
 
-  updateCategory: (id, monthlyBudget) => {
+  updateCategory: (id, monthlyBudget, name) => {
     const categories = get().categories.map((c) =>
-      c.id === id ? { ...c, monthlyBudget } : c,
+      c.id === id ? { ...c, monthlyBudget, ...(name !== undefined ? { name } : {}) } : c,
     );
     set({ categories });
     saveCategories(categories);
   },
 
-  addCategory: (name, emoji) => {
-    const cat: BudgetCategory = { id: uid(), name, emoji, monthlyBudget: 0 };
+  addCategory: (name, emoji, idPrefix = '') => {
+    const cat: BudgetCategory = { id: `${idPrefix}${uid()}`, name, emoji, monthlyBudget: 0 };
     const categories = [...get().categories, cat];
     set({ categories });
     saveCategories(categories);

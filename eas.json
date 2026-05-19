@@ -13,7 +13,14 @@
       },
       "distribution": "internal"
     },
-    "production": {}
+    "production": {
+      "ios": {
+        "autoIncrement": true
+      },
+      "android": {
+        "autoIncrement": "versionCode"
+      }
+    }
   },
   "submit": {
     "production": {}

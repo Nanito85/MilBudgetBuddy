@@ -25,8 +25,10 @@ import { NumberStepper } from '@/features/retirement/components/NumberStepper';
 import { BranchSelector } from '@/features/profile/components/BranchSelector';
 import {
   cancelDailyTip,
+  cancelPayDayReminders,
   requestNotificationPermissions,
   scheduleDailyTip,
+  schedulePayDayReminders,
 } from '@/services/notifications';
 import { useChatStore } from '@/store/chat.store';
 import { useKidsStore } from '@/store/kids.store';
@@ -392,9 +394,11 @@ export default function ProfileScreen() {
       }
       setNotifications(true);
       scheduleDailyTip(notificationHour, notificationMinute);
+      schedulePayDayReminders();
     } else {
       setNotifications(false);
       cancelDailyTip();
+      cancelPayDayReminders();
     }
   };
 

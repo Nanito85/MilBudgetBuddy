@@ -4,6 +4,7 @@ import { StyleSheet, View } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Brand, Spacing } from '@/constants/theme';
+import { getColaInfo } from '@/data/cola';
 import { Installation } from '@/data/installations';
 import { formatDiff, PCSResult } from '@/features/pcs/utils/pcsCalc';
 
@@ -30,6 +31,11 @@ export function ComparisonTable({ result, current, gaining }: Props) {
   const { monthlyDiff, annualDiff } = result;
   const isIncrease = (monthlyDiff ?? 0) >= 0;
   const diffColor = isIncrease ? Brand.success : Brand.danger;
+
+  const currentCola = getColaInfo(current.id);
+  const gainingCola = getColaInfo(gaining.id);
+  const losingCola = currentCola && !gainingCola;
+  const gainingColaFlag = gainingCola && !currentCola;
 
   return (
     <ThemedView type="backgroundElement" style={styles.card}>
@@ -93,6 +99,38 @@ export function ComparisonTable({ result, current, gaining }: Props) {
         </View>
       </View>
 
+      {/* COLA loss warning */}
+      {losingCola && (
+        <View style={styles.colaNotice}>
+          <ThemedText type="small" style={styles.colaLossText}>
+            ⚠️ COLA LOSS — You currently receive CONUS COLA at {current.name} (~{currentCola!.monthlyEstimate}).
+            This allowance does NOT transfer to your gaining station. Factor this into your total pay comparison.
+          </ThemedText>
+        </View>
+      )}
+
+      {/* COLA gain notice */}
+      {gainingColaFlag && (
+        <View style={[styles.colaNotice, styles.colaGainNotice]}>
+          <ThemedText type="small" style={styles.colaGainText}>
+            💰 COLA GAIN — {gaining.name} is CONUS COLA eligible (~{gainingCola!.monthlyEstimate}).
+            Verify your rate at militarypay.defense.gov after arrival.
+          </ThemedText>
+        </View>
+      )}
+
+      {/* Both have COLA */}
+      {currentCola && gainingCola && (
+        <View style={styles.colaNotice}>
+          <ThemedText type="small" style={styles.colaLossText}>
+            ℹ️ COLA NOTE — Both stations are CONUS COLA eligible. Rates differ:
+            {'\n'}• Current ({current.name}): ~{currentCola.monthlyEstimate}
+            {'\n'}• Gaining ({gaining.name}): ~{gainingCola.monthlyEstimate}
+            {'\n'}Verify your actual rate at militarypay.defense.gov.
+          </ThemedText>
+        </View>
+      )}
+
       {/* OCONUS notice */}
       {(current.oconus || gaining.oconus) && (
         <View style={styles.oconusNotice}>
@@ -137,6 +175,21 @@ const styles = StyleSheet.create({
   diffRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   diffLabel: { fontSize: 14 },
   diffValue: { fontSize: 17, fontWeight: '800' },
+  colaNotice: {
+    margin: Spacing.three,
+    marginTop: 0,
+    padding: Spacing.two,
+    backgroundColor: 'rgba(211,47,47,0.08)',
+    borderRadius: Spacing.two,
+    borderLeftWidth: 3,
+    borderLeftColor: Brand.danger,
+  },
+  colaGainNotice: {
+    backgroundColor: 'rgba(0,178,122,0.08)',
+    borderLeftColor: Brand.success,
+  },
+  colaLossText: { color: Brand.warning, lineHeight: 18 },
+  colaGainText: { color: Brand.success, lineHeight: 18 },
   oconusNotice: {
     margin: Spacing.three,
     marginTop: 0,

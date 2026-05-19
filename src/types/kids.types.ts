@@ -8,10 +8,13 @@ export interface Goal {
   currentAmount: number;
 }
 
+export type ChoreFrequency = 'daily' | 'weekly' | 'monthly';
+
 export interface Chore {
   id: string;
   name: string;
   value: number;
+  frequency: ChoreFrequency;
   completedDates: string[];  // ISO date strings (YYYY-MM-DD)
 }
 

@@ -16,8 +16,10 @@ import { StationPicker } from '@/features/pcs/components/StationPicker';
 import { NumberStepper } from '@/features/retirement/components/NumberStepper';
 import {
   cancelDailyTip,
+  cancelPayDayReminders,
   requestNotificationPermissions,
   scheduleDailyTip,
+  schedulePayDayReminders,
 } from '@/services/notifications';
 import { useUserStore } from '@/store/user.store';
 import { MilitaryBranch } from '@/types/user.types';
@@ -298,12 +300,14 @@ function NotificationsStep({ onFinish }: { onFinish: () => void }) {
       if (granted) {
         setNotifications(true);
         scheduleDailyTip(notificationHour, notificationMinute);
+        schedulePayDayReminders();
       } else {
         setEnabled(false);
       }
     } else {
       setNotifications(false);
       cancelDailyTip();
+      cancelPayDayReminders();
     }
   };
 
