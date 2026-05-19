@@ -1,8 +1,9 @@
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, TextInput, useColorScheme, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, TextInput, useColorScheme, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { BranchRegNote } from '@/components/BranchRegNote';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Locality, PER_DIEM_DATA_YEAR } from '@/data/per-diem-rates';
@@ -10,7 +11,8 @@ import { FamilyComposer } from '@/features/tle/components/FamilyComposer';
 import { LocalityPicker } from '@/features/tle/components/LocalityPicker';
 import {
   calcTLE,
-  CHILD_FACTOR,
+  CHILD_FACTOR_12PLUS,
+  CHILD_FACTOR_UNDER12,
   familyLabel,
   fmtMoney,
   fmtMoneyRound,
@@ -19,6 +21,7 @@ import {
   SPOUSE_FACTOR,
   TLA_MAX_DAYS,
   TLA_PHASE1_DAYS,
+  TLA_PHASE2_PCT,
   TLE_MAX_DAYS,
 } from '@/features/tle/utils/tleCalc';
 import { NumberStepper } from '@/features/retirement/components/NumberStepper';
@@ -35,7 +38,7 @@ export default function TLECalculatorScreen() {
   const [useCustomRate, setUseCustomRate] = useState(false);
   const [customRateText, setCustomRateText] = useState('');
   const [hasSpouse, setHasSpouse] = useState(false);
-  const [numChildren, setNumChildren] = useState(0);
+  const [childAges, setChildAges] = useState<number[]>([]);
   const [days, setDays] = useState(mode === 'tle' ? 5 : 14);
 
   const maxDays = mode === 'tle' ? TLE_MAX_DAYS : TLA_MAX_DAYS;
@@ -45,8 +48,10 @@ export default function TLECalculatorScreen() {
     : locality?.perDiem ?? null;
 
   const result = effectivePerDiem != null
-    ? calcTLE({ mode, perDiem: effectivePerDiem, hasSpouse, numChildren, days })
+    ? calcTLE({ mode, perDiem: effectivePerDiem, hasSpouse, childAges, days })
     : null;
+
+  const numChildren = childAges.length;
 
   const handleModeChange = (newMode: MoveMode) => {
     setMode(newMode);
@@ -57,6 +62,7 @@ export default function TLECalculatorScreen() {
   };
 
   return (
+    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
     <ThemedView style={styles.container}>
       {/* ── Header ─────────────────────────────────────────────────────────── */}
       <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
@@ -167,9 +173,9 @@ export default function TLECalculatorScreen() {
           </ThemedText>
           <FamilyComposer
             hasSpouse={hasSpouse}
-            numChildren={numChildren}
+            childAges={childAges}
             onSpouseChange={setHasSpouse}
-            onChildrenChange={setNumChildren}
+            onChildAgesChange={setChildAges}
           />
 
           {/* Rate factor summary */}
@@ -192,11 +198,19 @@ export default function TLECalculatorScreen() {
                   </ThemedText>
                 </View>
               )}
-              {numChildren > 0 && (
+              {childAges.filter((a) => a >= 12).length > 0 && (
                 <View style={styles.factorRow}>
                   <View style={[styles.factorDot, { backgroundColor: Brand.success }]} />
                   <ThemedText type="small" style={styles.factorText}>
-                    Each child: {(CHILD_FACTOR * 100).toFixed(3)}% × ${effectivePerDiem} = {fmtMoney(effectivePerDiem * CHILD_FACTOR)}/day
+                    {childAges.filter((a) => a >= 12).length} child{childAges.filter((a) => a >= 12).length > 1 ? 'ren' : ''} age 12+: {(CHILD_FACTOR_12PLUS * 100).toFixed(3)}% each × ${effectivePerDiem} = {fmtMoney(effectivePerDiem * CHILD_FACTOR_12PLUS * childAges.filter((a) => a >= 12).length)}/day
+                  </ThemedText>
+                </View>
+              )}
+              {childAges.filter((a) => a < 12).length > 0 && (
+                <View style={styles.factorRow}>
+                  <View style={[styles.factorDot, { backgroundColor: Brand.warning }]} />
+                  <ThemedText type="small" style={styles.factorText}>
+                    {childAges.filter((a) => a < 12).length} child{childAges.filter((a) => a < 12).length > 1 ? 'ren' : ''} under 12: {(CHILD_FACTOR_UNDER12 * 100).toFixed(2)}% each × ${effectivePerDiem} = {fmtMoney(effectivePerDiem * CHILD_FACTOR_UNDER12 * childAges.filter((a) => a < 12).length)}/day
                   </ThemedText>
                 </View>
               )}
@@ -280,11 +294,18 @@ export default function TLECalculatorScreen() {
                 {hasSpouse && (
                   <BreakdownRow label="Spouse (16.25%)" value={fmtMoney(result.dailyPhase1.spouse)} color={Brand.accent} />
                 )}
-                {numChildren > 0 && (
+                {result.children12Plus > 0 && (
                   <BreakdownRow
-                    label={`${numChildren} child${numChildren > 1 ? 'ren' : ''} (${numChildren} × 8.125%)`}
-                    value={fmtMoney(result.dailyPhase1.children)}
+                    label={`${result.children12Plus} child${result.children12Plus > 1 ? 'ren' : ''} 12+ (${result.children12Plus} × 8.125%)`}
+                    value={fmtMoney(effectivePerDiem * CHILD_FACTOR_12PLUS * result.children12Plus)}
                     color={Brand.success}
+                  />
+                )}
+                {result.childrenUnder12 > 0 && (
+                  <BreakdownRow
+                    label={`${result.childrenUnder12} child${result.childrenUnder12 > 1 ? 'ren' : ''} under 12 (${result.childrenUnder12} × 5.42%)`}
+                    value={fmtMoney(effectivePerDiem * CHILD_FACTOR_UNDER12 * result.childrenUnder12)}
+                    color={Brand.warning}
                   />
                 )}
                 <BreakdownRow
@@ -306,11 +327,18 @@ export default function TLECalculatorScreen() {
                     {hasSpouse && (
                       <BreakdownRow label="Spouse (16.25%)" value={fmtMoney(result.dailyPhase2.spouse)} color={Brand.accent} />
                     )}
-                    {numChildren > 0 && (
+                    {result.children12Plus > 0 && (
                       <BreakdownRow
-                        label={`${numChildren} child${numChildren > 1 ? 'ren' : ''} (${numChildren} × 8.125%)`}
-                        value={fmtMoney(result.dailyPhase2.children)}
+                        label={`${result.children12Plus} child${result.children12Plus > 1 ? 'ren' : ''} 12+ (${result.children12Plus} × 8.125%)`}
+                        value={fmtMoney(effectivePerDiem * TLA_PHASE2_PCT * CHILD_FACTOR_12PLUS * result.children12Plus)}
                         color={Brand.success}
+                      />
+                    )}
+                    {result.childrenUnder12 > 0 && (
+                      <BreakdownRow
+                        label={`${result.childrenUnder12} child${result.childrenUnder12 > 1 ? 'ren' : ''} under 12 (${result.childrenUnder12} × 5.42%)`}
+                        value={fmtMoney(effectivePerDiem * TLA_PHASE2_PCT * CHILD_FACTOR_UNDER12 * result.childrenUnder12)}
+                        color={Brand.warning}
                       />
                     )}
                     <BreakdownRow
@@ -337,7 +365,7 @@ export default function TLECalculatorScreen() {
               {/* Family & locality summary */}
               <View style={[styles.summaryBox, { backgroundColor: `${Brand.primary}10` }]}>
                 <ThemedText type="small" style={{ color: Brand.primaryLight, lineHeight: 18 }}>
-                  Family: {familyLabel(hasSpouse, numChildren)}
+                  Family: {familyLabel(hasSpouse, childAges)}
                   {'\n'}
                   Locality per diem: ${effectivePerDiem}/day
                   {locality ? ` (${locality.name})` : ' (custom)'}
@@ -363,8 +391,10 @@ export default function TLECalculatorScreen() {
           JTR rates. CONUS rates from GSA; OCONUS rates from DoD JFTR. Always verify with your
           gaining unit's finance office before making lodging decisions.
         </ThemedText>
+        <BranchRegNote />
       </ScrollView>
     </ThemedView>
+    </KeyboardAvoidingView>
   );
 }
 

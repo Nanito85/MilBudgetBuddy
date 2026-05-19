@@ -1,45 +1,61 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { Brand, Spacing } from '@/constants/theme';
-import { useUserStore } from '@/store/user.store';
 import { ThemedText } from './themed-text';
 
 export function DisclaimerModal() {
-  const disclaimerAcknowledged = useUserStore((s) => s.disclaimerAcknowledged);
-  const setDisclaimerAcknowledged = useUserStore((s) => s.setDisclaimerAcknowledged);
+  const [acknowledged, setAcknowledged] = useState(false);
 
-  if (disclaimerAcknowledged) return null;
+  if (acknowledged) return null;
 
   return (
     <Modal visible transparent animationType="fade" statusBarTranslucent>
       <View style={styles.overlay}>
         <View style={styles.card}>
           <View style={styles.accentBar} />
-          <ScrollView style={styles.body} contentContainerStyle={styles.bodyContent}>
+          <ScrollView style={styles.scrollArea} contentContainerStyle={styles.bodyContent}>
+
             <ThemedText style={styles.title}>IMPORTANT NOTICE</ThemedText>
+
+            <View style={styles.eduBanner}>
+              <ThemedText style={styles.eduText}>FOR EDUCATIONAL PURPOSES ONLY</ThemedText>
+              <ThemedText style={styles.eduSig}>~Elo</ThemedText>
+            </View>
+
             <ThemedText style={styles.section}>Not Financial Advice</ThemedText>
             <ThemedText style={styles.body2}>
-              MilBudgetBuddy provides educational tools and estimates only. The figures shown —
-              pay calculations, BAH amounts, TRICARE cost estimates, retirement projections, and
-              all other outputs — are approximations for informational purposes and may not
-              reflect your actual entitlements or costs.
+              MilBudgetBuddy provides educational tools and estimates only. Pay calculations,
+              BAH amounts, TRICARE cost estimates, retirement projections, and all other
+              outputs are approximations for informational purposes and may not reflect your
+              actual entitlements or costs.
             </ThemedText>
+
+            <ThemedText style={styles.section}>Branch Regulations Apply</ThemedText>
+            <ThemedText style={styles.body2}>
+              While the Joint Travel Regulation (JTR) establishes baseline DoD policies,
+              each branch of service maintains its own regulations that may differ. Always
+              consult your branch-specific guidance and your unit S1 / Finance office before
+              making decisions based on this app.
+            </ThemedText>
+
             <ThemedText style={styles.section}>Official Sources</ThemedText>
             <ThemedText style={styles.body2}>
-              Always verify your pay and benefits with your finance office, MyPay (dfas.mil),
-              milConnect, or the appropriate military personnel system. Tax guidance should come
-              from a qualified tax professional or MilTax (via Military OneSource).
+              Verify your pay and benefits with your finance office, MyPay (dfas.mil),
+              milConnect, or the appropriate military personnel system. Tax guidance should
+              come from a qualified tax professional or MilTax (via Military OneSource).
             </ThemedText>
+
             <ThemedText style={styles.section}>No Liability</ThemedText>
             <ThemedText style={styles.body2}>
               The developer assumes no responsibility for financial decisions made based on
-              information provided by this app. Investment and insurance choices should be made
-              in consultation with licensed professionals.
+              information provided by this app. Investment and insurance choices should be
+              made in consultation with licensed professionals.
             </ThemedText>
+
           </ScrollView>
           <Pressable
-            onPress={setDisclaimerAcknowledged}
+            onPress={() => setAcknowledged(true)}
             style={({ pressed }) => [styles.btn, pressed && { opacity: 0.75 }]}>
             <ThemedText style={styles.btnText}>I UNDERSTAND — CONTINUE</ThemedText>
           </Pressable>
@@ -70,8 +86,8 @@ const styles = StyleSheet.create({
     height: 3,
     backgroundColor: Brand.accent,
   },
-  body: {
-    maxHeight: 420,
+  scrollArea: {
+    maxHeight: 440,
   },
   bodyContent: {
     padding: Spacing.three,
@@ -83,7 +99,31 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     letterSpacing: 2,
     color: Brand.tactical,
-    marginBottom: 12,
+    marginBottom: 8,
+  },
+  eduBanner: {
+    backgroundColor: Brand.accent + '18',
+    borderWidth: 1,
+    borderColor: Brand.accent + '60',
+    borderRadius: 3,
+    paddingVertical: 10,
+    paddingHorizontal: Spacing.two,
+    alignItems: 'center',
+    gap: 2,
+    marginBottom: 4,
+  },
+  eduText: {
+    fontFamily: 'monospace',
+    fontSize: 13,
+    fontWeight: '900',
+    letterSpacing: 1.5,
+    color: Brand.accent,
+  },
+  eduSig: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: Brand.accent + 'AA',
+    fontStyle: 'italic',
   },
   section: {
     fontFamily: 'monospace',

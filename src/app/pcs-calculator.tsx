@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { Keyboard, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import { Keyboard, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
@@ -121,6 +121,7 @@ export default function PCSCalculatorScreen() {
   const showEntitlements = miles > 0 || tleDepartDays > 0 || tleGainDays > 0;
 
   return (
+    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
     <ThemedView style={styles.container}>
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
@@ -459,6 +460,7 @@ export default function PCSCalculatorScreen() {
         </ThemedText>
       </ScrollView>
     </ThemedView>
+    </KeyboardAvoidingView>
   );
 }
 

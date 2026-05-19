@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
@@ -98,6 +98,7 @@ export default function GiBillCalculatorScreen() {
   const pctRemaining = monthsRemaining / GI_BILL_TOTAL_MONTHS;
 
   return (
+    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
     <ThemedView style={{ flex: 1 }}>
       <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
         <Pressable
@@ -304,6 +305,7 @@ export default function GiBillCalculatorScreen() {
 
       </ScrollView>
     </ThemedView>
+    </KeyboardAvoidingView>
   );
 }
 

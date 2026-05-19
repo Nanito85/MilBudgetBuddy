@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BranchRegNote } from '@/components/BranchRegNote';
@@ -289,6 +289,7 @@ export default function BahGuideScreen() {
   }, [ohaSearch]);
 
   return (
+    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
     <ThemedView style={{ flex: 1 }}>
       <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
         <Pressable
@@ -631,6 +632,7 @@ export default function BahGuideScreen() {
         <BranchRegNote />
       </ScrollView>
     </ThemedView>
+    </KeyboardAvoidingView>
   );
 }
 

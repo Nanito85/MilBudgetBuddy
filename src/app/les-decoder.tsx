@@ -1,6 +1,8 @@
 import { useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
 import {
+  KeyboardAvoidingView,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -193,6 +195,7 @@ export default function LESDecoderScreen() {
   const sectionOrder: LESSection[] = ['entitlements', 'deductions', 'leave', 'admin'];
 
   return (
+    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
     <ThemedView style={styles.container}>
       {/* ── Header ─────────────────────────────────────────────────────────── */}
       <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
@@ -479,6 +482,7 @@ export default function LESDecoderScreen() {
         </ScrollView>
       )}
     </ThemedView>
+    </KeyboardAvoidingView>
   );
 }
 

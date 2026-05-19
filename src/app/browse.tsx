@@ -92,7 +92,7 @@ const modalStyles = StyleSheet.create({
   input: { fontSize: 18, fontWeight: '700', paddingVertical: Spacing.two + 4, color: '#C8D8E8' },
   themeRow: { flexDirection: 'row', gap: Spacing.two },
   themeBtn: { flex: 1, borderWidth: 1.5, borderColor: Brand.border, borderRadius: 4, padding: Spacing.three, alignItems: 'center', gap: Spacing.one },
-  themeEmoji: { fontSize: 28 },
+  themeEmoji: { fontSize: 28, lineHeight: 36 },
   themeLabel: { fontSize: 9, fontWeight: '800', letterSpacing: 1, color: '#3D6080' },
   addBtn: { backgroundColor: Brand.accent, borderRadius: 4, padding: Spacing.three, alignItems: 'center', marginTop: 'auto' },
   addBtnText: { color: '#04080F', fontWeight: '900', fontSize: 13, letterSpacing: 1 },
@@ -149,12 +149,12 @@ const kidCardStyles = StyleSheet.create({
   accentBar: { width: 3 },
   content: { flex: 1, flexDirection: 'row', alignItems: 'center', padding: Spacing.three, gap: Spacing.two },
   avatar: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#0D1E30', alignItems: 'center', justifyContent: 'center' },
-  avatarEmoji: { fontSize: 22 },
+  avatarEmoji: { fontSize: 22, lineHeight: 28 },
   info: { flex: 1, gap: 4 },
   name: { fontSize: 13, fontWeight: '800', letterSpacing: 0.5, color: '#C8D8E8' },
   statsRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  stat: { fontSize: 9, fontWeight: '700', letterSpacing: 0.5 },
-  statDot: { fontSize: 9, color: '#2A4A60' },
+  stat: { fontSize: 10, fontWeight: '700', letterSpacing: 0.5 },
+  statDot: { fontSize: 10, color: '#3D5870' },
   progressTrack: { height: 2, backgroundColor: '#0D1E30', borderRadius: 1, marginTop: 2 },
   progressFill: { height: '100%', borderRadius: 1 },
   arrow: { fontSize: 22, fontWeight: '300' },
@@ -189,7 +189,9 @@ export default function KidsScreen() {
     <ThemedView style={styles.container}>
       <ScrollView
         contentContainerStyle={[styles.content, { paddingBottom: BottomTabInset + Spacing.five }]}
-        showsVerticalScrollIndicator={false}>
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag">
         <SafeAreaView>
           <ThemedText type="label" style={styles.eyebrow}>// FAMILY COMMAND</ThemedText>
           <ThemedText style={styles.heading}>CADET HQ</ThemedText>
@@ -266,8 +268,8 @@ const styles = StyleSheet.create({
   kidsList: { gap: Spacing.two },
   emptyState: { alignItems: 'center', paddingVertical: Spacing.five, gap: Spacing.two },
   emptyEmoji: { fontSize: 48 },
-  emptyTitle: { fontSize: 14, fontWeight: '900', letterSpacing: 2, color: '#3D6080' },
-  emptyBody: { color: '#3D6080', fontSize: 10, textAlign: 'center', lineHeight: 16, paddingHorizontal: Spacing.three },
+  emptyTitle: { fontSize: 14, fontWeight: '900', letterSpacing: 2, color: '#6B92B0' },
+  emptyBody: { color: '#6B92B0', fontSize: 11, textAlign: 'center', lineHeight: 17, paddingHorizontal: Spacing.three },
   addBtn: {
     backgroundColor: '#080E1C',
     borderWidth: 1,
@@ -287,6 +289,6 @@ const styles = StyleSheet.create({
   },
   infoRow: { flexDirection: 'row', gap: Spacing.two, alignItems: 'flex-start' },
   infoEmoji: { fontSize: 18, width: 28, textAlign: 'center' },
-  infoTitle: { color: Brand.accent, fontSize: 9, marginBottom: 2 },
-  infoBody: { color: '#4D7A9A', fontSize: 9, lineHeight: 14 },
+  infoTitle: { color: Brand.accent, fontSize: 10, marginBottom: 2 },
+  infoBody: { color: '#6B92B0', fontSize: 11, lineHeight: 16 },
 });

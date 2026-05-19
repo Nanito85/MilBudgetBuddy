@@ -3,6 +3,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { BranchRegNote } from '@/components/BranchRegNote';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { PayGrade } from '@/data/bah-rates';
@@ -345,6 +346,7 @@ export default function DITYCalculatorScreen() {
           and current DTMO rates. Weight allowances from JTR Table 5-A — verify with your TMO/PPPO
           before your move.
         </ThemedText>
+        <BranchRegNote />
       </ScrollView>
     </ThemedView>
   );

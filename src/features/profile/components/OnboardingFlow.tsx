@@ -1,14 +1,11 @@
 import React, { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Switch, TextInput, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Switch, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
-import { RankInsignia } from '@/components/RankInsignia';
-import { RankVariantPicker } from '@/components/RankVariantPicker';
-import { RankVariant } from '@/data/rank-insignia';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Brand, Spacing } from '@/constants/theme';
+import { useThemeColors } from '@/hooks/use-theme';
 import { PayGrade } from '@/data/bah-rates';
 import { US_STATES } from '@/data/state-tax';
 import { GradePicker } from '@/features/pcs/components/GradePicker';
@@ -91,20 +88,14 @@ function BranchStep({ onNext }: { onNext: (branch?: MilitaryBranch) => void }) {
 }
 
 // ── Step 2: Service Info ───────────────────────────────────────────────────────
-function ServiceInfoStep({ branch, onNext }: {
-  branch: MilitaryBranch | undefined;
-  onNext: (grade: PayGrade | undefined, lastName: string, nickname: string, yos: number, variant: RankVariant) => void;
+function ServiceInfoStep({ onNext }: {
+  onNext: (grade: PayGrade | undefined, lastName: string, nickname: string, yos: number) => void;
 }) {
   const [grade, setGrade] = useState<PayGrade | undefined>();
-  const [variant, setVariant] = useState<RankVariant>('default');
   const [lastName, setLastName] = useState('');
   const [nickname, setNickname] = useState('');
   const [yos, setYos] = useState(4);
-
-  const handleGradeChange = (g: PayGrade) => {
-    setGrade(g);
-    setVariant('default');
-  };
+  const tc = useThemeColors();
 
   return (
     <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.scrollStep} showsVerticalScrollIndicator={false}>
@@ -115,22 +106,7 @@ function ServiceInfoStep({ branch, onNext }: {
 
       <View style={styles.fieldBlock}>
         <ThemedText type="smallBold" themeColor="textSecondary" style={styles.fieldLabel}>PAY GRADE</ThemedText>
-        <View style={styles.gradeRow}>
-          <View style={{ flex: 1 }}>
-            <GradePicker selected={grade ?? 'E5'} onSelect={handleGradeChange} />
-          </View>
-          {grade && (
-            <RankInsignia branch={branch} grade={grade} variant={variant} size="md" />
-          )}
-        </View>
-        {grade && (
-          <RankVariantPicker
-            branch={branch}
-            grade={grade}
-            selected={variant}
-            onSelect={setVariant}
-          />
-        )}
+        <GradePicker selected={grade ?? 'E5'} onSelect={setGrade} />
       </View>
 
       <View style={styles.fieldBlock}>
@@ -141,7 +117,7 @@ function ServiceInfoStep({ branch, onNext }: {
             onChangeText={setLastName}
             placeholder="e.g. SMITH"
             placeholderTextColor="rgba(128,128,128,0.5)"
-            style={styles.textInput}
+            style={[styles.textInput, { color: tc.textPrimary }]}
             autoCapitalize="characters"
           />
         </ThemedView>
@@ -157,7 +133,7 @@ function ServiceInfoStep({ branch, onNext }: {
             onChangeText={setNickname}
             placeholder="e.g. Maverick"
             placeholderTextColor="rgba(128,128,128,0.5)"
-            style={styles.textInput}
+            style={[styles.textInput, { color: tc.textPrimary }]}
           />
         </ThemedView>
       </View>
@@ -168,11 +144,11 @@ function ServiceInfoStep({ branch, onNext }: {
 
       <View style={styles.btnGroup}>
         <Pressable
-          onPress={() => onNext(grade, lastName, nickname, yos, variant)}
+          onPress={() => onNext(grade, lastName, nickname, yos)}
           style={({ pressed }) => [styles.primaryBtn, pressed && styles.btnPressed]}>
           <ThemedText style={styles.primaryBtnText}>Continue  →</ThemedText>
         </Pressable>
-        <Pressable onPress={() => onNext(undefined, '', '', yos, 'default')} hitSlop={8} style={styles.skipBtn}>
+        <Pressable onPress={() => onNext(undefined, '', '', yos)} hitSlop={8} style={styles.skipBtn}>
           <ThemedText type="small" themeColor="textSecondary">Skip for now</ThemedText>
         </Pressable>
       </View>
@@ -190,6 +166,7 @@ function LocationFamilyStep({ onNext }: {
   const [stateCode, setStateCode] = useState('');
   const [stateQuery, setStateQuery] = useState('');
   const [showStateList, setShowStateList] = useState(false);
+  const tc = useThemeColors();
 
   const filteredStates = US_STATES.filter((s) =>
     s.name.toLowerCase().includes(stateQuery.toLowerCase()) ||
@@ -229,7 +206,7 @@ function LocationFamilyStep({ onNext }: {
                 onFocus={() => setShowStateList(true)}
                 placeholder="Search state..."
                 placeholderTextColor="rgba(128,128,128,0.5)"
-                style={styles.textInput}
+                style={[styles.textInput, { color: tc.textPrimary }]}
               />
             </ThemedView>
             {showStateList && stateQuery.length > 0 && (
@@ -348,7 +325,6 @@ export function OnboardingFlow() {
   const [step, setStep] = useState<Step>(0);
   const [pendingBranch, setPendingBranch] = useState<MilitaryBranch | undefined>();
   const setBranch = useUserStore((s) => s.setBranch);
-  const setRankVariant = useUserStore((s) => s.setRankVariant);
   const setOnboarded = useUserStore((s) => s.setOnboarded);
   const setServiceInfo = useUserStore((s) => s.setServiceInfo);
   const setLocationFamily = useUserStore((s) => s.setLocationFamily);
@@ -359,11 +335,8 @@ export function OnboardingFlow() {
     setStep(2);
   };
 
-  const handleServiceInfo = (grade: PayGrade | undefined, lastName: string, nickname: string, yos: number, variant: RankVariant) => {
-    if (grade) {
-      setServiceInfo(grade, lastName, nickname, yos);
-      if (variant !== 'default') setRankVariant(variant);
-    }
+  const handleServiceInfo = (grade: PayGrade | undefined, lastName: string, nickname: string, yos: number) => {
+    if (grade) setServiceInfo(grade, lastName, nickname, yos);
     setStep(3);
   };
 
@@ -375,14 +348,18 @@ export function OnboardingFlow() {
 
   return (
     <ThemedView style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
-        <StepDots current={step} total={5} />
-        {step === 0 && <WelcomeStep onNext={() => setStep(1)} />}
-        {step === 1 && <BranchStep onNext={handleBranch} />}
-        {step === 2 && <ServiceInfoStep branch={pendingBranch} onNext={handleServiceInfo} />}
-        {step === 3 && <LocationFamilyStep onNext={handleLocationFamily} />}
-        {step === 4 && <NotificationsStep onFinish={setOnboarded} />}
-      </SafeAreaView>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+        <SafeAreaView style={styles.safeArea}>
+          <StepDots current={step} total={5} />
+          {step === 0 && <WelcomeStep onNext={() => setStep(1)} />}
+          {step === 1 && <BranchStep onNext={handleBranch} />}
+          {step === 2 && <ServiceInfoStep onNext={handleServiceInfo} />}
+          {step === 3 && <LocationFamilyStep onNext={handleLocationFamily} />}
+          {step === 4 && <NotificationsStep onFinish={setOnboarded} />}
+        </SafeAreaView>
+      </KeyboardAvoidingView>
     </ThemedView>
   );
 }

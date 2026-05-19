@@ -1,6 +1,8 @@
 import { useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
 import {
+  KeyboardAvoidingView,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -129,6 +131,7 @@ export default function VALoanCalculatorScreen() {
   }, [homePrice, downPayment, interestRate, loanTerm, usage, exempt, financeFee, annualTax, annualIns]);
 
   return (
+    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
     <ThemedView style={ss.screen}>
       {/* Header */}
       <View style={[ss.header, { paddingTop: insets.top + Spacing.two }]}>
@@ -287,6 +290,7 @@ export default function VALoanCalculatorScreen() {
 
       </ScrollView>
     </ThemedView>
+    </KeyboardAvoidingView>
   );
 }
 

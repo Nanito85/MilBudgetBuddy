@@ -12,7 +12,7 @@ interface Props {
   kidId: string;
   accentColor: string;
   onComplete: (choreId: string, goalId: string) => void;
-  onUncomplete: (choreId: string) => void;
+  onUncomplete: (choreId: string, goalId?: string) => void;
 }
 
 function today() {
@@ -58,7 +58,7 @@ export function ChoresList({ chores, goals, accentColor, onComplete, onUncomplet
             key={chore.id}
             onPress={() => {
               if (done) {
-                onUncomplete(chore.id);
+                onUncomplete(chore.id, primaryGoal?.id);
               } else if (primaryGoal) {
                 onComplete(chore.id, primaryGoal.id);
               }

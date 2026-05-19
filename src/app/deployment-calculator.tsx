@@ -1,6 +1,8 @@
 import { useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
 import {
+  KeyboardAvoidingView,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -9,6 +11,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { BranchRegNote } from '@/components/BranchRegNote';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { PayGrade } from '@/data/bah-rates';
@@ -150,6 +153,7 @@ export default function DeploymentCalculatorScreen() {
   const { monthly, totalGross, totalTaxSavings, totalExtraVsHome, sdpInterest, normalMonthNet, dataYear } = result;
 
   return (
+    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
     <ThemedView style={styles.container}>
       {/* ── Header ─────────────────────────────────────────────────────────── */}
       <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
@@ -434,8 +438,10 @@ export default function DeploymentCalculatorScreen() {
           designations are set by DoD/Treasury; confirm your deployment area qualifies. Verify all
           pay with your finance office. References: DoD FMR Vol 7A, 26 USC §112, JTR.
         </ThemedText>
+        <BranchRegNote />
       </ScrollView>
     </ThemedView>
+    </KeyboardAvoidingView>
   );
 }
 

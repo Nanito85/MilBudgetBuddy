@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
-import { Keyboard, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import { Keyboard, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
@@ -111,6 +111,7 @@ export default function CarLoanScreen() {
   }
 
   return (
+    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
     <ThemedView style={{ flex: 1 }}>
       <View style={[s.header, { paddingTop: insets.top + Spacing.two }]}>
         <Pressable onPress={() => router.canGoBack() ? router.back() : router.push('/tools')} style={s.back}>
@@ -312,6 +313,7 @@ export default function CarLoanScreen() {
 
       </ScrollView>
     </ThemedView>
+    </KeyboardAvoidingView>
   );
 }
 
