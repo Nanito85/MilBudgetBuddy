@@ -250,7 +250,7 @@ export default function EtsChecklistScreen() {
           style={styles.back}>
           <ThemedText style={styles.backChevron}>‹</ThemedText>
         </Pressable>
-        <ThemedText style={styles.title}>ETS Checklist</ThemedText>
+        <ThemedText style={styles.title}>EAS/ETS/Separation Checklist</ThemedText>
         <Pressable onPress={handleReset} style={styles.resetBtn}>
           <ThemedText style={styles.resetText}>Reset</ThemedText>
         </Pressable>

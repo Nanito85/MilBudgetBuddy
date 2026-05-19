@@ -1,3 +1,4 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
@@ -490,6 +491,7 @@ export default function ProfileScreen() {
   const setStateResidence = useUserStore((s) => s.setStateResidence);
   const addSpecialPay = useUserStore((s) => s.addSpecialPay);
   const removeSpecialPay = useUserStore((s) => s.removeSpecialPay);
+  const resetAll = useUserStore((s) => s.resetAll);
 
   const [showEditService, setShowEditService] = useState(false);
   const [showStatePicker, setShowStatePicker] = useState(false);
@@ -552,10 +554,37 @@ export default function ProfileScreen() {
   };
 
   const handleResetApp = () => {
-    Alert.alert('Reset App Data', 'This clears all tips, chat, and preferences.', [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Reset', style: 'destructive', onPress: () => { clearSaved(); clearChat(); } },
-    ]);
+    Alert.alert(
+      'Reset All App Data',
+      'This will permanently delete your profile, budget, goals, and all saved data. This cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Continue',
+          style: 'destructive',
+          onPress: () => {
+            Alert.alert(
+              'Final Confirmation',
+              'Are you absolutely sure? All data will be erased and you will need to set up a new profile.',
+              [
+                { text: 'Go Back', style: 'cancel' },
+                {
+                  text: 'Erase All Data',
+                  style: 'destructive',
+                  onPress: async () => {
+                    resetAll();
+                    clearSaved();
+                    clearChat();
+                    await AsyncStorage.clear();
+                    router.replace('/');
+                  },
+                },
+              ]
+            );
+          },
+        },
+      ]
+    );
   };
 
   return (

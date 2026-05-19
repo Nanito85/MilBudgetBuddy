@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Keyboard, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
@@ -60,6 +60,7 @@ export default function CarLoanScreen() {
   const [price, setPrice]       = useState(20000);
   const [downPmt, setDownPmt]   = useState(2000);
   const [apr, setApr]           = useState(8.9);
+  const [aprInput, setAprInput] = useState('8.9');
   const [term, setTerm]         = useState(60);
 
   const basePay    = useMemo(() => getBasicPay(grade, storeYos ?? 4), [grade, storeYos]);
@@ -101,7 +102,9 @@ export default function CarLoanScreen() {
   function AprBtn({ rate }: { rate: number }) {
     const active = apr === rate;
     return (
-      <Pressable onPress={() => setApr(rate)} style={[s.chip, active && { backgroundColor: Brand.primary, borderColor: Brand.primary }]}>
+      <Pressable
+        onPress={() => { setApr(rate); setAprInput(String(rate)); }}
+        style={[s.chip, active && { backgroundColor: Brand.primary, borderColor: Brand.primary }]}>
         <ThemedText style={[s.chipTxt, active && { color: '#fff' }]}>{rate}%</ThemedText>
       </Pressable>
     );
@@ -181,6 +184,29 @@ export default function CarLoanScreen() {
           <ThemedText style={s.cardHint}>Junior enlisted often see 10–24% at dealer lots near bases</ThemedText>
           <View style={s.chipRow}>
             {[3.9, 5.9, 8.9, 12.9, 18.9, 24.9].map((r) => <AprBtn key={r} rate={r} />)}
+          </View>
+
+          {/* Custom APR input */}
+          <View style={s.customAprRow}>
+            <ThemedText style={s.customAprLabel}>Custom APR (from lender)</ThemedText>
+            <View style={s.customAprInputWrap}>
+              <TextInput
+                style={s.customAprInput}
+                value={aprInput}
+                onChangeText={(t) => {
+                  const clean = t.replace(/[^0-9.]/g, '');
+                  setAprInput(clean);
+                  const parsed = parseFloat(clean);
+                  if (!isNaN(parsed) && parsed >= 0 && parsed < 100) setApr(parsed);
+                }}
+                keyboardType="decimal-pad"
+                placeholder="e.g. 6.74"
+                placeholderTextColor="#3D6080"
+                returnKeyType="done"
+                onSubmitEditing={Keyboard.dismiss}
+              />
+              <ThemedText style={s.customAprUnit}>%</ThemedText>
+            </View>
           </View>
 
           <ThemedText style={[s.cardLabel, { marginTop: Spacing.two }]}>LOAN TERM</ThemedText>
@@ -346,6 +372,12 @@ const s = StyleSheet.create({
   benchBadge: { borderRadius: 4, paddingHorizontal: Spacing.two, paddingVertical: 4, borderWidth: 1 },
   benchLabel: { fontSize: 10, fontWeight: '800', letterSpacing: 0.5 },
   benchVal: { fontSize: 12, color: '#4D7A9A' },
+
+  customAprRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: Spacing.two },
+  customAprLabel: { fontSize: 11, color: '#8AA8C0', flex: 1 },
+  customAprInputWrap: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#04080F', borderWidth: 1, borderColor: Brand.accent, borderRadius: 4, paddingHorizontal: Spacing.two, paddingVertical: 6 },
+  customAprInput: { fontSize: 15, fontWeight: '700', color: Brand.accent, width: 60, textAlign: 'right', fontFamily: 'Courier New' },
+  customAprUnit: { fontSize: 13, fontWeight: '700', color: Brand.accent },
 
   tipCard: { borderRadius: 4, padding: Spacing.three, gap: Spacing.one + 2 },
   tipLabel: { fontSize: 9, fontWeight: '800', color: Brand.accent, letterSpacing: 1, marginBottom: Spacing.one },

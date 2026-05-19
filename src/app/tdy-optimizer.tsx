@@ -1,8 +1,9 @@
 import { useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import { Keyboard, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { BranchRegNote } from '@/components/BranchRegNote';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Brand, Spacing } from '@/constants/theme';
@@ -31,11 +32,11 @@ export default function TdyOptimizerScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
 
-  const [search,   setSearch]   = useState('');
-  const [selected, setSelected] = useState<Locality>(LOCALITIES[2]); // DC
-  const [days,     setDays]     = useState(14);
-  const [actualLodging, setActualLodging] = useState(0);
-  const [actualMie,     setActualMie]     = useState(0);
+  const [search,        setSearch]        = useState('');
+  const [selected,      setSelected]      = useState<Locality>(LOCALITIES[2]); // DC
+  const [days,          setDays]          = useState(14);
+  const [lodgingInput,  setLodgingInput]  = useState('');
+  const [kitchenette,   setKitchenette]   = useState(false);
 
   const filteredLocalities = useMemo(() => {
     if (!search) return LOCALITIES.slice(0, 20);
@@ -47,22 +48,21 @@ export default function TdyOptimizerScreen() {
     ).slice(0, 15);
   }, [search]);
 
+  const KITCHENETTE_SAVINGS = 15; // $/day — cooking in room saves on M&IE
+
   const authorizedPerDiem = selected.perDiem;
   const authorizedMie     = getMie(authorizedPerDiem);
   const authorizedLodging = getLodging(authorizedPerDiem);
 
-  const actualLodgingFinal = actualLodging > 0 ? actualLodging : authorizedLodging * 0.6;
-  const actualMieFinal     = actualMie > 0 ? actualMie : authorizedMie * 0.7;
+  const enteredLodging    = parseFloat(lodgingInput) || 0;
+  const effectiveLodging  = enteredLodging > 0 ? enteredLodging : authorizedLodging;
+  const lodgingSavings    = Math.max(0, authorizedLodging - effectiveLodging);
+  const mieSavings        = kitchenette ? KITCHENETTE_SAVINGS : 0;
 
-  const actualDailyTotal  = actualLodgingFinal + actualMieFinal;
-  const authorizedDaily   = authorizedPerDiem;
-
-  const dailySavings = Math.max(0, authorizedDaily - actualDailyTotal);
-  const totalSavings = dailySavings * days;
-  const totalAuthorized = authorizedDaily * days;
-  const totalActual     = actualDailyTotal * days;
-
-  const pocketPct = authorizedDaily > 0 ? (dailySavings / authorizedDaily) * 100 : 0;
+  const dailySavings   = lodgingSavings + mieSavings;
+  const totalSavings   = dailySavings * days;
+  const totalAuthorized = authorizedPerDiem * days;
+  const pocketPct      = authorizedPerDiem > 0 ? (dailySavings / authorizedPerDiem) * 100 : 0;
 
   function Stepper({ value, step, min, max, onChange }: {
     value: number; step: number; min: number; max: number; onChange: (v: number) => void;
@@ -169,34 +169,60 @@ export default function TdyOptimizerScreen() {
           </ThemedText>
         </ThemedView>
 
-        {/* Actual spend (optional) */}
+        {/* Actual spend */}
         <ThemedView type="backgroundElement" style={styles.card}>
-          <ThemedText style={styles.cardLabel}>YOUR ACTUAL DAILY SPEND (OPTIONAL)</ThemedText>
-          <ThemedText style={styles.cardNote}>
-            Leave at 0 to use estimated defaults (60% of lodging, 70% of M&IE).
-          </ThemedText>
+          <ThemedText style={styles.cardLabel}>YOUR ACTUAL SPEND</ThemedText>
+
+          {/* Lodging TextInput */}
           <View style={styles.actualRow}>
-            <ThemedText style={styles.stepperLabel}>Actual lodging/night</ThemedText>
-            <View style={styles.inlineStepperControls}>
-              <Pressable style={styles.stepBtn} onPress={() => setActualLodging(Math.max(0, actualLodging - 10))}>
-                <ThemedText style={styles.stepBtnText}>−</ThemedText>
-              </Pressable>
-              <ThemedText style={styles.stepperValue}>{fmt(actualLodging)}</ThemedText>
-              <Pressable style={styles.stepBtn} onPress={() => setActualLodging(Math.min(500, actualLodging + 10))}>
-                <ThemedText style={styles.stepBtnText}>+</ThemedText>
-              </Pressable>
+            <View style={{ flex: 1, gap: 2 }}>
+              <ThemedText style={styles.stepperLabel}>Actual lodging/night</ThemedText>
+              <ThemedText style={[styles.cardNote, { marginTop: 0 }]}>
+                Authorized: {fmtDay(authorizedLodging)}/night
+              </ThemedText>
             </View>
+            <TextInput
+              style={styles.lodgingInput}
+              value={lodgingInput}
+              onChangeText={(t) => setLodgingInput(t.replace(/[^0-9.]/g, ''))}
+              keyboardType="decimal-pad"
+              placeholder={`${authorizedLodging}`}
+              placeholderTextColor="#3D6080"
+              returnKeyType="done"
+              onSubmitEditing={Keyboard.dismiss}
+            />
           </View>
-          <View style={styles.actualRow}>
-            <ThemedText style={styles.stepperLabel}>Actual M&IE/day</ThemedText>
-            <View style={styles.inlineStepperControls}>
-              <Pressable style={styles.stepBtn} onPress={() => setActualMie(Math.max(0, actualMie - 5))}>
-                <ThemedText style={styles.stepBtnText}>−</ThemedText>
-              </Pressable>
-              <ThemedText style={styles.stepperValue}>{fmt(actualMie)}</ThemedText>
-              <Pressable style={styles.stepBtn} onPress={() => setActualMie(Math.min(200, actualMie + 5))}>
-                <ThemedText style={styles.stepBtnText}>+</ThemedText>
-              </Pressable>
+
+          {/* M&IE (fixed at authorized rate) */}
+          <View style={[styles.actualRow, { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: 'rgba(128,128,128,0.15)', paddingTop: Spacing.two }]}>
+            <View style={{ flex: 1, gap: 2 }}>
+              <ThemedText style={styles.stepperLabel}>M&IE</ThemedText>
+              <ThemedText style={styles.cardNote}>Your authorized entitlement — unchanged</ThemedText>
+            </View>
+            <ThemedText style={[styles.stepperValue, { color: Brand.accent }]}>
+              {fmtDay(authorizedMie)}/day
+            </ThemedText>
+          </View>
+
+          {/* Kitchenette toggle */}
+          <View style={[styles.actualRow, { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: 'rgba(128,128,128,0.15)', paddingTop: Spacing.two }]}>
+            <View style={{ flex: 1, gap: 2 }}>
+              <ThemedText style={styles.stepperLabel}>Kitchenette available?</ThemedText>
+              <ThemedText style={styles.cardNote}>
+                Cooking saves ~{fmtDay(KITCHENETTE_SAVINGS)}/day on food spend
+              </ThemedText>
+            </View>
+            <View style={styles.kToggle}>
+              {([false, true] as const).map((val) => (
+                <Pressable
+                  key={String(val)}
+                  onPress={() => setKitchenette(val)}
+                  style={[styles.kToggleBtn, kitchenette === val && styles.kToggleBtnActive]}>
+                  <ThemedText style={[styles.kToggleTxt, kitchenette === val && styles.kToggleTxtActive]}>
+                    {val ? 'Yes' : 'No'}
+                  </ThemedText>
+                </Pressable>
+              ))}
             </View>
           </View>
         </ThemedView>
@@ -211,22 +237,30 @@ export default function TdyOptimizerScreen() {
               {fmt(totalSavings)}
             </ThemedText>
             <ThemedText style={styles.bigSavingsSub}>
-              {pocketPct.toFixed(0)}% of authorized rate stays in your pocket
+              {pocketPct.toFixed(0)}% of authorized per diem stays in your pocket
             </ThemedText>
           </View>
 
           <View style={styles.divider} />
           <View style={styles.dataRow}>
-            <ThemedText style={styles.dataLabel}>Authorized total ({days} days)</ThemedText>
+            <ThemedText style={styles.dataLabel}>Authorized per diem ({days} days)</ThemedText>
             <ThemedText style={styles.dataValue}>{fmt(totalAuthorized)}</ThemedText>
           </View>
+          {lodgingSavings > 0 && (
+            <View style={styles.dataRow}>
+              <ThemedText style={styles.dataLabel}>Lodging savings/day</ThemedText>
+              <ThemedText style={[styles.dataValue, { color: Brand.success }]}>+{fmtDay(lodgingSavings)}/day</ThemedText>
+            </View>
+          )}
+          {kitchenette && (
+            <View style={styles.dataRow}>
+              <ThemedText style={styles.dataLabel}>Kitchenette savings/day</ThemedText>
+              <ThemedText style={[styles.dataValue, { color: Brand.success }]}>+{fmtDay(KITCHENETTE_SAVINGS)}/day</ThemedText>
+            </View>
+          )}
           <View style={styles.dataRow}>
-            <ThemedText style={styles.dataLabel}>Estimated actual spend</ThemedText>
-            <ThemedText style={styles.dataValue}>{fmt(totalActual)}</ThemedText>
-          </View>
-          <View style={styles.dataRow}>
-            <ThemedText style={styles.dataLabel}>Daily pocket savings</ThemedText>
-            <ThemedText style={[styles.dataValue, { color: Brand.success }]}>{fmt(dailySavings)}/day</ThemedText>
+            <ThemedText style={styles.dataLabel}>Total pocket savings/day</ThemedText>
+            <ThemedText style={[styles.dataValue, { color: Brand.success }]}>{fmtDay(dailySavings)}/day</ThemedText>
           </View>
         </ThemedView>
 
@@ -253,6 +287,8 @@ export default function TdyOptimizerScreen() {
             Per diem rates per GSA FY2025. OCONUS rates per JFTR FY2025. Always verify official rates before travel at gsa.gov or defensetravel.dod.mil.
           </ThemedText>
         </ThemedView>
+
+        <BranchRegNote />
 
       </ScrollView>
     </ThemedView>
@@ -340,7 +376,35 @@ const styles = StyleSheet.create({
   rateBoxValue: { fontSize: 16, fontWeight: '900', fontFamily: 'Courier New' },
   rateNote: { fontSize: 9, color: '#3D6080' },
 
-  actualRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  actualRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: Spacing.two },
+
+  lodgingInput: {
+    backgroundColor: '#04080F',
+    borderWidth: 1,
+    borderColor: Brand.border,
+    borderRadius: 4,
+    paddingHorizontal: Spacing.two,
+    paddingVertical: 8,
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#C8D8E8',
+    width: 90,
+    textAlign: 'right',
+    fontFamily: 'Courier New',
+  },
+
+  kToggle: { flexDirection: 'row', gap: Spacing.one },
+  kToggleBtn: {
+    paddingHorizontal: Spacing.two,
+    paddingVertical: 5,
+    borderRadius: 6,
+    backgroundColor: 'rgba(128,128,128,0.1)',
+    minWidth: 44,
+    alignItems: 'center',
+  },
+  kToggleBtnActive: { backgroundColor: Brand.tactical },
+  kToggleTxt: { fontSize: 12, fontWeight: '700', color: '#4D7A9A' },
+  kToggleTxtActive: { color: '#000' },
 
   bigSavingsBox: {
     alignItems: 'center',

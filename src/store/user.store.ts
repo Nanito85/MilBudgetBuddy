@@ -51,6 +51,7 @@ interface UserState extends UserPreferences {
   setSpouseMonthlyIncome: (amount: number) => void;
   setAppTheme: (theme: 'dark' | 'light') => void;
   setFontScale: (scale: number) => void;
+  resetAll: () => void;
 }
 
 function save(prefs: UserPreferences) {
@@ -186,5 +187,10 @@ export const useUserStore = create<UserState>((set, get) => ({
   setFontScale: (fontScale) => {
     set({ fontScale });
     save({ ...snapshot(get), fontScale });
+  },
+
+  resetAll: () => {
+    set({ ...DEFAULTS });
+    AsyncStorage.removeItem(STORAGE_KEY);
   },
 }));

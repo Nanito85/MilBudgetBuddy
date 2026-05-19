@@ -18,6 +18,13 @@ type RetirementSystem = 'both' | 'high3' | 'brs';
 
 const CONTRIB_STEPS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 15];
 const RETURN_STEPS  = [4, 5, 6, 7, 8, 9, 10];
+const VA_RATINGS    = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
+
+// FY2026 VA disability monthly compensation (veteran alone, no dependents)
+const VA_MONTHLY: Record<number, number> = {
+  0: 0, 10: 175.51, 20: 346.95, 30: 537.42, 40: 773.80,
+  50: 1102.04, 60: 1395.93, 70: 1759.19, 80: 2044.89, 90: 2297.96, 100: 3831.30,
+};
 
 export default function RetirementCalculatorScreen() {
   const router = useRouter();
@@ -26,10 +33,12 @@ export default function RetirementCalculatorScreen() {
   const [grade, setGrade] = useState<PayGrade>('E7');
   const [currentAge, setCurrentAge] = useState(30);
   const [currentYOS, setCurrentYOS] = useState(10);
+  const [yearsAtGrade, setYearsAtGrade] = useState(3);
   const [retirementYOS, setRetirementYOS] = useState(20);
   const [system, setSystem] = useState<RetirementSystem>('both');
   const [tspContribIdx, setTspContribIdx] = useState(4);  // 5%
   const [tspReturnIdx, setTspReturnIdx] = useState(3);    // 7%
+  const [vaRating, setVaRating] = useState(0);
 
   const tspContribRate = CONTRIB_STEPS[tspContribIdx] / 100;
   const tspAnnualReturn = RETURN_STEPS[tspReturnIdx] / 100;
@@ -48,6 +57,14 @@ export default function RetirementCalculatorScreen() {
   const showBRS   = system === 'both' || system === 'brs';
 
   const currentPay = getBasicPay(grade, currentYOS);
+
+  // VA disability
+  const vaMonthly = VA_MONTHLY[vaRating] ?? 0;
+  const pensionMonthly = showHigh3 ? result.high3.monthlyPension : result.brs.monthlyPension;
+  // CRDP: ≥50% rating = full pension + full VA (concurrent receipt, no offset)
+  // <50% rating = retirement pay offset by VA amount; net income same as pension (VA portion is tax-free)
+  const crdpEligible = vaRating >= 50;
+  const combinedMonthly = crdpEligible ? pensionMonthly + vaMonthly : pensionMonthly;
 
   return (
     <ThemedView style={styles.container}>
@@ -113,6 +130,14 @@ export default function RetirementCalculatorScreen() {
                 unit="YOS"
               />
               <NumberStepper
+                label={`Years at ${grade} (date of rank)`}
+                value={yearsAtGrade}
+                min={0}
+                max={currentYOS}
+                onChange={setYearsAtGrade}
+                unit="yrs"
+              />
+              <NumberStepper
                 label="Planned years at retirement"
                 value={retirementYOS}
                 min={Math.max(20, currentYOS + 1)}
@@ -121,6 +146,15 @@ export default function RetirementCalculatorScreen() {
                 unit="YOS"
               />
             </View>
+            {yearsAtGrade < 3 && (
+              <View style={[styles.cardPadded, { paddingTop: 0 }]}>
+                <View style={[styles.matchBanner, { backgroundColor: `${Brand.warning}15` }]}>
+                  <ThemedText type="small" style={{ color: Brand.warning, fontWeight: '600' }}>
+                    High-3 note: You've been at {grade} for {yearsAtGrade} yr{yearsAtGrade !== 1 ? 's' : ''}. Your High-3 average will include time at a lower grade, slightly reducing your estimated pension.
+                  </ThemedText>
+                </View>
+              </View>
+            )}
           </ThemedView>
 
           {/* Quick stats */}
@@ -260,6 +294,92 @@ export default function RetirementCalculatorScreen() {
               breakEvenYears={result.breakEvenYearsAfterRetirement}
             />
           )}
+        </View>
+
+        {/* VA DISABILITY */}
+        <View style={styles.section}>
+          <ThemedText type="smallBold" themeColor="textSecondary" style={styles.sectionLabel}>
+            VA DISABILITY (OPTIONAL)
+          </ThemedText>
+          <ThemedView type="backgroundElement" style={styles.card}>
+            <View style={styles.cardPadded}>
+              <ThemedText type="small" themeColor="textSecondary" style={styles.fieldLabel}>
+                Combined VA Rating (FY2026 rates, no dependents)
+              </ThemedText>
+              <View style={styles.chipRow}>
+                {VA_RATINGS.map((r) => (
+                  <Pressable
+                    key={r}
+                    onPress={() => setVaRating(r)}
+                    style={[styles.pctChip, vaRating === r && styles.pctChipActive]}>
+                    <ThemedText style={[styles.pctChipText, vaRating === r && styles.pctChipTextActive]}>
+                      {r}%
+                    </ThemedText>
+                  </Pressable>
+                ))}
+              </View>
+
+              {vaRating > 0 && (
+                <>
+                  <View style={styles.divider} />
+                  <View style={styles.sliderRow}>
+                    <View style={styles.sliderLabelBlock}>
+                      <ThemedText style={styles.sliderLabel}>VA Compensation ({vaRating}%)</ThemedText>
+                      <ThemedText type="small" themeColor="textSecondary">
+                        Tax-free monthly payment
+                      </ThemedText>
+                    </View>
+                    <ThemedText style={[styles.sliderValue, { color: Brand.tactical, fontSize: 20 }]}>
+                      {formatMoney(vaMonthly)}/mo
+                    </ThemedText>
+                  </View>
+
+                  <View style={[styles.matchBanner, { backgroundColor: crdpEligible ? `${Brand.success}15` : `${Brand.warning}15` }]}>
+                    <ThemedText type="small" style={{ color: crdpEligible ? Brand.success : Brand.warning, fontWeight: '600' }}>
+                      {crdpEligible
+                        ? `✓ CRDP eligible (≥50%): Full retirement + Full VA — no offset. You receive both.`
+                        : `⚠ Rating <50%: Retirement pay is offset by VA amount. Net income ≈ pension amount (but VA portion is tax-free).`}
+                    </ThemedText>
+                  </View>
+
+                  <View style={styles.divider} />
+                  <ThemedText type="small" themeColor="textSecondary" style={styles.fieldLabel}>
+                    COMBINED MONTHLY INCOME AT RETIREMENT
+                  </ThemedText>
+                  <View style={styles.sliderRow}>
+                    <ThemedText style={styles.sliderLabel}>
+                      {crdpEligible ? 'Pension + VA' : 'Net income (offset)'}
+                    </ThemedText>
+                    <ThemedText style={[styles.sliderValue, { color: Brand.accent }]}>
+                      {formatMoney(combinedMonthly)}/mo
+                    </ThemedText>
+                  </View>
+                  {crdpEligible && (
+                    <View style={styles.quickStats}>
+                      <ThemedView type="backgroundElement" style={styles.quickStat}>
+                        <ThemedText style={[styles.quickStatVal, { fontSize: 18, color: Brand.primary }]}>
+                          {formatMoney(pensionMonthly)}
+                        </ThemedText>
+                        <ThemedText type="small" themeColor="textSecondary">Pension/mo</ThemedText>
+                      </ThemedView>
+                      <ThemedView type="backgroundElement" style={styles.quickStat}>
+                        <ThemedText style={[styles.quickStatVal, { fontSize: 18, color: Brand.tactical }]}>
+                          {formatMoney(vaMonthly)}
+                        </ThemedText>
+                        <ThemedText type="small" themeColor="textSecondary">VA comp/mo</ThemedText>
+                      </ThemedView>
+                      <ThemedView type="backgroundElement" style={styles.quickStat}>
+                        <ThemedText style={[styles.quickStatVal, { fontSize: 18, color: Brand.accent }]}>
+                          {formatMoney(combinedMonthly)}
+                        </ThemedText>
+                        <ThemedText type="small" themeColor="textSecondary">Total/mo</ThemedText>
+                      </ThemedView>
+                    </View>
+                  )}
+                </>
+              )}
+            </View>
+          </ThemedView>
         </View>
 
         {/* Disclaimer */}
