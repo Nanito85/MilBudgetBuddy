@@ -200,7 +200,7 @@ export default function TricareEstimatorScreen() {
 
         {/* Header */}
         <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
-          <Pressable onPress={() => router.back()} style={styles.backBtn}>
+          <Pressable onPress={() => router.canGoBack() ? router.back() : router.push('/tools')} style={styles.backBtn}>
             <ThemedText style={styles.backText}>‹ BACK</ThemedText>
           </Pressable>
           <ThemedText type="label" style={styles.eyebrow}>// MEDICAL BENEFITS</ThemedText>
