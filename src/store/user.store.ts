@@ -27,7 +27,7 @@ const DEFAULTS: UserPreferences = {
   hasDentalFamily: false,
   sglOptOut: false,
   stateResidence: undefined,
-  quickAccessIds: ['budget', 'credit', 'pcs', 'va_loan'],
+  quickAccessIds: ['budget', 'debt', 'credit', 'retirement'],
   appTheme: 'dark',
   fontScale: 1.0,
 };

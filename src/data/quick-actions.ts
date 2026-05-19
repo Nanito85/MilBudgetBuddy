@@ -29,4 +29,4 @@ export const ALL_QUICK_ACTIONS: QuickAction[] = [
   { id: 'debt',       icon: '💳', label: 'DEBT',     sublabel: 'PAYOFF',   route: '/debt-payoff',          color: '#B71C1C' },
 ];
 
-export const DEFAULT_QUICK_ACCESS_IDS = ['budget', 'credit', 'pcs', 'va_loan'];
+export const DEFAULT_QUICK_ACCESS_IDS = ['budget', 'debt', 'credit', 'retirement'];
