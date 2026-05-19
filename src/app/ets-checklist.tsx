@@ -337,7 +337,7 @@ const styles = StyleSheet.create({
     paddingBottom: Spacing.two,
   },
   back: { width: 40, justifyContent: 'center' },
-  backChevron: { fontSize: 28, fontWeight: '300', color: Brand.primary },
+  backChevron: { fontSize: 28, fontWeight: '300', color: Brand.primary, lineHeight: 34 },
   title: { fontSize: 18, fontWeight: '700' },
   resetBtn: { width: 50, alignItems: 'flex-end' },
   resetText: { fontSize: 12, color: '#4D7A9A', fontWeight: '600' },

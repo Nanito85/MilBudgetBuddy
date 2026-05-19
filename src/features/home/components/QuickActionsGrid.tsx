@@ -66,7 +66,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: 2,
   },
-  icon: { fontSize: 20 },
+  icon: { fontSize: 20, lineHeight: 28 },
   label: { fontSize: 11, letterSpacing: 0.5 },
   sublabel: { fontSize: 8, color: '#3D6080' },
 });

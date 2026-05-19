@@ -89,7 +89,7 @@ function BudgetSnapshotBar({
 
 const bsStyles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  emoji: { fontSize: 16, width: 24, textAlign: 'center' },
+  emoji: { fontSize: 16, width: 24, textAlign: 'center', lineHeight: 22 },
   details: { flex: 1, gap: 4 },
   topRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   name: { fontSize: 9, fontWeight: '700', letterSpacing: 1, color: '#4D7A9A' },

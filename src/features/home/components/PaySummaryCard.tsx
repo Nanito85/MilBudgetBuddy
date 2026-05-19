@@ -612,7 +612,7 @@ const styles = StyleSheet.create({
 
   heroRight: { alignItems: 'flex-end', gap: Spacing.one + 2 },
   expandBtn: { alignItems: 'center', gap: 2 },
-  expandIcon: { fontSize: 14, color: '#3D6080' },
+  expandIcon: { fontSize: 14, color: '#3D6080', lineHeight: 18 },
   expandLabel: { color: '#3D6080', fontSize: 8 },
   editLesBtn: {
     borderWidth: 1, borderColor: Brand.border, borderRadius: 3,
@@ -651,7 +651,7 @@ const styles = StyleSheet.create({
     borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: Brand.border,
     paddingHorizontal: Spacing.three, paddingVertical: Spacing.two,
   },
-  spouseToggleIcon: { fontSize: 14 },
+  spouseToggleIcon: { fontSize: 14, lineHeight: 18 },
   spouseToggleLabel: { flex: 1, fontSize: 10, fontWeight: '700', color: '#4D7A9A', letterSpacing: 0.5 },
   spouseToggleChevron: { fontSize: 10, color: '#3D6080' },
 

@@ -306,7 +306,7 @@ const ss = StyleSheet.create({
     borderBottomColor: Brand.border,
   },
   back: { width: 40 },
-  backChevron: { fontSize: 28, fontWeight: '300', color: Brand.accent },
+  backChevron: { fontSize: 28, fontWeight: '300', color: Brand.accent, lineHeight: 34 },
   headerCenter: { alignItems: 'center', gap: 2 },
   headerSub: { color: Brand.tactical, fontSize: 9 },
   headerTitle: { fontSize: 20, fontWeight: '900', letterSpacing: 1.5, color: '#C8D8E8' },

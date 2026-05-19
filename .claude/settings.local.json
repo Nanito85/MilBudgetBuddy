@@ -37,7 +37,26 @@
       "PowerShell($git = \"C:\\\\Program Files\\\\Git\\\\cmd\\\\git.exe\"; cd \"C:\\\\Users\\\\solit\\\\Documents\\\\web\\\\budgetapp\\\\MilBudgetBuddy\"; & $git add -A; & $git commit -m \"Normalize number font sizes to 26px max across all screens; BAH data verified FY2026\" 2>&1; & $git push 2>&1)",
       "PowerShell($git = \"C:\\\\Program Files\\\\Git\\\\cmd\\\\git.exe\"; cd \"C:\\\\Users\\\\solit\\\\Documents\\\\web\\\\budgetapp\\\\MilBudgetBuddy\"; & $git add -A; & $git commit -m \"Home screen section layout redesign; fix back button fallbacks across all tool screens\" 2>&1; & $git push 2>&1)",
       "PowerShell($git = \"C:\\\\Program Files\\\\Git\\\\cmd\\\\git.exe\"; cd \"C:\\\\Users\\\\solit\\\\Documents\\\\web\\\\budgetapp\\\\MilBudgetBuddy\"; & $git push origin master 2>&1)",
-      "PowerShell($git = \"C:\\\\Program Files\\\\Git\\\\cmd\\\\git.exe\"; cd \"C:\\\\Users\\\\solit\\\\Documents\\\\web\\\\budgetapp\\\\MilBudgetBuddy\"; & $git add -A; & $git commit -m \"feat: show per-paycheck net pay, add spouse income to pay statement\"; & $git push origin master 2>&1 | Select-String -NotMatch \"warning\")"
+      "PowerShell($git = \"C:\\\\Program Files\\\\Git\\\\cmd\\\\git.exe\"; cd \"C:\\\\Users\\\\solit\\\\Documents\\\\web\\\\budgetapp\\\\MilBudgetBuddy\"; & $git add -A; & $git commit -m \"feat: show per-paycheck net pay, add spouse income to pay statement\"; & $git push origin master 2>&1 | Select-String -NotMatch \"warning\")",
+      "PowerShell(cd \"C:\\\\Users\\\\solit\\\\Documents\\\\web\\\\budgetapp\\\\MilBudgetBuddy\"; $env:EAS_NO_VCS=1; npx eas build --platform android --profile preview --non-interactive 2>&1)",
+      "Bash(npx tsc *)",
+      "Bash(node -e \"const d = require\\('./src/data/bah-rates.ts'\\); console.log\\('OK'\\)\")",
+      "Bash(\"C:\\\\Program Files\\\\Git\\\\cmd\\\\git.exe\" add src/store/user.store.ts src/features/tle/components/FamilyComposer.tsx src/app/ets-checklist.tsx src/app/net-worth.tsx src/app/tdy-optimizer.tsx src/app/car-loan.tsx src/app/profile.tsx src/app/retirement-calculator.tsx src/app/pcs-calculator.tsx)",
+      "Bash('C:\\\\Program Files\\\\Git\\\\cmd\\\\git.exe' commit -m ' *)",
+      "Bash(\"C:\\\\Program Files\\\\Git\\\\cmd\\\\git.exe\" push origin master)",
+      "Bash(\"C:\\\\Program Files\\\\Git\\\\cmd\\\\git.exe\" add src/data/quick-actions.ts src/store/user.store.ts)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Bash(npx eas *)",
+      "Bash(node -e \"console.log\\(process.version\\)\")",
+      "Bash(npm install *)",
+      "Bash(node scripts/generate-icon.mjs)",
+      "Bash(node scripts/upload-to-appetize.mjs --token tok_6tbnxrhd5wgsjazykhs3u6ptpy)",
+      "Bash(node scripts/upload-to-appetize.mjs --token tok_6tbnxrhd5wgsjazykhs3u6ptpy --key zwfzz2v2p275ymtyan62xbgnl4)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\solit\\\\Documents\\\\web\\\\budgetapp\\\\MilBudgetBuddy\\\\src\" -Recurse -File -Filter \"*.tsx\" -o Name)",
+      "Bash(Select-Object -First 20)",
+      "Bash(node -e ' *)"
     ]
   }
 }
