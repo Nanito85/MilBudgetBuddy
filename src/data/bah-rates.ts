@@ -572,6 +572,98 @@ const ZIP_ALIAS: Record<string, string> = {
   '02563': '01731', // CG AIRSTA Cape Cod → Hanscom AFB MHA
   // ── Maryland ─────────────────────────────────────────────────────────────────
   '21230': '20755', // CG ISC Baltimore → Fort Meade MHA (closest in DB)
+
+  // ── Rhode Island ─────────────────────────────────────────────────────────────
+  '02841': '06340', // Naval Station Newport → NSB New London MHA
+  // ── New Hampshire ────────────────────────────────────────────────────────────
+  '03803': '01731', // Pease ANGB → Hanscom AFB MHA (Boston area)
+  // ── Connecticut ──────────────────────────────────────────────────────────────
+  '06320': '06340', // USCG Academy New London → NSB New London MHA
+  // ── New Jersey ───────────────────────────────────────────────────────────────
+  '07722': '08641', // Naval Weapons Station Earle → JBMDL NJ MHA
+  '08204': '08641', // USCG Training Center Cape May → JBMDL NJ MHA
+  // ── New York ─────────────────────────────────────────────────────────────────
+  '10996': '11252', // West Point (USMA) → Fort Hamilton MHA
+  // ── Pennsylvania / Delaware ──────────────────────────────────────────────────
+  '17013': '20755', // Carlisle Barracks → Fort Meade MHA
+  '19902': '20755', // Dover AFB → Fort Meade MHA (closest mid-Atlantic)
+  // ── Washington DC / Maryland ─────────────────────────────────────────────────
+  '20319': '20762', // Fort McNair (DC) → Andrews AFB MHA
+  '21005': '20755', // Aberdeen Proving Ground → Fort Meade MHA
+  '21402': '20755', // US Naval Academy (Annapolis) → Fort Meade MHA
+  '21702': '20755', // Fort Detrick (Frederick MD) → Fort Meade MHA
+  // ── Virginia ─────────────────────────────────────────────────────────────────
+  '22060': '22134', // Fort Belvoir → Quantico MHA (Northern VA)
+  '22211': '20762', // Fort Myer-Henderson Hall (Arlington) → Andrews AFB MHA
+  '23460': '23511', // NAS Oceana → Hampton Roads MHA
+  // ── North Carolina ───────────────────────────────────────────────────────────
+  '28308': '28301', // Pope Army Airfield → Fort Liberty MHA
+  '28533': '28542', // MCAS Cherry Point → Camp Lejeune MHA
+  // ── South Carolina ───────────────────────────────────────────────────────────
+  '29404': '29207', // Joint Base Charleston → Fort Jackson MHA
+  '29445': '29207', // Naval Weapons Station Charleston → Fort Jackson MHA
+  '29904': '29207', // MCAS Beaufort → Fort Jackson MHA
+  // ── Georgia ──────────────────────────────────────────────────────────────────
+  '31098': '30905', // Robins AFB (Warner Robins) → Fort Eisenhower MHA
+  '31547': '31314', // Sub Base Kings Bay → Fort Stewart MHA (coastal GA)
+  '31699': '31314', // Moody AFB (Valdosta) → Fort Stewart MHA
+  // ── Florida ──────────────────────────────────────────────────────────────────
+  '32226': '32212', // MCSF Blount Island (Jacksonville) → NAS Jacksonville MHA
+  '32228': '32212', // Naval Station Mayport (Jacksonville) → NAS Jacksonville MHA
+  '32403': '32508', // Tyndall AFB → NAS Pensacola MHA
+  '32542': '32508', // Eglin AFB → NAS Pensacola MHA
+  '32544': '32508', // Hurlburt Field → NAS Pensacola MHA
+  '32937': '33621', // Patrick SFB (Melbourne/Brevard) → MacDill/Tampa MHA
+  '33132': '33621', // USCG Sector Miami → MacDill/Tampa MHA
+  // ── Alabama ──────────────────────────────────────────────────────────────────
+  '35809': '37040', // Redstone Arsenal (Huntsville) → Fort Campbell MHA
+  '36112': '31905', // Maxwell AFB (Montgomery) → Fort Moore MHA
+  // ── Tennessee / Mississippi ──────────────────────────────────────────────────
+  '38053': '37040', // NSA Mid-South (Millington/Memphis) → Fort Campbell MHA
+  '39701': '37040', // Columbus AFB (Columbus MS) → Fort Campbell MHA
+  // ── Illinois / Missouri ──────────────────────────────────────────────────────
+  '60088': '62225', // Naval Station Great Lakes (N Chicago) → Scott AFB MHA
+  '65336': '62225', // Whiteman AFB (Knob Noster MO) → Scott AFB MHA
+  '65473': '62225', // Fort Leonard Wood (Waynesville MO) → Scott AFB MHA
+  // ── Arkansas / Oklahoma ──────────────────────────────────────────────────────
+  '72099': '71446', // Little Rock AFB → Fort Johnson MHA
+  '73523': '73503', // Altus AFB → Fort Sill MHA
+  '73705': '73145', // Vance AFB (Enid OK) → Tinker AFB MHA
+  // ── Texas ────────────────────────────────────────────────────────────────────
+  '76127': '76544', // JRB Fort Worth (NAS) → Fort Cavazos MHA
+  '76908': '76544', // Goodfellow AFB (San Angelo) → Fort Cavazos MHA
+  '78236': '78234', // JBSA-Lackland → JBSA MHA
+  '78363': '78234', // NAS Kingsville → JBSA MHA
+  '78843': '78234', // Laughlin AFB (Del Rio) → JBSA MHA
+  // ── Arizona ──────────────────────────────────────────────────────────────────
+  '85309': '85308', // Luke AFB → Luke AFB MHA (adjacent ZIP)
+  '85365': '85308', // MCAS Yuma / Yuma Proving Ground → Luke AFB MHA
+  // ── New Mexico ───────────────────────────────────────────────────────────────
+  '87117': '79916', // Kirtland AFB (Albuquerque) → Fort Bliss MHA
+  '88002': '79916', // White Sands Missile Range → Fort Bliss MHA (~50 mi)
+  '88103': '79916', // Cannon AFB (Clovis NM) → Fort Bliss MHA
+  '88330': '79916', // Holloman AFB (Alamogordo) → Fort Bliss MHA (~90 mi)
+  // ── Nevada ───────────────────────────────────────────────────────────────────
+  '89018': '89191', // Creech AFB (Indian Springs) → Nellis AFB MHA (~45 mi)
+  '89406': '89191', // NAS Fallon → Nellis AFB MHA (closest NV)
+  // ── California ───────────────────────────────────────────────────────────────
+  '90245': '92054', // Los Angeles AFB (El Segundo) → San Diego/Pendleton MHA
+  '92118': '92054', // NAS North Island (Coronado) → San Diego MHA
+  '92145': '92054', // MCAS Miramar → San Diego MHA
+  '92310': '92054', // Fort Irwin/NTC (Barstow) → San Diego MHA (closest SoCal)
+  '93042': '93437', // Naval Base Ventura County → Vandenberg SFB MHA
+  '93246': '93245', // NAS Lemoore → Lemoore MHA (adjacent ZIP)
+  '93524': '93437', // Edwards AFB (Lancaster) → Vandenberg SFB MHA
+  '93928': '93437', // Fort Hunter Liggett (Jolon) → Vandenberg SFB MHA
+  '93944': '94535', // Presidio of Monterey → Travis AFB MHA (Bay Area)
+  '94952': '94535', // USCG Training Center Petaluma → Travis AFB MHA (~35 mi)
+  '95903': '94535', // Beale AFB (Marysville) → Travis AFB MHA (~50 mi)
+  // ── Washington ───────────────────────────────────────────────────────────────
+  '98312': '98433', // Naval Base Kitsap (Bremerton) → JBLM/Pierce County MHA
+  '99011': '83648', // Fairchild AFB (Spokane) → Mountain Home AFB MHA
+  // ── Alaska ───────────────────────────────────────────────────────────────────
+  '99506': '99501', // JBER Elmendorf (Anchorage) → Anchorage MHA
+  '99702': '99703', // Eielson AFB → Fort Wainwright/Fairbanks MHA
 };
 
 function resolveZip(mhaZip: string): string {
