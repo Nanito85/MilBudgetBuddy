@@ -155,8 +155,43 @@ export const INSTALLATIONS: Installation[] = [
   { id: 'cg_petaluma',         name: 'USCG Training Center Petaluma', city: 'Petaluma',        state: 'CA', mhaZip: '94952', oconus: false, branch: 'Coast Guard' },
   { id: 'cg_new_london',       name: 'USCG Academy',               city: 'New London',        state: 'CT', mhaZip: '06320', oconus: false, branch: 'Coast Guard' },
   { id: 'cg_kodiak',           name: 'USCG Base Kodiak',           city: 'Kodiak',            state: 'AK', mhaZip: '99615', oconus: false, branch: 'Coast Guard' },
-  { id: 'cg_miami',            name: 'USCG Sector Miami',          city: 'Miami',             state: 'FL', mhaZip: '33132', oconus: false, branch: 'Coast Guard' },
-  { id: 'cg_honolulu',         name: 'USCG Base Honolulu',         city: 'Honolulu',          state: 'HI', mhaZip: '96813', oconus: false, branch: 'Coast Guard' },
+  { id: 'cg_miami',            name: 'USCG Sector Miami',              city: 'Miami',          state: 'FL', mhaZip: '33132', oconus: false, branch: 'Coast Guard' },
+  { id: 'cg_honolulu',         name: 'USCG Base Honolulu',             city: 'Honolulu',       state: 'HI', mhaZip: '96813', oconus: false, branch: 'Coast Guard' },
+  { id: 'cg_barbers_point',    name: 'USCG Air Station Barbers Point', city: 'Kapolei',        state: 'HI', mhaZip: '96818', oconus: false, branch: 'Coast Guard' },
+  // ── COAST GUARD — Northeast ───────────────────────────────────────────────────
+  { id: 'cg_boston',           name: 'USCG Sector New England',        city: 'Boston',         state: 'MA', mhaZip: '02110', oconus: false, branch: 'Coast Guard' },
+  { id: 'cg_airsta_capecod',   name: 'USCG Air Station Cape Cod',      city: 'Bourne',         state: 'MA', mhaZip: '02563', oconus: false, branch: 'Coast Guard' },
+  { id: 'cg_portsmouth_nh',    name: 'USCG Sector Northern New England', city: 'Portsmouth',   state: 'NH', mhaZip: '03801', oconus: false, branch: 'Coast Guard' },
+  { id: 'cg_new_haven',        name: 'USCG Sector Long Island Sound',  city: 'New Haven',      state: 'CT', mhaZip: '06512', oconus: false, branch: 'Coast Guard' },
+  { id: 'cg_new_york',         name: 'USCG Sector New York',           city: 'Staten Island',  state: 'NY', mhaZip: '10305', oconus: false, branch: 'Coast Guard' },
+  { id: 'cg_philadelphia',     name: 'USCG Sector Delaware Bay',       city: 'Philadelphia',   state: 'PA', mhaZip: '19112', oconus: false, branch: 'Coast Guard' },
+  { id: 'cg_baltimore',        name: 'USCG ISC Baltimore',             city: 'Baltimore',      state: 'MD', mhaZip: '21230', oconus: false, branch: 'Coast Guard' },
+  // ── COAST GUARD — Southeast ───────────────────────────────────────────────────
+  { id: 'cg_charleston',       name: 'USCG Sector Charleston',         city: 'Charleston',     state: 'SC', mhaZip: '29405', oconus: false, branch: 'Coast Guard' },
+  { id: 'cg_savannah',         name: 'USCG Air Station Savannah',      city: 'Savannah',       state: 'GA', mhaZip: '31408', oconus: false, branch: 'Coast Guard' },
+  { id: 'cg_jacksonville',     name: 'USCG Sector Jacksonville',       city: 'Jacksonville',   state: 'FL', mhaZip: '32210', oconus: false, branch: 'Coast Guard' },
+  { id: 'cg_mobile',           name: 'USCG Sector Mobile',             city: 'Mobile',         state: 'AL', mhaZip: '36615', oconus: false, branch: 'Coast Guard' },
+  // ── COAST GUARD — South / Gulf ────────────────────────────────────────────────
+  { id: 'cg_memphis',          name: 'USCG Sector Memphis',            city: 'Memphis',        state: 'TN', mhaZip: '38103', oconus: false, branch: 'Coast Guard' },
+  { id: 'cg_new_orleans',      name: 'USCG Sector New Orleans',        city: 'New Orleans',    state: 'LA', mhaZip: '70129', oconus: false, branch: 'Coast Guard' },
+  { id: 'cg_galveston',        name: 'USCG Sector Houston-Galveston',  city: 'Galveston',      state: 'TX', mhaZip: '77553', oconus: false, branch: 'Coast Guard' },
+  { id: 'cg_corpus_christi',   name: 'USCG Air Station Corpus Christi', city: 'Corpus Christi', state: 'TX', mhaZip: '78419', oconus: false, branch: 'Coast Guard' },
+  // ── COAST GUARD — Great Lakes ────────────────────────────────────────────────
+  { id: 'cg_cleveland',        name: 'USCG Sector Lake Erie',          city: 'Cleveland',      state: 'OH', mhaZip: '44114', oconus: false, branch: 'Coast Guard' },
+  { id: 'cg_detroit',          name: 'USCG Sector Detroit',            city: 'Detroit',        state: 'MI', mhaZip: '48226', oconus: false, branch: 'Coast Guard' },
+  { id: 'cg_chicago',          name: 'USCG Sector Lake Michigan',      city: 'Chicago',        state: 'IL', mhaZip: '60605', oconus: false, branch: 'Coast Guard' },
+  // ── COAST GUARD — California / Southwest ─────────────────────────────────────
+  { id: 'cg_san_pedro',        name: 'USCG Sector Los Angeles-Long Beach', city: 'San Pedro',  state: 'CA', mhaZip: '90731', oconus: false, branch: 'Coast Guard' },
+  { id: 'cg_san_diego',        name: 'USCG Sector San Diego',          city: 'San Diego',      state: 'CA', mhaZip: '92135', oconus: false, branch: 'Coast Guard' },
+  { id: 'cg_sacramento',       name: 'USCG Air Station Sacramento',    city: 'Sacramento',     state: 'CA', mhaZip: '95655', oconus: false, branch: 'Coast Guard' },
+  // ── COAST GUARD — Pacific Northwest ──────────────────────────────────────────
+  { id: 'cg_portland',         name: 'USCG Sector Columbia River',     city: 'Portland',       state: 'OR', mhaZip: '97217', oconus: false, branch: 'Coast Guard' },
+  { id: 'cg_seattle',          name: 'USCG Sector Puget Sound',        city: 'Seattle',        state: 'WA', mhaZip: '98134', oconus: false, branch: 'Coast Guard' },
+  { id: 'cg_port_angeles',     name: 'USCG Air Station Port Angeles',  city: 'Port Angeles',   state: 'WA', mhaZip: '98363', oconus: false, branch: 'Coast Guard' },
+  // ── COAST GUARD — Alaska ──────────────────────────────────────────────────────
+  { id: 'cg_anchorage',        name: 'USCG Sector Anchorage',          city: 'Anchorage',      state: 'AK', mhaZip: '99501', oconus: false, branch: 'Coast Guard' },
+  { id: 'cg_juneau',           name: 'USCG Sector Juneau',             city: 'Juneau',         state: 'AK', mhaZip: '99801', oconus: false, branch: 'Coast Guard' },
+  { id: 'cg_sitka',            name: 'USCG Air Station Sitka',         city: 'Sitka',          state: 'AK', mhaZip: '99835', oconus: false, branch: 'Coast Guard' },
 
   // ── OCONUS — KOREA ───────────────────────────────────────────────────────────
   { id: 'camp_humphreys',      name: 'Camp Humphreys (USAG Humphreys)', city: 'Pyeongtaek',   state: 'South Korea', mhaZip: '', oconus: true, branch: 'Army' },
