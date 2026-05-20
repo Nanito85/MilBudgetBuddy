@@ -7,6 +7,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { BottomTabInset, Brand, Spacing } from '@/constants/theme';
 import { useEntitlement } from '@/hooks/use-entitlement';
+import { useKidModeStore } from '@/store/kid-mode.store';
 import { useKidsStore } from '@/store/kids.store';
 import { KidGender, KidProfile, getKidTheme } from '@/types/kids.types';
 
@@ -82,6 +83,109 @@ function AddKidModal({ visible, onClose, onAdd }: {
   );
 }
 
+// ── PIN Setup Modal ────────────────────────────────────────────────────────────
+
+function PINSetupModal({ visible, accentColor, onComplete, onCancel }: {
+  visible: boolean;
+  accentColor: string;
+  onComplete: (pin: string) => void;
+  onCancel: () => void;
+}) {
+  const [step, setStep] = useState<'enter' | 'confirm'>('enter');
+  const [firstPin, setFirstPin] = useState('');
+  const [digits, setDigits] = useState('');
+  const [error, setError] = useState('');
+
+  const reset = () => { setStep('enter'); setFirstPin(''); setDigits(''); setError(''); };
+
+  const handleClose = () => { reset(); onCancel(); };
+
+  const pressKey = (k: string) => {
+    if (digits.length >= 4) return;
+    const next = digits + k;
+    setDigits(next);
+    if (next.length === 4) {
+      setTimeout(() => {
+        if (step === 'enter') {
+          setFirstPin(next);
+          setDigits('');
+          setStep('confirm');
+          setError('');
+        } else {
+          if (next === firstPin) {
+            reset();
+            onComplete(next);
+          } else {
+            setError("PINs don't match — try again");
+            setDigits('');
+            setStep('enter');
+            setFirstPin('');
+          }
+        }
+      }, 100);
+    }
+  };
+
+  const del = () => setDigits((d) => d.slice(0, -1));
+  const keys = ['1','2','3','4','5','6','7','8','9','⌫','0',''];
+
+  return (
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={handleClose}>
+      <View style={pinSetupStyles.overlay}>
+        <View style={[pinSetupStyles.card, { borderColor: accentColor + '40' }]}>
+          <ThemedText style={[pinSetupStyles.title, { color: accentColor }]}>SET PARENT PIN</ThemedText>
+          <ThemedText style={pinSetupStyles.subtitle}>
+            {step === 'enter'
+              ? 'Create a 4-digit PIN to lock and unlock kid mode.'
+              : 'Confirm your PIN to make sure you have it right.'}
+          </ThemedText>
+          {error ? <ThemedText style={pinSetupStyles.error}>{error}</ThemedText> : null}
+
+          <View style={pinSetupStyles.dots}>
+            {[0,1,2,3].map((i) => (
+              <View key={i} style={[pinSetupStyles.dot, { borderColor: accentColor }, digits.length > i && { backgroundColor: accentColor }]} />
+            ))}
+          </View>
+
+          <View style={pinSetupStyles.grid}>
+            {keys.map((k, idx) => (
+              <Pressable
+                key={idx}
+                onPress={() => { if (k === '⌫') del(); else if (k !== '') pressKey(k); }}
+                style={({ pressed }) => [
+                  pinSetupStyles.key,
+                  k === '' && { opacity: 0 },
+                  pressed && k !== '' && { opacity: 0.6, backgroundColor: accentColor + '20' },
+                ]}>
+                <ThemedText style={[pinSetupStyles.keyText, k === '⌫' && { fontSize: 22 }]}>{k}</ThemedText>
+              </Pressable>
+            ))}
+          </View>
+
+          <Pressable onPress={handleClose} style={pinSetupStyles.cancelBtn}>
+            <ThemedText style={[pinSetupStyles.cancelText, { color: accentColor }]}>CANCEL</ThemedText>
+          </Pressable>
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
+const pinSetupStyles = StyleSheet.create({
+  overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.85)', alignItems: 'center', justifyContent: 'center', padding: Spacing.three },
+  card: { backgroundColor: '#04080F', borderWidth: 1, borderRadius: 12, padding: Spacing.three, width: '100%', maxWidth: 360, alignItems: 'center', gap: Spacing.two },
+  title: { fontSize: 14, fontWeight: '900', letterSpacing: 2 },
+  subtitle: { fontSize: 12, color: '#6B92B0', textAlign: 'center', paddingHorizontal: Spacing.two },
+  error: { fontSize: 12, color: '#E74C3C', textAlign: 'center' },
+  dots: { flexDirection: 'row', gap: 20, marginVertical: Spacing.two },
+  dot: { width: 18, height: 18, borderRadius: 9, borderWidth: 2, backgroundColor: 'transparent' },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', width: 240 },
+  key: { width: 80, height: 72, alignItems: 'center', justifyContent: 'center', borderRadius: 8 },
+  keyText: { fontSize: 26, fontWeight: '600', color: '#C8D8E8' },
+  cancelBtn: { paddingVertical: Spacing.two, paddingHorizontal: Spacing.four },
+  cancelText: { fontSize: 13, fontWeight: '800', letterSpacing: 0.5 },
+});
+
 const modalStyles = StyleSheet.create({
   bg: { flex: 1, backgroundColor: '#04080F' },
   safe: { flex: 1, padding: Spacing.four, gap: Spacing.two },
@@ -101,7 +205,7 @@ const modalStyles = StyleSheet.create({
 
 // ── Kid Card ───────────────────────────────────────────────────────────────────
 
-function KidCard({ kid, onPress, onRemove }: { kid: KidProfile; onPress: () => void; onRemove: () => void }) {
+function KidCard({ kid, onPress, onRemove, onHandOff }: { kid: KidProfile; onPress: () => void; onRemove: () => void; onHandOff: () => void }) {
   const theme = getKidTheme(kid.gender);
   const earned = kid.goals.reduce((sum, g) => sum + g.currentAmount, 0);
   const target = kid.goals.reduce((sum, g) => sum + g.targetAmount, 0);
@@ -110,43 +214,59 @@ function KidCard({ kid, onPress, onRemove }: { kid: KidProfile; onPress: () => v
   ).length;
 
   return (
-    <Pressable
-      onPress={onPress}
-      onLongPress={onRemove}
-      style={({ pressed }) => [kidCardStyles.card, { borderColor: theme.primary + '40' }, pressed && { opacity: 0.7 }]}>
-      <View style={[kidCardStyles.accentBar, { backgroundColor: theme.primary }]} />
-      <View style={kidCardStyles.content}>
-        <View style={[kidCardStyles.avatar, { backgroundColor: theme.bg }]}>
-          <ThemedText style={kidCardStyles.avatarEmoji}>{kid.gender === 'boy' ? '🚀' : '🌸'}</ThemedText>
-        </View>
-        <View style={kidCardStyles.info}>
-          <ThemedText style={[kidCardStyles.name, { color: theme.accent }]}>{kid.nickname}</ThemedText>
-          <View style={kidCardStyles.statsRow}>
-            <ThemedText style={[kidCardStyles.stat, { color: theme.accent }]}>
-              {kid.goals.length} goal{kid.goals.length !== 1 ? 's' : ''}
-            </ThemedText>
-            <ThemedText style={kidCardStyles.statDot}>·</ThemedText>
-            <ThemedText style={[kidCardStyles.stat, { color: theme.accent }]}>
-              {completedToday}/{kid.chores.length} chores today
-            </ThemedText>
+    <View style={[kidCardStyles.wrapper, { borderColor: theme.primary + '40' }]}>
+      <Pressable
+        onPress={onPress}
+        onLongPress={onRemove}
+        style={({ pressed }) => [kidCardStyles.card, pressed && { opacity: 0.7 }]}>
+        <View style={[kidCardStyles.accentBar, { backgroundColor: theme.primary }]} />
+        <View style={kidCardStyles.content}>
+          <View style={[kidCardStyles.avatar, { backgroundColor: theme.bg }]}>
+            <ThemedText style={kidCardStyles.avatarEmoji}>{kid.gender === 'boy' ? '🚀' : '🌸'}</ThemedText>
           </View>
-          {target > 0 && (
-            <View style={kidCardStyles.progressTrack}>
-              <View style={[kidCardStyles.progressFill, {
-                width: `${Math.min(100, (earned / target) * 100)}%` as any,
-                backgroundColor: theme.primary,
-              }]} />
+          <View style={kidCardStyles.info}>
+            <ThemedText style={[kidCardStyles.name, { color: theme.accent }]}>{kid.nickname}</ThemedText>
+            <View style={kidCardStyles.statsRow}>
+              <ThemedText style={[kidCardStyles.stat, { color: theme.accent }]}>
+                {kid.goals.length} goal{kid.goals.length !== 1 ? 's' : ''}
+              </ThemedText>
+              <ThemedText style={kidCardStyles.statDot}>·</ThemedText>
+              <ThemedText style={[kidCardStyles.stat, { color: theme.accent }]}>
+                {completedToday}/{kid.chores.length} chores today
+              </ThemedText>
             </View>
-          )}
+            {target > 0 && (
+              <View style={kidCardStyles.progressTrack}>
+                <View style={[kidCardStyles.progressFill, {
+                  width: `${Math.min(100, (earned / target) * 100)}%` as any,
+                  backgroundColor: theme.primary,
+                }]} />
+              </View>
+            )}
+          </View>
+          <ThemedText style={[kidCardStyles.arrow, { color: theme.primary }]}>›</ThemedText>
         </View>
-        <ThemedText style={[kidCardStyles.arrow, { color: theme.primary }]}>›</ThemedText>
-      </View>
-    </Pressable>
+      </Pressable>
+
+      {/* Hand-off button */}
+      <Pressable
+        onPress={onHandOff}
+        style={({ pressed }) => [
+          kidCardStyles.handOffBtn,
+          { backgroundColor: theme.primary + '12', borderTopColor: theme.primary + '30' },
+          pressed && { opacity: 0.7 },
+        ]}>
+        <ThemedText style={[kidCardStyles.handOffText, { color: theme.primary }]}>
+          👾 SWITCH TO {kid.nickname.toUpperCase()}'S VIEW ›
+        </ThemedText>
+      </Pressable>
+    </View>
   );
 }
 
 const kidCardStyles = StyleSheet.create({
-  card: { backgroundColor: '#080E1C', borderWidth: 1, borderRadius: 4, overflow: 'hidden', flexDirection: 'row' },
+  wrapper: { borderWidth: 1, borderRadius: 4, overflow: 'hidden', backgroundColor: '#080E1C' },
+  card: { flexDirection: 'row' },
   accentBar: { width: 3 },
   content: { flex: 1, flexDirection: 'row', alignItems: 'center', padding: Spacing.three, gap: Spacing.two },
   avatar: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#0D1E30', alignItems: 'center', justifyContent: 'center' },
@@ -158,6 +278,8 @@ const kidCardStyles = StyleSheet.create({
   statDot: { fontSize: 10, color: '#3D5870' },
   progressTrack: { height: 2, backgroundColor: '#0D1E30', borderRadius: 1, marginTop: 2 },
   progressFill: { height: '100%', borderRadius: 1 },
+  handOffBtn: { paddingVertical: Spacing.one + 4, paddingHorizontal: Spacing.three, alignItems: 'center', borderTopWidth: StyleSheet.hairlineWidth },
+  handOffText: { fontSize: 11, fontWeight: '900', letterSpacing: 0.8 },
   arrow: { fontSize: 22, fontWeight: '300' },
 });
 
@@ -166,15 +288,36 @@ const kidCardStyles = StyleSheet.create({
 export default function KidsScreen() {
   const router = useRouter();
   const [showAdd, setShowAdd] = useState(false);
+  const [handOffKid, setHandOffKid] = useState<KidProfile | null>(null);
   const { isPro, kidsLimit } = useEntitlement();
 
   const kids = useKidsStore((s) => s.kids);
   const addKid = useKidsStore((s) => s.addKid);
   const removeKid = useKidsStore((s) => s.removeKid);
 
+  const pin = useKidModeStore((s) => s.pin);
+  const activate = useKidModeStore((s) => s.activate);
+  const setPin = useKidModeStore((s) => s.setPin);
+
   useEffect(() => {
     useKidsStore.getState().hydrate();
   }, []);
+
+  const handleHandOff = (kid: KidProfile) => {
+    if (!pin) {
+      setHandOffKid(kid);
+    } else {
+      activate(kid.id);
+    }
+  };
+
+  const handlePINSetupComplete = (newPin: string) => {
+    setPin(newPin);
+    if (handOffKid) {
+      activate(handOffKid.id);
+      setHandOffKid(null);
+    }
+  };
 
   const handleRemove = (kid: KidProfile) => {
     Alert.alert(
@@ -209,6 +352,7 @@ export default function KidsScreen() {
                 kid={kid}
                 onPress={() => router.push(`/kids/${kid.id}` as any)}
                 onRemove={() => handleRemove(kid)}
+                onHandOff={() => handleHandOff(kid)}
               />
             ))}
           </View>
@@ -264,6 +408,13 @@ export default function KidsScreen() {
         visible={showAdd}
         onClose={() => setShowAdd(false)}
         onAdd={addKid}
+      />
+
+      <PINSetupModal
+        visible={!!handOffKid}
+        accentColor={handOffKid ? getKidTheme(handOffKid.gender).primary : Brand.tactical}
+        onComplete={handlePINSetupComplete}
+        onCancel={() => setHandOffKid(null)}
       />
     </ThemedView>
   );

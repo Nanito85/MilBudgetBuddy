@@ -1,0 +1,53 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { create } from 'zustand';
+
+const STORAGE_KEY = 'mbb_kid_mode_v1';
+
+interface KidModeData {
+  pin: string | null;
+}
+
+interface KidModeState extends KidModeData {
+  active: boolean;
+  kidId: string | null;
+  hydrated: boolean;
+  hydrate: () => Promise<void>;
+  activate: (kidId: string) => void;
+  deactivate: () => void;
+  setPin: (pin: string) => void;
+  clearPin: () => void;
+}
+
+function persist(data: KidModeData) {
+  AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
+export const useKidModeStore = create<KidModeState>((set, get) => ({
+  pin: null,
+  active: false,
+  kidId: null,
+  hydrated: false,
+
+  hydrate: async () => {
+    try {
+      const raw = await AsyncStorage.getItem(STORAGE_KEY);
+      const data: KidModeData = raw ? JSON.parse(raw) : { pin: null };
+      set({ ...data, hydrated: true });
+    } catch {
+      set({ hydrated: true });
+    }
+  },
+
+  activate: (kidId) => set({ active: true, kidId }),
+  deactivate: () => set({ active: false, kidId: null }),
+
+  setPin: (pin) => {
+    persist({ pin });
+    set({ pin });
+  },
+
+  clearPin: () => {
+    persist({ pin: null });
+    set({ pin: null });
+  },
+}));

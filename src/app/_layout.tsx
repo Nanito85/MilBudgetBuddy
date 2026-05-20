@@ -7,19 +7,23 @@ import { AnimatedSplashOverlay } from '@/components/animated-icon';
 import { DisclaimerModal } from '@/components/DisclaimerModal';
 import { OnboardingFlow } from '@/features/profile/components/OnboardingFlow';
 import { Brand } from '@/constants/theme';
+import { KidModeScreen } from '@/components/KidModeScreen';
 import { useTipsStore } from '@/store/tips.store';
 import { useUserStore } from '@/store/user.store';
 import { useEntitlementStore } from '@/store/entitlement.store';
+import { useKidModeStore } from '@/store/kid-mode.store';
 
 export default function TabLayout() {
   const hydrated = useUserStore((s) => s.hydrated);
   const onboarded = useUserStore((s) => s.onboarded);
   const appTheme = useUserStore((s) => s.appTheme ?? 'dark');
+  const kidModeActive = useKidModeStore((s) => s.active);
 
   useEffect(() => {
     useTipsStore.getState().hydrate();
     useUserStore.getState().hydrate();
     useEntitlementStore.getState().hydrate();
+    useKidModeStore.getState().hydrate();
   }, []);
 
   if (!hydrated) return null;
@@ -127,6 +131,7 @@ export default function TabLayout() {
         <Tabs.Screen name="bah-guide"              options={{ href: null }} />
         <Tabs.Screen name="upgrade"                options={{ href: null }} />
       </Tabs>
+      {kidModeActive && <KidModeScreen />}
     </ThemeProvider>
   );
 }
