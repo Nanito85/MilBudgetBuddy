@@ -95,6 +95,7 @@ function buildMultipart(filePath, existingKey) {
 const preamble = Buffer.from(
   `--${boundary}\r\nContent-Disposition: form-data; name="platform"\r\n\r\nandroid\r\n` +
   `--${boundary}\r\nContent-Disposition: form-data; name="note"\r\n\r\nMilBudgetBuddy preview\r\n` +
+  `--${boundary}\r\nContent-Disposition: form-data; name="debug"\r\n\r\nfalse\r\n` +
   `--${boundary}\r\nContent-Disposition: form-data; name="file"; filename="app.apk"\r\nContent-Type: application/octet-stream\r\n\r\n`,
 );
 const epilogue = Buffer.from(`\r\n--${boundary}--\r\n`);
@@ -139,9 +140,10 @@ if (existsSync(APK_PATH)) await unlink(APK_PATH);
 
 // ── Print result ──────────────────────────────────────────────────────────────
 if (result.publicKey) {
+  const embedParams = '?device=pixel7&osVersion=13&scale=75&debug=false&toolbar=false';
   console.log('\n✅  Upload successful!\n');
   console.log('🔑  Public key:', result.publicKey);
-  console.log('🌐  Shareable link: https://appetize.io/app/' + result.publicKey);
+  console.log('🌐  Shareable link: https://appetize.io/app/' + result.publicKey + embedParams);
   console.log('\nTo update the app next time, run:');
   console.log(`  node scripts/upload-to-appetize.mjs --token YOUR_TOKEN --key ${result.publicKey}`);
 } else {

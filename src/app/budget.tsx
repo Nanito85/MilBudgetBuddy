@@ -16,7 +16,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Brand, Spacing } from '@/constants/theme';
-import { fmtPay } from '@/features/home/utils/lesCalc';
+import { calcLES, fmtPay } from '@/features/home/utils/lesCalc';
 import {
   BudgetCategory,
   CUSTOM_PREFIX,
@@ -772,7 +772,6 @@ export default function BudgetScreen() {
 
   const netPay = React.useMemo(() => {
     if (!payGrade) return 0;
-    const { calcLES } = require('@/features/home/utils/lesCalc');
     const specialPaysTotal = specialPays.reduce((s: number, p: any) => s + p.monthlyAmount, 0);
     return calcLES({
       payGrade,

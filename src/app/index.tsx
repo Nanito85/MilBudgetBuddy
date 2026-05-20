@@ -173,17 +173,22 @@ export default function DashboardScreen() {
               <PayDayCountdown netPay={breakdown.netPay} />
             </>
           ) : (
-            <View style={styles.setupPrompt}>
+            <Pressable
+              onPress={() => router.push('/profile' as any)}
+              style={({ pressed }) => [styles.setupPrompt, pressed && { opacity: 0.8 }]}>
               <View style={styles.setupLeft}>
-                <ThemedText style={styles.setupIcon}>⚠</ThemedText>
+                <ThemedText style={styles.setupIcon}>🪖</ThemedText>
               </View>
               <View style={styles.setupRight}>
-                <ThemedText type="label" style={styles.setupTitle}>PROFILE INCOMPLETE</ThemedText>
+                <ThemedText type="label" style={styles.setupTitle}>SET UP YOUR PROFILE</ThemedText>
                 <ThemedText type="small" style={styles.setupBody}>
-                  Add your pay grade and duty station in Profile to activate your pay statement.
+                  Enter your rank and duty station to see your personalized pay breakdown.
                 </ThemedText>
+                <View style={styles.setupCta}>
+                  <ThemedText style={styles.setupCtaText}>COMPLETE PROFILE →</ThemedText>
+                </View>
               </View>
-            </View>
+            </Pressable>
           )}
         </View>
 
@@ -258,18 +263,27 @@ const styles = StyleSheet.create({
   setupPrompt: {
     backgroundColor: '#080E1C',
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: Brand.warning + '40',
+    borderColor: Brand.accent + '50',
     borderRadius: 4,
     padding: Spacing.three,
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     gap: Spacing.two,
   },
-  setupLeft: { width: 32, alignItems: 'center' },
-  setupRight: { flex: 1, gap: 4 },
-  setupIcon: { fontSize: 20, color: Brand.warning },
-  setupTitle: { color: Brand.warning, fontSize: 10 },
+  setupLeft: { width: 32, alignItems: 'center', paddingTop: 2 },
+  setupRight: { flex: 1, gap: 6 },
+  setupIcon: { fontSize: 22 },
+  setupTitle: { color: Brand.accent, fontSize: 11, fontWeight: '800', letterSpacing: 0.5 },
   setupBody: { fontSize: 12, lineHeight: 18, color: '#6B92B0' },
+  setupCta: {
+    alignSelf: 'flex-start',
+    backgroundColor: Brand.accent,
+    borderRadius: 4,
+    paddingHorizontal: Spacing.two,
+    paddingVertical: 4,
+    marginTop: 2,
+  },
+  setupCtaText: { color: '#000', fontSize: 10, fontWeight: '800', letterSpacing: 0.5 },
 
   budgetSnapshot: {
     backgroundColor: '#050B14',

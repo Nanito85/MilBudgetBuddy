@@ -227,6 +227,17 @@ export function searchInstallations(query: string): Installation[] {
     (i) =>
       i.name.toLowerCase().includes(q) ||
       i.city.toLowerCase().includes(q) ||
-      i.state.toLowerCase().includes(q),
+      i.state.toLowerCase().includes(q) ||
+      i.branch.toLowerCase().includes(q),
   );
+}
+
+/** Returns all CONUS installations that have BAH data (for duty station pickers). */
+export function getConusInstallations(): Installation[] {
+  return INSTALLATIONS.filter(i => !i.oconus && i.mhaZip);
+}
+
+/** Returns all OCONUS installations (for OHA reference). */
+export function getOconusInstallations(): Installation[] {
+  return INSTALLATIONS.filter(i => i.oconus);
 }

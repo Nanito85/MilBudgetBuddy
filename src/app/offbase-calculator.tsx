@@ -1,12 +1,14 @@
 import { useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Brand, Spacing } from '@/constants/theme';
-import { getBahRate, PAY_GRADES, PayGrade } from '@/data/bah-rates';
+import { getBahRate, hasBahData, PAY_GRADES, PayGrade } from '@/data/bah-rates';
+import { Installation, searchInstallations } from '@/data/installations';
+import { useAppTheme } from '@/hooks/use-theme';
 import { useUserStore } from '@/store/user.store';
 
 // ── Grade groups ───────────────────────────────────────────────────────────────
@@ -18,18 +20,6 @@ const OFFICER: PayGrade[]  = ['O1','O2','O3','O4','O5','O6','O7','O8','O9','O10'
 // E1-E3 are typically required to live in barracks; E4 is case-by-case
 const BARRACKS_REQUIRED: PayGrade[] = ['E1','E2','E3'];
 const BARRACKS_LIKELY: PayGrade[] = ['E4'];
-
-// MHA presets
-const MHA_OPTIONS = [
-  { label: 'Fort Liberty, NC', zip: '28301' },
-  { label: 'Norfolk, VA',      zip: '23511' },
-  { label: 'DC Area',          zip: '20762' },
-  { label: 'Quantico, VA',     zip: '22134' },
-  { label: 'San Diego, CA',    zip: '92136' },
-  { label: 'Hawaii',           zip: '96860' },
-  { label: 'Fort Campbell, TN',zip: '42223' },
-  { label: 'JBLM, WA',        zip: '98433' },
-];
 
 const fmt = (n: number) => `$${Math.round(n).toLocaleString()}`;
 
@@ -59,20 +49,32 @@ function Row({ label, value, bold, color }: { label: string; value: string; bold
 }
 
 export default function OffbaseCalculatorScreen() {
-  const router = useRouter();
-  const insets = useSafeAreaInsets();
+  const router   = useRouter();
+  const insets   = useSafeAreaInsets();
+  const appTheme = useAppTheme();
+  const isDark   = appTheme === 'dark';
+  const inputBg  = isDark ? '#050B14' : '#FFFFFF';
+  const inputText = isDark ? '#C8D8E8' : '#0D1E2E';
 
   const storedGrade = useUserStore((s) => s.payGrade);
   const storedZip   = useUserStore((s) => s.mhaZip);
 
-  const [grade, setGrade] = useState<PayGrade>(storedGrade ?? 'E4');
-  const [zip,   setZip]   = useState(storedZip ?? '28301');
-  const [rent,  setRent]  = useState(1200);
-  const [utils, setUtils] = useState(150);
-  const [commute, setCommute] = useState(100);
-  const [setup, setSetup] = useState(2000);
+  const [grade,    setGrade]    = useState<PayGrade>(storedGrade ?? 'E4');
+  const [zip,      setZip]      = useState(storedZip ?? '');
+  const [locSearch, setLocSearch] = useState('');
+  const [selectedInstallation, setSelectedInstallation] = useState<Installation | null>(null);
+  const [rent,     setRent]     = useState(1200);
+  const [utils,    setUtils]    = useState(150);
+  const [commute,  setCommute]  = useState(100);
+  const [setup,    setSetup]    = useState(2000);
 
-  const bah = useMemo(() => getBahRate(zip, grade, false) ?? 0, [zip, grade]);
+  const searchResults = useMemo(
+    () => searchInstallations(locSearch).filter(i => !i.oconus && i.mhaZip && hasBahData(i.mhaZip)).slice(0, 20),
+    [locSearch],
+  );
+  const hasSearch = locSearch.trim().length > 0;
+
+  const bah = useMemo(() => (zip ? getBahRate(zip, grade, false) ?? 0 : 0), [zip, grade]);
 
   const offbaseMonthlyCost = rent + utils + commute;
   const offbaseNet = bah - offbaseMonthlyCost;
@@ -153,14 +155,61 @@ export default function OffbaseCalculatorScreen() {
           </View>
         </ThemedView>
 
-        {/* MHA picker */}
+        {/* MHA search */}
         <ThemedView type="backgroundElement" style={styles.card}>
           <ThemedText style={styles.cardLabel}>DUTY STATION</ThemedText>
-          <View style={styles.chipRow}>
-            {MHA_OPTIONS.map((m) => (
-              <Chip key={m.zip} label={m.label} selected={zip === m.zip} onPress={() => setZip(m.zip)} />
-            ))}
+          <ThemedText style={styles.groupLabel}>Type your installation, city, state, or ZIP code</ThemedText>
+          <View style={[styles.searchWrap, { backgroundColor: inputBg }]}>
+            <ThemedText style={{ fontSize: 14 }}>🔍</ThemedText>
+            <TextInput
+              value={locSearch}
+              onChangeText={setLocSearch}
+              placeholder="Fort Liberty · Norfolk · San Diego · 28301"
+              placeholderTextColor="#3D6080"
+              style={[styles.searchInput, { color: inputText }]}
+              returnKeyType="search"
+              autoCorrect={false}
+            />
+            {locSearch.length > 0 && (
+              <Pressable onPress={() => setLocSearch('')} style={{ padding: 4 }}>
+                <ThemedText style={{ fontSize: 12, color: '#4D7A9A', fontWeight: '700' }}>✕</ThemedText>
+              </Pressable>
+            )}
           </View>
+
+          {hasSearch && (
+            <View style={styles.resultsList}>
+              {searchResults.length === 0 && (
+                <ThemedText style={styles.resultsEmpty}>No locations match — try the installation name or city.</ThemedText>
+              )}
+              {searchResults.map((inst) => (
+                <Pressable
+                  key={inst.id}
+                  onPress={() => { setZip(inst.mhaZip); setSelectedInstallation(inst); setLocSearch(''); }}
+                  style={({ pressed }) => [styles.resultRow, pressed && { opacity: 0.7 }]}>
+                  <View style={{ flex: 1 }}>
+                    <ThemedText style={styles.resultLabel}>{inst.name}</ThemedText>
+                    <ThemedText style={styles.resultSub}>{inst.city}, {inst.state} · {inst.branch}</ThemedText>
+                  </View>
+                </Pressable>
+              ))}
+            </View>
+          )}
+
+          {!hasSearch && selectedInstallation && (
+            <View style={styles.selectedCard}>
+              <ThemedText style={styles.selectedCardLabel}>SELECTED LOCATION</ThemedText>
+              <ThemedText style={styles.selectedCardName}>{selectedInstallation.name}</ThemedText>
+              <ThemedText style={styles.selectedCardSub}>{selectedInstallation.city}, {selectedInstallation.state} · {selectedInstallation.branch}</ThemedText>
+              <Pressable onPress={() => { setZip(''); setSelectedInstallation(null); }} style={styles.changeBtn}>
+                <ThemedText style={styles.changeBtnText}>Change Location</ThemedText>
+              </Pressable>
+            </View>
+          )}
+
+          {!hasSearch && !selectedInstallation && (
+            <ThemedText style={styles.resultsEmpty}>Search for your duty station to see your BAH rate.</ThemedText>
+          )}
         </ThemedView>
 
         {/* BAH display */}
@@ -387,4 +436,32 @@ const styles = StyleSheet.create({
 
   disclaimer: { borderRadius: 4, padding: Spacing.two },
   disclaimerText: { fontSize: 10, lineHeight: 15, color: '#3D6080', textAlign: 'center' },
+
+  searchWrap: {
+    flexDirection: 'row', alignItems: 'center',
+    borderWidth: 1, borderColor: Brand.border, borderRadius: 6,
+    paddingHorizontal: Spacing.two, gap: Spacing.one,
+  },
+  searchInput: { flex: 1, fontSize: 14, paddingVertical: Spacing.two + 2 },
+
+  resultsList: { borderWidth: 1, borderColor: Brand.border, borderRadius: 4, overflow: 'hidden' },
+  resultRow: {
+    flexDirection: 'row', alignItems: 'center', gap: Spacing.two,
+    paddingHorizontal: Spacing.two, paddingVertical: Spacing.two + 2,
+    borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: '#0D1E30',
+    backgroundColor: '#060C18',
+  },
+  resultLabel: { fontSize: 12, fontWeight: '600', color: '#C8D8E8' },
+  resultSub:   { fontSize: 10, color: '#3D6080', fontFamily: 'monospace', marginTop: 1 },
+  resultsEmpty:{ fontSize: 12, color: '#4D7A9A', textAlign: 'center', padding: Spacing.two },
+
+  selectedCard: {
+    borderWidth: 1, borderColor: Brand.tactical + '50', borderRadius: 4,
+    padding: Spacing.two, backgroundColor: Brand.tactical + '08', gap: 4,
+  },
+  selectedCardLabel: { fontSize: 8, fontWeight: '800', letterSpacing: 1, color: Brand.tactical },
+  selectedCardName:  { fontSize: 13, fontWeight: '700', color: '#C8D8E8' },
+  selectedCardSub:   { fontSize: 10, color: '#4D7A9A', fontFamily: 'monospace' },
+  changeBtn:     { alignSelf: 'flex-start', marginTop: 6, paddingVertical: 4, paddingHorizontal: 10, borderRadius: 3, backgroundColor: '#0D1E30', borderWidth: 1, borderColor: Brand.border },
+  changeBtnText: { fontSize: 10, fontWeight: '700', color: '#4D7A9A' },
 });

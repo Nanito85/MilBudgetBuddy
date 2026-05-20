@@ -379,7 +379,7 @@ const styles = StyleSheet.create({
 
   header: { gap: 4, paddingBottom: Spacing.two },
   backBtn: { marginBottom: Spacing.two },
-  backText: { color: Brand.tactical, fontSize: 12, fontWeight: '700', letterSpacing: 1 },
+  backText: { color: Brand.tactical, fontSize: 12, fontWeight: '700', letterSpacing: 1, lineHeight: 17 },
   eyebrow:  { color: Brand.tactical, fontSize: 9 },
   heading:  { fontSize: 28, fontWeight: '900', letterSpacing: 1, color: '#C8D8E8', marginTop: 2 },
   subhead:  { color: '#3D6080', fontSize: 9 },

@@ -22,273 +22,293 @@ interface MenuItem {
   color: string;
 }
 
+// ── Situation shortcuts ─────────────────────────────────────────────────────────
+
+interface SituationCard {
+  id: string;
+  icon: string;
+  title: string;
+  subtitle: string;
+  route: string;
+  color: string;
+}
+
+const SITUATIONS: SituationCard[] = [
+  {
+    id: 'pcs',
+    icon: '🚚',
+    title: 'Moving / PCS',
+    subtitle: 'Compare pay, housing & schools',
+    route: '/pcs-calculator',
+    color: '#1565C0',
+  },
+  {
+    id: 'deploy',
+    icon: '🪖',
+    title: 'Deploying',
+    subtitle: 'Extra pay, tax savings & savings plan',
+    route: '/deployment-calculator',
+    color: '#2E7D32',
+  },
+  {
+    id: 'ets',
+    icon: '🎖️',
+    title: 'Getting Out',
+    subtitle: 'Separation checklist & leave payout',
+    route: '/ets-checklist',
+    color: '#C8A800',
+  },
+  {
+    id: 'housing',
+    icon: '🏠',
+    title: 'Housing Decision',
+    subtitle: 'Look up your BAH, on vs off-base',
+    route: '/bah-guide',
+    color: '#00695C',
+  },
+];
+
 // ── Data ───────────────────────────────────────────────────────────────────────
 
 const CALCULATORS: MenuItem[] = [
   {
+    id: 'pay_chart',
+    icon: '💰',
+    title: 'Pay Chart',
+    description: 'Look up your 2026 base pay by rank and years served',
+    route: '/pay-chart',
+    available: true,
+    color: '#00695C',
+  },
+  {
     id: 'pcs',
     icon: '🚚',
     title: 'PCS Calculator',
-    description: 'Compare BAH, COLA & total pay between duty stations',
+    description: 'Compare your housing allowance and total pay between duty stations',
     route: '/pcs-calculator',
     available: true,
-    badge: 'New',
     color: '#1565C0',
   },
   {
     id: 'dity',
     icon: '📦',
-    title: 'DITY / PPM Move',
-    description: 'Estimate your incentive pay for a personally procured move',
+    title: 'Self-Move Pay (DITY)',
+    description: 'Find out how much the military will pay you to move yourself',
     route: '/dity-calculator',
     available: true,
-    badge: 'New',
     color: '#6A1B9A',
   },
   {
     id: 'tle',
     icon: '🏨',
-    title: 'TLE / TLA Calculator',
-    description: 'Calculate temporary lodging entitlement for your family',
+    title: 'Lodging Reimbursement',
+    description: 'Calculate how much you\'ll receive for hotel stays during a PCS move',
     route: '/tle-calculator',
     available: true,
-    badge: 'New',
     color: '#00695C',
   },
   {
     id: 'va_loan',
     icon: '🏠',
     title: 'VA Loan Calculator',
-    description: 'How much house can you afford with your VA loan benefit',
+    description: 'See how much home you can afford using your VA home loan benefit',
     route: '/va-loan-calculator',
     available: true,
-    badge: 'New',
     color: '#B71C1C',
   },
   {
     id: 'retirement',
     icon: '🏁',
     title: 'Retirement Calculator',
-    description: 'Project your BRS vs High-3 pension value side by side',
+    description: 'Compare the two military retirement systems and project your pension',
     route: '/retirement-calculator',
     available: true,
-    badge: 'New',
     color: '#C8A800',
   },
   {
     id: 'deployment',
     icon: '🪖',
-    title: 'Deployment Earnings',
-    description: 'IDP, CZTE tax exclusions, FSA, SDP & total deployment pay',
+    title: 'Deployment Pay Calculator',
+    description: 'Calculate extra pay and tax savings while deployed to a combat zone',
     route: '/deployment-calculator',
     available: true,
-    badge: 'New',
+    color: '#2E7D32',
+  },
+  {
+    id: 'deployment_savings',
+    icon: '💰',
+    title: 'Deployment Savings Planner',
+    description: 'Set a savings goal and plan how to make the most of your deployment pay',
+    route: '/deployment-savings',
+    available: true,
     color: '#2E7D32',
   },
   {
     id: 'leave',
     icon: '📅',
-    title: 'Leave Calculator',
-    description: 'Terminal leave payout, use-or-lose risk & ETS balance',
+    title: 'Leave Payout Calculator',
+    description: 'See how much your unused leave days are worth when you separate',
     route: '/leave-calculator',
     available: true,
-    badge: 'New',
     color: '#0277BD',
   },
   {
     id: 'tsp',
     icon: '📊',
-    title: 'TSP Deep Dive',
-    description: 'Fund guide, BRS matching gap, annual limit & growth projection',
+    title: 'TSP Retirement Savings',
+    description: 'Understand your military 401(k) — fund choices, matching, and projections',
     route: '/tsp-calculator',
     available: true,
-    badge: 'New',
     color: '#00695C',
   },
   {
     id: 'debt',
     icon: '💳',
     title: 'Debt Payoff Planner',
-    description: 'Avalanche vs snowball — see payoff date and interest saved',
+    description: 'Choose the fastest strategy to pay off your debts and save on interest',
     route: '/debt-payoff',
     available: true,
-    badge: 'New',
     color: '#B71C1C',
-  },
-  {
-    id: 'pay_chart',
-    icon: '💰',
-    title: 'Pay Chart',
-    description: 'FY2026 basic pay lookup by grade and years of service',
-    route: '/pay-chart',
-    available: true,
-    badge: 'New',
-    color: '#00695C',
   },
   {
     id: 'sbp',
     icon: '🛡️',
-    title: 'SBP Calculator',
-    description: 'Survivor Benefit Plan premium, annuity & break-even analysis',
+    title: 'Survivor Benefit Plan',
+    description: 'Understand the pension protection for your family if you retire or pass away',
     route: '/sbp-calculator',
     available: true,
-    badge: 'New',
     color: '#1A237E',
+  },
+  {
+    id: 'tdy_optimizer',
+    icon: '✈️',
+    title: 'TDY Per Diem Optimizer',
+    description: 'Find out how much you can pocket by spending under your daily travel allowance',
+    route: '/tdy-optimizer',
+    available: true,
+    color: '#C8A800',
   },
 ];
 
-const SINGLE_SM: MenuItem[] = [
+const MONEY_TOOLS: MenuItem[] = [
+  {
+    id: 'money_flow',
+    icon: '🗺️',
+    title: 'Where to Put Your Money',
+    description: 'A 6-step checklist showing the right order to save and invest each month',
+    route: '/money-flowchart',
+    available: true,
+    color: '#00B27A',
+  },
+  {
+    id: 'savings_rate',
+    icon: '🎯',
+    title: 'Savings Rate Tracker',
+    description: 'See what percentage of your income you\'re saving and how close you are to financial freedom',
+    route: '/savings-rate',
+    available: true,
+    color: '#0277BD',
+  },
+  {
+    id: 'roth_ira',
+    icon: '📈',
+    title: 'Roth IRA Tracker',
+    description: 'Track your Roth IRA balance and see how it grows over 20–30 years',
+    route: '/roth-ira',
+    available: true,
+    color: '#6A1B9A',
+  },
   {
     id: 'car_loan',
     icon: '🚗',
     title: 'Car Loan Reality Check',
-    description: 'See if that car payment wrecks your finances — dealer survival tips included',
+    description: 'Check if a car payment fits your budget before you sign at the dealership',
     route: '/car-loan',
     available: true,
-    badge: 'New',
     color: '#D32F2F',
   },
   {
     id: 'offbase',
     icon: '🏠',
     title: 'Off-Base vs Barracks',
-    description: 'BAH eligibility by grade, break-even on setup costs, monthly net',
+    description: 'Find out if you\'re eligible to live off-base and whether it makes financial sense',
     route: '/offbase-calculator',
     available: true,
-    badge: 'New',
-    color: '#1565C0',
-  },
-  {
-    id: 'money_flow',
-    icon: '🗺️',
-    title: 'Money Decision Flowchart',
-    description: '6-step military money order: TSP match → E-fund → debt → Roth → FI',
-    route: '/money-flowchart',
-    available: true,
-    badge: 'New',
-    color: '#00B27A',
-  },
-  {
-    id: 'roth_ira',
-    icon: '📈',
-    title: 'Roth IRA Tracker',
-    description: 'Balance, monthly contribution, 20/30/59.5-year projections, Roth vs Traditional',
-    route: '/roth-ira',
-    available: true,
-    badge: 'New',
-    color: '#6A1B9A',
-  },
-  {
-    id: 'deployment_savings',
-    icon: '🪖',
-    title: 'Deployment Savings Planner',
-    description: 'CZTE toggle, IDP, SDP, goal tracker — make your deployment count',
-    route: '/deployment-savings',
-    available: true,
-    badge: 'New',
-    color: '#2E7D32',
-  },
-  {
-    id: 'tdy_optimizer',
-    icon: '✈️',
-    title: 'TDY Per Diem Optimizer',
-    description: 'Location picker, authorized rates, pocket savings calculator',
-    route: '/tdy-optimizer',
-    available: true,
-    badge: 'New',
-    color: '#C8A800',
-  },
-  {
-    id: 'savings_rate',
-    icon: '🎯',
-    title: 'Savings Rate & FI Tracker',
-    description: 'Savings rate %, FI number (25×), years to financial independence',
-    route: '/savings-rate',
-    available: true,
-    badge: 'New',
-    color: '#0277BD',
-  },
-  {
-    id: 'bah_guide',
-    icon: '🏛️',
-    title: 'BAH Eligibility Guide',
-    description: 'FY2026 rates, eligibility by grade, barracks rules, BAH strategy',
-    route: '/bah-guide',
-    available: true,
-    badge: 'New',
     color: '#1565C0',
   },
 ];
 
 const RESOURCES: MenuItem[] = [
   {
+    id: 'bah_guide',
+    icon: '🏛️',
+    title: 'Housing Allowance (BAH) Guide',
+    description: 'Look up your monthly housing allowance by location and rank — 2026 rates',
+    route: '/bah-guide',
+    available: true,
+    color: '#1565C0',
+  },
+  {
     id: 'tax_guide',
     icon: '🧾',
     title: 'Military Tax Guide',
-    description: 'CZTE, state exemptions, MilTax, PCS deductions, filing extensions',
+    description: 'Learn what military pay is tax-free and how to file as a servicemember',
     route: '/tax-guide',
     available: true,
-    badge: 'New',
     color: '#1A237E',
   },
   {
     id: 'scra',
     icon: '⚖️',
-    title: 'SCRA Rights Guide',
-    description: '6% interest cap, eviction & lease protections, and more',
+    title: 'Legal Protections Guide (SCRA)',
+    description: 'Your rights — interest rate cap at 6%, lease breaks, and eviction protection',
     route: '/scra-guide',
     available: true,
-    badge: 'New',
     color: '#1A237E',
   },
   {
     id: 'ets',
     icon: '🎖️',
-    title: 'ETS / Separation Checklist',
-    description: 'Step-by-step transition checklist from 12 months out to post-ETS',
+    title: 'Separation Checklist',
+    description: 'Step-by-step transition guide starting 12 months before your last day',
     route: '/ets-checklist',
     available: true,
-    badge: 'New',
     color: '#2E7D32',
   },
   {
     id: 'tricare',
     icon: '🏥',
-    title: 'TRICARE Estimator',
-    description: 'Compare Prime vs Select costs for your family size and usage',
+    title: 'TRICARE Healthcare Estimator',
+    description: 'Compare your military healthcare plan options and estimate your costs',
     route: '/tricare-estimator',
     available: true,
-    badge: 'New',
     color: '#00695C',
   },
   {
     id: 'les',
     icon: '📄',
-    title: 'LES Decoder',
-    description: 'Understand every line of your LES + verify your pay math',
+    title: 'Pay Statement (LES) Decoder',
+    description: 'Understand every line on your military pay statement and verify the math',
     route: '/les-decoder',
     available: true,
-    badge: 'New',
     color: '#1A237E',
   },
   {
     id: 'credit',
     icon: '📊',
     title: 'Credit Score Guide',
-    description: 'Understand your score, the 5 factors, and how to build it',
+    description: 'Learn how your credit score works and the steps to build strong credit',
     route: '/credit-score',
     available: true,
-    badge: 'New',
     color: '#C8A800',
   },
   {
     id: 'invest',
     icon: '📈',
-    title: 'Investment 101',
-    description: 'BLUF guides to TSP, index funds & building wealth',
+    title: 'Investing Basics',
+    description: 'Plain-English guide to building wealth with index funds and your TSP',
     route: '/invest-101',
     available: true,
-    badge: 'New',
     color: '#2A9D8F',
   },
   {
@@ -298,27 +318,24 @@ const RESOURCES: MenuItem[] = [
     description: 'Find and compare rated schools near military installations',
     route: '/schools-finder',
     available: true,
-    badge: 'New',
     color: '#5C3D11',
   },
   {
     id: 'va_disability',
     icon: '🎖️',
     title: 'VA Disability Calculator',
-    description: 'Combined rating math (VA formula) + monthly compensation',
+    description: 'Calculate your combined disability rating and monthly compensation',
     route: '/va-disability',
     available: true,
-    badge: 'New',
     color: '#B71C1C',
   },
   {
     id: 'gi_bill',
     icon: '🎓',
-    title: 'GI Bill Calculator',
-    description: 'Post-9/11 housing allowance, tuition, book stipend & time left',
+    title: 'GI Bill Benefits Calculator',
+    description: 'Calculate your education benefits — housing allowance, tuition coverage, and time remaining',
     route: '/gi-bill-calculator',
     available: true,
-    badge: 'New',
     color: '#1A237E',
   },
 ];
@@ -411,6 +428,23 @@ export default function MoreScreen() {
           <ThemedText type="label" style={styles.subhead}>CALCULATORS · RESOURCES · INTEL</ThemedText>
         </SafeAreaView>
 
+        {/* Common Situations */}
+        <SectionLabel text="I WILL BE..." />
+        <View style={styles.situationGrid}>
+          {SITUATIONS.map((s) => (
+            <Pressable
+              key={s.id}
+              onPress={() => router.push(s.route as any)}
+              style={({ pressed }) => [styles.situationCard, { borderColor: s.color + '40' }, pressed && { opacity: 0.7 }]}>
+              <View style={[styles.situationIconWrap, { backgroundColor: s.color + '20' }]}>
+                <ThemedText style={styles.situationIcon}>{s.icon}</ThemedText>
+              </View>
+              <ThemedText style={[styles.situationTitle, { color: s.color }]}>{s.title.toUpperCase()}</ThemedText>
+              <ThemedText type="label" style={styles.situationSub}>{s.subtitle}</ThemedText>
+            </Pressable>
+          ))}
+        </View>
+
         {/* Calculators */}
         <SectionLabel text="CALCULATORS" />
         <View style={styles.list}>
@@ -419,16 +453,16 @@ export default function MoreScreen() {
           ))}
         </View>
 
-        {/* Single SM */}
-        <SectionLabel text="SINGLE SERVICE MEMBER" />
+        {/* Money Planning Tools */}
+        <SectionLabel text="MONEY PLANNING" />
         <View style={styles.list}>
-          {SINGLE_SM.map((item) => (
+          {MONEY_TOOLS.map((item) => (
             <MenuCard key={item.id} item={item} onPress={() => handlePress(item)} />
           ))}
         </View>
 
         {/* Resources */}
-        <SectionLabel text="RESOURCES" />
+        <SectionLabel text="GUIDES & RESOURCES" />
         <View style={styles.list}>
           {RESOURCES.map((item) => (
             <MenuCard key={item.id} item={item} onPress={() => handlePress(item)} />
@@ -495,6 +529,27 @@ const styles = StyleSheet.create({
   sectionLabelRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
   sectionLine: { flex: 1, height: StyleSheet.hairlineWidth, backgroundColor: Brand.border },
   sectionLabel: { color: '#6B92B0', fontSize: 10, letterSpacing: 0.5 },
+
+  situationGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two },
+  situationCard: {
+    width: '47.5%',
+    backgroundColor: '#080E1C',
+    borderWidth: StyleSheet.hairlineWidth,
+    borderRadius: 6,
+    padding: Spacing.two,
+    gap: Spacing.one,
+  },
+  situationIconWrap: {
+    width: 36,
+    height: 36,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 2,
+  },
+  situationIcon: { fontSize: 18 },
+  situationTitle: { fontSize: 11, fontWeight: '800', letterSpacing: 0.3 },
+  situationSub: { color: '#6B92B0', fontSize: 10, lineHeight: 14 },
 
   list: { gap: Spacing.two },
   card: {

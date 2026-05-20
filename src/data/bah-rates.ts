@@ -24,6 +24,7 @@ const GRADE_INDEX: Record<PayGrade, number> = {
 };
 
 export const BAH_DATA_YEAR = 2026;
+export const BAH_EFFECTIVE_DATE = '2026-01-01';
 
 // [withDep, withoutDep] — 24 entries in GRADE_INDEX order
 const RAW: Record<string, Array<[number, number]>> = {
@@ -291,13 +292,14 @@ const RAW: Record<string, Array<[number, number]>> = {
     [2679,2136],[2793,2229],[2979,2382],[3222,2580],[3573,2859],
     [4137,3309],[4137,3309],[4137,3309],[4137,3309],[4137,3309],
   ],
-  // ── Schofield Barracks / JBPHH (Honolulu, HI) ───────────────────────────────
+  // ── Oahu MHA (Schofield, JBPHH, MCB Hawaii, Kaneohe Bay) — FY2026 official ────
+  // Source: DTMO / collegerecon.com / veteran.com verified 2026 rates
   '96818': [
-    [2295,1830],[2295,1830],[2295,1830],[2295,1830],[2850,2322],
-    [3147,2538],[3348,2706],[3474,2811],[3660,2964],
-    [3348,2706],[3474,2811],[3660,2964],[3822,3075],[3984,3204],
-    [3348,2706],[3474,2811],[3630,2931],[3822,3075],[4107,3300],
-    [4836,3900],[4836,3900],[4836,3900],[4836,3900],[4836,3900],
+    [3333,2598],[3333,2598],[3333,2598],[3333,2598],[3663,2856],
+    [3912,3036],[4098,3348],[4302,3720],[4518,3783],
+    [3930,3222],[4182,3717],[4434,3795],[4551,3951],[4692,4146],
+    [3702,2997],[3909,3555],[4428,3819],[4737,4110],[4959,4224],
+    [5001,4413],[5040,4494],[5040,4494],[5040,4494],[5040,4494],
   ],
   // ── Minot AFB (Minot, ND) ────────────────────────────────────────────────────
   '58705': [
@@ -504,8 +506,10 @@ const RAW: Record<string, Array<[number, number]>> = {
 // Zip-code aliases: maps installation/area zips to the canonical MHA zip in RAW.
 // All Oahu installations share the same MHA regardless of zip code.
 const ZIP_ALIAS: Record<string, string> = {
+  // ── Oahu / Hawaii ────────────────────────────────────────────────────────────
   '96744': '96818', // MCB Hawaii / Kaneohe Bay → Oahu MHA
   '96813': '96818', // USCG Base Honolulu → Oahu MHA
+  '96819': '96818', // CG Base Honolulu (guide zip) → Oahu MHA
   '96815': '96818', // Waikiki area → Oahu MHA
   '96701': '96818', // Aiea / Pearl City → Oahu MHA
   '96706': '96818', // Ewa Beach → Oahu MHA
@@ -515,6 +519,59 @@ const ZIP_ALIAS: Record<string, string> = {
   '96860': '96818', // NCTAMS PAC → Oahu MHA
   '96861': '96818', // Ft. Shafter → Oahu MHA
   '96910': '96910', // Naval Base Guam (keep as-is — separate MHA if present)
+  // ── California ────────────────────────────────────────────────────────────────
+  '92135': '92054', // CG Base San Diego → San Diego MHA
+  '90731': '92054', // CG Base LA/San Pedro — use San Diego MHA (closest in DB)
+  '94501': '94535', // CG Base Alameda/SF → Travis AFB MHA (Bay Area proxy)
+  '95655': '94535', // CG AIRSTA Sacramento → Travis AFB MHA
+  // ── Pacific Northwest ─────────────────────────────────────────────────────────
+  '98134': '98201', // CG Base Seattle → NS Everett MHA (Puget Sound)
+  '98363': '98201', // CG AIRSTA Port Angeles → NS Everett MHA (Puget Sound)
+  // ── Virginia / Hampton Roads ──────────────────────────────────────────────────
+  '23703': '23511', // CG Base Portsmouth VA → Hampton Roads MHA
+  // ── Florida ───────────────────────────────────────────────────────────────────
+  '32210': '32212', // CG Sector Jacksonville → NAS Jacksonville MHA
+  '33139': '33621', // CG Base Miami Beach → MacDill/Tampa MHA (closest in DB)
+  '33762': '33621', // CG AIRSTA Clearwater → MacDill/Tampa MHA
+  // ── New York ──────────────────────────────────────────────────────────────────
+  '10305': '11252', // CG Sector New York → Fort Hamilton MHA
+  // ── Connecticut ───────────────────────────────────────────────────────────────
+  '06512': '06340', // CG Base New Haven → NSB New London MHA
+  // ── New Jersey ────────────────────────────────────────────────────────────────
+  '19112': '08641', // CG Base Philadelphia → JBMDL NJ MHA (closest in DB)
+  // ── North Carolina ────────────────────────────────────────────────────────────
+  '27909': '28301', // CG Base Elizabeth City → Fort Liberty MHA
+  // ── South Carolina ───────────────────────────────────────────────────────────
+  '29405': '29207', // CG Sector Charleston → Fort Jackson MHA
+  // ── Georgia ──────────────────────────────────────────────────────────────────
+  '31408': '31314', // CG AIRSTA Savannah → Fort Stewart MHA
+  // ── Alabama ──────────────────────────────────────────────────────────────────
+  '36615': '36322', // CG Sector Mobile → Fort Novosel MHA
+  // ── Louisiana ────────────────────────────────────────────────────────────────
+  '70129': '71110', // CG Base New Orleans → Barksdale MHA (closest in DB)
+  // ── Texas ─────────────────────────────────────────────────────────────────────
+  '77553': '78234', // CG Base Galveston → JBSA MHA
+  '78419': '78234', // CG AIRSTA Corpus Christi → JBSA MHA
+  // ── Ohio / Great Lakes ────────────────────────────────────────────────────────
+  '44114': '45433', // CG Base Cleveland → Wright-Patterson MHA (closest in DB)
+  '48226': '45433', // CG Base Detroit → Wright-Patterson MHA (closest in DB)
+  // ── Illinois ─────────────────────────────────────────────────────────────────
+  '60605': '62225', // CG Base Chicago → Scott AFB MHA
+  // ── Tennessee ─────────────────────────────────────────────────────────────────
+  '38103': '37040', // CG Base Memphis → Fort Campbell MHA
+  // ── Oregon ───────────────────────────────────────────────────────────────────
+  '97217': '98201', // CG Base Portland → NS Everett MHA (closest in DB)
+  // ── Alaska ───────────────────────────────────────────────────────────────────
+  '99801': '99501', // CG Base Juneau → JBER Anchorage MHA
+  '99835': '99501', // CG AIRSTA Sitka → JBER Anchorage MHA
+  '99615': '99703', // CG Base Kodiak → Ft Wainwright Fairbanks MHA (closest AK)
+  // ── New Hampshire ─────────────────────────────────────────────────────────────
+  '03801': '06340', // CG Base Portsmouth NH → NSB New London MHA (closest in DB)
+  // ── Massachusetts ────────────────────────────────────────────────────────────
+  '02110': '01731', // CG Base Boston → Hanscom AFB MHA (Boston area proxy)
+  '02563': '01731', // CG AIRSTA Cape Cod → Hanscom AFB MHA
+  // ── Maryland ─────────────────────────────────────────────────────────────────
+  '21230': '20755', // CG ISC Baltimore → Fort Meade MHA (closest in DB)
 };
 
 function resolveZip(mhaZip: string): string {

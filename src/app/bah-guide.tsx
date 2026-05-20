@@ -1,158 +1,43 @@
 import { useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import {
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  TextInput,
+  View,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BranchRegNote } from '@/components/BranchRegNote';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Brand, Spacing } from '@/constants/theme';
-import { getBahRate, PAY_GRADES, PayGrade } from '@/data/bah-rates';
+import { getBahRate, hasBahData, PAY_GRADES, PayGrade } from '@/data/bah-rates';
+import { Installation, searchInstallations } from '@/data/installations';
+import { OhaLocation, searchOhaLocations } from '@/data/oha-locations';
+import { getOhaRate, getOhaTotalCeiling, isOhaDataStale, OHA_DATA_QUARTER } from '@/data/oha-rates';
 import { useAppTheme } from '@/hooks/use-theme';
 import { useUserStore } from '@/store/user.store';
 
+// ── Grade groupings ────────────────────────────────────────────────────────────
 const ENLISTED: PayGrade[] = ['E1','E2','E3','E4','E5','E6','E7','E8','E9'];
-const WARRANT: PayGrade[]  = ['W1','W2','W3','W4','W5'];
-const OFFICER: PayGrade[]  = ['O1','O2','O3','O4','O5','O6','O7','O8','O9','O10'];
-
-interface MhaOption { label: string; zip: string; branch?: string }
-
-const MHA_OPTIONS: MhaOption[] = [
-  // ── East Coast ─────────────────────────────────────────────────────────────
-  { label: 'Fort Liberty, NC',          zip: '28301' },
-  { label: 'Camp Lejeune, NC',          zip: '28542' },
-  { label: 'Seymour Johnson AFB, NC',   zip: '27531' },
-  { label: 'Norfolk/Hampton Roads, VA', zip: '23511' },
-  { label: 'Quantico, VA',              zip: '22134' },
-  { label: 'Fort Meade, MD',            zip: '20755' },
-  { label: 'NAS Pax River, MD',         zip: '20670' },
-  { label: 'DC/JBA Area',               zip: '20762' },
-  { label: 'JBMDL, NJ',                 zip: '08641' },
-  { label: 'Fort Hamilton, NY',         zip: '11252' },
-  { label: 'NSB New London, CT',        zip: '06340' },
-  { label: 'Hanscom AFB, MA',           zip: '01731' },
-  { label: 'Fort Drum, NY',             zip: '13602' },
-  // ── Southeast ──────────────────────────────────────────────────────────────
-  { label: 'Fort Jackson, SC',          zip: '29207' },
-  { label: 'Shaw AFB, SC',              zip: '29152' },
-  { label: 'Fort Eisenhower, GA',       zip: '30905' },
-  { label: 'Fort Moore, GA',            zip: '31905' },
-  { label: 'Fort Stewart, GA',          zip: '31314' },
-  { label: 'NAS Jacksonville, FL',      zip: '32212' },
-  { label: 'MacDill AFB, FL',           zip: '33621' },
-  { label: 'NAS Pensacola, FL',         zip: '32508' },
-  { label: 'Fort Novosel, AL',          zip: '36322' },
-  { label: 'Keesler AFB, MS',           zip: '39534' },
-  // ── South / South-Central ──────────────────────────────────────────────────
-  { label: 'Barksdale AFB, LA',         zip: '71110' },
-  { label: 'Fort Johnson, LA',          zip: '71446' },
-  { label: 'Fort Cavazos, TX',          zip: '76544' },
-  { label: 'Sheppard AFB, TX',          zip: '76311' },
-  { label: 'Dyess AFB, TX',             zip: '79607' },
-  { label: 'Fort Bliss, TX',            zip: '79916' },
-  { label: 'JBSA, TX',                  zip: '78234' },
-  { label: 'Fort Sill, OK',             zip: '73503' },
-  { label: 'Tinker AFB, OK',            zip: '73145' },
-  // ── Midwest ────────────────────────────────────────────────────────────────
-  { label: 'Scott AFB, IL',             zip: '62225' },
-  { label: 'Wright-Patterson AFB, OH',  zip: '45433' },
-  { label: 'Fort Knox, KY',             zip: '40121' },
-  { label: 'Fort Campbell, TN/KY',      zip: '37040' },
-  { label: 'Offutt AFB, NE',            zip: '68113' },
-  { label: 'Fort Leavenworth, KS',      zip: '66027' },
-  { label: 'Ellsworth AFB, SD',         zip: '57706' },
-  { label: 'Malmstrom AFB, MT',         zip: '59402' },
-  { label: 'Minot AFB, ND',             zip: '58705' },
-  // ── West / Mountain ────────────────────────────────────────────────────────
-  { label: 'Fort Huachuca, AZ',         zip: '85613' },
-  { label: 'Davis-Monthan AFB, AZ',     zip: '85707' },
-  { label: 'Luke AFB, AZ',              zip: '85308' },
-  { label: 'Hill AFB, UT',              zip: '84056' },
-  { label: 'Mountain Home AFB, ID',     zip: '83648' },
-  { label: 'Nellis AFB, NV',            zip: '89191' },
-  { label: 'Fort Carson, CO',           zip: '80913' },
-  // ── Pacific Coast ──────────────────────────────────────────────────────────
-  { label: 'NAS Lemoore, CA',           zip: '93245' },
-  { label: 'Vandenberg SFB, CA',        zip: '93437' },
-  { label: 'Travis AFB, CA',            zip: '94535' },
-  { label: 'San Diego/Camp Pendleton, CA', zip: '92054' },
-  { label: 'NAS Whidbey Island, WA',    zip: '98278' },
-  { label: 'JBLM, WA',                  zip: '98433' },
-  { label: 'NS Everett, WA',            zip: '98201' },
-  // ── Alaska & Hawaii ────────────────────────────────────────────────────────
-  { label: 'JBER (Anchorage, AK)',      zip: '99501' },
-  { label: 'Ft Wainwright (Fairbanks)', zip: '99703' },
-  { label: 'Hawaii (Schofield/JBPHH)', zip: '96818' },
-  // ── Coast Guard Bases ──────────────────────────────────────────────────────
-  { label: 'CG Base Boston, MA',           zip: '02110', branch: 'USCG' },
-  { label: 'CG AIRSTA Cape Cod, MA',       zip: '02563', branch: 'USCG' },
-  { label: 'CG Base New Haven, CT',        zip: '06512', branch: 'USCG' },
-  { label: 'CG ISC Baltimore, MD',         zip: '21230', branch: 'USCG' },
-  { label: 'CG Base Philadelphia, PA',     zip: '19112', branch: 'USCG' },
-  { label: 'CG Base Portsmouth, VA',       zip: '23703', branch: 'USCG' },
-  { label: 'CG Base Elizabeth City, NC',   zip: '27909', branch: 'USCG' },
-  { label: 'CG Sector Charleston, SC',     zip: '29405', branch: 'USCG' },
-  { label: 'CG AIRSTA Savannah, GA',       zip: '31408', branch: 'USCG' },
-  { label: 'CG Sector Jacksonville, FL',   zip: '32210', branch: 'USCG' },
-  { label: 'CG Base Miami Beach, FL',      zip: '33139', branch: 'USCG' },
-  { label: 'CG AIRSTA Clearwater, FL',     zip: '33762', branch: 'USCG' },
-  { label: 'CG Sector Mobile, AL',         zip: '36615', branch: 'USCG' },
-  { label: 'CG Base New Orleans, LA',      zip: '70129', branch: 'USCG' },
-  { label: 'CG Base Galveston, TX',        zip: '77553', branch: 'USCG' },
-  { label: 'CG AIRSTA Corpus Christi, TX', zip: '78419', branch: 'USCG' },
-  { label: 'CG Base Cleveland, OH',        zip: '44114', branch: 'USCG' },
-  { label: 'CG Base Detroit, MI',          zip: '48226', branch: 'USCG' },
-  { label: 'CG Base Chicago, IL',          zip: '60605', branch: 'USCG' },
-  { label: 'CG Base Memphis, TN',          zip: '38103', branch: 'USCG' },
-  { label: 'CG AIRSTA Sacramento, CA',     zip: '95655', branch: 'USCG' },
-  { label: 'CG Base Alameda/SF, CA',       zip: '94501', branch: 'USCG' },
-  { label: 'CG Base Los Angeles, CA',      zip: '90731', branch: 'USCG' },
-  { label: 'CG Base San Diego, CA',        zip: '92135', branch: 'USCG' },
-  { label: 'CG AIRSTA Port Angeles, WA',   zip: '98363', branch: 'USCG' },
-  { label: 'CG Base Seattle, WA',          zip: '98134', branch: 'USCG' },
-  { label: 'CG Base Honolulu, HI',         zip: '96819', branch: 'USCG' },
-  { label: 'CG Base Juneau, AK',           zip: '99801', branch: 'USCG' },
-  { label: 'CG AIRSTA Sitka, AK',          zip: '99835', branch: 'USCG' },
-  { label: 'CG Base Kodiak, AK',           zip: '99615', branch: 'USCG' },
-  { label: 'CG Base Portsmouth, NH',       zip: '03801', branch: 'USCG' },
-  { label: 'CG Sector New York, NY',       zip: '10305', branch: 'USCG' },
-  { label: 'CG Base Portland, OR',         zip: '97217', branch: 'USCG' },
-];
-
-const OHA_LOCATIONS = [
-  { label: 'Yokota AB / Tokyo, Japan',      country: 'Japan',     note: 'High COL zone. OHA ceiling set quarterly by DTMO.' },
-  { label: 'Kadena AB / Okinawa, Japan',    country: 'Japan',     note: 'US forces SOFA. Average OHA covers local apartment rent.' },
-  { label: 'CFAY Yokosuka, Japan',          country: 'Japan',     note: 'Navy Fleet base. High rental market; OHA ceiling is substantial.' },
-  { label: 'Misawa AB, Japan',              country: 'Japan',     note: 'Northern Honshu. Lower cost than Tokyo/Okinawa.' },
-  { label: 'Camp Humphreys, South Korea',   country: 'South Korea', note: 'Largest US overseas base. Most members live on-post.' },
-  { label: 'Osan AB, South Korea',          country: 'South Korea', note: 'OHA covers local housing near base.' },
-  { label: 'Ramstein AB, Germany',          country: 'Germany',   note: 'High euro-denominated rental market. OHA adjusted for currency.' },
-  { label: 'Stuttgart (AFRICOM), Germany',  country: 'Germany',   note: 'HQ EUCOM/AFRICOM area. Premium housing market.' },
-  { label: 'Wiesbaden, Germany',            country: 'Germany',   note: 'US Army Europe HQ. Strong rental competition.' },
-  { label: 'RAF Lakenheath, UK',            country: 'United Kingdom', note: 'GBP-denominated. OHA fluctuates with exchange rate.' },
-  { label: 'RAF Mildenhall, UK',            country: 'United Kingdom', note: 'Co-located with Lakenheath.' },
-  { label: 'Aviano AB, Italy',              country: 'Italy',     note: 'Northern Italy. Euro-denominated rents.' },
-  { label: 'NAS Sigonella, Sicily, Italy',  country: 'Italy',     note: 'Sicily. Lower cost than mainland Italy.' },
-  { label: 'Rota Naval Base, Spain',        country: 'Spain',     note: 'Southern Spain. Generally lower cost European market.' },
-  { label: 'NSA Bahrain',                   country: 'Bahrain',   note: 'Middle East hub. OHA covers local villa/apartment rent.' },
-  { label: 'Guantanamo Bay, Cuba',          country: 'Cuba',      note: 'GTMO. Very limited off-base market; most live on-post.' },
-  { label: 'Camp Lemonnier, Djibouti',      country: 'Djibouti',  note: 'East Africa hub. High hardship differential applies.' },
-  { label: 'Thule AB, Greenland',           country: 'Greenland', note: 'Arctic base. OHA is modest; most quarters are on-post.' },
-  { label: 'Diego Garcia (BIOT)',           country: 'Brit. Ind. Ocean Terr.', note: 'Remote atoll. Nearly all personnel live on-post.' },
-  { label: 'Incirlik AB, Turkey',           country: 'Turkey',    note: 'Southern Turkey. OHA set in USD equivalent.' },
-  { label: 'Spangdahlem AB, Germany',       country: 'Germany',   note: 'Rural Germany. Lower than Frankfurt/Ramstein.' },
-  { label: 'Camp Foster / Futenma, Japan',  country: 'Japan',     note: 'Marine Corps Okinawa. Similar market to Kadena.' },
-];
+const WARRANT:  PayGrade[] = ['W1','W2','W3','W4','W5'];
+const OFFICER:  PayGrade[] = ['O1','O2','O3','O4','O5','O6','O7','O8','O9','O10'];
+const ALL_GRADES: PayGrade[] = [...ENLISTED, ...WARRANT, ...OFFICER];
 
 type DepStatus = 'without' | 'with';
-type TabMode = 'bah' | 'oha';
+type TabMode   = 'bah' | 'oha';
 
+// ── Eligibility logic ─────────────────────────────────────────────────────────
 interface EligibilityResult {
   eligible: boolean;
-  status: string;
-  summary: string;
-  details: string[];
-  color: string;
+  status:   string;
+  summary:  string;
+  details:  string[];
+  color:    string;
 }
 
 function getEligibility(grade: PayGrade, depStatus: DepStatus): EligibilityResult {
@@ -160,13 +45,13 @@ function getEligibility(grade: PayGrade, depStatus: DepStatus): EligibilityResul
   if (withDep) {
     return {
       eligible: true,
-      status: 'eligible_all_grades',
-      summary: 'ELIGIBLE — All grades with dependents receive BAH.',
+      status:   'eligible_all_grades',
+      summary:  'ELIGIBLE — All grades with dependents receive BAH.',
       details: [
-        'Service members with dependents are entitled to BAH at the "with dependents" rate at all pay grades.',
-        'Dependents include: spouse, unmarried children under 23 enrolled in school, disabled dependents.',
-        'BAH is based on permanent duty station (PDS) ZIP code, not where dependents live.',
-        'If living in government quarters (on-post housing), BAH is reduced or eliminated.',
+        'Any rank with dependents (spouse, children under 23 in school, disabled dependents) receives BAH.',
+        'BAH is based on your duty station ZIP code — not where your family lives.',
+        'If you live in government quarters (on-post housing), BAH may be offset against rent charged.',
+        'You keep any difference between your BAH rate and your actual rent.',
       ],
       color: Brand.success,
     };
@@ -174,13 +59,13 @@ function getEligibility(grade: PayGrade, depStatus: DepStatus): EligibilityResul
   if (['E1','E2','E3'].includes(grade)) {
     return {
       eligible: false,
-      status: 'required_barracks',
-      summary: 'NOT ELIGIBLE — E1–E3 without dependents typically required in barracks.',
+      status:   'required_barracks',
+      summary:  'NOT ELIGIBLE — E1–E3 without dependents must live in the barracks.',
       details: [
-        'Enlisted grades E1 through E3 without dependents are normally required to reside in barracks/government quarters.',
-        'No BAH is authorized if adequate government quarters are available at your installation.',
-        'Exception: BAH may be authorized if no adequate quarters are available (barracks full or not built to standard).',
-        'If you have dependents, you are entitled to full BAH regardless of grade.',
+        'Grades E1, E2, and E3 without dependents are required to live in barracks when adequate quarters are available.',
+        'No BAH is paid if the barracks meet DoD standards at your installation.',
+        'Exception: If the barracks are full or not up to standard, you may receive BAH — ask your housing office.',
+        'Once you have dependents (spouse or child), you are entitled to full BAH regardless of rank.',
       ],
       color: Brand.danger,
     };
@@ -188,13 +73,12 @@ function getEligibility(grade: PayGrade, depStatus: DepStatus): EligibilityResul
   if (grade === 'E4') {
     return {
       eligible: false,
-      status: 'waiver_possible',
-      summary: 'CONDITIONAL — E4 eligibility depends on installation policy and waiver.',
+      status:   'waiver_possible',
+      summary:  'CONDITIONAL — E4 eligibility depends on your installation.',
       details: [
-        'E4 without dependents: eligibility depends on your installation.',
-        'Many installations require E4s to live in barracks. Others allow E4s to move off-post.',
-        'A BAH waiver from your unit commander or housing office may be required.',
-        'Once you reach E5, you are entitled to BAH without dependents as a matter of policy.',
+        'E4 without dependents: some installations require barracks; others allow off-post living.',
+        'You may need a waiver from your unit commander or housing office.',
+        'Once you reach E5, you are automatically entitled to BAH without dependents — no waiver needed.',
         'Check with your unit S1 and installation housing office for your specific situation.',
       ],
       color: Brand.warning,
@@ -202,18 +86,19 @@ function getEligibility(grade: PayGrade, depStatus: DepStatus): EligibilityResul
   }
   return {
     eligible: true,
-    status: 'eligible',
-    summary: `ELIGIBLE — ${grade} without dependents is entitled to BAH.`,
+    status:   'eligible',
+    summary:  `ELIGIBLE — ${grade} without dependents is entitled to BAH.`,
     details: [
       'E5 and above are entitled to BAH without dependents as a matter of DoD policy.',
-      'You are not required to live in barracks at this grade unless you choose to.',
-      'BAH is paid based on your permanent duty station MHA, not where you actually live.',
-      'Warrant Officers and all Officer grades receive BAH without dependents at all times.',
+      'You do not have to live in the barracks at this grade.',
+      'BAH is paid based on your duty station MHA (Military Housing Area) ZIP code.',
+      'Warrant Officers and Officers receive BAH without dependents at all grades.',
     ],
     color: Brand.success,
   };
 }
 
+// ── Sub-components ────────────────────────────────────────────────────────────
 function Chip({ label, selected, onPress }: { label: string; selected: boolean; onPress: () => void }) {
   return (
     <Pressable onPress={onPress} style={[styles.chip, selected && styles.chipSelected]}>
@@ -222,21 +107,57 @@ function Chip({ label, selected, onPress }: { label: string; selected: boolean; 
   );
 }
 
-function RateTable({ zip }: { zip: string }) {
-  const grades: PayGrade[] = ['E4','E5','E6','E7','W1','O1','O2','O3'];
+function FullRateTable({ zip }: { zip: string }) {
   return (
     <View style={styles.rateTable}>
       <View style={styles.rateTableHeader}>
-        <ThemedText style={styles.rateTableCol}>GRADE</ThemedText>
-        <ThemedText style={styles.rateTableCol}>W/ DEPS</ThemedText>
-        <ThemedText style={styles.rateTableCol}>W/O DEPS</ThemedText>
+        <ThemedText style={[styles.rateTableCol, { flex: 0.8 }]}>GRADE</ThemedText>
+        <ThemedText style={styles.rateTableCol}>W/ DEPENDENTS</ThemedText>
+        <ThemedText style={styles.rateTableCol}>W/O DEPENDENTS</ThemedText>
       </View>
-      {grades.map((g) => {
+
+      {/* Enlisted */}
+      <View style={styles.rateGroupRow}>
+        <ThemedText style={styles.rateGroupLabel}>ENLISTED</ThemedText>
+      </View>
+      {ENLISTED.map((g) => {
         const w  = getBahRate(zip, g, true)  ?? 0;
         const wo = getBahRate(zip, g, false) ?? 0;
         return (
           <View key={g} style={styles.rateTableRow}>
-            <ThemedText style={styles.rateTableGrade}>{g}</ThemedText>
+            <ThemedText style={[styles.rateTableGrade, { flex: 0.8 }]}>{g}</ThemedText>
+            <ThemedText style={[styles.rateTableValue, { color: Brand.tactical }]}>${w.toLocaleString()}</ThemedText>
+            <ThemedText style={[styles.rateTableValue, { color: Brand.accent }]}>${wo.toLocaleString()}</ThemedText>
+          </View>
+        );
+      })}
+
+      {/* Warrant */}
+      <View style={styles.rateGroupRow}>
+        <ThemedText style={styles.rateGroupLabel}>WARRANT OFFICER</ThemedText>
+      </View>
+      {WARRANT.map((g) => {
+        const w  = getBahRate(zip, g, true)  ?? 0;
+        const wo = getBahRate(zip, g, false) ?? 0;
+        return (
+          <View key={g} style={styles.rateTableRow}>
+            <ThemedText style={[styles.rateTableGrade, { flex: 0.8 }]}>{g}</ThemedText>
+            <ThemedText style={[styles.rateTableValue, { color: Brand.tactical }]}>${w.toLocaleString()}</ThemedText>
+            <ThemedText style={[styles.rateTableValue, { color: Brand.accent }]}>${wo.toLocaleString()}</ThemedText>
+          </View>
+        );
+      })}
+
+      {/* Officer */}
+      <View style={styles.rateGroupRow}>
+        <ThemedText style={styles.rateGroupLabel}>OFFICER</ThemedText>
+      </View>
+      {OFFICER.map((g) => {
+        const w  = getBahRate(zip, g, true)  ?? 0;
+        const wo = getBahRate(zip, g, false) ?? 0;
+        return (
+          <View key={g} style={styles.rateTableRow}>
+            <ThemedText style={[styles.rateTableGrade, { flex: 0.8 }]}>{g}</ThemedText>
             <ThemedText style={[styles.rateTableValue, { color: Brand.tactical }]}>${w.toLocaleString()}</ThemedText>
             <ThemedText style={[styles.rateTableValue, { color: Brand.accent }]}>${wo.toLocaleString()}</ThemedText>
           </View>
@@ -246,12 +167,224 @@ function RateTable({ zip }: { zip: string }) {
   );
 }
 
+// ── BAH location search ────────────────────────────────────────────────────────
+function LocationSearch({
+  value,
+  onChange,
+  onSelect,
+  selectedInstallation,
+  onClear,
+  inputBg,
+  inputText,
+}: {
+  value: string;
+  onChange: (t: string) => void;
+  onSelect: (inst: Installation) => void;
+  selectedInstallation: Installation | null;
+  onClear: () => void;
+  inputBg: string;
+  inputText: string;
+}) {
+  const results = useMemo(
+    () => searchInstallations(value).filter(i => !i.oconus && i.mhaZip && hasBahData(i.mhaZip)).slice(0, 25),
+    [value],
+  );
+  const hasQuery = value.trim().length > 0;
+
+  return (
+    <View>
+      <ThemedText style={styles.cardLabel}>DUTY STATION / MHA LOOKUP</ThemedText>
+      <ThemedText style={styles.cardHint}>
+        Type your installation name, city, or state to find your BAH rates.
+      </ThemedText>
+
+      <View style={[styles.searchWrap, { backgroundColor: inputBg }]}>
+        <ThemedText style={styles.searchIcon}>🔍</ThemedText>
+        <TextInput
+          value={value}
+          onChangeText={onChange}
+          placeholder="e.g. Fort Liberty · Norfolk · San Diego · Kaneohe"
+          placeholderTextColor="#3D6080"
+          style={[styles.searchInput, { color: inputText }]}
+          returnKeyType="search"
+          autoCorrect={false}
+        />
+        {value.length > 0 && (
+          <Pressable onPress={() => onChange('')} style={styles.searchClear}>
+            <ThemedText style={styles.searchClearText}>✕</ThemedText>
+          </Pressable>
+        )}
+      </View>
+
+      {/* Search results dropdown */}
+      {hasQuery && (
+        <View style={styles.resultsList}>
+          {results.length === 0 && (
+            <ThemedText style={styles.resultsEmpty}>
+              No locations match. Try the installation name or nearby city.
+            </ThemedText>
+          )}
+          {results.map((inst) => (
+            <Pressable
+              key={inst.id}
+              onPress={() => onSelect(inst)}
+              style={({ pressed }) => [styles.resultRow, pressed && { opacity: 0.7 }]}>
+              <View style={{ flex: 1 }}>
+                <ThemedText style={styles.resultLabel}>{inst.name}</ThemedText>
+                <ThemedText style={styles.resultSub}>{inst.city}, {inst.state}</ThemedText>
+              </View>
+              <View style={styles.branchBadge}>
+                <ThemedText style={styles.branchBadgeText}>{inst.branch}</ThemedText>
+              </View>
+            </Pressable>
+          ))}
+          {results.length === 25 && (
+            <ThemedText style={styles.resultsMore}>Showing top 25 — type more to narrow results.</ThemedText>
+          )}
+        </View>
+      )}
+
+      {/* Selected location card */}
+      {!hasQuery && selectedInstallation && (
+        <View style={styles.selectedCard}>
+          <View style={styles.selectedCardTop}>
+            <View style={{ flex: 1 }}>
+              <ThemedText style={styles.selectedCardLabel}>SELECTED LOCATION</ThemedText>
+              <ThemedText style={styles.selectedCardName}>{selectedInstallation.name}</ThemedText>
+              <ThemedText style={styles.selectedCardSub}>
+                {selectedInstallation.city}, {selectedInstallation.state}
+              </ThemedText>
+            </View>
+            <View style={styles.branchBadge}>
+              <ThemedText style={styles.branchBadgeText}>{selectedInstallation.branch}</ThemedText>
+            </View>
+          </View>
+          <Pressable onPress={onClear} style={styles.changeBtn}>
+            <ThemedText style={styles.changeBtnText}>Change Location</ThemedText>
+          </Pressable>
+        </View>
+      )}
+
+      {/* Empty prompt */}
+      {!hasQuery && !selectedInstallation && (
+        <View style={styles.emptyPrompt}>
+          <ThemedText style={styles.emptyPromptIcon}>📍</ThemedText>
+          <ThemedText style={styles.emptyPromptText}>
+            Start typing your duty station above to see BAH rates.
+          </ThemedText>
+        </View>
+      )}
+    </View>
+  );
+}
+
+// ── OHA location search ────────────────────────────────────────────────────────
+function OhaSearch({
+  value,
+  onChange,
+  selectedLoc,
+  onSelect,
+  onClear,
+  inputBg,
+  inputText,
+}: {
+  value: string;
+  onChange: (t: string) => void;
+  selectedLoc: OhaLocation | undefined;
+  onSelect: (loc: OhaLocation) => void;
+  onClear: () => void;
+  inputBg: string;
+  inputText: string;
+}) {
+  const results = useMemo(() => searchOhaLocations(value).slice(0, 20), [value]);
+  const hasQuery = value.trim().length > 0;
+
+  return (
+    <View>
+      <ThemedText style={styles.cardLabel}>OCONUS LOCATION SEARCH</ThemedText>
+      <ThemedText style={styles.cardHint}>
+        Type your installation, country, or region to find your OCONUS area.
+      </ThemedText>
+
+      <View style={[styles.searchWrap, { backgroundColor: inputBg }]}>
+        <ThemedText style={styles.searchIcon}>🔍</ThemedText>
+        <TextInput
+          value={value}
+          onChangeText={onChange}
+          placeholder="e.g. Ramstein · Japan · Okinawa · Germany · Korea"
+          placeholderTextColor="#3D6080"
+          style={[styles.searchInput, { color: inputText }]}
+          returnKeyType="search"
+          autoCorrect={false}
+        />
+        {value.length > 0 && (
+          <Pressable onPress={() => onChange('')} style={styles.searchClear}>
+            <ThemedText style={styles.searchClearText}>✕</ThemedText>
+          </Pressable>
+        )}
+      </View>
+
+      {hasQuery && (
+        <View style={styles.resultsList}>
+          {results.length === 0 && (
+            <ThemedText style={styles.resultsEmpty}>
+              No OCONUS locations match. Try a country name, region, or installation.
+            </ThemedText>
+          )}
+          {results.map((loc, i) => (
+            <Pressable
+              key={i}
+              onPress={() => onSelect(loc)}
+              style={({ pressed }) => [styles.resultRow, pressed && { opacity: 0.7 }]}>
+              <View style={{ flex: 1 }}>
+                <ThemedText style={styles.resultLabel}>{loc.label}</ThemedText>
+                <ThemedText style={styles.resultSub}>{loc.country} · {loc.region}</ThemedText>
+              </View>
+            </Pressable>
+          ))}
+        </View>
+      )}
+
+      {!hasQuery && selectedLoc && (
+        <View style={styles.selectedCard}>
+          <View style={styles.selectedCardTop}>
+            <View style={{ flex: 1 }}>
+              <ThemedText style={styles.selectedCardLabel}>SELECTED LOCATION</ThemedText>
+              <ThemedText style={styles.selectedCardName}>{selectedLoc.label}</ThemedText>
+              <ThemedText style={styles.selectedCardSub}>{selectedLoc.country} · {selectedLoc.region}</ThemedText>
+            </View>
+            <View style={[styles.branchBadge, { backgroundColor: Brand.accent + '20', borderColor: Brand.accent + '60' }]}>
+              <ThemedText style={[styles.branchBadgeText, { color: Brand.accent }]}>OCONUS</ThemedText>
+            </View>
+          </View>
+          <View style={styles.ohaNote}>
+            <ThemedText style={styles.ohaNoteText}>{selectedLoc.note}</ThemedText>
+          </View>
+          <Pressable onPress={onClear} style={styles.changeBtn}>
+            <ThemedText style={styles.changeBtnText}>Change Location</ThemedText>
+          </Pressable>
+        </View>
+      )}
+
+      {!hasQuery && !selectedLoc && (
+        <View style={styles.emptyPrompt}>
+          <ThemedText style={styles.emptyPromptIcon}>✈️</ThemedText>
+          <ThemedText style={styles.emptyPromptText}>
+            Start typing your OCONUS installation or country above.
+          </ThemedText>
+        </View>
+      )}
+    </View>
+  );
+}
+
+// ── Main screen ───────────────────────────────────────────────────────────────
 export default function BahGuideScreen() {
-  const router  = useRouter();
-  const insets  = useSafeAreaInsets();
+  const router   = useRouter();
+  const insets   = useSafeAreaInsets();
   const appTheme = useAppTheme();
-  const isDark = appTheme === 'dark';
-  const inputBg = isDark ? '#050B14' : '#FFFFFF';
+  const isDark   = appTheme === 'dark';
+  const inputBg  = isDark ? '#050B14' : '#FFFFFF';
   const inputText = isDark ? '#C8D8E8' : '#0D1E2E';
 
   const storedGrade = useUserStore((s) => s.payGrade);
@@ -260,382 +393,360 @@ export default function BahGuideScreen() {
   const [tab, setTab]           = useState<TabMode>('bah');
   const [grade, setGrade]       = useState<PayGrade>(storedGrade ?? 'E5');
   const [depStatus, setDepStatus] = useState<DepStatus>('without');
-  const [zip, setZip]           = useState(storedZip ?? '28301');
-  const [mhaSearch, setMhaSearch] = useState('');
-  const [ohaSearch, setOhaSearch] = useState('');
+
+  // BAH search state
+  const [bahSearch, setBahSearch]             = useState('');
+  const [zip, setZip]                         = useState(storedZip ?? '');
+  const [selectedInstallation, setSelectedInstallation] = useState<Installation | null>(null);
+
+  // OHA search state
+  const [ohaSearch, setOhaSearch]   = useState('');
+  const [selectedOha, setSelectedOha] = useState<OhaLocation | undefined>();
 
   const eligibility = useMemo(() => getEligibility(grade, depStatus), [grade, depStatus]);
-  const bahRate     = useMemo(() => getBahRate(zip, grade, depStatus === 'with') ?? 0, [zip, grade, depStatus]);
+  const bahRate     = useMemo(
+    () => (zip ? getBahRate(zip, grade, depStatus === 'with') ?? 0 : null),
+    [zip, grade, depStatus],
+  );
 
-  const selectedMha = MHA_OPTIONS.find((m) => m.zip === zip);
+  function handleSelectMha(inst: Installation) {
+    setZip(inst.mhaZip);
+    setSelectedInstallation(inst);
+    setBahSearch('');
+  }
 
-  const filteredMha = useMemo(() => {
-    const q = mhaSearch.trim().toLowerCase();
-    if (!q) return MHA_OPTIONS;
-    return MHA_OPTIONS.filter((m) =>
-      m.label.toLowerCase().includes(q) ||
-      m.zip.includes(q) ||
-      (m.branch?.toLowerCase().includes(q) ?? false),
-    );
-  }, [mhaSearch]);
+  function handleClearMha() {
+    setZip('');
+    setSelectedInstallation(null);
+    setBahSearch('');
+  }
 
-  const filteredOha = useMemo(() => {
-    const q = ohaSearch.trim().toLowerCase();
-    if (!q) return OHA_LOCATIONS;
-    return OHA_LOCATIONS.filter((o) =>
-      o.label.toLowerCase().includes(q) ||
-      o.country.toLowerCase().includes(q),
-    );
-  }, [ohaSearch]);
+  function handleSelectOha(loc: OhaLocation) {
+    setSelectedOha(loc);
+    setOhaSearch('');
+  }
+
+  function handleClearOha() {
+    setSelectedOha(undefined);
+    setOhaSearch('');
+  }
 
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-    <ThemedView style={{ flex: 1 }}>
-      <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
-        <Pressable
-          onPress={() => (router.canGoBack() ? router.back() : router.push('/tools'))}
-          style={styles.back}>
-          <ThemedText style={styles.backChevron}>‹</ThemedText>
-        </Pressable>
-        <ThemedText style={styles.title}>BAH / OHA Guide</ThemedText>
-        <View style={{ width: 40 }} />
-      </View>
-
-      {/* Tab bar: BAH | OHA */}
-      <View style={styles.tabBar}>
-        {([
-          { key: 'bah' as TabMode, label: '🏠  BAH (CONUS)' },
-          { key: 'oha' as TabMode, label: '✈️  OHA (OCONUS)' },
-        ]).map((t) => (
+      <ThemedView style={{ flex: 1 }}>
+        {/* Header */}
+        <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
           <Pressable
-            key={t.key}
-            onPress={() => setTab(t.key)}
-            style={[styles.tabBtn, tab === t.key && styles.tabBtnActive]}>
-            <ThemedText style={[styles.tabBtnText, tab === t.key && { color: Brand.tactical }]}>
-              {t.label}
-            </ThemedText>
+            onPress={() => (router.canGoBack() ? router.back() : router.push('/tools'))}
+            style={styles.back}>
+            <ThemedText style={styles.backChevron}>‹</ThemedText>
           </Pressable>
-        ))}
-      </View>
+          <ThemedText style={styles.title}>BAH / OHA Guide</ThemedText>
+          <View style={{ width: 40 }} />
+        </View>
 
-      <ScrollView
-        contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + Spacing.five }]}
-        showsVerticalScrollIndicator={false}>
-
-        {/* ══════════════  BAH TAB  ══════════════ */}
-        {tab === 'bah' && (
-          <>
-            <ThemedView type="backgroundElement" style={styles.heroBanner}>
-              <ThemedText style={styles.heroEyebrow}>BASIC ALLOWANCE FOR HOUSING</ThemedText>
-              <ThemedText style={styles.heroTitle}>BAH Eligibility & Rates</ThemedText>
-              <ThemedText style={styles.heroBody}>
-                FY2026 rates. Understand when you are eligible, what rate you receive, and how to maximize your housing allowance.
+        {/* Tab bar */}
+        <View style={styles.tabBar}>
+          {([
+            { key: 'bah' as TabMode, label: '🏠  BAH (CONUS)' },
+            { key: 'oha' as TabMode, label: '✈️  OHA (OCONUS)' },
+          ] as const).map((t) => (
+            <Pressable
+              key={t.key}
+              onPress={() => setTab(t.key)}
+              style={[styles.tabBtn, tab === t.key && styles.tabBtnActive]}>
+              <ThemedText style={[styles.tabBtnText, tab === t.key && { color: Brand.tactical }]}>
+                {t.label}
               </ThemedText>
-            </ThemedView>
+            </Pressable>
+          ))}
+        </View>
 
-            {/* Grade selector */}
-            <ThemedView type="backgroundElement" style={styles.card}>
-              <ThemedText style={styles.cardLabel}>PAY GRADE</ThemedText>
-              <ThemedText style={styles.groupLabel}>ENLISTED</ThemedText>
-              <View style={styles.chipRow}>
-                {ENLISTED.map((g) => <Chip key={g} label={g} selected={grade === g} onPress={() => setGrade(g)} />)}
-              </View>
-              <ThemedText style={[styles.groupLabel, { marginTop: Spacing.one }]}>WARRANT</ThemedText>
-              <View style={styles.chipRow}>
-                {WARRANT.map((g) => <Chip key={g} label={g} selected={grade === g} onPress={() => setGrade(g)} />)}
-              </View>
-              <ThemedText style={[styles.groupLabel, { marginTop: Spacing.one }]}>OFFICER</ThemedText>
-              <View style={styles.chipRow}>
-                {OFFICER.map((g) => <Chip key={g} label={g} selected={grade === g} onPress={() => setGrade(g)} />)}
-              </View>
-            </ThemedView>
+        <ScrollView
+          contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + Spacing.five }]}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled">
 
-            {/* Dependency status */}
-            <ThemedView type="backgroundElement" style={styles.card}>
-              <ThemedText style={styles.cardLabel}>DEPENDENCY STATUS</ThemedText>
-              <View style={styles.chipRow}>
-                <Chip label="Without Dependents" selected={depStatus === 'without'} onPress={() => setDepStatus('without')} />
-                <Chip label="With Dependents"    selected={depStatus === 'with'}    onPress={() => setDepStatus('with')} />
-              </View>
-            </ThemedView>
+          {/* ══════════════  BAH TAB  ══════════════ */}
+          {tab === 'bah' && (
+            <>
+              <ThemedView type="backgroundElement" style={styles.heroBanner}>
+                <ThemedText style={styles.heroEyebrow}>BASIC ALLOWANCE FOR HOUSING</ThemedText>
+                <ThemedText style={styles.heroTitle}>BAH Eligibility & Rates</ThemedText>
+                <ThemedText style={styles.heroBody}>
+                  FY2026 rates. Find your monthly housing allowance by duty station — then learn how to maximize it.
+                </ThemedText>
+              </ThemedView>
 
-            {/* Eligibility result */}
-            <View style={[styles.eligCard, { borderLeftColor: eligibility.color }]}>
-              <ThemedText style={[styles.eligStatus, { color: eligibility.color }]}>{eligibility.summary}</ThemedText>
-              {eligibility.details.map((d, i) => (
-                <View key={i} style={styles.eligDetailRow}>
-                  <ThemedText style={[styles.eligBullet, { color: eligibility.color }]}>▸</ThemedText>
-                  <ThemedText style={styles.eligDetail}>{d}</ThemedText>
-                </View>
-              ))}
-            </View>
-
-            {/* Duty Station / MHA — search-based */}
-            <ThemedView type="backgroundElement" style={styles.card}>
-              <ThemedText style={styles.cardLabel}>DUTY STATION / MHA</ThemedText>
-              <ThemedText style={styles.cardHint}>
-                Search by ZIP code, city, installation name, or "USCG" for Coast Guard bases.
-              </ThemedText>
-              <View style={[styles.searchWrap, { backgroundColor: inputBg }]}>
-                <ThemedText style={styles.searchIcon}>🔍</ThemedText>
-                <TextInput
-                  value={mhaSearch}
-                  onChangeText={setMhaSearch}
-                  placeholder="e.g. 28301  ·  Fort Liberty  ·  Norfolk  ·  USCG"
-                  placeholderTextColor="#3D6080"
-                  style={[styles.searchInput, { color: inputText }]}
-                  returnKeyType="search"
-                  autoCorrect={false}
-                />
-                {mhaSearch.length > 0 && (
-                  <Pressable onPress={() => setMhaSearch('')} style={styles.searchClear}>
-                    <ThemedText style={styles.searchClearText}>✕</ThemedText>
-                  </Pressable>
-                )}
-              </View>
-
-              {/* Currently selected */}
-              {selectedMha && (
-                <View style={styles.selectedRow}>
-                  <ThemedText style={styles.selectedLabel}>SELECTED:</ThemedText>
-                  <ThemedText style={styles.selectedValue}>{selectedMha.label}</ThemedText>
-                  {selectedMha.branch && (
-                    <View style={styles.cgBadge}>
-                      <ThemedText style={styles.cgBadgeText}>{selectedMha.branch}</ThemedText>
-                    </View>
-                  )}
-                </View>
-              )}
-
-              {/* Filtered list */}
-              <View style={styles.mhaList}>
-                {filteredMha.slice(0, 30).map((m) => {
-                  const isSelected = m.zip === zip;
-                  return (
-                    <Pressable
-                      key={m.zip + m.label}
-                      onPress={() => { setZip(m.zip); setMhaSearch(''); }}
-                      style={({ pressed }) => [
-                        styles.mhaRow,
-                        isSelected && styles.mhaRowSelected,
-                        pressed && { opacity: 0.7 },
-                      ]}>
-                      <View style={styles.mhaRowLeft}>
-                        <ThemedText style={[styles.mhaLabel, isSelected && { color: Brand.tactical }]}>
-                          {m.label}
-                        </ThemedText>
-                        <ThemedText style={styles.mhaZip}>{m.zip}</ThemedText>
-                      </View>
-                      {m.branch && (
-                        <View style={styles.cgBadge}>
-                          <ThemedText style={styles.cgBadgeText}>{m.branch}</ThemedText>
-                        </View>
-                      )}
-                      {isSelected && <ThemedText style={styles.mhaCheck}>✓</ThemedText>}
-                    </Pressable>
-                  );
-                })}
-                {filteredMha.length === 0 && (
-                  <ThemedText style={styles.mhaEmpty}>No installations match your search. Try a different ZIP or name.</ThemedText>
-                )}
-                {filteredMha.length > 30 && (
-                  <ThemedText style={styles.mhaMore}>+{filteredMha.length - 30} more — refine your search to narrow results.</ThemedText>
-                )}
-              </View>
-            </ThemedView>
-
-            {/* Rate display */}
-            {eligibility.eligible && (
+              {/* Grade selector */}
               <ThemedView type="backgroundElement" style={styles.card}>
-                <ThemedText style={styles.cardLabel}>YOUR FY2026 BAH RATE</ThemedText>
-                <View style={styles.rateHero}>
-                  <ThemedText style={styles.rateHeroLabel}>
-                    {grade} · {depStatus === 'with' ? 'With Dependents' : 'Without Dependents'}
-                  </ThemedText>
-                  <ThemedText style={styles.rateHeroValue}>${bahRate.toLocaleString()}</ThemedText>
-                  <ThemedText style={styles.rateHeroSub}>/month · non-taxable</ThemedText>
+                <ThemedText style={styles.cardLabel}>STEP 1 — YOUR PAY GRADE</ThemedText>
+                <ThemedText style={styles.groupLabel}>ENLISTED</ThemedText>
+                <View style={styles.chipRow}>
+                  {ENLISTED.map((g) => <Chip key={g} label={g} selected={grade === g} onPress={() => setGrade(g)} />)}
+                </View>
+                <ThemedText style={[styles.groupLabel, { marginTop: Spacing.one }]}>WARRANT OFFICER</ThemedText>
+                <View style={styles.chipRow}>
+                  {WARRANT.map((g) => <Chip key={g} label={g} selected={grade === g} onPress={() => setGrade(g)} />)}
+                </View>
+                <ThemedText style={[styles.groupLabel, { marginTop: Spacing.one }]}>OFFICER</ThemedText>
+                <View style={styles.chipRow}>
+                  {OFFICER.map((g) => <Chip key={g} label={g} selected={grade === g} onPress={() => setGrade(g)} />)}
                 </View>
               </ThemedView>
-            )}
 
-            {/* Full rate table */}
-            <ThemedView type="backgroundElement" style={styles.card}>
-              <ThemedText style={styles.cardLabel}>RATE REFERENCE TABLE — {selectedMha?.label ?? zip}</ThemedText>
-              <RateTable zip={zip} />
-            </ThemedView>
-
-            {/* How BAH works */}
-            <ThemedView type="backgroundElement" style={styles.card}>
-              <ThemedText style={styles.cardLabel}>HOW BAH WORKS</ThemedText>
-              {[
-                { q: 'What is BAH?', a: 'Basic Allowance for Housing is a non-taxable monthly allowance designed to partially offset housing costs in the local market near your duty station.' },
-                { q: 'How is the rate set?', a: 'DoD surveys rental prices annually for each Military Housing Area (MHA). Rates are set to cover approximately 95% of the local median rental cost for your grade.' },
-                { q: 'Does it count as income?', a: 'No. BAH is non-taxable and not counted as gross income for federal tax purposes.' },
-                { q: 'What if I live in government housing?', a: 'If you voluntarily move into on-post housing, your BAH is often offset dollar-for-dollar against rent charged by the housing office. You keep any difference.' },
-                { q: 'Do I keep it if I rent under the rate?', a: 'Yes. If your actual rent is lower than your BAH rate, you keep the difference — known as BAH arbitrage.' },
-              ].map((item, i) => (
-                <View key={i} style={styles.faqItem}>
-                  <ThemedText style={styles.faqQ}>{item.q}</ThemedText>
-                  <ThemedText style={styles.faqA}>{item.a}</ThemedText>
+              {/* Dependency status */}
+              <ThemedView type="backgroundElement" style={styles.card}>
+                <ThemedText style={styles.cardLabel}>STEP 2 — DEPENDENCY STATUS</ThemedText>
+                <ThemedText style={styles.cardHint}>Do you have a spouse or dependents on your orders?</ThemedText>
+                <View style={styles.chipRow}>
+                  <Chip label="No Dependents"    selected={depStatus === 'without'} onPress={() => setDepStatus('without')} />
+                  <Chip label="With Dependents"  selected={depStatus === 'with'}    onPress={() => setDepStatus('with')} />
                 </View>
-              ))}
-            </ThemedView>
+              </ThemedView>
 
-            {/* Strategy tips */}
-            <ThemedView type="backgroundElement" style={styles.card}>
-              <ThemedText style={styles.cardLabel}>BAH STRATEGY FOR SINGLE SMs</ThemedText>
-              {[
-                'E5+ only: Get off post as soon as you are eligible. Rent below your BAH rate and pocket the difference.',
-                'Roommate tactic: Two E5s share a 2BR apartment. Each pays $700/mo — both pocket $500+/mo.',
-                'Drive the market: Off-post apartments near cheaper installations let you pocket $300–$600+/mo.',
-                'Always negotiate rent below your BAH rate. Landlords near bases often price to BAH — push back.',
-              ].map((tip, i) => (
-                <View key={i} style={styles.tipRow}>
-                  <ThemedText style={styles.tipBullet}>▸</ThemedText>
-                  <ThemedText style={styles.tipText}>{tip}</ThemedText>
-                </View>
-              ))}
-            </ThemedView>
+              {/* Eligibility result */}
+              <View style={[styles.eligCard, { borderLeftColor: eligibility.color }]}>
+                <ThemedText style={[styles.eligStatus, { color: eligibility.color }]}>{eligibility.summary}</ThemedText>
+                {eligibility.details.map((d, i) => (
+                  <View key={i} style={styles.eligDetailRow}>
+                    <ThemedText style={[styles.eligBullet, { color: eligibility.color }]}>▸</ThemedText>
+                    <ThemedText style={styles.eligDetail}>{d}</ThemedText>
+                  </View>
+                ))}
+              </View>
 
-            <ThemedView type="backgroundElement" style={styles.disclaimer}>
-              <ThemedText style={styles.disclaimerText}>
-                Rates are FY2026 DoD BAH tables. Actual entitlement is determined by official orders and housing office. O7–O10 rates are capped at O6 per DoD policy.
-              </ThemedText>
-            </ThemedView>
-          </>
-        )}
-
-        {/* ══════════════  OHA TAB  ══════════════ */}
-        {tab === 'oha' && (
-          <>
-            <ThemedView type="backgroundElement" style={styles.heroBanner}>
-              <ThemedText style={styles.heroEyebrow}>OVERSEAS HOUSING ALLOWANCE</ThemedText>
-              <ThemedText style={styles.heroTitle}>OHA — OCONUS Housing</ThemedText>
-              <ThemedText style={styles.heroBody}>
-                OHA replaces BAH for service members stationed overseas. It covers actual rent paid (up to a ceiling rate) plus Move-In Housing Allowance (MIHA) for initial setup costs.
-              </ThemedText>
-            </ThemedView>
-
-            {/* OHA key rules */}
-            <ThemedView type="backgroundElement" style={styles.card}>
-              <ThemedText style={styles.cardLabel}>HOW OHA WORKS</ThemedText>
-              {[
-                { q: 'What does OHA cover?', a: 'OHA covers your actual monthly rent up to the applicable OHA ceiling rate for your grade and location. Utilities may be covered separately through a Utility/Recurring Maintenance Allowance (URMA).' },
-                { q: 'How is my ceiling set?', a: 'DTMO (Defense Travel Management Office) surveys the local rental market for each OCONUS area and sets ceiling rates by grade. Rates are updated quarterly. Higher grades receive higher ceilings.' },
-                { q: 'What is MIHA?', a: 'Move-In Housing Allowance covers one-time setup costs: appliance rental, key money, agent fees, and minor repairs. It is paid upon move-in/move-out.' },
-                { q: 'What if my rent exceeds the ceiling?', a: 'You pay the difference out of pocket. Always try to find housing at or below your OHA ceiling. Your housing office can help identify suitable properties.' },
-                { q: 'Does OHA vary with exchange rates?', a: 'Yes. OHA is set in USD but local rents are in foreign currency. DTMO adjusts rates when significant exchange rate changes occur.' },
-                { q: 'Do I still get BAH if overseas?', a: 'No. OCONUS service members receive OHA instead of BAH. You cannot receive both simultaneously unless in a split-family situation with specific orders.' },
-                { q: 'Where do I find my exact OHA rate?', a: 'Use the official DTMO OHA calculator at dtmo.mil. Enter your grade, location, and family status to see your specific ceiling and MIHA amount.' },
-              ].map((item, i) => (
-                <View key={i} style={styles.faqItem}>
-                  <ThemedText style={styles.faqQ}>{item.q}</ThemedText>
-                  <ThemedText style={styles.faqA}>{item.a}</ThemedText>
-                </View>
-              ))}
-            </ThemedView>
-
-            {/* OCONUS Location search */}
-            <ThemedView type="backgroundElement" style={styles.card}>
-              <ThemedText style={styles.cardLabel}>OCONUS LOCATION / INSTALLATION</ThemedText>
-              <ThemedText style={styles.cardHint}>
-                Search by city, country, or installation name to find your area.
-              </ThemedText>
-              <View style={[styles.searchWrap, { backgroundColor: inputBg }]}>
-                <ThemedText style={styles.searchIcon}>🔍</ThemedText>
-                <TextInput
-                  value={ohaSearch}
-                  onChangeText={setOhaSearch}
-                  placeholder="e.g. Japan  ·  Ramstein  ·  Germany  ·  Okinawa"
-                  placeholderTextColor="#3D6080"
-                  style={[styles.searchInput, { color: inputText }]}
-                  returnKeyType="search"
-                  autoCorrect={false}
+              {/* Duty station search */}
+              <ThemedView type="backgroundElement" style={styles.card}>
+                <ThemedText style={styles.cardLabel}>STEP 3 — YOUR DUTY STATION</ThemedText>
+                <LocationSearch
+                  value={bahSearch}
+                  onChange={setBahSearch}
+                  onSelect={handleSelectMha}
+                  selectedInstallation={selectedInstallation}
+                  onClear={handleClearMha}
+                  inputBg={inputBg}
+                  inputText={inputText}
                 />
-                {ohaSearch.length > 0 && (
-                  <Pressable onPress={() => setOhaSearch('')} style={styles.searchClear}>
-                    <ThemedText style={styles.searchClearText}>✕</ThemedText>
-                  </Pressable>
-                )}
-              </View>
+              </ThemedView>
 
-              <View style={styles.ohaList}>
-                {filteredOha.map((loc, i) => (
-                  <View key={i} style={styles.ohaRow}>
-                    <View style={styles.ohaRowTop}>
-                      <ThemedText style={styles.ohaLabel}>{loc.label}</ThemedText>
-                      <View style={styles.countryBadge}>
-                        <ThemedText style={styles.countryBadgeText}>{loc.country}</ThemedText>
-                      </View>
-                    </View>
-                    <ThemedText style={styles.ohaNote}>{loc.note}</ThemedText>
+              {/* Your personal rate */}
+              {eligibility.eligible && zip && bahRate !== null && (
+                <ThemedView type="backgroundElement" style={styles.card}>
+                  <ThemedText style={styles.cardLabel}>YOUR FY2026 BAH RATE</ThemedText>
+                  <View style={styles.rateHero}>
+                    <ThemedText style={styles.rateHeroLabel}>
+                      {grade} · {depStatus === 'with' ? 'With Dependents' : 'No Dependents'} · {selectedInstallation?.name}
+                    </ThemedText>
+                    <ThemedText style={styles.rateHeroValue}>${bahRate.toLocaleString()}</ThemedText>
+                    <ThemedText style={styles.rateHeroSub}>per month · non-taxable</ThemedText>
                   </View>
-                ))}
-                {filteredOha.length === 0 && (
-                  <ThemedText style={styles.mhaEmpty}>No OCONUS locations match. Try a country name or city.</ThemedText>
-                )}
-              </View>
-            </ThemedView>
+                </ThemedView>
+              )}
 
-            {/* OHA rate reference note */}
-            <ThemedView type="backgroundElement" style={styles.card}>
-              <ThemedText style={styles.cardLabel}>FINDING YOUR EXACT OHA RATE</ThemedText>
-              <View style={styles.ohaRateBox}>
-                <ThemedText style={styles.ohaRateTitle}>🌐 DTMO OHA Calculator</ThemedText>
-                <ThemedText style={styles.ohaRateBody}>
-                  Exact OHA ceiling rates change quarterly based on DTMO surveys. To find your current OHA rate:
-                </ThemedText>
+              {/* Full rate table */}
+              {zip && (
+                <ThemedView type="backgroundElement" style={styles.card}>
+                  <ThemedText style={styles.cardLabel}>
+                    FY2026 FULL RATE TABLE — {selectedInstallation?.name ?? zip}
+                  </ThemedText>
+                  <ThemedText style={styles.cardHint}>All grades — monthly non-taxable amount.</ThemedText>
+                  <FullRateTable zip={zip} />
+                </ThemedView>
+              )}
+
+              {/* How BAH works */}
+              <ThemedView type="backgroundElement" style={styles.card}>
+                <ThemedText style={styles.cardLabel}>HOW BAH WORKS — THE BASICS</ThemedText>
                 {[
-                  'Visit dtmo.mil → OHA Rates',
-                  'Select your OCONUS location/country',
-                  'Enter your pay grade and dependency status',
-                  'Your ceiling rate and MIHA amounts are displayed',
-                  'Your housing office can also print your official OHA entitlement',
-                ].map((step, i) => (
-                  <View key={i} style={styles.tipRow}>
-                    <ThemedText style={[styles.tipBullet, { color: Brand.tactical }]}>{i + 1}.</ThemedText>
-                    <ThemedText style={styles.tipText}>{step}</ThemedText>
+                  {
+                    q: 'What is BAH?',
+                    a: 'Basic Allowance for Housing is a tax-free monthly payment that helps cover housing costs near your duty station. It is NOT a reimbursement — you receive it regardless of your actual rent.',
+                  },
+                  {
+                    q: 'How is my rate determined?',
+                    a: 'DoD surveys rental prices annually for each Military Housing Area (MHA). Your rate is based on your pay grade and the civilian rental market at your duty station. Higher-cost cities = higher BAH.',
+                  },
+                  {
+                    q: 'Is BAH taxable?',
+                    a: 'No. BAH is completely tax-free and is not counted as gross income for federal tax purposes.',
+                  },
+                  {
+                    q: 'What if I live on-post?',
+                    a: 'If you choose to live in government/privatized housing, your BAH typically goes directly to the housing company as rent. You keep any amount remaining above what is charged.',
+                  },
+                  {
+                    q: 'Can I keep BAH if my rent is lower?',
+                    a: 'Yes. If your rent is $800/mo and your BAH is $1,500/mo, you keep the $700 difference. This is called BAH arbitrage and is perfectly legal.',
+                  },
+                ].map((item, i) => (
+                  <View key={i} style={styles.faqItem}>
+                    <ThemedText style={styles.faqQ}>{item.q}</ThemedText>
+                    <ThemedText style={styles.faqA}>{item.a}</ThemedText>
                   </View>
                 ))}
-              </View>
-            </ThemedView>
+              </ThemedView>
 
-            {/* OHA grade tiers callout */}
-            <ThemedView type="backgroundElement" style={styles.card}>
-              <ThemedText style={styles.cardLabel}>OHA GRADE TIERS (GENERAL)</ThemedText>
-              <ThemedText style={styles.ohaRateBody}>
-                OHA ceilings scale with pay grade. Higher grades receive higher ceilings reflecting larger housing needs and OCONUS rank expectations. As a rule of thumb:
-              </ThemedText>
-              {[
-                'E1–E4: Entry-level ceiling. Often on-post quarters recommended.',
-                'E5–E9: Mid-grade ceiling. Off-post housing widely available.',
-                'W1–W5: Warrant officer tier. Similar to O1–O3 ceilings.',
-                'O1–O3: Junior officer ceiling. Adequate for most local markets.',
-                'O4–O6: Senior officer ceiling. Allows more housing options.',
-                'O7+: Flag/General officer ceiling. Highest OHA entitlement.',
-              ].map((line, i) => (
-                <View key={i} style={styles.tipRow}>
-                  <ThemedText style={styles.tipBullet}>▸</ThemedText>
-                  <ThemedText style={styles.tipText}>{line}</ThemedText>
-                </View>
-              ))}
-            </ThemedView>
+              {/* Strategy tips */}
+              <ThemedView type="backgroundElement" style={styles.card}>
+                <ThemedText style={styles.cardLabel}>BAH MONEY STRATEGIES</ThemedText>
+                {[
+                  'E5 and above: Move off-post as soon as possible. Find rent below your BAH rate and keep the difference every month.',
+                  'Roommate tactic: Two E5s share a 2-bedroom apartment. Each pays $700/mo in rent — both pocket $500+ in BAH each month.',
+                  'Lower-cost installations: Locations with cheaper rent let you bank $300–$700+/mo while still living comfortably.',
+                  'Negotiate rent: Landlords near bases often price to BAH rates. Push back and negotiate — especially when signing a long lease.',
+                ].map((tip, i) => (
+                  <View key={i} style={styles.tipRow}>
+                    <ThemedText style={styles.tipBullet}>▸</ThemedText>
+                    <ThemedText style={styles.tipText}>{tip}</ThemedText>
+                  </View>
+                ))}
+              </ThemedView>
 
-            <ThemedView type="backgroundElement" style={styles.disclaimer}>
-              <ThemedText style={styles.disclaimerText}>
-                OHA rates are set by DTMO and updated quarterly. Rates shown here are informational only — verify your exact entitlement at dtmo.mil or through your installation housing office.
-              </ThemedText>
-            </ThemedView>
-          </>
-        )}
+              <ThemedView type="backgroundElement" style={styles.disclaimer}>
+                <ThemedText style={styles.disclaimerText}>
+                  Rates are FY2026 DoD BAH tables (effective Jan 1, 2026). Actual entitlement is determined by official orders and your installation housing office. O7–O10 rates are capped at O6 per DoD policy. Verify at militarypay.defense.gov.
+                </ThemedText>
+              </ThemedView>
+            </>
+          )}
 
-        <BranchRegNote />
-      </ScrollView>
-    </ThemedView>
+          {/* ══════════════  OHA TAB  ══════════════ */}
+          {tab === 'oha' && (
+            <>
+              <ThemedView type="backgroundElement" style={styles.heroBanner}>
+                <ThemedText style={styles.heroEyebrow}>OVERSEAS HOUSING ALLOWANCE</ThemedText>
+                <ThemedText style={styles.heroTitle}>OHA — OCONUS Housing</ThemedText>
+                <ThemedText style={styles.heroBody}>
+                  Stationed overseas? OHA replaces BAH and covers your actual rent up to a quarterly ceiling set by DTMO. Find your location below, then look up exact rates at dtmo.mil.
+                </ThemedText>
+              </ThemedView>
+
+              {/* OHA location search */}
+              <ThemedView type="backgroundElement" style={styles.card}>
+                <OhaSearch
+                  value={ohaSearch}
+                  onChange={setOhaSearch}
+                  selectedLoc={selectedOha}
+                  onSelect={handleSelectOha}
+                  onClear={handleClearOha}
+                  inputBg={inputBg}
+                  inputText={inputText}
+                />
+              </ThemedView>
+
+              {/* Staleness warning */}
+              {isOhaDataStale() && (
+                <ThemedView type="backgroundElement" style={[styles.card, { borderColor: Brand.warning + '50' }]}>
+                  <ThemedText style={[styles.cardLabel, { color: Brand.warning }]}>
+                    ⚠ OHA DATA MAY BE OUTDATED
+                  </ThemedText>
+                  <ThemedText style={styles.cardHint}>
+                    Rates shown are from {OHA_DATA_QUARTER}. OHA is updated quarterly — verify current rates at dtmo.mil.
+                  </ThemedText>
+                </ThemedView>
+              )}
+
+              {/* Live rates for selected location */}
+              {selectedOha && (() => {
+                const ohaRates = getOhaRate(selectedOha.label, grade);
+                const totalCeiling = getOhaTotalCeiling(selectedOha.label, grade);
+                return ohaRates ? (
+                  <ThemedView type="backgroundElement" style={styles.card}>
+                    <ThemedText style={styles.cardLabel}>YOUR OHA ESTIMATE — {OHA_DATA_QUARTER}</ThemedText>
+                    <ThemedText style={styles.cardHint}>{selectedOha.label} · {grade}</ThemedText>
+                    <View style={styles.rateHero}>
+                      <ThemedText style={styles.rateHeroValue}>${totalCeiling?.toLocaleString()}</ThemedText>
+                      <ThemedText style={styles.rateHeroSub}>total monthly ceiling (rent + utilities)</ThemedText>
+                    </View>
+                    <View style={[styles.dataRow, { marginTop: Spacing.two }]}>
+                      <ThemedText style={styles.dataLabel}>Rent ceiling</ThemedText>
+                      <ThemedText style={[styles.dataValue, { color: Brand.tactical }]}>${ohaRates.rentCeilingUSD.toLocaleString()}/mo</ThemedText>
+                    </View>
+                    <View style={styles.dataRow}>
+                      <ThemedText style={styles.dataLabel}>Utility allowance</ThemedText>
+                      <ThemedText style={[styles.dataValue, { color: Brand.accent }]}>${ohaRates.utilityAllowanceUSD.toLocaleString()}/mo</ThemedText>
+                    </View>
+                    <ThemedText style={[styles.cardHint, { marginTop: Spacing.two, color: Brand.warning + 'CC' }]}>
+                      Rates are approximate — OHA fluctuates with exchange rates. Verify at dtmo.mil.
+                    </ThemedText>
+                  </ThemedView>
+                ) : null;
+              })()}
+
+              {/* How OHA works */}
+              <ThemedView type="backgroundElement" style={styles.card}>
+                <ThemedText style={styles.cardLabel}>HOW OHA WORKS</ThemedText>
+                {[
+                  {
+                    q: 'What does OHA cover?',
+                    a: 'OHA covers your actual monthly rent up to your OHA ceiling rate for your grade and location. You pay any amount above the ceiling out of pocket.',
+                  },
+                  {
+                    q: 'How is the ceiling set?',
+                    a: 'DTMO surveys the local rental market quarterly and sets ceiling rates by pay grade. Higher grades receive higher ceilings. Rates change with local currency exchange rates.',
+                  },
+                  {
+                    q: 'What is MIHA?',
+                    a: 'Move-In Housing Allowance covers one-time setup costs like key money, agent fees, appliance rental, and minor repairs. It is paid when you move in and out.',
+                  },
+                  {
+                    q: 'What about utilities?',
+                    a: 'A Utility/Recurring Maintenance Allowance (URMA) may be paid separately to cover monthly utility costs, depending on your location and host nation.',
+                  },
+                  {
+                    q: 'Can I receive OHA and BAH at the same time?',
+                    a: 'No. OCONUS service members receive OHA instead of BAH. An exception exists for specific split-family situations where dependents remain CONUS.',
+                  },
+                  {
+                    q: 'What if my rent exceeds the ceiling?',
+                    a: 'You pay the difference out of pocket. Your housing office can help identify properties at or below your ceiling. Always negotiate rent before signing a lease.',
+                  },
+                ].map((item, i) => (
+                  <View key={i} style={styles.faqItem}>
+                    <ThemedText style={styles.faqQ}>{item.q}</ThemedText>
+                    <ThemedText style={styles.faqA}>{item.a}</ThemedText>
+                  </View>
+                ))}
+              </ThemedView>
+
+              {/* OHA grade tiers */}
+              <ThemedView type="backgroundElement" style={styles.card}>
+                <ThemedText style={styles.cardLabel}>OHA GRADE TIERS — GENERAL GUIDE</ThemedText>
+                <ThemedText style={styles.cardHint}>Ceilings scale with grade. Exact amounts vary by location and quarter.</ThemedText>
+                {[
+                  { grades: 'E1–E4', info: 'Entry-level ceiling. On-post government quarters often recommended or required.' },
+                  { grades: 'E5–E9', info: 'Mid-grade ceiling. Wide off-post housing available in most OCONUS markets.' },
+                  { grades: 'W1–W5', info: 'Warrant Officer tier — similar ceiling to junior officer grades.' },
+                  { grades: 'O1–O3', info: 'Junior officer ceiling. Covers adequate housing in most OCONUS areas.' },
+                  { grades: 'O4–O6', info: 'Senior officer ceiling. Broader housing options available.' },
+                  { grades: 'O7–O10', info: 'Flag/General officer tier. Highest OHA entitlement.' },
+                ].map((row, i) => (
+                  <View key={i} style={styles.tierRow}>
+                    <View style={styles.tierGradeBox}>
+                      <ThemedText style={styles.tierGrade}>{row.grades}</ThemedText>
+                    </View>
+                    <ThemedText style={styles.tierInfo}>{row.info}</ThemedText>
+                  </View>
+                ))}
+              </ThemedView>
+
+              <ThemedView type="backgroundElement" style={styles.disclaimer}>
+                <ThemedText style={styles.disclaimerText}>
+                  OHA rates are set by DTMO and updated quarterly based on local market surveys. This guide is for reference only — verify your exact entitlement at dtmo.mil or through your installation housing office.
+                </ThemedText>
+              </ThemedView>
+            </>
+          )}
+
+          <BranchRegNote />
+        </ScrollView>
+      </ThemedView>
     </KeyboardAvoidingView>
   );
 }
 
+// ── Styles ────────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
@@ -644,26 +755,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.three,
     paddingBottom: Spacing.two,
   },
-  back: { width: 40, justifyContent: 'center' },
+  back:        { width: 40, justifyContent: 'center' },
   backChevron: { fontSize: 28, fontWeight: '300', color: Brand.primary, lineHeight: 34 },
-  title: { fontSize: 18, fontWeight: '700' },
+  title:       { fontSize: 18, fontWeight: '700' },
 
   tabBar: {
     flexDirection: 'row',
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: Brand.border,
     marginHorizontal: Spacing.three,
-    gap: 0,
   },
-  tabBtn: {
-    flex: 1,
-    paddingVertical: Spacing.two + 2,
-    alignItems: 'center',
-    borderBottomWidth: 2,
-    borderBottomColor: 'transparent',
-  },
+  tabBtn:       { flex: 1, paddingVertical: Spacing.two + 2, alignItems: 'center', borderBottomWidth: 2, borderBottomColor: 'transparent' },
   tabBtnActive: { borderBottomColor: Brand.tactical },
-  tabBtnText: { fontSize: 12, fontWeight: '700', letterSpacing: 0.5, color: '#4D7A9A' },
+  tabBtnText:   { fontSize: 12, fontWeight: '700', letterSpacing: 0.5, color: '#4D7A9A' },
 
   content: { paddingHorizontal: Spacing.three, gap: Spacing.two, paddingTop: Spacing.two },
 
@@ -682,89 +786,111 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10, paddingVertical: 5, borderRadius: 3,
     borderWidth: 1, borderColor: Brand.border, backgroundColor: '#04080F',
   },
-  chipSelected: { borderColor: Brand.tactical, backgroundColor: Brand.tactical + '20' },
-  chipText: { fontSize: 11, fontWeight: '700', color: '#4D7A9A' },
+  chipSelected:     { borderColor: Brand.tactical, backgroundColor: Brand.tactical + '20' },
+  chipText:         { fontSize: 11, fontWeight: '700', color: '#4D7A9A' },
   chipTextSelected: { color: Brand.tactical },
 
   eligCard: {
     backgroundColor: '#080E1C', borderWidth: 1, borderColor: Brand.border,
     borderLeftWidth: 4, borderRadius: 4, padding: Spacing.three, gap: Spacing.one,
   },
-  eligStatus: { fontSize: 12, fontWeight: '800', lineHeight: 18 },
+  eligStatus:    { fontSize: 12, fontWeight: '800', lineHeight: 18 },
   eligDetailRow: { flexDirection: 'row', gap: 6, alignItems: 'flex-start', marginTop: 4 },
-  eligBullet: { fontSize: 10, marginTop: 2 },
-  eligDetail: { flex: 1, fontSize: 11, lineHeight: 17, color: '#8AA8C0' },
+  eligBullet:    { fontSize: 10, marginTop: 2 },
+  eligDetail:    { flex: 1, fontSize: 11, lineHeight: 17, color: '#8AA8C0' },
 
   // Search
   searchWrap: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: Brand.border,
-    borderRadius: 6,
-    paddingHorizontal: Spacing.two,
-    gap: Spacing.one,
+    flexDirection: 'row', alignItems: 'center',
+    borderWidth: 1, borderColor: Brand.border, borderRadius: 6,
+    paddingHorizontal: Spacing.two, gap: Spacing.one,
   },
-  searchIcon:  { fontSize: 14 },
-  searchInput: { flex: 1, fontSize: 14, paddingVertical: Spacing.two + 2 },
-  searchClear: { padding: 4 },
+  searchIcon:      { fontSize: 14 },
+  searchInput:     { flex: 1, fontSize: 14, paddingVertical: Spacing.two + 2 },
+  searchClear:     { padding: 4 },
   searchClearText: { fontSize: 12, color: '#4D7A9A', fontWeight: '700' },
 
-  selectedRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.one, flexWrap: 'wrap' },
-  selectedLabel: { fontSize: 9, fontWeight: '800', letterSpacing: 1, color: '#3D6080' },
-  selectedValue: { fontSize: 11, fontWeight: '700', color: Brand.tactical, flex: 1 },
-
-  mhaList: { gap: 0 },
-  mhaRow: {
-    flexDirection: 'row', alignItems: 'center', gap: Spacing.two,
-    paddingVertical: Spacing.two, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: '#0D1E30',
+  // Results
+  resultsList: {
+    marginTop: Spacing.one, borderWidth: 1, borderColor: Brand.border,
+    borderRadius: 4, overflow: 'hidden',
   },
-  mhaRowSelected: { backgroundColor: Brand.tactical + '10' },
-  mhaRowLeft: { flex: 1, gap: 2 },
-  mhaLabel: { fontSize: 12, fontWeight: '600', color: '#8AA8C0' },
-  mhaZip:   { fontSize: 10, color: '#3D6080', fontFamily: 'monospace' },
-  mhaCheck: { fontSize: 14, color: Brand.tactical, fontWeight: '800', width: 18, textAlign: 'center' },
-  mhaEmpty: { fontSize: 12, color: '#4D7A9A', textAlign: 'center', paddingVertical: Spacing.two },
-  mhaMore:  { fontSize: 10, color: '#3D6080', textAlign: 'center', paddingTop: Spacing.one },
+  resultRow: {
+    flexDirection: 'row', alignItems: 'center', gap: Spacing.two,
+    paddingHorizontal: Spacing.two, paddingVertical: Spacing.two + 2,
+    borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: '#0D1E30',
+    backgroundColor: '#060C18',
+  },
+  resultLabel:  { fontSize: 12, fontWeight: '600', color: '#C8D8E8' },
+  resultSub:    { fontSize: 10, color: '#3D6080', fontFamily: 'monospace', marginTop: 1 },
+  resultsEmpty: { fontSize: 12, color: '#4D7A9A', textAlign: 'center', padding: Spacing.three },
+  resultsMore:  { fontSize: 10, color: '#3D6080', textAlign: 'center', padding: Spacing.two },
 
-  cgBadge: { backgroundColor: '#005C9920', borderWidth: 1, borderColor: '#005C99', borderRadius: 3, paddingHorizontal: 5, paddingVertical: 1 },
-  cgBadgeText: { fontSize: 8, fontWeight: '800', color: '#00A0D0', letterSpacing: 0.5 },
+  // Selected card
+  selectedCard: {
+    marginTop: Spacing.one, borderWidth: 1, borderColor: Brand.tactical + '50',
+    borderRadius: 4, padding: Spacing.two, backgroundColor: Brand.tactical + '08', gap: Spacing.one,
+  },
+  selectedCardTop:  { flexDirection: 'row', alignItems: 'flex-start', gap: Spacing.one },
+  selectedCardLabel:{ fontSize: 8, fontWeight: '800', letterSpacing: 1, color: Brand.tactical },
+  selectedCardName: { fontSize: 13, fontWeight: '700', color: '#C8D8E8', marginTop: 2 },
+  selectedCardSub:  { fontSize: 10, color: '#4D7A9A', fontFamily: 'monospace', marginTop: 1 },
 
-  rateHero: { alignItems: 'center', gap: 4 },
-  rateHeroLabel: { fontSize: 11, color: '#4D7A9A', fontWeight: '700' },
-  rateHeroValue: { fontSize: 26, fontWeight: '900', color: Brand.accent, fontFamily: 'Courier New' },
+  changeBtn:     { alignSelf: 'flex-start', paddingVertical: 4, paddingHorizontal: 10, borderRadius: 3, backgroundColor: '#0D1E30', borderWidth: 1, borderColor: Brand.border },
+  changeBtnText: { fontSize: 10, fontWeight: '700', color: '#4D7A9A' },
+
+  branchBadge:     { backgroundColor: '#005C9920', borderWidth: 1, borderColor: '#005C99', borderRadius: 3, paddingHorizontal: 5, paddingVertical: 2 },
+  branchBadgeText: { fontSize: 8, fontWeight: '800', color: '#00A0D0', letterSpacing: 0.5 },
+
+  // Empty state
+  emptyPrompt:     { alignItems: 'center', paddingVertical: Spacing.three, gap: 8 },
+  emptyPromptIcon: { fontSize: 24 },
+  emptyPromptText: { fontSize: 12, color: '#4D7A9A', textAlign: 'center', lineHeight: 18 },
+
+  // Rate hero
+  rateHero:      { alignItems: 'center', gap: 4 },
+  rateHeroLabel: { fontSize: 11, color: '#4D7A9A', fontWeight: '700', textAlign: 'center' },
+  rateHeroValue: { fontSize: 32, fontWeight: '900', color: Brand.accent, fontFamily: 'Courier New' },
   rateHeroSub:   { fontSize: 12, color: '#4D7A9A' },
 
-  rateTable: { gap: 4 },
-  rateTableHeader: { flexDirection: 'row', borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: Brand.border, paddingBottom: 4 },
+  // Full rate table
+  rateTable:       { gap: 2 },
+  rateTableHeader: { flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: Brand.border, paddingBottom: 5, marginBottom: 2 },
   rateTableCol:    { flex: 1, fontSize: 8, fontWeight: '800', color: '#3D6080', letterSpacing: 0.5 },
-  rateTableRow:    { flexDirection: 'row', paddingVertical: 3, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: '#0D1E30' },
+  rateGroupRow:    { backgroundColor: '#0D1E30', paddingVertical: 3, paddingHorizontal: 2, marginTop: 6, marginBottom: 2, borderRadius: 2 },
+  rateGroupLabel:  { fontSize: 8, fontWeight: '800', letterSpacing: 1, color: '#4D7A9A' },
+  rateTableRow:    { flexDirection: 'row', paddingVertical: 4, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: '#0D1E30' },
   rateTableGrade:  { flex: 1, fontSize: 11, fontWeight: '700', color: '#8AA8C0' },
   rateTableValue:  { flex: 1, fontSize: 12, fontWeight: '700', fontFamily: 'Courier New' },
 
+  // FAQ
   faqItem: { gap: 4, paddingBottom: Spacing.one },
-  faqQ: { fontSize: 12, fontWeight: '700', color: '#C8D8E8' },
-  faqA: { fontSize: 11, lineHeight: 17, color: '#4D7A9A' },
+  faqQ:    { fontSize: 12, fontWeight: '700', color: '#C8D8E8' },
+  faqA:    { fontSize: 11, lineHeight: 17, color: '#4D7A9A' },
 
-  tipRow: { flexDirection: 'row', gap: 6, alignItems: 'flex-start' },
+  // Tips
+  tipRow:    { flexDirection: 'row', gap: 6, alignItems: 'flex-start' },
   tipBullet: { fontSize: 10, color: Brand.accent, marginTop: 2 },
-  tipText: { flex: 1, fontSize: 12, lineHeight: 18, color: '#4D7A9A' },
+  tipText:   { flex: 1, fontSize: 12, lineHeight: 18, color: '#4D7A9A' },
 
-  // OHA styles
-  ohaList: { gap: Spacing.two },
-  ohaRow: {
-    borderWidth: StyleSheet.hairlineWidth, borderColor: Brand.border,
-    borderRadius: 4, padding: Spacing.two, gap: 4,
-  },
-  ohaRowTop: { flexDirection: 'row', alignItems: 'center', gap: Spacing.one, flexWrap: 'wrap' },
-  ohaLabel:  { fontSize: 12, fontWeight: '700', color: '#C8D8E8', flex: 1 },
-  ohaNote:   { fontSize: 11, color: '#4D7A9A', lineHeight: 16 },
-  countryBadge: { backgroundColor: Brand.accent + '15', borderWidth: 1, borderColor: Brand.accent + '40', borderRadius: 3, paddingHorizontal: 6, paddingVertical: 2 },
-  countryBadgeText: { fontSize: 8, fontWeight: '800', color: Brand.accent, letterSpacing: 0.3 },
-  ohaRateBox: { gap: Spacing.two },
-  ohaRateTitle: { fontSize: 14, fontWeight: '800', color: Brand.tactical },
-  ohaRateBody:  { fontSize: 12, lineHeight: 18, color: '#4D7A9A' },
+  // Shared data rows
+  dataRow:   { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 4 },
+  dataLabel: { fontSize: 12, color: '#4D7A9A' },
+  dataValue: { fontSize: 13, fontWeight: '700' },
 
-  disclaimer: { borderRadius: 4, padding: Spacing.two },
+  // OHA
+  dtmoBox:   { gap: Spacing.two },
+  dtmoTitle: { fontSize: 14, fontWeight: '800', color: Brand.tactical },
+  dtmoBody:  { fontSize: 12, lineHeight: 18, color: '#4D7A9A' },
+
+  ohaNote:     { backgroundColor: '#0D1E30', borderRadius: 3, padding: Spacing.two },
+  ohaNoteText: { fontSize: 12, lineHeight: 18, color: '#8AA8C0' },
+
+  tierRow:      { flexDirection: 'row', gap: Spacing.two, alignItems: 'flex-start', paddingVertical: Spacing.one },
+  tierGradeBox: { backgroundColor: Brand.tactical + '20', borderRadius: 3, paddingHorizontal: 8, paddingVertical: 3, minWidth: 60, alignItems: 'center' },
+  tierGrade:    { fontSize: 10, fontWeight: '800', color: Brand.tactical, letterSpacing: 0.5 },
+  tierInfo:     { flex: 1, fontSize: 11, lineHeight: 17, color: '#4D7A9A' },
+
+  disclaimer:     { borderRadius: 4, padding: Spacing.two },
   disclaimerText: { fontSize: 10, lineHeight: 15, color: '#3D6080', textAlign: 'center' },
 });

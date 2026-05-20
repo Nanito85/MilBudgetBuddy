@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Keyboard, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -13,6 +13,7 @@ import { StationPicker } from '@/features/pcs/components/StationPicker';
 import { calcPCS } from '@/features/pcs/utils/pcsCalc';
 import { BottomTabInset, Brand, Fonts, Spacing } from '@/constants/theme';
 import { getBahRate } from '@/data/bah-rates';
+import { useUserStore } from '@/store/user.store';
 
 // ── DLA Tables (FY2026, effective Jan 1 2026) ──────────────────────────────────
 const DLA: Record<string, { noDep: number; withDep: number }> = {
@@ -69,8 +70,20 @@ export default function PCSCalculatorScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
 
-  const [grade, setGrade] = useState<PayGrade>('E5');
-  const [withDep, setWithDep] = useState(true);
+  const { payGrade: profileGrade, hasSpouse: profileHasSpouse, hydrated } = useUserStore();
+
+  const [grade, setGrade] = useState<PayGrade>(profileGrade ?? 'E5');
+  const [withDep, setWithDep] = useState(profileGrade ? profileHasSpouse : true);
+  const [profileApplied, setProfileApplied] = useState(false);
+
+  useEffect(() => {
+    if (hydrated && !profileApplied) {
+      if (profileGrade) setGrade(profileGrade);
+      setWithDep(profileGrade ? profileHasSpouse : true);
+      setProfileApplied(true);
+    }
+  }, [hydrated]);
+
   const [currentStation, setCurrentStation] = useState<Installation | null>(null);
   const [gainingStation, setGainingStation] = useState<Installation | null>(null);
 
@@ -150,6 +163,11 @@ export default function PCSCalculatorScreen() {
           </ThemedText>
 
           <ThemedView type="backgroundElement" style={styles.card}>
+            {profileGrade && (
+              <View style={styles.profileBadgeRow}>
+                <ThemedText style={styles.profileBadgeText}>✓ Auto-filled from your profile</ThemedText>
+              </View>
+            )}
             <View style={styles.cardPadded}>
               <ThemedText type="small" themeColor="textSecondary" style={styles.fieldLabel}>
                 Pay Grade
@@ -576,6 +594,20 @@ const styles = StyleSheet.create({
   emptyIcon: { fontSize: 40 },
   emptyTitle: { fontSize: 17, fontWeight: '700' },
   emptyBody: { textAlign: 'center', lineHeight: 20 },
+
+  profileBadgeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: Spacing.three,
+    paddingTop: Spacing.two,
+    paddingBottom: 0,
+  },
+  profileBadgeText: {
+    fontSize: 11,
+    color: Brand.tactical,
+    fontWeight: '600',
+    letterSpacing: 0.3,
+  },
 
   disclaimer: {
     textAlign: 'center',

@@ -213,7 +213,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   backBtn: { width: 60 },
-  backText: { fontSize: 16, fontWeight: '600', color: Brand.tactical },
+  backText: { fontSize: 16, fontWeight: '600', color: Brand.tactical, lineHeight: 22 },
   title: { flex: 1, textAlign: 'center', fontSize: 14, fontWeight: '800', letterSpacing: 2 },
 
   content: { paddingHorizontal: Spacing.three, gap: Spacing.three, paddingTop: Spacing.three },

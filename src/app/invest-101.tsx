@@ -221,7 +221,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: 'rgba(128,128,128,0.2)',
   },
-  backText: { color: Brand.primaryLight, fontWeight: '600', fontSize: 15 },
+  backText: { color: Brand.primaryLight, fontWeight: '600', fontSize: 15, lineHeight: 21 },
   content: {
     paddingHorizontal: Spacing.three,
     paddingTop: Spacing.three,

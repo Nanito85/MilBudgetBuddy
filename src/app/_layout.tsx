@@ -79,7 +79,7 @@ export default function TabLayout() {
         <Tabs.Screen
           name="tools"
           options={{
-            title: 'MORE',
+            title: 'TOOLS',
             tabBarIcon: ({ color, size }) => (
               <Ionicons name="apps-outline" size={size} color={color} />
             ),

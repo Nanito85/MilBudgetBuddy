@@ -56,7 +56,28 @@
       "Bash(node scripts/upload-to-appetize.mjs --token tok_6tbnxrhd5wgsjazykhs3u6ptpy --key zwfzz2v2p275ymtyan62xbgnl4)",
       "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\solit\\\\Documents\\\\web\\\\budgetapp\\\\MilBudgetBuddy\\\\src\" -Recurse -File -Filter \"*.tsx\" -o Name)",
       "Bash(Select-Object -First 20)",
-      "Bash(node -e ' *)"
+      "Bash(node -e ' *)",
+      "WebFetch(domain:appetize.io)",
+      "Bash(npx expo *)",
+      "WebFetch(domain:mybaseguide.com)",
+      "WebFetch(domain:valoannetwork.com)",
+      "WebFetch(domain:ohacalculator.com)",
+      "WebFetch(domain:www.locationshawaii.com)",
+      "WebFetch(domain:collegerecon.com)",
+      "WebFetch(domain:www.kaneohebayhousing.com)",
+      "WebFetch(domain:letsgo-europe.com)",
+      "WebFetch(domain:www.garrisonledger.com)",
+      "WebFetch(domain:www.stripes.com)",
+      "WebFetch(domain:www.jbpearlharborhickamhousing.com)",
+      "WebFetch(domain:sellhomeshawaii.com)",
+      "Skill(update-config)",
+      "Bash(\"C:\\\\Program Files\\\\Git\\\\cmd\\\\git.exe\" log --oneline --all -- src/app/pcs-calculator.tsx src/features/pcs/)",
+      "Bash(\"C:\\\\Program Files\\\\Git\\\\cmd\\\\git.exe\" diff --stat)",
+      "Bash(\"C:\\\\Program Files\\\\Git\\\\cmd\\\\git.exe\" status --short)",
+      "Bash(\"C:\\\\Program Files\\\\Git\\\\cmd\\\\git.exe\" diff --no-color src/app/index.tsx)",
+      "Bash(\"C:\\\\Program Files\\\\Git\\\\cmd\\\\git.exe\" diff --no-color src/app/tools.tsx)",
+      "Bash(\"C:\\\\Program Files\\\\Git\\\\cmd\\\\git.exe\" diff --no-color src/app/offbase-calculator.tsx)",
+      "Bash(\"C:\\\\Program Files\\\\Git\\\\cmd\\\\git.exe\" add src/app/index.tsx src/app/tools.tsx src/app/offbase-calculator.tsx src/app/pcs-calculator.tsx src/app/bah-guide.tsx src/app/budget.tsx src/app/credit-score.tsx src/app/invest-101.tsx src/app/settings.tsx src/app/tricare-estimator.tsx src/app/_layout.tsx src/data/bah-rates.ts src/data/basic-pay-rates.ts src/data/installations.ts src/data/mha-locations.ts src/data/oha-locations.ts src/data/oha-rates.ts src/features/deployment/utils/deploymentCalc.ts scripts/upload-to-appetize.mjs .claude/settings.local.json)"
     ]
   }
 }

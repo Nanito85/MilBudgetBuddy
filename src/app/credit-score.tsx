@@ -259,7 +259,7 @@ const ss = StyleSheet.create({
   content: { gap: Spacing.three, paddingHorizontal: Spacing.three },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: Spacing.two },
   backBtn: { padding: 4 },
-  backText: { color: Brand.tactical, fontSize: 11, fontWeight: '800', letterSpacing: 1 },
+  backText: { color: Brand.tactical, fontSize: 11, fontWeight: '800', letterSpacing: 1, lineHeight: 16 },
   classBar: { backgroundColor: '#1A0000', paddingHorizontal: Spacing.two, paddingVertical: 3, borderRadius: 2 },
   classText: { color: '#CC2020' },
   eyebrow: { color: Brand.tactical, fontSize: 9 },
