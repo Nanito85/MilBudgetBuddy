@@ -145,7 +145,7 @@ export default function CreditScoreScreen() {
 
         {/* Header */}
         <View style={[ss.header, { paddingTop: insets.top + Spacing.two }]}>
-          <Pressable onPress={() => router.canGoBack() ? router.back() : router.push('/tools')} style={ss.backBtn}>
+          <Pressable onPress={() => router.push('/tools')} style={ss.backBtn}>
             <ThemedText style={ss.backText}>‹ BACK</ThemedText>
           </Pressable>
           <View style={ss.classBar}>

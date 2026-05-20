@@ -182,7 +182,7 @@ export default function Invest101Screen() {
   return (
     <ThemedView style={styles.container}>
       <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
-        <Pressable onPress={() => router.canGoBack() ? router.back() : router.push('/tools')} hitSlop={12}>
+        <Pressable onPress={() => router.push('/tools')} hitSlop={12}>
           <ThemedText style={styles.backText}>← Back</ThemedText>
         </Pressable>
       </View>

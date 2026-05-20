@@ -255,7 +255,7 @@ export default function NetWorthScreen() {
       <ThemedView style={{ flex: 1 }}>
         <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
           <Pressable
-            onPress={() => (router.canGoBack() ? router.back() : router.push('/tools'))}
+            onPress={() => (router.push('/tools'))}
             style={styles.back}>
             <ThemedText style={styles.backChevron}>‹</ThemedText>
           </Pressable>

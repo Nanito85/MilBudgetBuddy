@@ -135,7 +135,7 @@ export default function VALoanCalculatorScreen() {
     <ThemedView style={ss.screen}>
       {/* Header */}
       <View style={[ss.header, { paddingTop: insets.top + Spacing.two }]}>
-        <Pressable onPress={() => router.canGoBack() ? router.back() : router.push('/tools')} style={ss.back}>
+        <Pressable onPress={() => router.push('/tools')} style={ss.back}>
           <ThemedText style={ss.backChevron}>‹</ThemedText>
         </Pressable>
         <View style={ss.headerCenter}>

@@ -395,10 +395,10 @@ function EditServiceModal({ visible, onClose }: { visible: boolean; onClose: () 
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
             keyboardDismissMode="interactive">
-            <ThemedText type="label" style={editStyles.fieldLabel}>PAY GRADE</ThemedText>
+            <ThemedText style={editStyles.fieldLabel}>PAY GRADE</ThemedText>
             <GradePicker selected={grade} onSelect={setGrade} />
 
-            <ThemedText type="label" style={editStyles.fieldLabel}>LAST NAME</ThemedText>
+            <ThemedText style={editStyles.fieldLabel}>LAST NAME</ThemedText>
             <View style={[editStyles.inputWrap, { backgroundColor: inputBg }]}>
               <TextInput
                 value={ln}
@@ -411,7 +411,7 @@ function EditServiceModal({ visible, onClose }: { visible: boolean; onClose: () 
               />
             </View>
 
-            <ThemedText type="label" style={editStyles.fieldLabel}>NICKNAME (OPTIONAL)</ThemedText>
+            <ThemedText style={editStyles.fieldLabel}>NICKNAME (OPTIONAL)</ThemedText>
             <View style={[editStyles.inputWrap, { backgroundColor: inputBg }]}>
               <TextInput
                 value={nn}
@@ -426,7 +426,7 @@ function EditServiceModal({ visible, onClose }: { visible: boolean; onClose: () 
 
             <NumberStepper label="Years of Service" value={y} min={0} max={40} onChange={setY} unit="yrs" />
 
-            <ThemedText type="label" style={editStyles.fieldLabel}>DUTY STATION</ThemedText>
+            <ThemedText style={editStyles.fieldLabel}>DUTY STATION</ThemedText>
             <StationPicker label="Duty Station" selected={station} onSelect={setStation} />
 
             <View style={editStyles.toggleRow}>
@@ -453,16 +453,24 @@ function EditServiceModal({ visible, onClose }: { visible: boolean; onClose: () 
 }
 
 const editStyles = StyleSheet.create({
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: Spacing.three, borderBottomWidth: StyleSheet.hairlineWidth, borderColor: Brand.border },
-  title: { fontSize: 12, fontWeight: '800', letterSpacing: 1, color: '#C8D8E8' },
-  cancel: { fontSize: 12, color: '#3D6080', fontWeight: '700', letterSpacing: 1 },
-  save: { fontSize: 12, color: Brand.tactical, fontWeight: '800', letterSpacing: 1 },
-  content: { padding: Spacing.three, gap: Spacing.three },
-  fieldLabel: { color: '#3D6080', fontSize: 9 },
-  inputWrap: { backgroundColor: '#080E1C', borderWidth: 1, borderColor: Brand.border, borderRadius: 4, paddingHorizontal: Spacing.three },
-  input: { fontSize: 16, fontWeight: '600', paddingVertical: Spacing.two + 2, color: '#C8D8E8' },
-  toggleRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: Spacing.one },
-  toggleLabel: { fontSize: 14, color: '#C8D8E8' },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: Spacing.three,
+    paddingVertical: Spacing.two + 2,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderColor: Brand.border,
+  },
+  title: { fontSize: 13, fontWeight: '800', letterSpacing: 1, color: '#C8D8E8' },
+  cancel: { fontSize: 13, color: '#3D6080', fontWeight: '700', letterSpacing: 0.5 },
+  save: { fontSize: 13, color: Brand.tactical, fontWeight: '800', letterSpacing: 0.5 },
+  content: { paddingHorizontal: Spacing.three, paddingTop: Spacing.three, paddingBottom: Spacing.five, gap: Spacing.three },
+  fieldLabel: { color: '#4D7A9A', fontSize: 11, fontWeight: '600', letterSpacing: 0.5 },
+  inputWrap: { backgroundColor: '#080E1C', borderWidth: 1, borderColor: Brand.border, borderRadius: 6, paddingHorizontal: Spacing.three },
+  input: { fontSize: 16, fontWeight: '600', paddingVertical: Spacing.two + 4, color: '#C8D8E8' },
+  toggleRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: Spacing.two },
+  toggleLabel: { fontSize: 15, color: '#C8D8E8', flex: 1, paddingRight: Spacing.two },
 });
 
 // ── Main Screen ────────────────────────────────────────────────────────────────

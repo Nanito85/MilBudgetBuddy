@@ -62,7 +62,7 @@ export default function DITYCalculatorScreen() {
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
         <Pressable
-          onPress={() => (router.canGoBack() ? router.back() : router.push('/tools'))}
+          onPress={() => (router.push('/tools'))}
           style={({ pressed }) => [styles.backBtn, pressed && styles.pressed]}>
           <ThemedText style={styles.backChevron}>‹</ThemedText>
         </Pressable>
