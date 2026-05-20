@@ -9,6 +9,7 @@ import { OnboardingFlow } from '@/features/profile/components/OnboardingFlow';
 import { Brand } from '@/constants/theme';
 import { useTipsStore } from '@/store/tips.store';
 import { useUserStore } from '@/store/user.store';
+import { useEntitlementStore } from '@/store/entitlement.store';
 
 export default function TabLayout() {
   const hydrated = useUserStore((s) => s.hydrated);
@@ -18,6 +19,7 @@ export default function TabLayout() {
   useEffect(() => {
     useTipsStore.getState().hydrate();
     useUserStore.getState().hydrate();
+    useEntitlementStore.getState().hydrate();
   }, []);
 
   if (!hydrated) return null;
@@ -123,6 +125,7 @@ export default function TabLayout() {
         <Tabs.Screen name="tdy-optimizer"          options={{ href: null }} />
         <Tabs.Screen name="savings-rate"           options={{ href: null }} />
         <Tabs.Screen name="bah-guide"              options={{ href: null }} />
+        <Tabs.Screen name="upgrade"                options={{ href: null }} />
       </Tabs>
     </ThemeProvider>
   );

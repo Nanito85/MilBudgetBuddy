@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { BottomTabInset, Brand, Spacing } from '@/constants/theme';
+import { useEntitlement } from '@/hooks/use-entitlement';
 import { useKidsStore } from '@/store/kids.store';
 import { KidGender, KidProfile, getKidTheme } from '@/types/kids.types';
 
@@ -165,6 +166,7 @@ const kidCardStyles = StyleSheet.create({
 export default function KidsScreen() {
   const router = useRouter();
   const [showAdd, setShowAdd] = useState(false);
+  const { isPro, kidsLimit } = useEntitlement();
 
   const kids = useKidsStore((s) => s.kids);
   const addKid = useKidsStore((s) => s.addKid);
@@ -221,11 +223,19 @@ export default function KidsScreen() {
         )}
 
         {/* Add button */}
-        <Pressable
-          onPress={() => setShowAdd(true)}
-          style={({ pressed }) => [styles.addBtn, pressed && { opacity: 0.7 }]}>
-          <ThemedText style={styles.addBtnText}>+ ENROLL NEW CADET</ThemedText>
-        </Pressable>
+        {kids.length < kidsLimit ? (
+          <Pressable
+            onPress={() => setShowAdd(true)}
+            style={({ pressed }) => [styles.addBtn, pressed && { opacity: 0.7 }]}>
+            <ThemedText style={styles.addBtnText}>+ ENROLL NEW CADET</ThemedText>
+          </Pressable>
+        ) : !isPro ? (
+          <Pressable
+            onPress={() => router.push('/upgrade' as any)}
+            style={({ pressed }) => [styles.addBtn, styles.addBtnLocked, pressed && { opacity: 0.7 }]}>
+            <ThemedText style={styles.addBtnLockedText}>🔒 PRO — ENROLL MORE CADETS</ThemedText>
+          </Pressable>
+        ) : null}
 
         {/* Info card */}
         <View style={styles.infoCard}>
@@ -279,6 +289,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   addBtnText: { color: Brand.tactical, fontSize: 12, fontWeight: '800', letterSpacing: 1.5 },
+  addBtnLocked: { borderColor: Brand.accent + '40', borderStyle: 'dashed' },
+  addBtnLockedText: { color: Brand.accent, fontSize: 12, fontWeight: '800', letterSpacing: 1 },
   infoCard: {
     backgroundColor: '#080E1C',
     borderWidth: StyleSheet.hairlineWidth,

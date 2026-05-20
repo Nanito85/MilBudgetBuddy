@@ -8,6 +8,7 @@ import { ThemedView } from '@/components/themed-view';
 import { Brand, Spacing } from '@/constants/theme';
 import { ALL_QUICK_ACTIONS } from '@/data/quick-actions';
 import { useAppTheme, useTheme } from '@/hooks/use-theme';
+import { useEntitlement } from '@/hooks/use-entitlement';
 import { useUserStore } from '@/store/user.store';
 
 const MAX_TILES = 4;
@@ -32,6 +33,8 @@ export default function SettingsScreen() {
   const setFontScale  = useUserStore((s) => s.setFontScale);
 
   const [selected, setSelected] = useState<string[]>(savedIds.slice(0, MAX_TILES));
+
+  const { isPro, isPromo, status, daysLeft } = useEntitlement();
 
   const isDark = appTheme === 'dark';
   const bg     = isDark ? '#04080F' : '#F0F4F8';
@@ -67,6 +70,50 @@ export default function SettingsScreen() {
       <ScrollView
         contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + Spacing.five }]}
         showsVerticalScrollIndicator={false}>
+
+        {/* ── ACCOUNT / PRO STATUS ───────────────────────────────────── */}
+        <View style={styles.section}>
+          <ThemedText type="label" style={styles.eyebrow}>// ACCOUNT</ThemedText>
+          <ThemedText style={[styles.sectionTitle, { color: text }]}>MEMBERSHIP</ThemedText>
+        </View>
+
+        {status === 'pro' && (
+          <View style={[settingsProStyles.statusCard, { backgroundColor: card, borderColor: Brand.success + '40' }]}>
+            <ThemedText style={settingsProStyles.proIcon}>🏅</ThemedText>
+            <View style={{ flex: 1 }}>
+              <ThemedText style={[settingsProStyles.proTitle, { color: Brand.success }]}>PRO — ALL FEATURES UNLOCKED</ThemedText>
+              <ThemedText style={[settingsProStyles.proSub, { color: textDim }]}>Thank you for supporting MilBudgetBuddy.</ThemedText>
+            </View>
+          </View>
+        )}
+
+        {isPromo && (
+          <View style={[settingsProStyles.statusCard, { backgroundColor: card, borderColor: Brand.accent + '40' }]}>
+            <ThemedText style={settingsProStyles.proIcon}>⏳</ThemedText>
+            <View style={{ flex: 1 }}>
+              <ThemedText style={[settingsProStyles.proTitle, { color: Brand.accent }]}>
+                EARLY ACCESS — {daysLeft} day{daysLeft !== 1 ? 's' : ''} left
+              </ThemedText>
+              <ThemedText style={[settingsProStyles.proSub, { color: textDim }]}>Full access while your free trial lasts.</ThemedText>
+            </View>
+            <Pressable onPress={() => router.push('/upgrade' as any)} style={settingsProStyles.upgradeBtn}>
+              <ThemedText style={settingsProStyles.upgradeBtnText}>LOCK IT IN</ThemedText>
+            </Pressable>
+          </View>
+        )}
+
+        {status === 'free' && (
+          <Pressable
+            onPress={() => router.push('/upgrade' as any)}
+            style={({ pressed }) => [settingsProStyles.upgradeCard, { backgroundColor: card, borderColor: Brand.accent + '40' }, pressed && { opacity: 0.7 }]}>
+            <ThemedText style={settingsProStyles.proIcon}>🔓</ThemedText>
+            <View style={{ flex: 1 }}>
+              <ThemedText style={[settingsProStyles.proTitle, { color: Brand.accent }]}>UPGRADE TO PRO</ThemedText>
+              <ThemedText style={[settingsProStyles.proSub, { color: textDim }]}>Unlock all 24+ tools, full budget & more.</ThemedText>
+            </View>
+            <ThemedText style={[settingsProStyles.chevron, { color: Brand.accent }]}>›</ThemedText>
+          </Pressable>
+        )}
 
         {/* ── APPEARANCE ─────────────────────────────────────────────── */}
         <View style={styles.section}>
@@ -309,4 +356,34 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   saveBtnText: { color: '#FFFFFF', fontSize: 14, fontWeight: '800', letterSpacing: 1 },
+});
+
+const settingsProStyles = StyleSheet.create({
+  statusCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
+    borderWidth: 1,
+    borderRadius: 6,
+    padding: Spacing.three,
+  },
+  upgradeCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
+    borderWidth: 1,
+    borderRadius: 6,
+    padding: Spacing.three,
+  },
+  proIcon: { fontSize: 22, lineHeight: 26 },
+  proTitle: { fontSize: 12, fontWeight: '800', letterSpacing: 0.3, marginBottom: 2 },
+  proSub: { fontSize: 11, lineHeight: 15 },
+  upgradeBtn: {
+    backgroundColor: Brand.accent,
+    borderRadius: 4,
+    paddingHorizontal: Spacing.two,
+    paddingVertical: Spacing.one + 2,
+  },
+  upgradeBtnText: { color: '#04080F', fontSize: 10, fontWeight: '900', letterSpacing: 0.5 },
+  chevron: { fontSize: 22, fontWeight: '300' },
 });

@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { BottomTabInset, Brand, Spacing } from '@/constants/theme';
+import { useEntitlement } from '@/hooks/use-entitlement';
 import { useUserStore } from '@/store/user.store';
 import { BRANCH_LABELS, getRankAbbrev } from '@/types/user.types';
 
@@ -352,21 +353,22 @@ function SectionLabel({ text }: { text: string }) {
   );
 }
 
-function MenuCard({ item, onPress }: { item: MenuItem; onPress: () => void }) {
-  const isLocked = !item.available;
+function MenuCard({ item, locked, onPress }: { item: MenuItem; locked: boolean; onPress: () => void }) {
+  const isComingSoon = !item.available;
+  const dimmed = isComingSoon || locked;
   return (
     <Pressable
       onPress={onPress}
-      style={({ pressed }) => [styles.card, isLocked && styles.cardLocked, pressed && !isLocked && { opacity: 0.7 }]}>
-      <View style={[styles.cardAccent, { backgroundColor: isLocked ? Brand.border : item.color }]} />
-      <View style={[styles.iconWrap, { backgroundColor: item.color + (isLocked ? '10' : '20') }]}>
+      style={({ pressed }) => [styles.card, dimmed && styles.cardLocked, pressed && !dimmed && { opacity: 0.7 }]}>
+      <View style={[styles.cardAccent, { backgroundColor: dimmed ? Brand.border : item.color }]} />
+      <View style={[styles.iconWrap, { backgroundColor: item.color + (dimmed ? '10' : '20') }]}>
         <ThemedText style={styles.cardIcon}>{item.icon}</ThemedText>
       </View>
       <View style={styles.cardText}>
-        <ThemedText style={[styles.cardTitle, isLocked && styles.cardTitleLocked]}>{item.title.toUpperCase()}</ThemedText>
+        <ThemedText style={[styles.cardTitle, dimmed && styles.cardTitleLocked]}>{item.title.toUpperCase()}</ThemedText>
         <ThemedText type="label" style={styles.cardDesc}>{item.description}</ThemedText>
       </View>
-      {item.badge && (
+      {item.badge && !locked && (
         <View style={[styles.badge,
           item.badge === 'New' ? styles.badgeNew : styles.badgeSoon]}>
           <ThemedText type="label" style={[styles.badgeText,
@@ -375,7 +377,13 @@ function MenuCard({ item, onPress }: { item: MenuItem; onPress: () => void }) {
           </ThemedText>
         </View>
       )}
-      {!isLocked && <ThemedText style={styles.chevron}>›</ThemedText>}
+      {locked && !isComingSoon && (
+        <View style={styles.lockBadge}>
+          <ThemedText style={styles.lockIcon}>🔒</ThemedText>
+          <ThemedText style={styles.lockLabel}>PRO</ThemedText>
+        </View>
+      )}
+      {!dimmed && <ThemedText style={styles.chevron}>›</ThemedText>}
     </Pressable>
   );
 }
@@ -388,12 +396,17 @@ export default function MoreScreen() {
   const payGrade = useUserStore((s) => s.payGrade);
   const lastName = useUserStore((s) => s.lastName);
   const nickname = useUserStore((s) => s.nickname);
+  const { canUseTool, isPro, isPromo, daysLeft } = useEntitlement();
 
   const displayName = nickname || (lastName ? lastName.toUpperCase() : null);
   const rankAbbrev = getRankAbbrev(branch, payGrade);
 
   const handlePress = (item: MenuItem) => {
     if (!item.available) return;
+    if (!canUseTool(item.id)) {
+      router.push('/upgrade' as any);
+      return;
+    }
     router.push(item.route as any);
   };
 
@@ -445,11 +458,35 @@ export default function MoreScreen() {
           ))}
         </View>
 
+        {/* Promo / upgrade banner */}
+        {!isPro && (
+          <Pressable
+            onPress={() => router.push('/upgrade' as any)}
+            style={({ pressed }) => [styles.upgradeBanner, pressed && { opacity: 0.7 }]}>
+            <ThemedText style={styles.upgradeBannerIcon}>🔓</ThemedText>
+            <View style={{ flex: 1 }}>
+              <ThemedText style={styles.upgradeBannerTitle}>UNLOCK ALL TOOLS — {'→'} Upgrade to Pro</ThemedText>
+              <ThemedText style={styles.upgradeBannerSub}>Free access to 4 tools. Pro unlocks everything.</ThemedText>
+            </View>
+          </Pressable>
+        )}
+        {isPromo && daysLeft > 0 && (
+          <Pressable
+            onPress={() => router.push('/upgrade' as any)}
+            style={({ pressed }) => [styles.promoBanner, pressed && { opacity: 0.7 }]}>
+            <ThemedText style={styles.promoBannerIcon}>⏳</ThemedText>
+            <View style={{ flex: 1 }}>
+              <ThemedText style={styles.promoBannerTitle}>EARLY ACCESS — {daysLeft} day{daysLeft !== 1 ? 's' : ''} left</ThemedText>
+              <ThemedText style={styles.promoBannerSub}>Full access while your free trial lasts. Tap to lock it in.</ThemedText>
+            </View>
+          </Pressable>
+        )}
+
         {/* Calculators */}
         <SectionLabel text="CALCULATORS" />
         <View style={styles.list}>
           {CALCULATORS.map((item) => (
-            <MenuCard key={item.id} item={item} onPress={() => handlePress(item)} />
+            <MenuCard key={item.id} item={item} locked={!canUseTool(item.id)} onPress={() => handlePress(item)} />
           ))}
         </View>
 
@@ -457,7 +494,7 @@ export default function MoreScreen() {
         <SectionLabel text="MONEY PLANNING" />
         <View style={styles.list}>
           {MONEY_TOOLS.map((item) => (
-            <MenuCard key={item.id} item={item} onPress={() => handlePress(item)} />
+            <MenuCard key={item.id} item={item} locked={!canUseTool(item.id)} onPress={() => handlePress(item)} />
           ))}
         </View>
 
@@ -465,7 +502,7 @@ export default function MoreScreen() {
         <SectionLabel text="GUIDES & RESOURCES" />
         <View style={styles.list}>
           {RESOURCES.map((item) => (
-            <MenuCard key={item.id} item={item} onPress={() => handlePress(item)} />
+            <MenuCard key={item.id} item={item} locked={!canUseTool(item.id)} onPress={() => handlePress(item)} />
           ))}
         </View>
 
@@ -589,6 +626,37 @@ const styles = StyleSheet.create({
   badgeTextNew: { color: Brand.accent },
   badgeTextSoon: { color: '#6B92B0' },
   chevron: { color: Brand.accent, fontSize: 20, paddingRight: Spacing.two },
+  lockBadge: { alignItems: 'center', paddingRight: Spacing.two, gap: 1 },
+  lockIcon: { fontSize: 14, lineHeight: 18 },
+  lockLabel: { fontSize: 8, fontWeight: '800', color: Brand.accent, letterSpacing: 0.5 },
+
+  upgradeBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
+    backgroundColor: Brand.accent + '10',
+    borderWidth: 1,
+    borderColor: Brand.accent + '40',
+    borderRadius: 4,
+    padding: Spacing.three,
+  },
+  upgradeBannerIcon: { fontSize: 20, lineHeight: 24 },
+  upgradeBannerTitle: { fontSize: 12, fontWeight: '800', color: Brand.accent, letterSpacing: 0.3 },
+  upgradeBannerSub: { fontSize: 10, color: '#6B92B0', marginTop: 1 },
+
+  promoBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
+    backgroundColor: Brand.tactical + '10',
+    borderWidth: 1,
+    borderColor: Brand.tactical + '40',
+    borderRadius: 4,
+    padding: Spacing.three,
+  },
+  promoBannerIcon: { fontSize: 20, lineHeight: 24 },
+  promoBannerTitle: { fontSize: 12, fontWeight: '800', color: Brand.tactical, letterSpacing: 0.3 },
+  promoBannerSub: { fontSize: 10, color: '#6B92B0', marginTop: 1 },
 
   budgetShortcut: {
     backgroundColor: '#080E1C',

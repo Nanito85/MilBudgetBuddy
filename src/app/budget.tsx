@@ -17,6 +17,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Brand, Spacing } from '@/constants/theme';
 import { calcLES, fmtPay } from '@/features/home/utils/lesCalc';
+import { useEntitlement } from '@/hooks/use-entitlement';
 import {
   BudgetCategory,
   CUSTOM_PREFIX,
@@ -743,8 +744,10 @@ type Mode = 'budget' | 'spending' | 'goals';
 
 export default function BudgetScreen() {
   const insets = useSafeAreaInsets();
+  const router = useRouter();
   const [mode, setMode] = useState<Mode>('budget');
   const [addingFor, setAddingFor] = useState<{ id: string; name: string; emoji: string } | null>(null);
+  const { isPro, budgetCategoryLimit } = useEntitlement();
 
   const categories = useBudgetStore((s) => s.categories);
   const totalBudgeted = useBudgetStore((s) => s.totalBudgeted)();
@@ -893,14 +896,27 @@ export default function BudgetScreen() {
           {mode === 'budget' && (
             <>
               <ThemedText type="small" themeColor="textSecondary" style={styles.hint}>
-                Tap an amount to edit.
+                Tap an amount to edit.{!isPro ? `  Free plan: ${budgetCategoryLimit} categories.` : ''}
               </ThemedText>
 
-              {categories.filter((c) => !c.id.startsWith(CUSTOM_PREFIX)).map((cat) => (
-                <CategoryRow key={cat.id} cat={cat} netPay={netPay} />
-              ))}
+              {categories.filter((c) => !c.id.startsWith(CUSTOM_PREFIX)).map((cat, idx) => {
+                const isLocked = !isPro && idx >= budgetCategoryLimit;
+                if (isLocked) {
+                  return (
+                    <Pressable key={cat.id} onPress={() => router.push('/upgrade' as any)}
+                      style={styles.lockedCatRow}>
+                      <ThemedText style={styles.lockedCatEmoji}>{cat.emoji}</ThemedText>
+                      <ThemedText style={styles.lockedCatName}>{cat.name}</ThemedText>
+                      <View style={styles.lockTagWrap}>
+                        <ThemedText style={styles.lockTag}>🔒 PRO</ThemedText>
+                      </View>
+                    </Pressable>
+                  );
+                }
+                return <CategoryRow key={cat.id} cat={cat} netPay={netPay} />;
+              })}
 
-              {customCategories.length > 0 && (
+              {isPro && customCategories.length > 0 && (
                 <>
                   <ThemedText type="small" themeColor="textSecondary" style={styles.sectionDivider}>
                     CUSTOM ({customCategories.length}/{MAX_CUSTOM_CATEGORIES})
@@ -911,11 +927,17 @@ export default function BudgetScreen() {
                 </>
               )}
 
-              {canAddMore && <AddCustomRow onAdd={handleAddCustom} />}
-              {!canAddMore && (
+              {isPro && canAddMore && <AddCustomRow onAdd={handleAddCustom} />}
+              {isPro && !canAddMore && (
                 <ThemedText type="small" themeColor="textSecondary" style={styles.maxNote}>
                   Maximum of {MAX_CUSTOM_CATEGORIES} custom categories reached.
                 </ThemedText>
+              )}
+              {!isPro && (
+                <Pressable onPress={() => router.push('/upgrade' as any)}
+                  style={styles.upgradeRow}>
+                  <ThemedText style={styles.upgradeRowText}>🔓 Upgrade to Pro — unlock all categories + custom</ThemedText>
+                </Pressable>
               )}
 
               {overBudget && (
@@ -1117,6 +1139,33 @@ const styles = StyleSheet.create({
   },
   addBtnText: { color: '#FFFFFF', fontSize: 13, fontWeight: '700' },
   maxNote: { textAlign: 'center', fontSize: 12, paddingTop: Spacing.one },
+
+  lockedCatRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: Spacing.two,
+    padding: Spacing.two + 4,
+    gap: Spacing.two,
+    backgroundColor: '#080E1C',
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: Brand.border,
+    opacity: 0.45,
+  },
+  lockedCatEmoji: { fontSize: 22, width: 30 },
+  lockedCatName: { flex: 1, fontSize: 15, fontWeight: '600', color: '#6B92B0' },
+  lockTagWrap: {},
+  lockTag: { fontSize: 11, fontWeight: '800', color: Brand.accent, letterSpacing: 0.5 },
+
+  upgradeRow: {
+    alignItems: 'center',
+    paddingVertical: Spacing.three,
+    borderWidth: 1,
+    borderStyle: 'dashed',
+    borderColor: Brand.accent + '40',
+    borderRadius: 4,
+    marginTop: Spacing.one,
+  },
+  upgradeRowText: { fontSize: 12, color: Brand.accent, fontWeight: '700', letterSpacing: 0.3 },
   warningBox: {
     borderRadius: Spacing.two,
     padding: Spacing.three,
