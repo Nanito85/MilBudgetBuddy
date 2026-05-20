@@ -7,7 +7,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Brand, Spacing } from '@/constants/theme';
 import { ALL_QUICK_ACTIONS } from '@/data/quick-actions';
-import { useAppTheme, useTheme } from '@/hooks/use-theme';
+import { useTheme } from '@/hooks/use-theme';
 import { useEntitlement } from '@/hooks/use-entitlement';
 import { useAuthStore } from '@/store/auth.store';
 import { useUserStore } from '@/store/user.store';
@@ -25,12 +25,10 @@ export default function SettingsScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const theme = useTheme();
-  const appTheme = useAppTheme();
 
   const savedIds      = useUserStore((s) => s.quickAccessIds);
   const fontScale     = useUserStore((s) => s.fontScale ?? 1.0);
   const setQuickAccessIds = useUserStore((s) => s.setQuickAccessIds);
-  const setAppTheme   = useUserStore((s) => s.setAppTheme);
   const setFontScale  = useUserStore((s) => s.setFontScale);
 
   const [selected, setSelected] = useState<string[]>(savedIds.slice(0, MAX_TILES));
@@ -38,11 +36,10 @@ export default function SettingsScreen() {
   const { isPro, isPromo, status, daysLeft } = useEntitlement();
   const { user, signOut: signOutUser } = useAuthStore();
 
-  const isDark = appTheme === 'dark';
-  const bg     = isDark ? '#04080F' : '#F0F4F8';
-  const card   = isDark ? '#080E1C' : '#FFFFFF';
-  const text   = isDark ? '#C8D8E8' : '#0D1E2E';
-  const textDim= isDark ? '#4D7A9A' : '#4A6A84';
+  const bg     = '#04080F';
+  const card   = '#080E1C';
+  const text   = '#C8D8E8';
+  const textDim= '#4D7A9A';
 
   const toggle = (id: string) => {
     setSelected((prev) => {
@@ -116,46 +113,6 @@ export default function SettingsScreen() {
             <ThemedText style={[settingsProStyles.chevron, { color: Brand.accent }]}>›</ThemedText>
           </Pressable>
         )}
-
-        {/* ── APPEARANCE ─────────────────────────────────────────────── */}
-        <View style={styles.section}>
-          <ThemedText type="label" style={styles.eyebrow}>// APPEARANCE</ThemedText>
-          <ThemedText style={[styles.sectionTitle, { color: text }]}>DISPLAY MODE</ThemedText>
-          <ThemedText type="label" style={[styles.sectionDesc, { color: textDim }]}>
-            CHOOSE DARK OR LIGHT MODE FOR THE APP.
-          </ThemedText>
-        </View>
-
-        <View style={[styles.themeRow]}>
-          {[
-            { value: 'dark' as const,  emoji: '🌙', label: 'Dark Mode',  sub: 'Military HUD aesthetic' },
-            { value: 'light' as const, emoji: '☀️', label: 'Light Mode', sub: 'High-contrast readability' },
-          ].map((opt) => {
-            const isSelected = appTheme === opt.value;
-            return (
-              <Pressable
-                key={opt.value}
-                onPress={() => setAppTheme(opt.value)}
-                style={({ pressed }) => [
-                  styles.themeCard,
-                  { backgroundColor: card, borderColor: isSelected ? Brand.tactical : Brand.border },
-                  isSelected && { backgroundColor: Brand.tactical + '12' },
-                  pressed && { opacity: 0.75 },
-                ]}>
-                <ThemedText style={styles.themeEmoji}>{opt.emoji}</ThemedText>
-                <ThemedText style={[styles.themeLabel, { color: isSelected ? Brand.tactical : text }]}>
-                  {opt.label}
-                </ThemedText>
-                <ThemedText style={[styles.themeSub, { color: textDim }]}>{opt.sub}</ThemedText>
-                {isSelected && (
-                  <View style={[styles.themeCheck, { backgroundColor: Brand.tactical }]}>
-                    <ThemedText style={styles.themeCheckMark}>✓</ThemedText>
-                  </View>
-                )}
-              </Pressable>
-            );
-          })}
-        </View>
 
         {/* ── FONT SIZE ──────────────────────────────────────────────── */}
         <View style={styles.section}>
@@ -303,22 +260,6 @@ const styles = StyleSheet.create({
   eyebrow: { color: Brand.tactical, fontSize: 9 },
   sectionTitle: { fontSize: 20, fontWeight: '900', letterSpacing: 1 },
   sectionDesc: { fontSize: 9, lineHeight: 14 },
-
-  themeRow: { flexDirection: 'row', gap: Spacing.two },
-  themeCard: {
-    flex: 1,
-    borderWidth: 1.5,
-    borderRadius: 8,
-    padding: Spacing.three,
-    alignItems: 'center',
-    gap: 6,
-    position: 'relative',
-  },
-  themeEmoji: { fontSize: 28, lineHeight: 34 },
-  themeLabel: { fontSize: 13, fontWeight: '800', letterSpacing: 0.5 },
-  themeSub:   { fontSize: 9, textAlign: 'center', lineHeight: 13 },
-  themeCheck: { position: 'absolute', top: 8, right: 8, width: 18, height: 18, borderRadius: 9, alignItems: 'center', justifyContent: 'center' },
-  themeCheckMark: { color: '#FFFFFF', fontSize: 10, fontWeight: '900' },
 
   fontList: { gap: Spacing.two },
   fontRow: {

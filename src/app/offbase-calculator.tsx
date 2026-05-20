@@ -7,8 +7,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Brand, Spacing } from '@/constants/theme';
 import { getBahRate, hasBahData, PAY_GRADES, PayGrade } from '@/data/bah-rates';
-import { Installation, searchInstallations } from '@/data/installations';
-import { useAppTheme } from '@/hooks/use-theme';
+import { Installation, getInstallationByZip, searchInstallations } from '@/data/installations';
 import { useUserStore } from '@/store/user.store';
 
 // ── Grade groups ───────────────────────────────────────────────────────────────
@@ -51,10 +50,8 @@ function Row({ label, value, bold, color }: { label: string; value: string; bold
 export default function OffbaseCalculatorScreen() {
   const router   = useRouter();
   const insets   = useSafeAreaInsets();
-  const appTheme = useAppTheme();
-  const isDark   = appTheme === 'dark';
-  const inputBg  = isDark ? '#050B14' : '#FFFFFF';
-  const inputText = isDark ? '#C8D8E8' : '#0D1E2E';
+  const inputBg   = '#050B14';
+  const inputText = '#C8D8E8';
 
   const storedGrade = useUserStore((s) => s.payGrade);
   const storedZip   = useUserStore((s) => s.mhaZip);
@@ -62,7 +59,9 @@ export default function OffbaseCalculatorScreen() {
   const [grade,    setGrade]    = useState<PayGrade>(storedGrade ?? 'E4');
   const [zip,      setZip]      = useState(storedZip ?? '');
   const [locSearch, setLocSearch] = useState('');
-  const [selectedInstallation, setSelectedInstallation] = useState<Installation | null>(null);
+  const [selectedInstallation, setSelectedInstallation] = useState<Installation | null>(
+    () => getInstallationByZip(storedZip)
+  );
   const [rent,     setRent]     = useState(1200);
   const [utils,    setUtils]    = useState(150);
   const [commute,  setCommute]  = useState(100);

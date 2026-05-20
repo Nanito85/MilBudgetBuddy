@@ -6,7 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { BAH_DATA_YEAR, PayGrade } from '@/data/bah-rates';
-import { Installation } from '@/data/installations';
+import { Installation, getInstallationByZip } from '@/data/installations';
 import { ComparisonTable } from '@/features/pcs/components/ComparisonTable';
 import { GradePicker } from '@/features/pcs/components/GradePicker';
 import { StationPicker } from '@/features/pcs/components/StationPicker';
@@ -70,7 +70,7 @@ export default function PCSCalculatorScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
 
-  const { payGrade: profileGrade, hasSpouse: profileHasSpouse, hydrated } = useUserStore();
+  const { payGrade: profileGrade, hasSpouse: profileHasSpouse, mhaZip: profileZip, hydrated } = useUserStore();
 
   const [grade, setGrade] = useState<PayGrade>(profileGrade ?? 'E5');
   const [withDep, setWithDep] = useState(profileGrade ? profileHasSpouse : true);
@@ -80,6 +80,8 @@ export default function PCSCalculatorScreen() {
     if (hydrated && !profileApplied) {
       if (profileGrade) setGrade(profileGrade);
       setWithDep(profileGrade ? profileHasSpouse : true);
+      const profileStation = getInstallationByZip(profileZip);
+      if (profileStation) setCurrentStation(profileStation);
       setProfileApplied(true);
     }
   }, [hydrated]);
@@ -474,7 +476,7 @@ export default function PCSCalculatorScreen() {
 
         {/* Disclaimer */}
         <ThemedText type="small" themeColor="textSecondary" style={styles.disclaimer}>
-          BAH rates: {BAH_DATA_YEAR}. DLA rates: FY2025. MALT rate: ${MALT_RATE.toFixed(2)}/mile FY2025. TLE estimated from local BAH ÷ 30 (split 70% lodging / 30% M&IE) — verify actual entitlements with your installation finance office. OCONUS stations use OHA/TLA — contact finance.
+          BAH rates: {BAH_DATA_YEAR}. DLA rates: FY2026 (JTR table). MALT rate: ${MALT_RATE.toFixed(2)}/mile FY2026. TLE estimated from local BAH ÷ 30 (split 70% lodging / 30% M&IE) — verify actual entitlements with your installation finance office. OCONUS stations use OHA/TLA — contact finance.
         </ThemedText>
       </ScrollView>
     </ThemedView>

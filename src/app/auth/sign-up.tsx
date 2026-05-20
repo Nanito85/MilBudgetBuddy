@@ -149,7 +149,7 @@ const styles = StyleSheet.create({
 
   hero: { gap: Spacing.one },
   eyebrow: { color: Brand.tactical, fontSize: 10, fontWeight: '700', letterSpacing: 1.5 },
-  title: { fontSize: 28, fontWeight: '900', color: '#C8D8E8', letterSpacing: 0.5, marginTop: 2 },
+  title: { fontSize: 28, lineHeight: 34, fontWeight: '900', color: '#C8D8E8', letterSpacing: 0.5, marginTop: 2 },
   sub: { fontSize: 13, color: '#6B92B0', lineHeight: 19, marginTop: 4 },
 
   form: { gap: Spacing.three },

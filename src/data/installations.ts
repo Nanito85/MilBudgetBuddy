@@ -241,3 +241,9 @@ export function getConusInstallations(): Installation[] {
 export function getOconusInstallations(): Installation[] {
   return INSTALLATIONS.filter(i => i.oconus);
 }
+
+/** Finds the first installation matching a given MHA zip code. */
+export function getInstallationByZip(zip: string | undefined | null): Installation | null {
+  if (!zip) return null;
+  return INSTALLATIONS.find(i => i.mhaZip === zip) ?? null;
+}

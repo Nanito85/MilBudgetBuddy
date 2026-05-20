@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { DarkTheme, ThemeProvider } from '@react-navigation/native';
 import { Tabs, useRouter } from 'expo-router';
 import React, { useEffect } from 'react';
 
@@ -19,7 +19,6 @@ export default function TabLayout() {
   const router = useRouter();
   const hydrated = useUserStore((s) => s.hydrated);
   const onboarded = useUserStore((s) => s.onboarded);
-  const appTheme = useUserStore((s) => s.appTheme ?? 'dark');
   const kidModeActive = useKidModeStore((s) => s.active);
   const { user, initialized, init: initAuth } = useAuthStore();
 
@@ -69,7 +68,7 @@ export default function TabLayout() {
   if (!onboarded) return <OnboardingFlow />;
 
   return (
-    <ThemeProvider value={appTheme === 'light' ? DefaultTheme : DarkTheme}>
+    <ThemeProvider value={DarkTheme}>
       <AnimatedSplashOverlay />
       <DisclaimerModal />
       <Tabs

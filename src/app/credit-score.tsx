@@ -263,7 +263,7 @@ const ss = StyleSheet.create({
   classBar: { backgroundColor: '#1A0000', paddingHorizontal: Spacing.two, paddingVertical: 3, borderRadius: 2 },
   classText: { color: '#CC2020' },
   eyebrow: { color: Brand.tactical, fontSize: 9 },
-  title: { fontSize: 30, fontWeight: '900', letterSpacing: 1, color: '#C8D8E8', marginTop: 4 },
+  title: { fontSize: 30, lineHeight: 36, fontWeight: '900', letterSpacing: 1, color: '#C8D8E8', marginTop: 4 },
   subtitle: { color: '#3D6080', fontSize: 9, marginTop: 2, marginBottom: Spacing.one },
   labelRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
   labelLine: { flex: 1, height: StyleSheet.hairlineWidth, backgroundColor: Brand.border },

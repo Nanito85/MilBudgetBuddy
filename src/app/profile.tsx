@@ -20,7 +20,6 @@ import { TacticalCard } from '@/components/TacticalCard';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { BottomTabInset, Brand, Fonts, Spacing } from '@/constants/theme';
-import { useAppTheme } from '@/hooks/use-theme';
 import { getStateTaxInfo, US_STATES } from '@/data/state-tax';
 import { TIPS } from '@/data/tips';
 import { GradePicker } from '@/features/pcs/components/GradePicker';
@@ -337,11 +336,9 @@ const ptStyles = StyleSheet.create({
 // ── Edit Service Info Modal ────────────────────────────────────────────────────
 
 function EditServiceModal({ visible, onClose }: { visible: boolean; onClose: () => void }) {
-  const appTheme = useAppTheme();
-  const isDark = appTheme === 'dark';
-  const modalBg   = isDark ? '#04080F' : '#F0F4F8';
-  const inputBg   = isDark ? '#080E1C' : '#FFFFFF';
-  const inputText = isDark ? '#C8D8E8' : '#0D1E2E';
+  const modalBg   = '#04080F';
+  const inputBg   = '#080E1C';
+  const inputText = '#C8D8E8';
   const placeholder = '#4A6A84';
 
   const payGrade = useUserStore((s) => s.payGrade);

@@ -321,7 +321,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   bigNumLabel: { fontSize: 9, fontWeight: '800', letterSpacing: 1.2, color: Brand.tactical },
-  bigNum: { fontSize: 26, fontWeight: '900', color: Brand.tactical, fontFamily: 'Courier New' },
+  bigNum: { fontSize: 26, lineHeight: 32, fontWeight: '900', color: Brand.tactical, fontFamily: 'Courier New' },
 
   goalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   goalLabel: { fontSize: 12, color: '#8AA8C0' },

@@ -5,11 +5,11 @@ const STORAGE_KEY = 'mbb_kid_mode_v1';
 
 interface KidModeData {
   pin: string | null;
+  active: boolean;
+  kidId: string | null;
 }
 
 interface KidModeState extends KidModeData {
-  active: boolean;
-  kidId: string | null;
   hydrated: boolean;
   hydrate: () => Promise<void>;
   activate: (kidId: string) => void;
@@ -31,23 +31,36 @@ export const useKidModeStore = create<KidModeState>((set, get) => ({
   hydrate: async () => {
     try {
       const raw = await AsyncStorage.getItem(STORAGE_KEY);
-      const data: KidModeData = raw ? JSON.parse(raw) : { pin: null };
+      const data: KidModeData = raw
+        ? JSON.parse(raw)
+        : { pin: null, active: false, kidId: null };
       set({ ...data, hydrated: true });
     } catch {
       set({ hydrated: true });
     }
   },
 
-  activate: (kidId) => set({ active: true, kidId }),
-  deactivate: () => set({ active: false, kidId: null }),
+  activate: (kidId) => {
+    const { pin } = get();
+    persist({ pin, active: true, kidId });
+    set({ active: true, kidId });
+  },
+
+  deactivate: () => {
+    const { pin } = get();
+    persist({ pin, active: false, kidId: null });
+    set({ active: false, kidId: null });
+  },
 
   setPin: (pin) => {
-    persist({ pin });
+    const { active, kidId } = get();
+    persist({ pin, active, kidId });
     set({ pin });
   },
 
   clearPin: () => {
-    persist({ pin: null });
+    const { active, kidId } = get();
+    persist({ pin: null, active, kidId });
     set({ pin: null });
   },
 }));

@@ -16,10 +16,9 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Brand, Spacing } from '@/constants/theme';
 import { getBahRate, hasBahData, PAY_GRADES, PayGrade } from '@/data/bah-rates';
-import { Installation, searchInstallations } from '@/data/installations';
+import { Installation, getInstallationByZip, searchInstallations } from '@/data/installations';
 import { OhaLocation, searchOhaLocations } from '@/data/oha-locations';
 import { getOhaRate, getOhaTotalCeiling, isOhaDataStale, OHA_DATA_QUARTER } from '@/data/oha-rates';
-import { useAppTheme } from '@/hooks/use-theme';
 import { useUserStore } from '@/store/user.store';
 
 // ── Grade groupings ────────────────────────────────────────────────────────────
@@ -382,10 +381,8 @@ function OhaSearch({
 export default function BahGuideScreen() {
   const router   = useRouter();
   const insets   = useSafeAreaInsets();
-  const appTheme = useAppTheme();
-  const isDark   = appTheme === 'dark';
-  const inputBg  = isDark ? '#050B14' : '#FFFFFF';
-  const inputText = isDark ? '#C8D8E8' : '#0D1E2E';
+  const inputBg  = '#050B14';
+  const inputText = '#C8D8E8';
 
   const storedGrade = useUserStore((s) => s.payGrade);
   const storedZip   = useUserStore((s) => s.mhaZip);
@@ -394,10 +391,12 @@ export default function BahGuideScreen() {
   const [grade, setGrade]       = useState<PayGrade>(storedGrade ?? 'E5');
   const [depStatus, setDepStatus] = useState<DepStatus>('without');
 
-  // BAH search state
+  // BAH search state — pre-fill from profile
   const [bahSearch, setBahSearch]             = useState('');
   const [zip, setZip]                         = useState(storedZip ?? '');
-  const [selectedInstallation, setSelectedInstallation] = useState<Installation | null>(null);
+  const [selectedInstallation, setSelectedInstallation] = useState<Installation | null>(
+    () => getInstallationByZip(storedZip)
+  );
 
   // OHA search state
   const [ohaSearch, setOhaSearch]   = useState('');
@@ -850,7 +849,7 @@ const styles = StyleSheet.create({
   // Rate hero
   rateHero:      { alignItems: 'center', gap: 4 },
   rateHeroLabel: { fontSize: 11, color: '#4D7A9A', fontWeight: '700', textAlign: 'center' },
-  rateHeroValue: { fontSize: 32, fontWeight: '900', color: Brand.accent, fontFamily: 'Courier New' },
+  rateHeroValue: { fontSize: 32, lineHeight: 38, fontWeight: '900', color: Brand.accent, fontFamily: 'Courier New' },
   rateHeroSub:   { fontSize: 12, color: '#4D7A9A' },
 
   // Full rate table

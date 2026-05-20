@@ -377,6 +377,7 @@ const ss = StyleSheet.create({
   heroRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 6, marginBottom: Spacing.two },
   heroAmount: {
     fontSize: 38,
+    lineHeight: 44,
     fontWeight: '900',
     color: Brand.accent,
     fontFamily: Fonts.data,

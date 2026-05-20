@@ -191,7 +191,7 @@ const styles = StyleSheet.create({
 
   heroSection: { gap: Spacing.one, paddingBottom: Spacing.two },
   eyebrow: { color: Brand.tactical, fontSize: 10, fontWeight: '700', letterSpacing: 1 },
-  heroTitle: { fontSize: 28, fontWeight: '900', letterSpacing: 1, color: '#C8D8E8', marginTop: 2 },
+  heroTitle: { fontSize: 28, lineHeight: 34, fontWeight: '900', letterSpacing: 1, color: '#C8D8E8', marginTop: 2 },
   heroSub: { fontSize: 13, lineHeight: 20, color: '#6B92B0', marginTop: 4 },
 
   promoBanner: {

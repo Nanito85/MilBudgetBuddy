@@ -77,7 +77,18 @@
       "Bash(\"C:\\\\Program Files\\\\Git\\\\cmd\\\\git.exe\" diff --no-color src/app/index.tsx)",
       "Bash(\"C:\\\\Program Files\\\\Git\\\\cmd\\\\git.exe\" diff --no-color src/app/tools.tsx)",
       "Bash(\"C:\\\\Program Files\\\\Git\\\\cmd\\\\git.exe\" diff --no-color src/app/offbase-calculator.tsx)",
-      "Bash(\"C:\\\\Program Files\\\\Git\\\\cmd\\\\git.exe\" add src/app/index.tsx src/app/tools.tsx src/app/offbase-calculator.tsx src/app/pcs-calculator.tsx src/app/bah-guide.tsx src/app/budget.tsx src/app/credit-score.tsx src/app/invest-101.tsx src/app/settings.tsx src/app/tricare-estimator.tsx src/app/_layout.tsx src/data/bah-rates.ts src/data/basic-pay-rates.ts src/data/installations.ts src/data/mha-locations.ts src/data/oha-locations.ts src/data/oha-rates.ts src/features/deployment/utils/deploymentCalc.ts scripts/upload-to-appetize.mjs .claude/settings.local.json)"
+      "Bash(\"C:\\\\Program Files\\\\Git\\\\cmd\\\\git.exe\" add src/app/index.tsx src/app/tools.tsx src/app/offbase-calculator.tsx src/app/pcs-calculator.tsx src/app/bah-guide.tsx src/app/budget.tsx src/app/credit-score.tsx src/app/invest-101.tsx src/app/settings.tsx src/app/tricare-estimator.tsx src/app/_layout.tsx src/data/bah-rates.ts src/data/basic-pay-rates.ts src/data/installations.ts src/data/mha-locations.ts src/data/oha-locations.ts src/data/oha-rates.ts src/features/deployment/utils/deploymentCalc.ts scripts/upload-to-appetize.mjs .claude/settings.local.json)",
+      "Bash(\"C:\\\\Program Files\\\\Git\\\\cmd\\\\git.exe\" add src/app/)",
+      "Bash(node -e \"const r = require\\('./src/data/bah-rates.ts'\\); console.log\\('keys', Object.keys\\(r\\).join\\(','\\)\\)\")",
+      "Bash(\"C:\\\\Program Files\\\\Git\\\\cmd\\\\git.exe\" add src/app/browse.tsx src/app/budget.tsx src/app/gi-bill-calculator.tsx src/app/tools.tsx src/data/bah-rates.ts src/features/daily-tip/components/TipCard.tsx)",
+      "Bash(Start-Sleep -Seconds 15)",
+      "Bash(Get-Content \"C:\\\\Users\\\\solit\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\C--Users-solit-Documents-web-budgetapp-MilBudgetBuddy\\\\ec0e2b41-cb47-4eac-a414-9615b63a8947\\\\tasks\\\\bhv11h8by.output\" -Tail 30)",
+      "Bash(npm list *)",
+      "Bash(dir C:\\\\Users\\\\solit\\\\Documents\\\\web\\\\budgetapp\\\\MilBudgetBuddy\\\\src\\\\store *)",
+      "Bash(ls assets/images/)",
+      "Bash(ls assets/)",
+      "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(d.get\\('expo',{}\\).get\\('icon'\\), indent=2\\)\\); print\\('android:', json.dumps\\(d.get\\('expo',{}\\).get\\('android',{}\\).get\\('adaptiveIcon'\\), indent=2\\)\\)\")",
+      "Bash(python -c ' *)"
     ]
   }
 }
