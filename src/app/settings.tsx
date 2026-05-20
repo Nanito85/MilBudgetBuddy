@@ -9,6 +9,7 @@ import { Brand, Spacing } from '@/constants/theme';
 import { ALL_QUICK_ACTIONS } from '@/data/quick-actions';
 import { useAppTheme, useTheme } from '@/hooks/use-theme';
 import { useEntitlement } from '@/hooks/use-entitlement';
+import { useAuthStore } from '@/store/auth.store';
 import { useUserStore } from '@/store/user.store';
 
 const MAX_TILES = 4;
@@ -35,6 +36,7 @@ export default function SettingsScreen() {
   const [selected, setSelected] = useState<string[]>(savedIds.slice(0, MAX_TILES));
 
   const { isPro, isPromo, status, daysLeft } = useEntitlement();
+  const { user, signOut: signOutUser } = useAuthStore();
 
   const isDark = appTheme === 'dark';
   const bg     = isDark ? '#04080F' : '#F0F4F8';
@@ -239,6 +241,39 @@ export default function SettingsScreen() {
             );
           })}
         </View>
+
+        {/* ── ACCOUNT ────────────────────────────────────────────────── */}
+        <View style={styles.section}>
+          <ThemedText type="label" style={styles.eyebrow}>// SYNC & BACKUP</ThemedText>
+          <ThemedText style={[styles.sectionTitle, { color: text }]}>ACCOUNT</ThemedText>
+        </View>
+
+        {user ? (
+          <View style={[settingsProStyles.statusCard, { backgroundColor: card, borderColor: Brand.tactical + '40' }]}>
+            <ThemedText style={settingsProStyles.proIcon}>☁️</ThemedText>
+            <View style={{ flex: 1 }}>
+              <ThemedText style={[settingsProStyles.proTitle, { color: Brand.tactical }]}>SYNCED — DATA BACKED UP</ThemedText>
+              <ThemedText style={[settingsProStyles.proSub, { color: textDim }]} numberOfLines={1}>{user.email}</ThemedText>
+            </View>
+            <Pressable
+              onPress={() => signOutUser()}
+              style={[settingsProStyles.upgradeBtn, { backgroundColor: '#1A2A3A' }]}>
+              <ThemedText style={[settingsProStyles.upgradeBtnText, { color: '#6B92B0' }]}>SIGN OUT</ThemedText>
+            </Pressable>
+          </View>
+        ) : (
+          <Pressable
+            onPress={() => router.push('/auth/sign-in' as any)}
+            style={({ pressed }) => [settingsProStyles.upgradeCard, { backgroundColor: card, borderColor: Brand.tactical + '40' }, pressed && { opacity: 0.7 }]}>
+            <ThemedText style={settingsProStyles.proIcon}>☁️</ThemedText>
+            <View style={{ flex: 1 }}>
+              <ThemedText style={[settingsProStyles.proTitle, { color: Brand.tactical }]}>SIGN IN TO SYNC</ThemedText>
+              <ThemedText style={[settingsProStyles.proSub, { color: textDim }]}>Access your data from any device.</ThemedText>
+            </View>
+            <ThemedText style={[settingsProStyles.chevron, { color: Brand.tactical }]}>›</ThemedText>
+          </Pressable>
+        )}
+
       </ScrollView>
 
       <View style={[styles.footer, { paddingBottom: insets.bottom + Spacing.two, backgroundColor: bg, borderTopColor: Brand.border }]}>
