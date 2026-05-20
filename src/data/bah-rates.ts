@@ -592,3 +592,40 @@ export function getBahRate(
 export function hasBahData(mhaZip: string): boolean {
   return resolveZip(mhaZip) in RAW;
 }
+
+export interface BahLookupResult {
+  rate: number;
+  exact: boolean;
+}
+
+/**
+ * Find E5-with-dep BAH for any US ZIP code.
+ * Falls back through alias → 3-digit prefix → 2-digit prefix → 1-digit prefix
+ * so arbitrary college/school ZIP codes always return a nearest-MHA estimate.
+ */
+export function findBahRateApprox(
+  zip: string,
+  grade: PayGrade,
+  withDependents: boolean,
+): BahLookupResult | null {
+  const allZips = Object.keys(RAW);
+
+  // 1. Exact / alias
+  const resolved = resolveZip(zip);
+  if (resolved in RAW) {
+    const pair = RAW[resolved][GRADE_INDEX[grade]];
+    return { rate: withDependents ? pair[0] : pair[1], exact: true };
+  }
+
+  // 2–4. Progressive prefix fallback (3 → 2 → 1 digit)
+  for (const len of [3, 2, 1]) {
+    const pre = zip.slice(0, len);
+    const match = allZips.find((z) => z.startsWith(pre));
+    if (match) {
+      const pair = RAW[match][GRADE_INDEX[grade]];
+      return { rate: withDependents ? pair[0] : pair[1], exact: false };
+    }
+  }
+
+  return null;
+}

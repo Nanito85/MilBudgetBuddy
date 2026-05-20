@@ -6,7 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Brand, Spacing } from '@/constants/theme';
-import { getBahRate } from '@/data/bah-rates';
+import { findBahRateApprox } from '@/data/bah-rates';
 import { NumberStepper } from '@/features/retirement/components/NumberStepper';
 import {
   calcGiBill,
@@ -69,17 +69,14 @@ export default function GiBillCalculatorScreen() {
   const [manualBah, setManualBah] = useState('2400');
   const [tuitionPerYear, setTuitionPerYear] = useState(10000);
 
-  // Try to look up E5-w/dep BAH from entered ZIP
-  const zipBah = useMemo(() => {
+  // Look up E5-w/dep BAH from entered ZIP — falls back to nearest MHA for any US ZIP
+  const zipLookup = useMemo(() => {
     const z = zipInput.trim();
-    if (z.length === 5) {
-      const rate = getBahRate(z, 'E5', true);
-      return rate;
-    }
+    if (z.length === 5) return findBahRateApprox(z, 'E5', true);
     return null;
   }, [zipInput]);
 
-  const effectiveBah = zipBah !== null ? zipBah : (parseInt(manualBah, 10) || 0);
+  const effectiveBah = zipLookup !== null ? zipLookup.rate : (parseInt(manualBah, 10) || 0);
 
   const result = useMemo(
     () =>
@@ -194,16 +191,18 @@ export default function GiBillCalculatorScreen() {
                 maxLength={5}
                 style={styles.zipInput}
               />
-              {zipBah !== null ? (
+              {zipLookup !== null ? (
                 <View style={styles.zipResult}>
-                  <ThemedText style={styles.zipFound}>✓ Found: {fmtDollar(zipBah)}/mo</ThemedText>
+                  {zipLookup.exact ? (
+                    <ThemedText style={styles.zipFound}>✓ {fmtDollar(zipLookup.rate)}/mo</ThemedText>
+                  ) : (
+                    <ThemedText style={styles.zipApprox}>≈ {fmtDollar(zipLookup.rate)}/mo (nearest MHA)</ThemedText>
+                  )}
                 </View>
-              ) : zipInput.length === 5 ? (
-                <ThemedText style={styles.zipNotFound}>ZIP not in database — enter manually</ThemedText>
               ) : null}
             </View>
 
-            {zipBah === null && (
+            {zipLookup === null && (
               <>
                 <ThemedText style={[styles.cardLabel, { marginTop: Spacing.one }]}>OR ENTER E5 W/DEP BAH MANUALLY</ThemedText>
                 <TextInput
@@ -357,7 +356,7 @@ const styles = StyleSheet.create({
   },
   zipResult: {},
   zipFound: { fontSize: 13, color: Brand.tactical, fontWeight: '700' },
-  zipNotFound: { fontSize: 11, color: Brand.warning, flex: 1 },
+  zipApprox: { fontSize: 12, color: Brand.warning, fontWeight: '700', flex: 1 },
   manualInput: {
     fontSize: 16, fontWeight: '700', color: '#C8D8E8',
     borderBottomWidth: 2, borderBottomColor: Brand.primary, paddingVertical: 4, width: 120,

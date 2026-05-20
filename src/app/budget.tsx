@@ -1017,7 +1017,7 @@ const styles = StyleSheet.create({
     color: Brand.tactical,
     fontFamily: 'monospace',
   },
-  title: { fontSize: 26, fontWeight: '900', letterSpacing: 0.5, color: '#C8D8E8' },
+  title: { fontSize: 22, fontWeight: '900', letterSpacing: 0.5, color: '#C8D8E8' },
 
   modeRow: {
     flexDirection: 'row',

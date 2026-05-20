@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { Alert, Modal, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import { Alert, Image, Modal, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
@@ -212,7 +212,7 @@ export default function KidsScreen() {
           </View>
         ) : (
           <View style={styles.emptyState}>
-            <ThemedText style={styles.emptyEmoji}>🪖</ThemedText>
+            <Image source={require('../../assets/images/icon.png')} style={styles.emptyIcon} />
             <ThemedText style={styles.emptyTitle}>NO CADETS ENROLLED</ThemedText>
             <ThemedText type="label" style={styles.emptyBody}>
               Add a child profile to give them their own goals, chores, and savings missions.
@@ -263,11 +263,11 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   content: { paddingHorizontal: Spacing.three, gap: Spacing.three },
   eyebrow: { color: Brand.tactical, marginTop: Spacing.three, fontSize: 9 },
-  heading: { fontSize: 30, fontWeight: '900', letterSpacing: 1, color: '#C8D8E8', marginTop: 4 },
+  heading: { fontSize: 22, fontWeight: '900', letterSpacing: 1, color: '#C8D8E8', marginTop: 4 },
   subhead: { color: '#3D6080', fontSize: 9, marginTop: 2 },
   kidsList: { gap: Spacing.two },
   emptyState: { alignItems: 'center', paddingVertical: Spacing.five, gap: Spacing.two },
-  emptyEmoji: { fontSize: 48 },
+  emptyIcon: { width: 80, height: 80, borderRadius: 18 },
   emptyTitle: { fontSize: 14, fontWeight: '900', letterSpacing: 2, color: '#6B92B0' },
   emptyBody: { color: '#6B92B0', fontSize: 11, textAlign: 'center', lineHeight: 17, paddingHorizontal: Spacing.three },
   addBtn: {

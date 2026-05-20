@@ -101,7 +101,7 @@ const CALCULATORS: MenuItem[] = [
   {
     id: 'tle',
     icon: '🏨',
-    title: 'Lodging Reimbursement',
+    title: 'TLA/TLE Reimbursement',
     description: 'Calculate how much you\'ll receive for hotel stays during a PCS move',
     route: '/tle-calculator',
     available: true,
@@ -523,7 +523,7 @@ const styles = StyleSheet.create({
   profileEditHint: { color: Brand.tactical, fontSize: 8 },
 
   eyebrow: { color: Brand.tactical, fontSize: 10, marginTop: Spacing.two },
-  heading: { fontSize: 30, fontWeight: '900', letterSpacing: 1, color: '#C8D8E8', marginTop: 4 },
+  heading: { fontSize: 22, fontWeight: '900', letterSpacing: 1, color: '#C8D8E8', marginTop: 4 },
   subhead: { color: '#6B92B0', fontSize: 10, marginTop: 2 },
 
   sectionLabelRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
