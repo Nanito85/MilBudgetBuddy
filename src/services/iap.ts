@@ -66,7 +66,10 @@ export async function purchaseSubscription(plan: 'monthly' | 'annual'): Promise<
   const sku = plan === 'annual' ? IAP_PRODUCT_ID_ANNUAL : IAP_PRODUCT_ID_MONTHLY;
   try {
     await requestPurchase({
-      request: { google: { skus: [sku] } },
+      request: {
+        apple: { sku },
+        google: { skus: [sku] },
+      },
       type: 'subs',
     });
     return true;

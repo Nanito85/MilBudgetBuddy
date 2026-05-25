@@ -1,4 +1,4 @@
-// Google Play subscription product IDs (must match Play Console exactly)
+// Subscription product IDs — must match Play Console (Android) and App Store Connect (iOS) exactly
 export const IAP_PRODUCT_ID_MONTHLY = 'mbb_pro_monthly';
 export const IAP_PRODUCT_ID_ANNUAL  = 'mbb_pro_annual';
 
