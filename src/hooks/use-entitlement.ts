@@ -1,22 +1,28 @@
-import {
-  FREE_BUDGET_CATEGORY_LIMIT,
-  FREE_KIDS_LIMIT,
-  FREE_TOOL_IDS,
-} from '@/constants/features';
+import { getFlags } from '@/constants/features';
 import { useEntitlementStore } from '@/store/entitlement.store';
 
 export function useEntitlement() {
-  const status = useEntitlementStore((s) => s.status);
-  const daysLeftInPromo = useEntitlementStore((s) => s.daysLeftInPromo);
-  const isPro = status === 'pro' || status === 'promo';
+  const status          = useEntitlementStore((s) => s.status);
+  const daysLeftInTrial = useEntitlementStore((s) => s.daysLeftInTrial);
+  const subscriptionPlan = useEntitlementStore((s) => s.subscriptionPlan);
+  const proGrantedUntil  = useEntitlementStore((s) => s.proGrantedUntil);
+  const isPro    = status === 'pro';
+  const isTrial  = status === 'trial';
+  const flags    = getFlags();
+
+  // Discount-code grant active?
+  const isCodeGrant = isPro && proGrantedUntil != null && new Date(proGrantedUntil).getTime() > Date.now();
 
   return {
     isPro,
-    isPromo: status === 'promo',
+    isTrial,
+    isPromo: isTrial,           // legacy alias used in older screens
     status,
-    daysLeft: daysLeftInPromo(),
-    canUseTool: (id: string) => isPro || FREE_TOOL_IDS.has(id),
-    budgetCategoryLimit: isPro ? Infinity : FREE_BUDGET_CATEGORY_LIMIT,
-    kidsLimit: isPro ? Infinity : FREE_KIDS_LIMIT,
+    subscriptionPlan,
+    isCodeGrant,
+    daysLeft: daysLeftInTrial(),
+    canUseTool: (id: string) => isPro || isTrial || flags.freeToolIds.has(id),
+    budgetCategoryLimit: (isPro || isTrial) ? Infinity : flags.freeBudgetCategoryLimit,
+    kidsLimit:           (isPro || isTrial) ? Infinity : flags.freeKidsLimit,
   };
 }

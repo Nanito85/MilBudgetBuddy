@@ -1,9 +1,11 @@
+import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
+  ScrollView,
   StyleSheet,
   TextInput,
   View,
@@ -19,6 +21,12 @@ export default function SignInScreen() {
   const { signIn, loading, error, clearError } = useAuthStore();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const { user } = useAuthStore();
+
+  useEffect(() => {
+    if (user) router.replace('/');
+  }, [user]);
 
   const handleSignIn = async () => {
     if (!email.trim() || !password) return;
@@ -29,79 +37,90 @@ export default function SignInScreen() {
   return (
     <KeyboardAvoidingView
       style={styles.root}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <SafeAreaView style={styles.safe}>
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+      <SafeAreaView style={{ flex: 1 }}>
+        <ScrollView
+          contentContainerStyle={styles.content}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}>
 
-        <View style={styles.hero}>
-          <ThemedText style={styles.eyebrow}>// MILBUDGETBUDDY</ThemedText>
-          <ThemedText style={styles.title}>SIGN IN</ThemedText>
-          <ThemedText style={styles.sub}>
-            Access your financial data from any device.
-          </ThemedText>
-        </View>
-
-        <View style={styles.form}>
-          {error ? (
-            <View style={styles.errorBox}>
-              <ThemedText style={styles.errorText}>{error}</ThemedText>
-            </View>
-          ) : null}
-
-          <View style={styles.fieldWrap}>
-            <ThemedText style={styles.label}>EMAIL</ThemedText>
-            <TextInput
-              value={email}
-              onChangeText={setEmail}
-              placeholder="your@email.com"
-              placeholderTextColor="#2A4A60"
-              autoCapitalize="none"
-              keyboardType="email-address"
-              returnKeyType="next"
-              style={styles.input}
-            />
+          <View style={styles.hero}>
+            <ThemedText style={styles.eyebrow}>// MILBUDGETBUDDY</ThemedText>
+            <ThemedText style={styles.title}>SIGN IN</ThemedText>
+            <ThemedText style={styles.slogan}>Your Money. Your Mission.</ThemedText>
+            <ThemedText style={styles.sub}>
+              Access your financial data from any device.
+            </ThemedText>
           </View>
 
-          <View style={styles.fieldWrap}>
-            <ThemedText style={styles.label}>PASSWORD</ThemedText>
-            <TextInput
-              value={password}
-              onChangeText={setPassword}
-              placeholder="••••••••"
-              placeholderTextColor="#2A4A60"
-              secureTextEntry
-              returnKeyType="done"
-              onSubmitEditing={handleSignIn}
-              style={styles.input}
-            />
+          <View style={styles.form}>
+            {error ? (
+              <View style={styles.errorBox}>
+                <ThemedText style={styles.errorText}>{error}</ThemedText>
+              </View>
+            ) : null}
+
+            <View style={styles.fieldWrap}>
+              <ThemedText style={styles.label}>EMAIL</ThemedText>
+              <TextInput
+                value={email}
+                onChangeText={setEmail}
+                placeholder="your@email.com"
+                placeholderTextColor="#2A4A60"
+                autoCapitalize="none"
+                keyboardType="email-address"
+                returnKeyType="next"
+                style={styles.input}
+              />
+            </View>
+
+            <View style={styles.fieldWrap}>
+              <ThemedText style={styles.label}>PASSWORD</ThemedText>
+              <View style={styles.inputRow}>
+                <TextInput
+                  value={password}
+                  onChangeText={setPassword}
+                  placeholder="••••••••"
+                  placeholderTextColor="#2A4A60"
+                  secureTextEntry={!showPassword}
+                  returnKeyType="done"
+                  onSubmitEditing={handleSignIn}
+                  style={styles.inputFlex}
+                />
+                <Pressable onPress={() => setShowPassword((v) => !v)} style={styles.eyeBtn} hitSlop={8}>
+                  <Ionicons name={showPassword ? 'eye-off-outline' : 'eye-outline'} size={20} color="#4D7A9A" />
+                </Pressable>
+              </View>
+            </View>
+
+            <Pressable
+              onPress={handleSignIn}
+              disabled={loading || !email.trim() || !password}
+              style={({ pressed }) => [
+                styles.btn,
+                (loading || !email.trim() || !password) && { opacity: 0.5 },
+                pressed && { opacity: 0.7 },
+              ]}>
+              <ThemedText style={styles.btnText}>
+                {loading ? 'SIGNING IN...' : 'SIGN IN'}
+              </ThemedText>
+            </Pressable>
+          </View>
+
+          <View style={styles.footer}>
+            <ThemedText style={styles.footerText}>Don't have an account?</ThemedText>
+            <Pressable onPress={() => router.push('/auth/sign-up' as any)}>
+              <ThemedText style={styles.footerLink}>Create account →</ThemedText>
+            </Pressable>
           </View>
 
           <Pressable
-            onPress={handleSignIn}
-            disabled={loading || !email.trim() || !password}
-            style={({ pressed }) => [
-              styles.btn,
-              (loading || !email.trim() || !password) && { opacity: 0.5 },
-              pressed && { opacity: 0.7 },
-            ]}>
-            <ThemedText style={styles.btnText}>
-              {loading ? 'SIGNING IN...' : 'SIGN IN'}
-            </ThemedText>
+            onPress={() => router.push('/' as any)}
+            style={styles.skipBtn}>
+            <ThemedText style={styles.skipText}>Use without account (local only)</ThemedText>
           </Pressable>
-        </View>
 
-        <View style={styles.footer}>
-          <ThemedText style={styles.footerText}>Don't have an account?</ThemedText>
-          <Pressable onPress={() => router.push('/auth/sign-up' as any)}>
-            <ThemedText style={styles.footerLink}>Create account →</ThemedText>
-          </Pressable>
-        </View>
-
-        <Pressable
-          onPress={() => router.push('/' as any)}
-          style={styles.skipBtn}>
-          <ThemedText style={styles.skipText}>Use without account (local only)</ThemedText>
-        </Pressable>
-
+        </ScrollView>
       </SafeAreaView>
     </KeyboardAvoidingView>
   );
@@ -109,11 +128,18 @@ export default function SignInScreen() {
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: '#04080F' },
-  safe: { flex: 1, paddingHorizontal: Spacing.three, justifyContent: 'center', gap: Spacing.four },
+  content: {
+    flexGrow: 1,
+    paddingHorizontal: Spacing.three,
+    paddingVertical: Spacing.five,
+    justifyContent: 'center',
+    gap: Spacing.four,
+  },
 
   hero: { gap: Spacing.one },
   eyebrow: { color: Brand.tactical, fontSize: 10, fontWeight: '700', letterSpacing: 1.5 },
   title: { fontSize: 30, lineHeight: 36, fontWeight: '900', color: '#C8D8E8', letterSpacing: 0.5, marginTop: 2 },
+  slogan: { fontSize: 14, fontWeight: '700', color: Brand.tactical, letterSpacing: 0.3, marginTop: 2 },
   sub: { fontSize: 13, color: '#6B92B0', lineHeight: 19, marginTop: 4 },
 
   form: { gap: Spacing.three },
@@ -132,6 +158,22 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#C8D8E8',
   },
+  inputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#080E1C',
+    borderWidth: 1,
+    borderColor: Brand.border,
+    borderRadius: 6,
+  },
+  inputFlex: {
+    flex: 1,
+    paddingHorizontal: Spacing.three,
+    paddingVertical: Spacing.two + 4,
+    fontSize: 16,
+    color: '#C8D8E8',
+  },
+  eyeBtn: { paddingHorizontal: Spacing.two + 2 },
 
   btn: {
     backgroundColor: Brand.tactical,

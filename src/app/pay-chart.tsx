@@ -20,7 +20,7 @@ function fmtPay(n: number): string {
   return '$' + n.toLocaleString('en-US');
 }
 
-type ViewMode = 'lookup' | 'table';
+type ViewMode = 'lookup' | 'table' | 'reserve';
 
 export default function PayChartScreen() {
   const router = useRouter();
@@ -82,6 +82,9 @@ export default function PayChartScreen() {
         </Pressable>
         <Pressable onPress={() => setMode('table')} style={[styles.modeBtn, mode === 'table' && styles.modeBtnActive]}>
           <ThemedText style={[styles.modeBtnText, mode === 'table' && styles.modeBtnTextActive]}>FULL TABLE</ThemedText>
+        </Pressable>
+        <Pressable onPress={() => setMode('reserve')} style={[styles.modeBtn, mode === 'reserve' && styles.modeBtnActive]}>
+          <ThemedText style={[styles.modeBtnText, mode === 'reserve' && styles.modeBtnTextActive]}>RESERVE/DRILL</ThemedText>
         </Pressable>
       </View>
 
@@ -174,6 +177,66 @@ export default function PayChartScreen() {
                     <View style={[styles.allGradeRow, g === selectedGrade && styles.allGradeRowActive]}>
                       <ThemedText style={[styles.allGradeLabel, g === selectedGrade && { color: Brand.tactical }]}>{g}</ThemedText>
                       <ThemedText style={[styles.allGradePay, g === selectedGrade && { color: Brand.tactical }]}>{fmtPay(pay)}/mo</ThemedText>
+                    </View>
+                  </Pressable>
+                );
+              })}
+            </ThemedView>
+          </>
+        )}
+
+        {mode === 'reserve' && (
+          <>
+            <ThemedView type="backgroundElement" style={styles.resultCard}>
+              <ThemedText style={styles.resultEyebrow}>{selectedGrade} — RESERVE / GUARD DRILL PAY</ThemedText>
+              <ThemedText style={styles.resultMonthly}>{fmtPay(Math.round(monthlyPay / 30))}<ThemedText style={styles.resultUnit}> / drill period</ThemedText></ThemedText>
+              <ThemedText style={styles.resultAnnual}>{fmtPay(Math.round(monthlyPay / 30 * 4))} / drill weekend (4 IDTs)</ThemedText>
+              <ThemedText style={styles.resultNote}>1 IDT = 1/30 of active-duty monthly basic pay.</ThemedText>
+            </ThemedView>
+
+            <ThemedView type="backgroundElement" style={styles.card}>
+              <ThemedText style={styles.cardLabel}>ANNUAL RESERVE PAY BREAKDOWN — {selectedGrade}</ThemedText>
+              {[
+                { label: 'Active Duty Monthly Pay', value: fmtPay(monthlyPay) + '/mo' },
+                { label: 'Pay Per IDT (1 drill period)', value: fmtPay(Math.round(monthlyPay / 30)) },
+                { label: 'Drill Weekend (4 IDTs)', value: fmtPay(Math.round(monthlyPay / 30 * 4)) },
+                { label: 'Typical Annual Drills (48 IDTs)', value: fmtPay(Math.round(monthlyPay / 30 * 48)) },
+                { label: 'Annual Training ~15 days (ADT)', value: fmtPay(Math.round(monthlyPay / 30 * 15)) },
+                { label: 'Est. Total Annual Reserve Pay', value: fmtPay(Math.round(monthlyPay / 30 * 48 + monthlyPay / 30 * 15)) },
+              ].map((row, i) => (
+                <View key={i} style={[styles.allGradeRow, i === 5 && styles.allGradeRowActive]}>
+                  <ThemedText style={[styles.allGradeLabel, { width: 'auto', flex: 1, color: i === 5 ? Brand.tactical : '#7A9AB5', fontSize: 11 }]}>{row.label}</ThemedText>
+                  <ThemedText style={[styles.allGradePay, i === 5 && { color: Brand.tactical }]}>{row.value}</ThemedText>
+                </View>
+              ))}
+            </ThemedView>
+
+            <ThemedView type="backgroundElement" style={styles.card}>
+              <ThemedText style={styles.cardLabel}>ALL ENLISTED GRADES — DRILL PAY (4 IDTs)</ThemedText>
+              {ENLISTED.map((g) => {
+                const pay = getBasicPay(g, selectedYos);
+                const weekend = Math.round(pay / 30 * 4);
+                return (
+                  <Pressable key={g} onPress={() => setSelectedGrade(g)}>
+                    <View style={[styles.allGradeRow, g === selectedGrade && styles.allGradeRowActive]}>
+                      <ThemedText style={[styles.allGradeLabel, g === selectedGrade && { color: Brand.tactical }]}>{g}</ThemedText>
+                      <ThemedText style={[styles.allGradePay, g === selectedGrade && { color: Brand.tactical }]}>{fmtPay(weekend)}/weekend</ThemedText>
+                    </View>
+                  </Pressable>
+                );
+              })}
+            </ThemedView>
+
+            <ThemedView type="backgroundElement" style={styles.card}>
+              <ThemedText style={styles.cardLabel}>ALL OFFICER GRADES — DRILL PAY (4 IDTs)</ThemedText>
+              {OFFICER.map((g) => {
+                const pay = getBasicPay(g, selectedYos);
+                const weekend = Math.round(pay / 30 * 4);
+                return (
+                  <Pressable key={g} onPress={() => setSelectedGrade(g)}>
+                    <View style={[styles.allGradeRow, g === selectedGrade && styles.allGradeRowActive]}>
+                      <ThemedText style={[styles.allGradeLabel, g === selectedGrade && { color: Brand.tactical }]}>{g}</ThemedText>
+                      <ThemedText style={[styles.allGradePay, g === selectedGrade && { color: Brand.tactical }]}>{fmtPay(weekend)}/weekend</ThemedText>
                     </View>
                   </Pressable>
                 );

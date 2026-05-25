@@ -2,17 +2,13 @@ import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Paste your Firebase project config here.
-// Get it from: Firebase Console → Project Settings → Your apps → SDK setup
-// ─────────────────────────────────────────────────────────────────────────────
 const firebaseConfig = {
-  apiKey:            'AIzaSyD-smnLSusD2BJGawdDiiR2aYGEVBbbkVs',
-  authDomain:        'milbudgetbuddy.firebaseapp.com',
-  projectId:         'milbudgetbuddy',
-  storageBucket:     'milbudgetbuddy.firebasestorage.app',
-  messagingSenderId: '1010412641351',
-  appId:             '1:1010412641351:web:25348ecb227babc3166562',
+  apiKey:            process.env.EXPO_PUBLIC_FIREBASE_API_KEY            ?? '',
+  authDomain:        process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN        ?? '',
+  projectId:         process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID         ?? '',
+  storageBucket:     process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET     ?? '',
+  messagingSenderId: process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID ?? '',
+  appId:             process.env.EXPO_PUBLIC_FIREBASE_APP_ID             ?? '',
 };
 
 const app  = initializeApp(firebaseConfig);

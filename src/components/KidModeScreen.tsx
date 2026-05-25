@@ -14,15 +14,34 @@ import { useKidModeStore } from '@/store/kid-mode.store';
 import { useKidsStore } from '@/store/kids.store';
 import { Chore, getKidTheme, KidProfile } from '@/types/kids.types';
 
-// ── Kid-friendly money tips ─────────────────────────────────────────────────────
+// ── Kid Intel Brief tips ────────────────────────────────────────────────────────
 
 const MONEY_TIPS = [
-  { icon: '🏦', title: 'Save First!', body: "Before you spend any money, put a little in savings. Even $1 a week adds up to $52 a year!" },
+  // Saving basics
+  { icon: '🏦', title: 'Save First!', body: "Before you spend any money, put a little in savings. Even $1 a week adds up to $52 a year — that's a new video game!" },
   { icon: '🎯', title: 'Set a Goal', body: "Know what you're saving for. Having a goal makes saving exciting — you can watch your progress every day!" },
-  { icon: '💡', title: 'Needs vs. Wants', body: "A need is something you must have, like food or shoes. A want is something you'd like but can live without. Learn the difference!" },
-  { icon: '⏰', title: 'Start Early', body: "The earlier you start saving, the more money you'll have later. Money you save today grows over time!" },
+  { icon: '⏰', title: 'Start Early', body: "The earlier you start saving, the more money you'll have later. Money you save today grows over time — this is called compounding!" },
+  { icon: '🏺', title: 'The 3-Jar System', body: "Split your money into 3 jars: Save, Spend, and Give. Putting even 10% in Save and 10% in Give builds great money habits for life." },
+  { icon: '📊', title: 'Track Your Money', body: "Write down every dollar you earn and spend for one week. You'll be surprised where your money goes — and what you can cut to save faster." },
+  // Earning
+  { icon: '💼', title: 'Create Value', body: "You earn money by solving problems for others — mowing grass, washing cars, walking dogs, or making crafts. Think: what problem can I solve?" },
+  { icon: '🚀', title: 'Start a Mini Business', body: "Every big company started as a small idea. You could make lemonade, sell art, or offer tech help to neighbors. Start small and keep learning!" },
+  { icon: '🌱', title: 'Grow Your Skills', body: "Learning a skill — coding, baking, drawing — can earn you money. The better your skill, the more you can charge. Practice every day!" },
+  { icon: '💡', title: 'Ideas Are Worth Money', body: "Think of things people need but can't find easily. Solving that problem is how businesses are born. Write your ideas down — even silly ones!" },
+  { icon: '🤝', title: 'Reputation Matters', body: "Do your chores and jobs with 100% effort. People talk — a great reputation means more opportunities and more money over time." },
+  // Smart spending
   { icon: '🧠', title: 'Think Before You Buy', body: "Before buying something, wait one day. If you still want it tomorrow, it might be worth it. If you forgot about it, you probably didn't need it!" },
-  { icon: '🤝', title: 'Give Back', body: "Part of being great with money is sharing. Try setting aside a little to help someone who needs it more than you." },
+  { icon: '❤️', title: 'Needs vs. Wants', body: "A need is something you must have, like food or shoes. A want is something you'd like but can live without. Learn the difference — it changes everything!" },
+  { icon: '🔍', title: 'Compare Prices', body: "Before buying, check if the same thing costs less somewhere else. Saving $5 on something is the same as earning $5. Smart shoppers are money winners!" },
+  // Investing
+  { icon: '📈', title: 'Make Money Work for You', body: "When you put money in a savings account, it earns interest — the bank pays you for letting them use your money. That's passive income!" },
+  { icon: '🌳', title: 'Compound Interest Is Magic', body: "If you save $100 and earn 10% interest, next year you have $110. Then you earn 10% on $110. Your money grows faster and faster — that's compounding!" },
+  { icon: '🏆', title: 'Invest Early, Win Big', body: "A dollar invested at age 10 is worth far more than a dollar invested at age 30. The stock market has grown every long period in history. Start early!" },
+  { icon: '📦', title: "Don't Put All Eggs in One Basket", body: "If you only own one type of thing and it drops in value, you lose everything. Spreading investments across different things reduces your risk." },
+  // Character
+  { icon: '🤝', title: 'Give Back', body: "Part of being great with money is sharing. Try setting aside a little to help someone who needs it more than you. Generosity grows with practice." },
+  { icon: '📚', title: 'Read to Lead', body: "The richest people in the world read books constantly. Books about money, business, and people are like cheat codes for life. Read 15 minutes a day." },
+  { icon: '🎖️', title: 'Delayed Gratification', body: "Choosing to wait for something bigger instead of grabbing something small right now is called delayed gratification. It's one of the most important money skills ever." },
 ];
 
 // ── PIN Keypad ──────────────────────────────────────────────────────────────────
@@ -122,6 +141,9 @@ const pinStyles = StyleSheet.create({
 
 // ── Exit PIN modal ──────────────────────────────────────────────────────────────
 
+const MAX_PIN_ATTEMPTS = 5;
+const LOCKOUT_SECONDS  = 30;
+
 function ExitPINModal({
   visible,
   pin,
@@ -135,16 +157,49 @@ function ExitPINModal({
   onSuccess: () => void;
   onCancel: () => void;
 }) {
-  const [error, setError] = useState('');
+  const [error, setError]       = useState('');
+  const [attempts, setAttempts] = useState(0);
+  const [lockedUntil, setLockedUntil] = useState<number | null>(null);
+  const [countdown, setCountdown]     = useState(0);
+
+  // Reset state when modal opens
+  React.useEffect(() => {
+    if (visible) { setAttempts(0); setLockedUntil(null); setCountdown(0); setError(''); }
+  }, [visible]);
+
+  // Countdown ticker during lockout
+  React.useEffect(() => {
+    if (!lockedUntil) return;
+    const id = setInterval(() => {
+      const remaining = Math.ceil((lockedUntil - Date.now()) / 1000);
+      if (remaining <= 0) { setLockedUntil(null); setCountdown(0); setAttempts(0); setError(''); }
+      else setCountdown(remaining);
+    }, 500);
+    return () => clearInterval(id);
+  }, [lockedUntil]);
 
   const handleComplete = (entered: string) => {
+    if (lockedUntil && Date.now() < lockedUntil) return;
     if (entered === pin) {
       setError('');
+      setAttempts(0);
       onSuccess();
     } else {
-      setError('Incorrect PIN — try again');
+      const next = attempts + 1;
+      setAttempts(next);
+      if (next >= MAX_PIN_ATTEMPTS) {
+        setLockedUntil(Date.now() + LOCKOUT_SECONDS * 1000);
+        setCountdown(LOCKOUT_SECONDS);
+        setError(`Too many attempts. Locked for ${LOCKOUT_SECONDS}s.`);
+      } else {
+        setError(`Incorrect PIN — ${MAX_PIN_ATTEMPTS - next} attempt${MAX_PIN_ATTEMPTS - next !== 1 ? 's' : ''} remaining`);
+      }
     }
   };
+
+  const subtitle = lockedUntil
+    ? `Too many attempts. Try again in ${countdown}s.`
+    : error || undefined;
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onCancel}>
@@ -153,8 +208,8 @@ function ExitPINModal({
           <ThemedText style={[exitStyles.heading, { color: accentColor }]}>PARENT ACCESS</ThemedText>
           <PINKeypad
             title="Enter Parent PIN"
-            subtitle={error || undefined}
-            onComplete={handleComplete}
+            subtitle={subtitle}
+            onComplete={lockedUntil ? () => {} : handleComplete}
             onCancel={onCancel}
             accentColor={accentColor}
           />
@@ -190,42 +245,52 @@ function ChoreRow({
   chore,
   kidId,
   firstGoalId,
+  pendingIds,
   theme,
 }: {
   chore: Chore;
   kidId: string;
   firstGoalId: string;
+  pendingIds: Set<string>;
   theme: ReturnType<typeof getKidTheme>;
 }) {
-  const completeChore = useKidsStore((s) => s.completeChore);
-  const uncompleteChore = useKidsStore((s) => s.uncompleteChore);
+  const submitChoreForApproval = useKidsStore((s) => s.submitChoreForApproval);
 
   const todayStr = new Date().toISOString().slice(0, 10);
   const done = chore.completedDates.includes(todayStr);
+  const pending = pendingIds.has(chore.id);
 
-  const toggle = () => {
-    if (done) {
-      uncompleteChore(kidId, chore.id, firstGoalId || undefined);
-    } else {
-      completeChore(kidId, chore.id, firstGoalId);
-    }
+  const handlePress = () => {
+    if (done || pending) return;
+    submitChoreForApproval(kidId, chore.id, firstGoalId || undefined);
   };
+
+  const statusColor = done ? '#00B27A' : pending ? '#FFB300' : theme.primary;
+  const bg = done ? '#00B27A12' : pending ? '#FFB30012' : theme.card;
+  const borderColor = done ? '#00B27A60' : pending ? '#FFB30060' : theme.primary + '20';
 
   return (
     <Pressable
-      onPress={toggle}
+      onPress={handlePress}
+      disabled={done || pending}
       style={({ pressed }) => [
         choreStyles.row,
-        { borderColor: done ? theme.primary + '60' : theme.primary + '20', backgroundColor: done ? theme.primary + '12' : theme.card },
-        pressed && { opacity: 0.7 },
+        { borderColor, backgroundColor: bg },
+        !done && !pending && pressed && { opacity: 0.7 },
       ]}>
-      <View style={[choreStyles.check, { borderColor: theme.primary }, done && { backgroundColor: theme.primary }]}>
+      <View style={[choreStyles.check, { borderColor: statusColor }, (done || pending) && { backgroundColor: statusColor }]}>
         {done && <ThemedText style={choreStyles.checkMark}>✓</ThemedText>}
+        {pending && <ThemedText style={choreStyles.checkMark}>⏳</ThemedText>}
       </View>
-      <ThemedText style={[choreStyles.name, done && { textDecorationLine: 'line-through', color: '#6B92B0' }]}>
-        {chore.name}
-      </ThemedText>
-      <ThemedText style={[choreStyles.value, { color: done ? '#6B92B0' : theme.accent }]}>
+      <View style={{ flex: 1 }}>
+        <ThemedText style={[choreStyles.name, done && { textDecorationLine: 'line-through', color: '#6B92B0' }]}>
+          {chore.name}
+        </ThemedText>
+        {pending && (
+          <ThemedText style={choreStyles.pendingLabel}>Awaiting Commander approval</ThemedText>
+        )}
+      </View>
+      <ThemedText style={[choreStyles.value, { color: done || pending ? '#6B92B0' : theme.accent }]}>
         +${chore.value.toFixed(2)}
       </ThemedText>
     </Pressable>
@@ -249,8 +314,9 @@ const choreStyles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  checkMark: { color: '#fff', fontSize: 14, fontWeight: '900' },
-  name: { flex: 1, fontSize: 14, fontWeight: '600', color: '#C8D8E8' },
+  checkMark: { color: '#fff', fontSize: 13, fontWeight: '900' },
+  name: { fontSize: 14, fontWeight: '600', color: '#C8D8E8' },
+  pendingLabel: { fontSize: 10, color: '#FFB300', fontWeight: '700', marginTop: 1 },
   value: { fontSize: 13, fontWeight: '800' },
 });
 
@@ -298,10 +364,19 @@ export function KidModeScreen() {
   const pin = useKidModeStore((s) => s.pin);
   const kidId = useKidModeStore((s) => s.kidId);
   const kids = useKidsStore((s) => s.kids);
+  const kidsHydrated = useKidsStore((s) => s.hydrated);
   const [showExit, setShowExit] = useState(false);
   const [tipIdx, setTipIdx] = useState(() => Math.floor(Math.random() * MONEY_TIPS.length));
 
   const kid = kids.find((k) => k.id === kidId);
+
+  if (!kidsHydrated) {
+    return (
+      <View style={[screen.container, { backgroundColor: '#04080F', alignItems: 'center', justifyContent: 'center' }]}>
+        <ThemedText style={{ color: '#6B92B0', fontSize: 14 }}>Loading...</ThemedText>
+      </View>
+    );
+  }
 
   if (!kid) {
     return (
@@ -316,7 +391,9 @@ export function KidModeScreen() {
 
   const theme = getKidTheme(kid.gender);
   const todayStr = new Date().toISOString().slice(0, 10);
-  const doneCount = kid.chores.filter((c) => c.completedDates.includes(todayStr)).length;
+  const pendingCompletions = kid.pendingCompletions ?? [];
+  const pendingIds = new Set(pendingCompletions.map((p) => p.choreId));
+  const doneCount = kid.chores.filter((c) => c.completedDates.includes(todayStr) || pendingIds.has(c.id)).length;
   const firstGoalId = kid.goals.find((g) => g.currentAmount < g.targetAmount)?.id ?? kid.goals[0]?.id ?? '';
   const tip = MONEY_TIPS[tipIdx];
 
@@ -361,7 +438,7 @@ export function KidModeScreen() {
               </View>
             ) : (
               kid.chores.map((chore) => (
-                <ChoreRow key={chore.id} chore={chore} kidId={kid.id} firstGoalId={firstGoalId} theme={theme} />
+                <ChoreRow key={chore.id} chore={chore} kidId={kid.id} firstGoalId={firstGoalId} pendingIds={pendingIds} theme={theme} />
               ))
             )}
           </View>

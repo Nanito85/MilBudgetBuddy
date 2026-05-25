@@ -1,14 +1,12 @@
 import { useRouter } from 'expo-router';
-import React from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import React, { useMemo, useState } from 'react';
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { BottomTabInset, Brand, Spacing } from '@/constants/theme';
 import { useEntitlement } from '@/hooks/use-entitlement';
-import { useUserStore } from '@/store/user.store';
-import { BRANCH_LABELS, getRankAbbrev } from '@/types/user.types';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -188,6 +186,15 @@ const CALCULATORS: MenuItem[] = [
     route: '/tdy-optimizer',
     available: true,
     color: '#C8A800',
+  },
+  {
+    id: 'reserves',
+    icon: '🎖️',
+    title: 'Reserve & Guard Hub',
+    description: 'Drill pay calculator, retirement points, TRICARE Reserve Select, and mobilization tools',
+    route: '/reserves',
+    available: true,
+    color: '#1565C0',
   },
 ];
 
@@ -390,16 +397,25 @@ function MenuCard({ item, locked, onPress }: { item: MenuItem; locked: boolean; 
 
 // ── Main Screen ────────────────────────────────────────────────────────────────
 
+const ALL_TOOLS = [...CALCULATORS, ...MONEY_TOOLS, ...RESOURCES];
+
 export default function MoreScreen() {
   const router = useRouter();
-  const branch = useUserStore((s) => s.branch);
-  const payGrade = useUserStore((s) => s.payGrade);
-  const lastName = useUserStore((s) => s.lastName);
-  const nickname = useUserStore((s) => s.nickname);
   const { canUseTool, isPro, isPromo, daysLeft } = useEntitlement();
 
-  const displayName = nickname || (lastName ? lastName.toUpperCase() : null);
-  const rankAbbrev = getRankAbbrev(branch, payGrade);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const searchResults = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return [];
+    return ALL_TOOLS.filter(
+      (t) =>
+        t.title.toLowerCase().includes(q) ||
+        t.description.toLowerCase().includes(q),
+    );
+  }, [searchQuery]);
+
+  const isSearching = searchQuery.trim().length > 0;
 
   const handlePress = (item: MenuItem) => {
     if (!item.available) return;
@@ -411,36 +427,50 @@ export default function MoreScreen() {
   };
 
   return (
+    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
     <ThemedView style={styles.container}>
       <ScrollView
         contentContainerStyle={[styles.content, { paddingBottom: BottomTabInset + Spacing.five }]}
-        showsVerticalScrollIndicator={false}>
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled">
         <SafeAreaView>
-          {/* Profile mini-bar */}
-          <Pressable
-            onPress={() => router.push('/profile' as any)}
-            style={({ pressed }) => [styles.profileBar, pressed && { opacity: 0.7 }]}>
-            <View style={styles.profileLeft}>
-              <ThemedText type="label" style={styles.profileRank}>{rankAbbrev || '—'}</ThemedText>
-              <ThemedText style={styles.profileName}>
-                {displayName || 'COMPLETE PROFILE'}
-              </ThemedText>
-              {branch && (
-                <ThemedText type="label" style={styles.profileBranch}>
-                  {BRANCH_LABELS[branch].toUpperCase()}
-                </ThemedText>
-              )}
-            </View>
-            <View style={styles.profileRight}>
-              <ThemedText type="label" style={styles.profileEditHint}>EDIT PROFILE ›</ThemedText>
-            </View>
-          </Pressable>
-
           <ThemedText type="label" style={styles.eyebrow}>// FINANCE OPERATIONS CENTER</ThemedText>
           <ThemedText style={styles.heading}>OPS TOOLKIT</ThemedText>
           <ThemedText type="label" style={styles.subhead}>CALCULATORS · RESOURCES · INTEL</ThemedText>
         </SafeAreaView>
 
+        {/* Search bar */}
+        <View style={styles.searchWrap}>
+          <ThemedText style={styles.searchIcon}>🔍</ThemedText>
+          <TextInput
+            style={styles.searchInput}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            placeholder="Search all tools..."
+            placeholderTextColor="#3D6080"
+            returnKeyType="search"
+            clearButtonMode="while-editing"
+          />
+          {searchQuery.length > 0 && (
+            <Pressable onPress={() => setSearchQuery('')} hitSlop={8}>
+              <ThemedText style={styles.searchClear}>✕</ThemedText>
+            </Pressable>
+          )}
+        </View>
+
+        {isSearching ? (
+          /* Search results */
+          <View style={styles.list}>
+            {searchResults.length === 0 ? (
+              <ThemedText style={styles.searchEmpty}>No tools match "{searchQuery}"</ThemedText>
+            ) : (
+              searchResults.map((item) => (
+                <MenuCard key={item.id} item={item} locked={!canUseTool(item.id)} onPress={() => handlePress(item)} />
+              ))
+            )}
+          </View>
+        ) : (
+          <>
         {/* Common Situations */}
         <SectionLabel text="I WILL BE..." />
         <View style={styles.situationGrid}>
@@ -519,6 +549,29 @@ export default function MoreScreen() {
           <ThemedText style={styles.chevron}>›</ThemedText>
         </Pressable>
 
+        {/* Life Events */}
+        <SectionLabel text="LIFE EVENTS" />
+        <Pressable
+          onPress={() => router.push('/life-events' as any)}
+          style={({ pressed }) => [styles.budgetShortcut, { borderColor: '#1565C0' + '40' }, pressed && { opacity: 0.7 }]}>
+          <ThemedText style={styles.budgetIcon}>📋</ThemedText>
+          <View style={styles.budgetText}>
+            <ThemedText style={styles.budgetTitle}>LIFE EVENT CHECKLISTS</ThemedText>
+            <ThemedText type="label" style={styles.budgetDesc}>PCS, promotion, deployment, marriage & more</ThemedText>
+          </View>
+          <ThemedText style={styles.chevron}>›</ThemedText>
+        </Pressable>
+        <Pressable
+          onPress={() => router.push('/command-mode' as any)}
+          style={({ pressed }) => [styles.budgetShortcut, { borderColor: Brand.border }, pressed && { opacity: 0.7 }]}>
+          <ThemedText style={styles.budgetIcon}>🎖️</ThemedText>
+          <View style={styles.budgetText}>
+            <ThemedText style={styles.budgetTitle}>COMMAND FINANCIAL READINESS</ThemedText>
+            <ThemedText type="label" style={styles.budgetDesc}>Unit-level dashboards — coming soon</ThemedText>
+          </View>
+          <ThemedText style={styles.chevron}>›</ThemedText>
+        </Pressable>
+
         {/* Settings */}
         <SectionLabel text="APP" />
         <Pressable
@@ -531,8 +584,11 @@ export default function MoreScreen() {
           </View>
           <ThemedText style={styles.chevron}>›</ThemedText>
         </Pressable>
+          </>
+        )}
       </ScrollView>
     </ThemedView>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -540,24 +596,15 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   content: { paddingHorizontal: Spacing.three, gap: Spacing.three },
 
-  profileBar: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: '#080E1C',
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: Brand.border,
-    borderRadius: 4,
-    padding: Spacing.three,
-    marginTop: Spacing.three,
-    marginBottom: Spacing.one,
+  searchWrap: {
+    flexDirection: 'row', alignItems: 'center', gap: Spacing.two,
+    backgroundColor: '#080E1C', borderWidth: 1, borderColor: Brand.border,
+    borderRadius: 8, paddingHorizontal: Spacing.three, paddingVertical: 10,
   },
-  profileLeft: { gap: 2 },
-  profileRank: { color: Brand.accent, fontSize: 9 },
-  profileName: { fontSize: 16, fontWeight: '800', color: '#C8D8E8', letterSpacing: 0.5 },
-  profileBranch: { color: '#3D6080', fontSize: 9 },
-  profileRight: { alignItems: 'flex-end' },
-  profileEditHint: { color: Brand.tactical, fontSize: 8 },
+  searchIcon: { fontSize: 16 },
+  searchInput: { flex: 1, fontSize: 15, color: '#C8D8E8' },
+  searchClear: { fontSize: 14, color: '#3D6080', paddingHorizontal: 4 },
+  searchEmpty: { color: '#3D6080', fontSize: 13, textAlign: 'center', paddingVertical: Spacing.four },
 
   eyebrow: { color: Brand.tactical, fontSize: 10, marginTop: Spacing.two },
   heading: { fontSize: 22, fontWeight: '900', letterSpacing: 1, color: '#C8D8E8', marginTop: 4 },

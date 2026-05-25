@@ -107,6 +107,7 @@ function snapshotUser() {
     hasSpouse: s.hasSpouse,
     numChildren: s.numChildren,
     tspContribPct: s.tspContribPct,
+    rothTspPct: s.rothTspPct,
     hasDentalFamily: s.hasDentalFamily,
     sglOptOut: s.sglOptOut,
     stateResidence: s.stateResidence ?? null,

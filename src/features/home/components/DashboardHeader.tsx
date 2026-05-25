@@ -4,14 +4,17 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { PayGrade } from '@/data/bah-rates';
+import { RankVariant } from '@/data/rank-insignia';
 import { Brand, Spacing } from '@/constants/theme';
 import { BRANCH_COLORS, MilitaryBranch, getRankAbbrev } from '@/types/user.types';
 
 interface Props {
   branch?: MilitaryBranch;
   payGrade?: PayGrade;
+  rankVariant?: RankVariant;
   lastName?: string;
   nickname?: string;
+  greetingStyle?: 'rank' | 'nickname';
 }
 
 function greeting(): string {
@@ -32,18 +35,21 @@ const BRANCH_DESIGNATOR: Record<MilitaryBranch, string> = {
   other: 'MIL.',
 };
 
-export function DashboardHeader({ branch, payGrade, lastName, nickname }: Props) {
+export function DashboardHeader({ branch, payGrade, rankVariant, lastName, nickname, greetingStyle }: Props) {
   const insets = useSafeAreaInsets();
   const branchColor = branch ? (BRANCH_COLORS[branch] ?? Brand.primary) : Brand.primary;
   const branchLabel = branch ? BRANCH_DESIGNATOR[branch] : 'MILBUDGETBUDDY';
 
+  const rankAbbrev = getRankAbbrev(branch, payGrade, rankVariant);
+  const rankName = payGrade && lastName ? `${rankAbbrev} ${lastName.toUpperCase()}` : lastName?.toUpperCase() ?? '';
+
   let displayName = 'SERVICEMEMBER';
-  if (nickname) {
+  if (greetingStyle === 'rank' && rankName) {
+    displayName = rankName;
+  } else if (nickname) {
     displayName = nickname.toUpperCase();
-  } else if (payGrade && lastName) {
-    displayName = `${getRankAbbrev(branch, payGrade)} ${lastName.toUpperCase()}`;
-  } else if (lastName) {
-    displayName = lastName.toUpperCase();
+  } else if (rankName) {
+    displayName = rankName;
   }
 
   const now = new Date();

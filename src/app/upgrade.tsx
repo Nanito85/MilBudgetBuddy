@@ -1,16 +1,33 @@
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Alert,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  TextInput,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Brand, Spacing } from '@/constants/theme';
-import { IAP_PRICE_DISPLAY, PROMO_DAYS } from '@/constants/features';
+import {
+  IAP_PRICE_MONTHLY,
+  IAP_PRICE_ANNUAL,
+  IAP_PRICE_ANNUAL_MONTHLY,
+  PROMO_DAYS,
+} from '@/constants/features';
 import { useEntitlement } from '@/hooks/use-entitlement';
-import { purchasePro, restorePurchases } from '@/services/iap';
+import { useEntitlementStore } from '@/store/entitlement.store';
+import { purchaseSubscription, restorePurchases } from '@/services/iap';
+import { auth } from '@/services/firebase';
 
-// ── Feature comparison ──────────────────────────────────────────────────────────
+const API_BASE = process.env.EXPO_PUBLIC_API_BASE_URL ?? 'http://localhost:3000';
+
+// ── Feature lists ───────────────────────────────────────────────────────────────
 
 const FREE_FEATURES = [
   { label: 'Pay Chart lookup', included: true },
@@ -34,108 +51,229 @@ const PRO_FEATURES = [
   { label: 'Savings Goals', icon: '🎯' },
   { label: 'Deployment & TSP planning', icon: '🪖' },
   { label: 'VA Disability & GI Bill', icon: '🎖️' },
-  { label: 'One-time purchase — no sub', icon: '✅' },
+  { label: 'Cloud sync across devices', icon: '☁️' },
 ];
+
+// ── Plan Selector Card ──────────────────────────────────────────────────────────
+
+type Plan = 'monthly' | 'annual';
+
+function PlanCard({
+  plan,
+  selected,
+  onSelect,
+}: {
+  plan: Plan;
+  selected: boolean;
+  onSelect: () => void;
+}) {
+  const isAnnual = plan === 'annual';
+  return (
+    <Pressable
+      onPress={onSelect}
+      style={[s.planCard, selected && s.planCardSelected]}>
+      {isAnnual && (
+        <View style={s.savingsBadge}>
+          <ThemedText style={s.savingsBadgeText}>SAVE 17%</ThemedText>
+        </View>
+      )}
+      <ThemedText style={[s.planTitle, selected && { color: Brand.accent }]}>
+        {isAnnual ? 'ANNUAL' : 'MONTHLY'}
+      </ThemedText>
+      <ThemedText style={[s.planPrice, selected && { color: '#C8D8E8' }]}>
+        {isAnnual ? IAP_PRICE_ANNUAL : IAP_PRICE_MONTHLY}
+      </ThemedText>
+      <ThemedText style={s.planSub}>
+        {isAnnual ? `${IAP_PRICE_ANNUAL_MONTHLY}/mo · billed annually` : 'billed monthly'}
+      </ThemedText>
+    </Pressable>
+  );
+}
+
+// ── Promo Code Redeemer ─────────────────────────────────────────────────────────
+
+function PromoCodeField() {
+  const [code,    setCode]    = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleRedeem = async () => {
+    const trimmed = code.trim().toUpperCase();
+    if (!trimmed) return;
+    setLoading(true);
+    try {
+      const token = await auth.currentUser?.getIdToken() ?? null;
+      const res = await fetch(`${API_BASE}/api/codes/redeem`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ code: trimmed }),
+        signal: AbortSignal.timeout(8000),
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        Alert.alert('Invalid Code', body.error ?? `Error ${res.status}`);
+      } else {
+        const until: string = body.proGrantedUntil;
+        useEntitlementStore.getState().redeemCodeGrant(until);
+        Alert.alert('Code Applied!', `Pro access granted until ${until.slice(0, 10)}.`);
+        setCode('');
+      }
+    } catch (e: any) {
+      Alert.alert('Error', e?.message ?? 'Network error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <View style={s.promoSection}>
+      <ThemedText style={s.sectionLabel}>// HAVE A PROMO CODE?</ThemedText>
+      <View style={s.promoRow}>
+        <View style={[s.promoInput, { flex: 1 }]}>
+          <TextInput
+            value={code}
+            onChangeText={(t) => setCode(t.toUpperCase())}
+            placeholder="Enter code"
+            placeholderTextColor="#2A4A60"
+            style={s.promoInputText}
+            autoCapitalize="characters"
+            maxLength={20}
+            editable={!loading}
+          />
+        </View>
+        <Pressable
+          onPress={handleRedeem}
+          disabled={loading || !code.trim()}
+          style={[s.applyBtn, (!code.trim() || loading) && { opacity: 0.4 }]}>
+          {loading
+            ? <ActivityIndicator size="small" color="#04080F" />
+            : <ThemedText style={s.applyBtnText}>APPLY</ThemedText>}
+        </Pressable>
+      </View>
+    </View>
+  );
+}
 
 // ── Main Screen ─────────────────────────────────────────────────────────────────
 
 export default function UpgradeScreen() {
   const router = useRouter();
-  const { isPro, isPromo, status, daysLeft } = useEntitlement();
-  const [loading, setLoading] = useState(false);
+  const { isPro, isTrial, isCodeGrant, status, daysLeft, subscriptionPlan } = useEntitlement();
+  const proGrantedUntil = useEntitlementStore((s) => s.proGrantedUntil);
+  const [selectedPlan, setSelectedPlan] = useState<Plan>('annual');
+  const [purchasing,   setPurchasing]   = useState(false);
+  const [restoring,    setRestoring]    = useState(false);
 
   const handlePurchase = async () => {
-    setLoading(true);
-    const success = await purchasePro();
-    setLoading(false);
-    if (success) router.back();
+    setPurchasing(true);
+    try {
+      const success = await purchaseSubscription(selectedPlan);
+      if (success) router.back();
+    } finally {
+      setPurchasing(false);
+    }
   };
 
   const handleRestore = async () => {
-    setLoading(true);
+    setRestoring(true);
     await restorePurchases();
-    setLoading(false);
+    setRestoring(false);
   };
 
+  const showPurchaseUI = !isPro || isTrial;
+
   return (
-    <ThemedView style={styles.container}>
+    <ThemedView style={s.container}>
       <SafeAreaView edges={['top']} style={{ flex: 1 }}>
-        <ScrollView
-          contentContainerStyle={styles.content}
-          showsVerticalScrollIndicator={false}>
+        <ScrollView contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
 
           {/* Header */}
-          <Pressable
-            onPress={() => router.back()}
-            style={styles.backBtn}>
-            <ThemedText style={styles.backText}>‹ Back</ThemedText>
+          <Pressable onPress={() => router.back()} style={s.backBtn}>
+            <ThemedText style={s.backText}>‹ Back</ThemedText>
           </Pressable>
 
-          <View style={styles.heroSection}>
-            <ThemedText style={styles.eyebrow}>// MILBUDGETBUDDY</ThemedText>
-            <ThemedText style={styles.heroTitle}>UPGRADE TO PRO</ThemedText>
-            <ThemedText style={styles.heroSub}>
+          <View style={s.heroSection}>
+            <ThemedText style={s.eyebrow}>// MILBUDGETBUDDY</ThemedText>
+            <ThemedText style={s.heroTitle}>UPGRADE TO PRO</ThemedText>
+            <ThemedText style={s.heroSub}>
               Unlock the full military finance toolkit — every calculator, every guide, unlimited budgeting.
             </ThemedText>
           </View>
 
-          {/* Promo / status banner */}
-          {isPromo && daysLeft > 0 && (
-            <View style={styles.promoBanner}>
-              <ThemedText style={styles.promoIcon}>⏳</ThemedText>
+          {/* Status banners */}
+          {isTrial && daysLeft > 0 && (
+            <View style={s.banner}>
+              <ThemedText style={s.bannerIcon}>⏳</ThemedText>
               <View style={{ flex: 1 }}>
-                <ThemedText style={styles.promoTitle}>
-                  FREE ACCESS — {daysLeft} day{daysLeft !== 1 ? 's' : ''} remaining
+                <ThemedText style={s.bannerTitle}>
+                  FREE TRIAL — {daysLeft} day{daysLeft !== 1 ? 's' : ''} remaining
                 </ThemedText>
-                <ThemedText style={styles.promoBody}>
-                  You're in the early-adopter window. After {PROMO_DAYS} days, non-Pro features become limited.
+                <ThemedText style={s.bannerBody}>
+                  You're in your {PROMO_DAYS}-day free trial. Subscribe before it ends to keep full access.
                 </ThemedText>
               </View>
             </View>
           )}
 
-          {isPro && status === 'pro' && (
-            <View style={[styles.promoBanner, { borderColor: Brand.success + '40', backgroundColor: Brand.success + '10' }]}>
-              <ThemedText style={styles.promoIcon}>✅</ThemedText>
+          {isPro && isCodeGrant && proGrantedUntil && (
+            <View style={[s.banner, { borderColor: Brand.tactical + '40', backgroundColor: Brand.tactical + '10' }]}>
+              <ThemedText style={s.bannerIcon}>🎟️</ThemedText>
               <View style={{ flex: 1 }}>
-                <ThemedText style={[styles.promoTitle, { color: Brand.success }]}>
+                <ThemedText style={[s.bannerTitle, { color: Brand.tactical }]}>
+                  PROMO CODE ACTIVE
+                </ThemedText>
+                <ThemedText style={s.bannerBody}>
+                  Pro access granted until {proGrantedUntil.slice(0, 10)}.
+                </ThemedText>
+              </View>
+            </View>
+          )}
+
+          {isPro && !isCodeGrant && (
+            <View style={[s.banner, { borderColor: Brand.success + '40', backgroundColor: Brand.success + '10' }]}>
+              <ThemedText style={s.bannerIcon}>✅</ThemedText>
+              <View style={{ flex: 1 }}>
+                <ThemedText style={[s.bannerTitle, { color: Brand.success }]}>
                   YOU'RE PRO — ALL FEATURES UNLOCKED
                 </ThemedText>
-                <ThemedText style={styles.promoBody}>
-                  Thank you for supporting MilBudgetBuddy. Every feature is unlocked forever.
+                <ThemedText style={s.bannerBody}>
+                  {subscriptionPlan === 'annual' ? 'Annual subscription active.' : 'Monthly subscription active.'}{' '}
+                  Manage in Google Play → Subscriptions.
                 </ThemedText>
               </View>
             </View>
           )}
 
           {/* Pro features grid */}
-          <View style={styles.section}>
-            <ThemedText style={styles.sectionLabel}>// WHAT YOU GET WITH PRO</ThemedText>
-            <View style={styles.proGrid}>
+          <View style={s.section}>
+            <ThemedText style={s.sectionLabel}>// WHAT YOU GET WITH PRO</ThemedText>
+            <View style={s.proGrid}>
               {PRO_FEATURES.map((f) => (
-                <View key={f.label} style={styles.proFeatureCard}>
-                  <ThemedText style={styles.proFeatureIcon}>{f.icon}</ThemedText>
-                  <ThemedText style={styles.proFeatureLabel}>{f.label}</ThemedText>
+                <View key={f.label} style={s.proFeatureCard}>
+                  <ThemedText style={s.proFeatureIcon}>{f.icon}</ThemedText>
+                  <ThemedText style={s.proFeatureLabel}>{f.label}</ThemedText>
                 </View>
               ))}
             </View>
           </View>
 
           {/* Free vs Pro comparison */}
-          <View style={styles.section}>
-            <ThemedText style={styles.sectionLabel}>// FREE VS PRO</ThemedText>
-            <View style={styles.compareTable}>
+          <View style={s.section}>
+            <ThemedText style={s.sectionLabel}>// FREE VS PRO</ThemedText>
+            <View style={s.compareTable}>
               {FREE_FEATURES.map((f) => (
-                <View key={f.label} style={styles.compareRow}>
-                  <ThemedText style={[styles.compareCheck, { color: f.included ? Brand.tactical : '#3D5870' }]}>
+                <View key={f.label} style={s.compareRow}>
+                  <ThemedText style={[s.compareCheck, { color: f.included ? Brand.tactical : '#3D5870' }]}>
                     {f.included ? '✓' : '✗'}
                   </ThemedText>
-                  <ThemedText style={[styles.compareLabel, !f.included && styles.compareLocked]}>
+                  <ThemedText style={[s.compareLabel, !f.included && s.compareLocked]}>
                     {f.label}
                   </ThemedText>
                   {!f.included && (
-                    <View style={styles.proBadge}>
-                      <ThemedText style={styles.proBadgeText}>PRO</ThemedText>
+                    <View style={s.proBadge}>
+                      <ThemedText style={s.proBadgeText}>PRO</ThemedText>
                     </View>
                   )}
                 </View>
@@ -143,38 +281,58 @@ export default function UpgradeScreen() {
             </View>
           </View>
 
-          {/* Price */}
-          {!isPro || status === 'promo' ? (
+          {/* Plan selector + purchase */}
+          {showPurchaseUI && (
             <>
-              <View style={styles.priceSection}>
-                <ThemedText style={styles.priceAmount}>{IAP_PRICE_DISPLAY}</ThemedText>
-                <ThemedText style={styles.priceSub}>One-time purchase · No subscription · No auto-renewal</ThemedText>
+              <View style={s.section}>
+                <ThemedText style={s.sectionLabel}>// CHOOSE YOUR PLAN</ThemedText>
+                <View style={s.planRow}>
+                  <PlanCard plan="monthly" selected={selectedPlan === 'monthly'} onSelect={() => setSelectedPlan('monthly')} />
+                  <PlanCard plan="annual"  selected={selectedPlan === 'annual'}  onSelect={() => setSelectedPlan('annual')}  />
+                </View>
               </View>
 
               <Pressable
                 onPress={handlePurchase}
-                disabled={loading}
-                style={({ pressed }) => [styles.purchaseBtn, (loading || pressed) && { opacity: 0.7 }]}>
-                <ThemedText style={styles.purchaseBtnText}>
-                  {loading ? 'PROCESSING...' : `UPGRADE FOR ${IAP_PRICE_DISPLAY}`}
+                disabled={purchasing}
+                style={({ pressed }) => [s.purchaseBtn, (purchasing || pressed) && { opacity: 0.7 }]}>
+                <ThemedText style={s.purchaseBtnText}>
+                  {purchasing
+                    ? 'PROCESSING...'
+                    : `START PRO · ${selectedPlan === 'annual' ? IAP_PRICE_ANNUAL + '/yr' : IAP_PRICE_MONTHLY + '/mo'}`}
                 </ThemedText>
               </Pressable>
 
-              <Pressable
-                onPress={handleRestore}
-                disabled={loading}
-                style={styles.restoreBtn}>
-                <ThemedText style={styles.restoreBtnText}>
-                  Already purchased? Restore
+              <Pressable onPress={handleRestore} disabled={restoring} style={s.restoreBtn}>
+                <ThemedText style={s.restoreBtnText}>
+                  {restoring ? 'Restoring...' : 'Already subscribed? Restore'}
                 </ThemedText>
               </Pressable>
             </>
-          ) : null}
+          )}
 
-          {/* Footer note */}
-          <ThemedText style={styles.footerNote}>
+          {/* Promo code */}
+          <PromoCodeField />
+
+          {/* Footer notes */}
+          <ThemedText style={s.footerNote}>
             All your data is saved regardless of plan. Upgrading unlocks features — it never deletes anything.
           </ThemedText>
+
+          {/* Subscription disclosure — required by Google Play */}
+          <ThemedText style={s.disclosureNote}>
+            MilBudgetBuddy Pro is an auto-renewing subscription. Monthly plan: {IAP_PRICE_MONTHLY}/month.
+            Annual plan: {IAP_PRICE_ANNUAL}/year (equivalent to {IAP_PRICE_ANNUAL_MONTHLY}/month).
+            Payment is charged to your Google Play account at confirmation of purchase. Subscription
+            automatically renews unless auto-renewal is turned off at least 24 hours before the end
+            of the current period. You can manage and cancel your subscription at any time in
+            Google Play → Subscriptions. No refund is provided for the unused portion of the
+            current subscription period. Prices may vary by region.
+          </ThemedText>
+
+          <Pressable onPress={() => router.push('/legal' as any)} style={s.legalLink}>
+            <ThemedText style={s.legalLinkText}>Privacy Policy & Terms of Service</ThemedText>
+          </Pressable>
 
         </ScrollView>
       </SafeAreaView>
@@ -182,95 +340,98 @@ export default function UpgradeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const s = StyleSheet.create({
   container: { flex: 1 },
   content: { paddingHorizontal: Spacing.three, paddingBottom: Spacing.five, gap: Spacing.three },
 
-  backBtn: { paddingVertical: Spacing.two, alignSelf: 'flex-start' },
+  backBtn:  { paddingVertical: Spacing.two, alignSelf: 'flex-start' },
   backText: { fontSize: 16, fontWeight: '600', color: Brand.tactical, lineHeight: 22 },
 
   heroSection: { gap: Spacing.one, paddingBottom: Spacing.two },
-  eyebrow: { color: Brand.tactical, fontSize: 10, fontWeight: '700', letterSpacing: 1 },
-  heroTitle: { fontSize: 28, lineHeight: 34, fontWeight: '900', letterSpacing: 1, color: '#C8D8E8', marginTop: 2 },
-  heroSub: { fontSize: 13, lineHeight: 20, color: '#6B92B0', marginTop: 4 },
+  eyebrow:     { color: Brand.tactical, fontSize: 10, fontWeight: '700', letterSpacing: 1 },
+  heroTitle:   { fontSize: 28, lineHeight: 34, fontWeight: '900', letterSpacing: 1, color: '#C8D8E8', marginTop: 2 },
+  heroSub:     { fontSize: 13, lineHeight: 20, color: '#6B92B0', marginTop: 4 },
 
-  promoBanner: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: Spacing.two,
-    backgroundColor: Brand.accent + '10',
-    borderWidth: 1,
-    borderColor: Brand.accent + '40',
-    borderRadius: 6,
-    padding: Spacing.three,
+  banner: {
+    flexDirection: 'row', alignItems: 'flex-start', gap: Spacing.two,
+    backgroundColor: Brand.accent + '10', borderWidth: 1, borderColor: Brand.accent + '40',
+    borderRadius: 6, padding: Spacing.three,
   },
-  promoIcon: { fontSize: 20, lineHeight: 24 },
-  promoTitle: { fontSize: 12, fontWeight: '800', letterSpacing: 0.5, color: Brand.accent, marginBottom: 2 },
-  promoBody: { fontSize: 11, lineHeight: 16, color: '#6B92B0' },
+  bannerIcon:  { fontSize: 20, lineHeight: 24 },
+  bannerTitle: { fontSize: 12, fontWeight: '800', letterSpacing: 0.5, color: Brand.accent, marginBottom: 2 },
+  bannerBody:  { fontSize: 11, lineHeight: 16, color: '#6B92B0' },
 
-  section: { gap: Spacing.two },
+  section:      { gap: Spacing.two },
   sectionLabel: { color: Brand.tactical, fontSize: 10, fontWeight: '700', letterSpacing: 1 },
 
-  proGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two },
+  proGrid:       { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two },
   proFeatureCard: {
-    width: '47.5%',
-    backgroundColor: '#080E1C',
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: Brand.border,
-    borderRadius: 6,
-    padding: Spacing.two + 2,
-    gap: 4,
+    width: '47.5%', backgroundColor: '#080E1C', borderWidth: StyleSheet.hairlineWidth,
+    borderColor: Brand.border, borderRadius: 6, padding: Spacing.two + 2, gap: 4,
   },
-  proFeatureIcon: { fontSize: 20, lineHeight: 26 },
+  proFeatureIcon:  { fontSize: 20, lineHeight: 26 },
   proFeatureLabel: { fontSize: 11, fontWeight: '700', color: '#C8D8E8', lineHeight: 15 },
 
   compareTable: {
-    backgroundColor: '#080E1C',
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: Brand.border,
-    borderRadius: 6,
-    overflow: 'hidden',
+    backgroundColor: '#080E1C', borderWidth: StyleSheet.hairlineWidth,
+    borderColor: Brand.border, borderRadius: 6, overflow: 'hidden',
   },
   compareRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.two,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: Brand.border,
-    gap: Spacing.two,
+    flexDirection: 'row', alignItems: 'center',
+    paddingHorizontal: Spacing.three, paddingVertical: Spacing.two,
+    borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: Brand.border, gap: Spacing.two,
   },
-  compareCheck: { fontSize: 14, fontWeight: '800', width: 16, textAlign: 'center' },
-  compareLabel: { flex: 1, fontSize: 13, color: '#C8D8E8' },
+  compareCheck:  { fontSize: 14, fontWeight: '800', width: 16, textAlign: 'center' },
+  compareLabel:  { flex: 1, fontSize: 13, color: '#C8D8E8' },
   compareLocked: { color: '#6B92B0' },
-  proBadge: {
-    backgroundColor: Brand.accent + '20',
-    borderRadius: 3,
-    paddingHorizontal: 5,
-    paddingVertical: 2,
-  },
-  proBadgeText: { color: Brand.accent, fontSize: 9, fontWeight: '800', letterSpacing: 0.5 },
+  proBadge:      { backgroundColor: Brand.accent + '20', borderRadius: 3, paddingHorizontal: 5, paddingVertical: 2 },
+  proBadgeText:  { color: Brand.accent, fontSize: 9, fontWeight: '800', letterSpacing: 0.5 },
 
-  priceSection: { alignItems: 'center', paddingVertical: Spacing.two, gap: 4 },
-  priceAmount: { fontSize: 36, fontWeight: '900', color: Brand.accent, letterSpacing: 0.5 },
-  priceSub: { fontSize: 11, color: '#6B92B0', textAlign: 'center' },
+  planRow: { flexDirection: 'row', gap: Spacing.two },
+  planCard: {
+    flex: 1, backgroundColor: '#080E1C', borderWidth: 1, borderColor: Brand.border,
+    borderRadius: 8, padding: Spacing.three, gap: 4, alignItems: 'center', position: 'relative',
+  },
+  planCardSelected: { borderColor: Brand.accent, backgroundColor: Brand.accent + '10' },
+  savingsBadge: {
+    position: 'absolute', top: -10, alignSelf: 'center',
+    backgroundColor: Brand.accent, borderRadius: 4, paddingHorizontal: 6, paddingVertical: 2,
+  },
+  savingsBadgeText: { fontSize: 9, fontWeight: '900', color: '#04080F', letterSpacing: 0.5 },
+  planTitle:  { fontSize: 11, fontWeight: '900', color: '#3D6080', letterSpacing: 1, marginTop: 8 },
+  planPrice:  { fontSize: 24, fontWeight: '900', color: '#6B92B0', letterSpacing: 0.5 },
+  planSub:    { fontSize: 9, color: '#3D5870', textAlign: 'center' },
 
   purchaseBtn: {
-    backgroundColor: Brand.accent,
-    borderRadius: 6,
-    padding: Spacing.three + 2,
-    alignItems: 'center',
+    backgroundColor: Brand.accent, borderRadius: 6,
+    padding: Spacing.three + 2, alignItems: 'center',
   },
   purchaseBtnText: { color: '#04080F', fontSize: 15, fontWeight: '900', letterSpacing: 1 },
 
-  restoreBtn: { alignItems: 'center', paddingVertical: Spacing.two },
+  restoreBtn:     { alignItems: 'center', paddingVertical: Spacing.two },
   restoreBtnText: { color: Brand.tactical, fontSize: 12, fontWeight: '700', letterSpacing: 0.5 },
 
-  footerNote: {
-    fontSize: 11,
-    color: '#3D5870',
-    textAlign: 'center',
-    lineHeight: 16,
-    paddingHorizontal: Spacing.three,
+  promoSection: { gap: Spacing.two },
+  promoRow:     { flexDirection: 'row', gap: Spacing.two, alignItems: 'center' },
+  promoInput:   {
+    backgroundColor: '#04080F', borderWidth: 1, borderColor: Brand.border,
+    borderRadius: 6, paddingHorizontal: Spacing.two, paddingVertical: Spacing.one + 4,
   },
+  promoInputText: { color: '#C8D8E8', fontSize: 15, fontWeight: '700' },
+  applyBtn: {
+    backgroundColor: Brand.accent, borderRadius: 6,
+    paddingHorizontal: Spacing.three, paddingVertical: Spacing.one + 6, alignItems: 'center',
+  },
+  applyBtnText: { color: '#04080F', fontSize: 12, fontWeight: '900', letterSpacing: 0.5 },
+
+  footerNote: {
+    fontSize: 11, color: '#3D5870', textAlign: 'center',
+    lineHeight: 16, paddingHorizontal: Spacing.three,
+  },
+  disclosureNote: {
+    fontSize: 10, color: '#2A3D50', textAlign: 'center',
+    lineHeight: 15, paddingHorizontal: Spacing.two,
+  },
+  legalLink:     { alignItems: 'center', paddingVertical: 4 },
+  legalLinkText: { fontSize: 10, color: '#3D5870', textDecorationLine: 'underline' },
 });

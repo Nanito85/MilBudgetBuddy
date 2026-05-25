@@ -6,12 +6,22 @@ import { MilitaryBranch } from '@/types/user.types';
 
 export type RankVariant =
   | 'default'
+  // Army
   | 'army_e4_cpl'        // Corporal (vs Specialist)
   | 'army_e8_1sg'        // First Sergeant (vs Master Sergeant)
   | 'army_e9_csm'        // Command Sergeant Major (vs Sergeant Major)
   | 'army_e9_sma'        // Sergeant Major of the Army
+  // Marines
   | 'marines_e8_1stsgt'  // First Sergeant (vs Master Sergeant)
-  | 'marines_e9_sgtmaj'; // Sergeant Major (vs Master Gunnery Sergeant)
+  | 'marines_e9_sgtmaj'  // Sergeant Major (vs Master Gunnery Sergeant)
+  // Air Force
+  | 'af_e9_cmsaf'        // Chief Master Sergeant of the Air Force
+  // Space Force
+  | 'sf_e9_seac'         // Senior Enlisted Advisor of the Space Force
+  // Navy
+  | 'navy_e9_mcpon'      // Master Chief Petty Officer of the Navy
+  // Coast Guard
+  | 'cg_e9_mcpocg';      // Master Chief Petty Officer of the Coast Guard
 
 export interface RankVariantOption {
   variant: RankVariant;
@@ -40,6 +50,22 @@ export const DUAL_RANKS: Partial<Record<string, RankVariantOption[]>> = {
   'marines-E9': [
     { variant: 'default',           abbrev: 'MGySgt', fullName: 'Master Gunnery Sergeant' },
     { variant: 'marines_e9_sgtmaj', abbrev: 'SgtMaj', fullName: 'Sergeant Major' },
+  ],
+  'air_force-E9': [
+    { variant: 'default',    abbrev: 'CMSgt', fullName: 'Chief Master Sergeant' },
+    { variant: 'af_e9_cmsaf', abbrev: 'CMSAF', fullName: 'Chief Master Sergeant of the Air Force' },
+  ],
+  'space_force-E9': [
+    { variant: 'default',   abbrev: 'CMSgt', fullName: 'Chief Master Sergeant' },
+    { variant: 'sf_e9_seac', abbrev: 'SEAC',  fullName: 'Senior Enlisted Advisor of the Space Force' },
+  ],
+  'navy-E9': [
+    { variant: 'default',      abbrev: 'MCPO',  fullName: 'Master Chief Petty Officer' },
+    { variant: 'navy_e9_mcpon', abbrev: 'MCPON', fullName: 'Master Chief Petty Officer of the Navy' },
+  ],
+  'coast_guard-E9': [
+    { variant: 'default',       abbrev: 'MCPO',   fullName: 'Master Chief Petty Officer' },
+    { variant: 'cg_e9_mcpocg',  abbrev: 'MCPOCG', fullName: 'Master Chief Petty Officer of the Coast Guard' },
   ],
 };
 
@@ -155,7 +181,7 @@ function marinesRows(grade: PayGrade, variant: RankVariant): InsigniaRows {
 
 // ── Air Force / Space Force ───────────────────────────────────────────────────
 // E1–E4: 0–3 chevrons; E5–E9: NCO/SNCO stripes (—) + device for E8/E9
-function airForceRows(grade: PayGrade): InsigniaRows {
+function airForceRows(grade: PayGrade, variant: RankVariant = 'default'): InsigniaRows {
   switch (grade) {
     case 'E1': return [];                  // Amn Basic — no insignia
     case 'E2': return ['∧'];              // Amn
@@ -165,7 +191,9 @@ function airForceRows(grade: PayGrade): InsigniaRows {
     case 'E6': return ['—', '—'];         // TSgt — 2 rocker stripes
     case 'E7': return ['—', '—', '—'];    // MSgt — 3 rocker stripes
     case 'E8': return ['◆', '—', '—', '—']; // SMSgt — diamond + 3 stripes
-    case 'E9': return ['★', '—', '—', '—']; // CMSgt — star + 3 stripes
+    case 'E9': return (variant === 'af_e9_cmsaf' || variant === 'sf_e9_seac')
+      ? ['✦', '★', '—', '—', '—']  // CMSAF/SEAC — special device + star + 3 stripes
+      : ['★', '—', '—', '—'];       // CMSgt — star + 3 stripes
     default:   return officerRows(grade);
   }
 }
@@ -173,7 +201,7 @@ function airForceRows(grade: PayGrade): InsigniaRows {
 // ── Navy / Coast Guard ────────────────────────────────────────────────────────
 // E1–E3: rating badge chevrons (∨ pointing down); E4–E6: anchor + chevrons;
 // E7–E9 (chiefs): anchor + arcs; officers same as all branches
-function navyRows(grade: PayGrade): InsigniaRows {
+function navyRows(grade: PayGrade, variant: RankVariant = 'default'): InsigniaRows {
   switch (grade) {
     case 'E1': return [];                      // SR/Rec — no insignia
     case 'E2': return ['∨'];                   // SA — 1 chevron down
@@ -183,7 +211,9 @@ function navyRows(grade: PayGrade): InsigniaRows {
     case 'E6': return ['⚓', '∨', '∨', '∨'];   // PO1 — anchor + 3 chevrons
     case 'E7': return ['⚓', '⌣'];             // CPO — anchor + 1 arc
     case 'E8': return ['★', '⚓', '⌣'];        // SCPO — star + anchor + arc
-    case 'E9': return ['★', '★', '⚓', '⌣'];   // MCPO/MCPON — 2 stars + anchor + arc
+    case 'E9': return (variant === 'navy_e9_mcpon' || variant === 'cg_e9_mcpocg')
+      ? ['✦', '★', '★', '⚓', '⌣']  // MCPON/MCPOCG — special device + 2 stars
+      : ['★', '★', '⚓', '⌣'];       // MCPO — 2 stars + anchor + arc
     default:   return grade.startsWith('W') ? warrantRows(grade) : officerRows(grade);
   }
 }
@@ -197,10 +227,10 @@ export function getInsigniaRows(
   switch (branch) {
     case 'army':        return armyRows(grade, variant);
     case 'marines':     return marinesRows(grade, variant);
-    case 'air_force':   return airForceRows(grade);
-    case 'space_force': return airForceRows(grade);
-    case 'navy':        return navyRows(grade);
-    case 'coast_guard': return navyRows(grade);
+    case 'air_force':   return airForceRows(grade, variant);
+    case 'space_force': return airForceRows(grade, variant);
+    case 'navy':        return navyRows(grade, variant);
+    case 'coast_guard': return navyRows(grade, variant);
     default:            return [];
   }
 }

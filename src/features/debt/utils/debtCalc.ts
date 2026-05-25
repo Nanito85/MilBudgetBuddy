@@ -105,21 +105,23 @@ export function calcPayoff(
   }
 
   const today = new Date();
-  const rows: DebtPayoffRow[] = sim.map((d) => {
-    const months = d.paidOffMonth ?? month;
-    const payoffDate = new Date(today.getFullYear(), today.getMonth() + months, 1);
-    return {
-      id: d.id,
-      name: d.name,
-      balance: debts.find((x) => x.id === d.id)!.balance,
-      apr: d.apr,
-      minPayment: d.minPayment,
-      monthsToPayoff: months,
-      totalPaid: Math.round(d.totalPaid),
-      totalInterest: Math.round(d.totalInterest),
-      payoffDate,
-    };
-  });
+  const rows: DebtPayoffRow[] = sim
+    .map((d) => {
+      const months = d.paidOffMonth ?? month;
+      const payoffDate = new Date(today.getFullYear(), today.getMonth() + months, 1);
+      return {
+        id: d.id,
+        name: d.name,
+        balance: debts.find((x) => x.id === d.id)!.balance,
+        apr: d.apr,
+        minPayment: d.minPayment,
+        monthsToPayoff: months,
+        totalPaid: Math.round(d.totalPaid),
+        totalInterest: Math.round(d.totalInterest),
+        payoffDate,
+      };
+    })
+    .sort((a, b) => a.monthsToPayoff - b.monthsToPayoff);
 
   const payoffDate = new Date(today.getFullYear(), today.getMonth() + month, 1);
 

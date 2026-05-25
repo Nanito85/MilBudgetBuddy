@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Alert, Image, Modal, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -30,7 +30,7 @@ function AddKidModal({ visible, onClose, onAdd }: {
   };
 
   return (
-    <Modal visible={visible} animationType="slide" presentationStyle="pageSheet">
+    <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
       <View style={modalStyles.bg}>
         <SafeAreaView style={modalStyles.safe}>
           <View style={modalStyles.header}>
@@ -130,7 +130,7 @@ function PINSetupModal({ visible, accentColor, onComplete, onCancel }: {
   const keys = ['1','2','3','4','5','6','7','8','9','⌫','0',''];
 
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={handleClose}>
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={handleClose} statusBarTranslucent>
       <View style={pinSetupStyles.overlay}>
         <View style={[pinSetupStyles.card, { borderColor: accentColor + '40' }]}>
           <ThemedText style={[pinSetupStyles.title, { color: accentColor }]}>SET PARENT PIN</ThemedText>
@@ -338,9 +338,16 @@ export default function KidsScreen() {
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="on-drag">
         <SafeAreaView>
-          <ThemedText type="label" style={styles.eyebrow}>// FAMILY COMMAND</ThemedText>
-          <ThemedText style={styles.heading}>CADET HQ</ThemedText>
-          <ThemedText type="label" style={styles.subhead}>GOALS · CHORES · MISSIONS</ThemedText>
+          <View style={styles.logoRow}>
+            <View style={styles.logoCircle}>
+              <ThemedText style={styles.logoEmoji}>🐷💰</ThemedText>
+            </View>
+            <View style={{ flex: 1 }}>
+              <ThemedText type="label" style={styles.eyebrow}>// FAMILY COMMAND</ThemedText>
+              <ThemedText style={styles.heading}>CADET HQ</ThemedText>
+              <ThemedText type="label" style={styles.subhead}>GOALS · CHORES · SAVINGS</ThemedText>
+            </View>
+          </View>
         </SafeAreaView>
 
         {/* Kids list */}
@@ -423,8 +430,20 @@ export default function KidsScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   content: { paddingHorizontal: Spacing.three, gap: Spacing.three },
-  eyebrow: { color: Brand.tactical, marginTop: Spacing.three, fontSize: 9 },
-  heading: { fontSize: 22, fontWeight: '900', letterSpacing: 1, color: '#C8D8E8', marginTop: 4 },
+  logoRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.three, paddingTop: Spacing.three, paddingBottom: Spacing.one },
+  logoCircle: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#00C8A815',
+    borderWidth: 1,
+    borderColor: '#00C8A840',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  logoEmoji: { fontSize: 22, lineHeight: 28 },
+  eyebrow: { color: Brand.tactical, fontSize: 9 },
+  heading: { fontSize: 22, fontWeight: '900', letterSpacing: 1, color: '#C8D8E8', marginTop: 2 },
   subhead: { color: '#3D6080', fontSize: 9, marginTop: 2 },
   kidsList: { gap: Spacing.two },
   emptyState: { alignItems: 'center', paddingVertical: Spacing.five, gap: Spacing.two },

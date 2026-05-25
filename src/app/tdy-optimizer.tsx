@@ -7,66 +7,94 @@ import { BranchRegNote } from '@/components/BranchRegNote';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Brand, Spacing } from '@/constants/theme';
-import { LOCALITIES, Locality } from '@/data/per-diem-rates';
+import { CONUS_DESTINATIONS, lookupPerDiemByZip, PerDiemDestination, PerDiemResult, STANDARD_LODGING, STANDARD_MEALS, STANDARD_TOTAL } from '@/data/gsa-per-diem';
+import { OconusLocation, OCONUS_LOCATIONS } from '@/data/per-diem-rates';
 
-// GSA M&IE breakdown: https://www.gsa.gov/travel/plan-book/per-diem-rates
-// Standard CONUS: $59/day M&IE ($166 full rate with $107 lodging)
-// High-cost CONUS split M&IE by approximate GSA schedule
-function getMie(perDiem: number): number {
-  if (perDiem >= 300) return 79;
-  if (perDiem >= 250) return 74;
-  if (perDiem >= 220) return 69;
-  if (perDiem >= 200) return 64;
-  if (perDiem >= 180) return 59;
-  return 59; // standard
+type Mode = 'conus' | 'oconus';
+
+interface SelectedRate {
+  label: string;
+  location: string;
+  lodging: number;
+  meals: number;
+  total: number;
+  isStandard?: boolean;
+  isOconus?: boolean;
 }
 
-function getLodging(perDiem: number): number {
-  return perDiem - getMie(perDiem);
-}
-
-const fmt = (n: number) => `$${Math.round(n).toLocaleString()}`;
+const fmt    = (n: number) => `$${Math.round(n).toLocaleString()}`;
 const fmtDay = (n: number) => `$${Math.round(n).toFixed(0)}`;
+
+function destToRate(d: PerDiemDestination): SelectedRate {
+  return { label: `${d.city}, ${d.state}`, location: d.county ? `${d.county} County, ${d.state}` : d.state, lodging: d.maxLodging, meals: d.meals, total: d.total };
+}
+function oconusToRate(l: OconusLocation): SelectedRate {
+  return { label: l.name, location: l.area + ', ' + l.country, lodging: l.lodging, meals: l.meals, total: l.total, isOconus: true };
+}
+function zipResultToRate(r: PerDiemResult, zip: string): SelectedRate {
+  return {
+    label: r.isStandard ? `Standard Rate (ZIP ${zip})` : `${r.city}, ${r.state}`,
+    location: r.isStandard ? 'Federal standard rate — applies to most US locations' : (r.county ? `${r.county} County, ${r.state}` : r.state),
+    lodging: r.lodging,
+    meals: r.meals,
+    total: r.total,
+    isStandard: r.isStandard,
+  };
+}
 
 export default function TdyOptimizerScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
 
-  const [search,        setSearch]        = useState('');
-  const [selected,      setSelected]      = useState<Locality>(LOCALITIES[2]); // DC
-  const [days,          setDays]          = useState(14);
-  const [lodgingInput,  setLodgingInput]  = useState('');
-  const [kitchenette,   setKitchenette]   = useState(false);
+  const [mode, setMode]                 = useState<Mode>('conus');
+  const [zipInput, setZipInput]         = useState('');
+  const [citySearch, setCitySearch]     = useState('');
+  const [selected, setSelected]         = useState<SelectedRate>({ label: 'Standard Rate', location: 'Federal standard CONUS rate', lodging: STANDARD_LODGING, meals: STANDARD_MEALS, total: STANDARD_TOTAL, isStandard: true });
+  const [days, setDays]                 = useState(14);
+  const [lodgingInput, setLodgingInput] = useState('');
+  const [kitchenette, setKitchenette]   = useState(false);
 
-  const filteredLocalities = useMemo(() => {
-    if (!search) return LOCALITIES.slice(0, 20);
-    return LOCALITIES.filter(
-      (l) =>
-        l.name.toLowerCase().includes(search.toLowerCase()) ||
-        l.area.toLowerCase().includes(search.toLowerCase()) ||
-        l.state.toLowerCase().includes(search.toLowerCase()),
-    ).slice(0, 15);
-  }, [search]);
+  // ZIP lookup — triggers on 5-digit entry
+  const zipResult = useMemo(() => {
+    if (zipInput.length === 5 && /^\d{5}$/.test(zipInput)) {
+      return lookupPerDiemByZip(zipInput);
+    }
+    return null;
+  }, [zipInput]);
 
-  const KITCHENETTE_SAVINGS = 15; // $/day — cooking in room saves on M&IE
+  // City search results
+  const conusResults = useMemo(() => {
+    if (!citySearch.trim()) return CONUS_DESTINATIONS.slice(0, 20);
+    const q = citySearch.toLowerCase();
+    return CONUS_DESTINATIONS.filter(
+      (d) => d.city.toLowerCase().includes(q) || d.state.toLowerCase().includes(q) || d.county.toLowerCase().includes(q),
+    ).slice(0, 20);
+  }, [citySearch]);
 
-  const authorizedPerDiem = selected.perDiem;
-  const authorizedMie     = getMie(authorizedPerDiem);
-  const authorizedLodging = getLodging(authorizedPerDiem);
+  const oconusResults = useMemo(() => {
+    if (!citySearch.trim()) return OCONUS_LOCATIONS.slice(0, 20);
+    const q = citySearch.toLowerCase();
+    return OCONUS_LOCATIONS.filter(
+      (l) => l.name.toLowerCase().includes(q) || l.area.toLowerCase().includes(q) || l.country.toLowerCase().includes(q),
+    ).slice(0, 20);
+  }, [citySearch]);
 
-  const enteredLodging    = parseFloat(lodgingInput) || 0;
-  const effectiveLodging  = enteredLodging > 0 ? enteredLodging : authorizedLodging;
-  const lodgingSavings    = Math.max(0, authorizedLodging - effectiveLodging);
-  const mieSavings        = kitchenette ? KITCHENETTE_SAVINGS : 0;
+  const KITCHENETTE_SAVINGS = 15;
 
-  const dailySavings   = lodgingSavings + mieSavings;
-  const totalSavings   = dailySavings * days;
-  const totalAuthorized = authorizedPerDiem * days;
-  const pocketPct      = authorizedPerDiem > 0 ? (dailySavings / authorizedPerDiem) * 100 : 0;
+  const authorizedLodging = selected.lodging;
+  const authorizedMie     = selected.meals;
+  const authorizedTotal   = selected.total;
 
-  function Stepper({ value, step, min, max, onChange }: {
-    value: number; step: number; min: number; max: number; onChange: (v: number) => void;
-  }) {
+  const enteredLodging  = parseFloat(lodgingInput) || 0;
+  const effectiveLodging = enteredLodging > 0 ? enteredLodging : authorizedLodging;
+  const lodgingSavings   = Math.max(0, authorizedLodging - effectiveLodging);
+  const mieSavings       = kitchenette ? KITCHENETTE_SAVINGS : 0;
+  const dailySavings     = lodgingSavings + mieSavings;
+  const totalSavings     = dailySavings * days;
+  const totalAuthorized  = authorizedTotal * days;
+  const pocketPct        = authorizedTotal > 0 ? (dailySavings / authorizedTotal) * 100 : 0;
+
+  function Stepper({ value, step, min, max, onChange }: { value: number; step: number; min: number; max: number; onChange: (v: number) => void }) {
     return (
       <View style={styles.inlineStepperControls}>
         <Pressable style={styles.stepBtn} onPress={() => onChange(Math.max(min, value - step))}>
@@ -84,9 +112,7 @@ export default function TdyOptimizerScreen() {
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
     <ThemedView style={{ flex: 1 }}>
       <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
-        <Pressable
-          onPress={() => (router.push('/tools'))}
-          style={styles.back}>
+        <Pressable onPress={() => router.push('/tools')} style={styles.back}>
           <ThemedText style={styles.backChevron}>‹</ThemedText>
         </Pressable>
         <ThemedText style={styles.title}>TDY Per Diem</ThemedText>
@@ -95,47 +121,115 @@ export default function TdyOptimizerScreen() {
 
       <ScrollView
         contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + Spacing.five }]}
-        showsVerticalScrollIndicator={false}>
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled">
 
         {/* Hero */}
         <ThemedView type="backgroundElement" style={styles.heroBanner}>
           <ThemedText style={styles.heroEyebrow}>TDY OPTIMIZER</ThemedText>
           <ThemedText style={styles.heroTitle}>Per Diem Pocket Calculator</ThemedText>
           <ThemedText style={styles.heroBody}>
-            You keep the difference. If you spend less than your authorized per diem rate, the savings are yours to pocket.
+            You keep the difference. If you spend less than your authorized per diem, the savings are yours to pocket. Covers all 42,000+ US ZIP codes + 80+ overseas locations.
           </ThemedText>
         </ThemedView>
 
-        {/* Location search */}
+        {/* Mode tabs */}
+        <View style={styles.tabRow}>
+          {(['conus', 'oconus'] as Mode[]).map((m) => (
+            <Pressable key={m} onPress={() => { setMode(m); setCitySearch(''); setZipInput(''); }} style={[styles.tab, mode === m && styles.tabActive]}>
+              <ThemedText style={[styles.tabText, mode === m && styles.tabTextActive]}>
+                {m === 'conus' ? 'CONUS' : 'OCONUS'}
+              </ThemedText>
+            </Pressable>
+          ))}
+        </View>
+
+        {/* Location picker */}
         <ThemedView type="backgroundElement" style={styles.card}>
           <ThemedText style={styles.cardLabel}>TDY LOCATION</ThemedText>
-          <TextInput
-            style={styles.searchInput}
-            value={search}
-            onChangeText={setSearch}
-            placeholder="Search installation or city..."
-            placeholderTextColor="#3D6080"
-          />
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginHorizontal: -Spacing.three }}>
-            <View style={[styles.chipRow, { paddingHorizontal: Spacing.three }]}>
-              {filteredLocalities.map((loc) => (
-                <Pressable
-                  key={loc.id}
-                  onPress={() => { setSelected(loc); setSearch(''); }}
-                  style={[styles.locChip, selected.id === loc.id && styles.locChipSelected]}>
-                  <ThemedText style={[styles.locChipText, selected.id === loc.id && styles.locChipTextSelected]}>
-                    {loc.name}
-                  </ThemedText>
-                  <ThemedText style={[styles.locChipRate, selected.id === loc.id && { color: Brand.accent }]}>
-                    {fmtDay(loc.perDiem)}/day
-                  </ThemedText>
-                </Pressable>
-              ))}
-            </View>
-          </ScrollView>
+
+          {mode === 'conus' && (
+            <>
+              {/* ZIP lookup */}
+              <View style={styles.zipRow}>
+                <TextInput
+                  style={[styles.searchInput, { flex: 1 }]}
+                  value={zipInput}
+                  onChangeText={(t) => setZipInput(t.replace(/\D/g, '').slice(0, 5))}
+                  placeholder="Enter ZIP code for instant lookup..."
+                  placeholderTextColor="#3D6080"
+                  keyboardType="number-pad"
+                  maxLength={5}
+                />
+                {zipResult && (
+                  <Pressable
+                    style={styles.zipApplyBtn}
+                    onPress={() => { setSelected(zipResultToRate(zipResult, zipInput)); Keyboard.dismiss(); }}>
+                    <ThemedText style={styles.zipApplyText}>USE</ThemedText>
+                  </Pressable>
+                )}
+              </View>
+
+              {zipResult && (
+                <View style={styles.zipPreview}>
+                  <ThemedText style={styles.zipPreviewCity}>{zipResult.isStandard ? 'Federal Standard Rate' : `${zipResult.city}, ${zipResult.state}`}</ThemedText>
+                  <ThemedText style={styles.zipPreviewRate}>{fmtDay(zipResult.total)}/day • Lodging {fmtDay(zipResult.lodging)} + M&IE {fmtDay(zipResult.meals)}</ThemedText>
+                </View>
+              )}
+
+              <View style={styles.dividerRow}>
+                <View style={styles.dividerLine} />
+                <ThemedText style={styles.dividerText}>OR SEARCH BY CITY</ThemedText>
+                <View style={styles.dividerLine} />
+              </View>
+
+              <TextInput
+                style={styles.searchInput}
+                value={citySearch}
+                onChangeText={setCitySearch}
+                placeholder="City, county, or state..."
+                placeholderTextColor="#3D6080"
+              />
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginHorizontal: -Spacing.three }}>
+                <View style={[styles.chipRow, { paddingHorizontal: Spacing.three }]}>
+                  {conusResults.map((d) => (
+                    <Pressable key={d.did} onPress={() => { setSelected(destToRate(d)); setCitySearch(''); Keyboard.dismiss(); }} style={[styles.locChip, selected.label === `${d.city}, ${d.state}` && styles.locChipSelected]}>
+                      <ThemedText style={[styles.locChipText, selected.label === `${d.city}, ${d.state}` && styles.locChipTextSelected]}>{d.city}, {d.state}</ThemedText>
+                      <ThemedText style={[styles.locChipRate, selected.label === `${d.city}, ${d.state}` && { color: Brand.accent }]}>{fmtDay(d.total)}/day</ThemedText>
+                    </Pressable>
+                  ))}
+                </View>
+              </ScrollView>
+            </>
+          )}
+
+          {mode === 'oconus' && (
+            <>
+              <TextInput
+                style={styles.searchInput}
+                value={citySearch}
+                onChangeText={setCitySearch}
+                placeholder="Installation, city, or country..."
+                placeholderTextColor="#3D6080"
+              />
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginHorizontal: -Spacing.three }}>
+                <View style={[styles.chipRow, { paddingHorizontal: Spacing.three }]}>
+                  {oconusResults.map((l) => (
+                    <Pressable key={l.id} onPress={() => { setSelected(oconusToRate(l)); setCitySearch(''); Keyboard.dismiss(); }} style={[styles.locChip, selected.label === l.name && styles.locChipSelected]}>
+                      <ThemedText style={[styles.locChipText, selected.label === l.name && styles.locChipTextSelected]}>{l.name}</ThemedText>
+                      <ThemedText style={[styles.locChipRate, selected.label === l.name && { color: Brand.accent }]}>{fmtDay(l.total)}/day</ThemedText>
+                    </Pressable>
+                  ))}
+                </View>
+              </ScrollView>
+            </>
+          )}
+
           <View style={styles.selectedInfo}>
-            <ThemedText style={styles.selectedName}>{selected.name}</ThemedText>
-            <ThemedText style={styles.selectedArea}>{selected.area}</ThemedText>
+            <ThemedText style={styles.selectedName}>{selected.label}</ThemedText>
+            <ThemedText style={styles.selectedArea}>{selected.location}</ThemedText>
+            {selected.isStandard && <ThemedText style={styles.standardBadge}>FEDERAL STANDARD RATE</ThemedText>}
+            {selected.isOconus && <ThemedText style={styles.oconusBadge}>OCONUS — verify at travel.dod.mil</ThemedText>}
           </View>
         </ThemedView>
 
@@ -150,7 +244,7 @@ export default function TdyOptimizerScreen() {
 
         {/* Authorized rates */}
         <ThemedView type="backgroundElement" style={styles.card}>
-          <ThemedText style={styles.cardLabel}>AUTHORIZED PER DIEM — {selected.name.toUpperCase()}</ThemedText>
+          <ThemedText style={styles.cardLabel}>AUTHORIZED PER DIEM — {selected.label.toUpperCase()}</ThemedText>
           <View style={styles.rateGrid}>
             <View style={styles.rateBox}>
               <ThemedText style={styles.rateBoxLabel}>LODGING</ThemedText>
@@ -162,11 +256,11 @@ export default function TdyOptimizerScreen() {
             </View>
             <View style={styles.rateBox}>
               <ThemedText style={styles.rateBoxLabel}>TOTAL/DAY</ThemedText>
-              <ThemedText style={[styles.rateBoxValue, { color: Brand.tactical }]}>{fmtDay(authorizedPerDiem)}/day</ThemedText>
+              <ThemedText style={[styles.rateBoxValue, { color: Brand.tactical }]}>{fmtDay(authorizedTotal)}/day</ThemedText>
             </View>
           </View>
           <ThemedText style={styles.rateNote}>
-            GSA FY2025 rates. {selected.oconus ? 'OCONUS — verify with DefenseTravel.' : 'CONUS rate.'}
+            GSA FY2026 rates. {selected.isOconus ? 'OCONUS — verify with DefenseTravel.' : 'CONUS rate.'}
           </ThemedText>
         </ThemedView>
 
@@ -174,13 +268,10 @@ export default function TdyOptimizerScreen() {
         <ThemedView type="backgroundElement" style={styles.card}>
           <ThemedText style={styles.cardLabel}>YOUR ACTUAL SPEND</ThemedText>
 
-          {/* Lodging TextInput */}
           <View style={styles.actualRow}>
             <View style={{ flex: 1, gap: 2 }}>
               <ThemedText style={styles.stepperLabel}>Actual lodging/night</ThemedText>
-              <ThemedText style={[styles.cardNote, { marginTop: 0 }]}>
-                Authorized: {fmtDay(authorizedLodging)}/night
-              </ThemedText>
+              <ThemedText style={[styles.cardNote, { marginTop: 0 }]}>Authorized: {fmtDay(authorizedLodging)}/night</ThemedText>
             </View>
             <TextInput
               style={styles.lodgingInput}
@@ -194,34 +285,23 @@ export default function TdyOptimizerScreen() {
             />
           </View>
 
-          {/* M&IE (fixed at authorized rate) */}
           <View style={[styles.actualRow, { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: 'rgba(128,128,128,0.15)', paddingTop: Spacing.two }]}>
             <View style={{ flex: 1, gap: 2 }}>
               <ThemedText style={styles.stepperLabel}>M&IE</ThemedText>
               <ThemedText style={styles.cardNote}>Your authorized entitlement — unchanged</ThemedText>
             </View>
-            <ThemedText style={[styles.stepperValue, { color: Brand.accent }]}>
-              {fmtDay(authorizedMie)}/day
-            </ThemedText>
+            <ThemedText style={[styles.stepperValue, { color: Brand.accent }]}>{fmtDay(authorizedMie)}/day</ThemedText>
           </View>
 
-          {/* Kitchenette toggle */}
           <View style={[styles.actualRow, { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: 'rgba(128,128,128,0.15)', paddingTop: Spacing.two }]}>
             <View style={{ flex: 1, gap: 2 }}>
               <ThemedText style={styles.stepperLabel}>Kitchenette available?</ThemedText>
-              <ThemedText style={styles.cardNote}>
-                Cooking saves ~{fmtDay(KITCHENETTE_SAVINGS)}/day on food spend
-              </ThemedText>
+              <ThemedText style={styles.cardNote}>Cooking saves ~{fmtDay(KITCHENETTE_SAVINGS)}/day on food spend</ThemedText>
             </View>
             <View style={styles.kToggle}>
               {([false, true] as const).map((val) => (
-                <Pressable
-                  key={String(val)}
-                  onPress={() => setKitchenette(val)}
-                  style={[styles.kToggleBtn, kitchenette === val && styles.kToggleBtnActive]}>
-                  <ThemedText style={[styles.kToggleTxt, kitchenette === val && styles.kToggleTxtActive]}>
-                    {val ? 'Yes' : 'No'}
-                  </ThemedText>
+                <Pressable key={String(val)} onPress={() => setKitchenette(val)} style={[styles.kToggleBtn, kitchenette === val && styles.kToggleBtnActive]}>
+                  <ThemedText style={[styles.kToggleTxt, kitchenette === val && styles.kToggleTxtActive]}>{val ? 'Yes' : 'No'}</ThemedText>
                 </Pressable>
               ))}
             </View>
@@ -234,12 +314,8 @@ export default function TdyOptimizerScreen() {
 
           <View style={styles.bigSavingsBox}>
             <ThemedText style={styles.bigSavingsLabel}>YOU POCKET</ThemedText>
-            <ThemedText style={[styles.bigSavings, { color: totalSavings > 0 ? Brand.success : '#4D7A9A' }]}>
-              {fmt(totalSavings)}
-            </ThemedText>
-            <ThemedText style={styles.bigSavingsSub}>
-              {pocketPct.toFixed(0)}% of authorized per diem stays in your pocket
-            </ThemedText>
+            <ThemedText style={[styles.bigSavings, { color: totalSavings > 0 ? Brand.success : '#4D7A9A' }]}>{fmt(totalSavings)}</ThemedText>
+            <ThemedText style={styles.bigSavingsSub}>{pocketPct.toFixed(0)}% of authorized per diem stays in your pocket</ThemedText>
           </View>
 
           <View style={styles.divider} />
@@ -269,12 +345,12 @@ export default function TdyOptimizerScreen() {
         <ThemedView type="backgroundElement" style={styles.card}>
           <ThemedText style={styles.cardLabel}>PER DIEM OPTIMIZATION TIPS</ThemedText>
           {[
-            'Cook in your room: hotel kitchenettes or grocery runs reduce M&IE by 40-60%.',
+            'Cook in your room: hotel kitchenettes or grocery runs reduce M&IE by 40–60%.',
             'Find off-post housing: AirBnB or weekly rentals near base often beat lodging rates.',
-            'Use Costco/Sam\'s near TDY location — guest passes accepted.',
             'Day 1 and last day of TDY: you receive 75% of M&IE on travel days.',
             'Government card: use it for lodging to avoid out-of-pocket float.',
-            'DTMO site: verify exact rates at defensetravel.dod.mil before travel.',
+            'Look up any US ZIP code — this app covers all 42,000+ US ZIP codes.',
+            'DTMO site: verify exact OCONUS rates at defensetravel.dod.mil before travel.',
           ].map((tip, i) => (
             <View key={i} style={styles.tipRow}>
               <ThemedText style={styles.tipBullet}>▸</ThemedText>
@@ -285,7 +361,7 @@ export default function TdyOptimizerScreen() {
 
         <ThemedView type="backgroundElement" style={styles.disclaimer}>
           <ThemedText style={styles.disclaimerText}>
-            Per diem rates per GSA FY2025. OCONUS rates per JFTR FY2025. Always verify official rates before travel at gsa.gov or defensetravel.dod.mil.
+            CONUS rates: GSA FY2026. OCONUS rates: DoD DTMO JFTR FY2026. Always verify official rates before travel at gsa.gov or defensetravel.dod.mil.
           </ThemedText>
         </ThemedView>
 
@@ -298,55 +374,42 @@ export default function TdyOptimizerScreen() {
 }
 
 const styles = StyleSheet.create({
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: Spacing.three,
-    paddingBottom: Spacing.two,
-  },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: Spacing.three, paddingBottom: Spacing.two },
   back: { width: 40, justifyContent: 'center' },
   backChevron: { fontSize: 28, fontWeight: '300', color: Brand.primary, lineHeight: 34 },
   title: { fontSize: 18, fontWeight: '700' },
-
   content: { paddingHorizontal: Spacing.three, gap: Spacing.two, paddingTop: Spacing.one },
 
-  heroBanner: {
-    borderRadius: 4,
-    padding: Spacing.three,
-    borderLeftWidth: 3,
-    borderLeftColor: Brand.accent,
-    gap: 4,
-  },
+  heroBanner: { borderRadius: 4, padding: Spacing.three, borderLeftWidth: 3, borderLeftColor: Brand.accent, gap: 4 },
   heroEyebrow: { fontSize: 9, fontWeight: '800', letterSpacing: 1.5, color: Brand.accent },
   heroTitle: { fontSize: 20, fontWeight: '900', color: '#C8D8E8' },
   heroBody: { fontSize: 12, lineHeight: 18, color: '#4D7A9A', marginTop: 4 },
+
+  tabRow: { flexDirection: 'row', borderRadius: 4, overflow: 'hidden', borderWidth: 1, borderColor: Brand.border },
+  tab: { flex: 1, paddingVertical: 10, alignItems: 'center', backgroundColor: '#04080F' },
+  tabActive: { backgroundColor: Brand.tactical },
+  tabText: { fontSize: 11, fontWeight: '800', letterSpacing: 1, color: '#4D7A9A' },
+  tabTextActive: { color: '#000' },
 
   card: { borderRadius: 4, padding: Spacing.three, gap: Spacing.two },
   cardLabel: { fontSize: 9, fontWeight: '800', letterSpacing: 1.2, color: Brand.tactical, marginBottom: 2 },
   cardNote: { fontSize: 10, color: '#3D6080', lineHeight: 15 },
 
-  searchInput: {
-    backgroundColor: '#04080F',
-    borderWidth: 1,
-    borderColor: Brand.border,
-    borderRadius: 3,
-    paddingHorizontal: Spacing.two,
-    paddingVertical: 8,
-    fontSize: 13,
-    color: '#C8D8E8',
-  },
+  zipRow: { flexDirection: 'row', gap: Spacing.one, alignItems: 'center' },
+  zipApplyBtn: { backgroundColor: Brand.tactical, paddingHorizontal: 12, paddingVertical: 9, borderRadius: 3 },
+  zipApplyText: { fontSize: 11, fontWeight: '800', color: '#000' },
+  zipPreview: { backgroundColor: '#04080F', borderRadius: 3, padding: Spacing.two, gap: 2, borderWidth: 1, borderColor: Brand.tactical + '60' },
+  zipPreviewCity: { fontSize: 13, fontWeight: '700', color: Brand.tactical },
+  zipPreviewRate: { fontSize: 11, color: '#4D7A9A' },
+
+  dividerRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  dividerLine: { flex: 1, height: StyleSheet.hairlineWidth, backgroundColor: Brand.border },
+  dividerText: { fontSize: 9, fontWeight: '800', letterSpacing: 1, color: '#3D6080' },
+
+  searchInput: { backgroundColor: '#04080F', borderWidth: 1, borderColor: Brand.border, borderRadius: 3, paddingHorizontal: Spacing.two, paddingVertical: 8, fontSize: 13, color: '#C8D8E8' },
 
   chipRow: { flexDirection: 'row', gap: 8 },
-  locChip: {
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 3,
-    borderWidth: 1,
-    borderColor: Brand.border,
-    backgroundColor: '#04080F',
-    gap: 2,
-  },
+  locChip: { paddingHorizontal: 10, paddingVertical: 6, borderRadius: 3, borderWidth: 1, borderColor: Brand.border, backgroundColor: '#04080F', gap: 2 },
   locChipSelected: { borderColor: Brand.tactical, backgroundColor: Brand.tactical + '20' },
   locChipText: { fontSize: 10, fontWeight: '700', color: '#4D7A9A' },
   locChipTextSelected: { color: Brand.tactical },
@@ -355,20 +418,13 @@ const styles = StyleSheet.create({
   selectedInfo: { gap: 2 },
   selectedName: { fontSize: 13, fontWeight: '700', color: '#C8D8E8' },
   selectedArea: { fontSize: 10, color: '#4D7A9A' },
+  standardBadge: { fontSize: 8, fontWeight: '800', letterSpacing: 1, color: Brand.accent, marginTop: 2 },
+  oconusBadge: { fontSize: 8, fontWeight: '800', letterSpacing: 1, color: Brand.danger, marginTop: 2 },
 
   daysRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   stepperLabel: { fontSize: 12, color: '#8AA8C0', flex: 1 },
   inlineStepperControls: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
-  stepBtn: {
-    width: 30,
-    height: 30,
-    borderRadius: 3,
-    borderWidth: 1,
-    borderColor: Brand.border,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#04080F',
-  },
+  stepBtn: { width: 30, height: 30, borderRadius: 3, borderWidth: 1, borderColor: Brand.border, alignItems: 'center', justifyContent: 'center', backgroundColor: '#04080F' },
   stepBtnText: { fontSize: 18, fontWeight: '300', color: Brand.tactical },
   stepperValue: { fontSize: 13, fontWeight: '700', color: '#C8D8E8', width: 75, textAlign: 'center', fontFamily: 'Courier New' },
 
@@ -379,44 +435,15 @@ const styles = StyleSheet.create({
   rateNote: { fontSize: 9, color: '#3D6080' },
 
   actualRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: Spacing.two },
-
-  lodgingInput: {
-    backgroundColor: '#04080F',
-    borderWidth: 1,
-    borderColor: Brand.border,
-    borderRadius: 4,
-    paddingHorizontal: Spacing.two,
-    paddingVertical: 8,
-    fontSize: 15,
-    fontWeight: '700',
-    color: '#C8D8E8',
-    width: 90,
-    textAlign: 'right',
-    fontFamily: 'Courier New',
-  },
+  lodgingInput: { backgroundColor: '#04080F', borderWidth: 1, borderColor: Brand.border, borderRadius: 4, paddingHorizontal: Spacing.two, paddingVertical: 8, fontSize: 15, fontWeight: '700', color: '#C8D8E8', width: 90, textAlign: 'right', fontFamily: 'Courier New' },
 
   kToggle: { flexDirection: 'row', gap: Spacing.one },
-  kToggleBtn: {
-    paddingHorizontal: Spacing.two,
-    paddingVertical: 5,
-    borderRadius: 6,
-    backgroundColor: 'rgba(128,128,128,0.1)',
-    minWidth: 44,
-    alignItems: 'center',
-  },
+  kToggleBtn: { paddingHorizontal: Spacing.two, paddingVertical: 5, borderRadius: 6, backgroundColor: 'rgba(128,128,128,0.1)', minWidth: 44, alignItems: 'center' },
   kToggleBtnActive: { backgroundColor: Brand.tactical },
   kToggleTxt: { fontSize: 12, fontWeight: '700', color: '#4D7A9A' },
   kToggleTxtActive: { color: '#000' },
 
-  bigSavingsBox: {
-    alignItems: 'center',
-    backgroundColor: '#04080F',
-    borderWidth: 1,
-    borderColor: Brand.success + '40',
-    borderRadius: 4,
-    padding: Spacing.three,
-    gap: 4,
-  },
+  bigSavingsBox: { alignItems: 'center', backgroundColor: '#04080F', borderWidth: 1, borderColor: Brand.success + '40', borderRadius: 4, padding: Spacing.three, gap: 4 },
   bigSavingsLabel: { fontSize: 9, fontWeight: '800', letterSpacing: 1.2, color: Brand.success },
   bigSavings: { fontSize: 26, fontWeight: '900', fontFamily: 'Courier New' },
   bigSavingsSub: { fontSize: 10, color: '#4D7A9A', textAlign: 'center' },

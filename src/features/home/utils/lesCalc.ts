@@ -56,7 +56,9 @@ export interface LESBreakdown {
   fica: number;
   fedTax: number;
   stateTax: number;
-  tsp: number;
+  tsp: number;           // total TSP (traditional + roth)
+  traditionalTsp: number;
+  rothTsp: number;
   sgli: number;
   dental: number;
   extraDeductions: number;
@@ -77,7 +79,8 @@ export interface LESInputs {
   mhaZip: string | undefined;
   hasSpouse: boolean;
   specialPaysTotal: number;
-  tspContribPct: number;
+  tspContribPct: number;   // Traditional TSP %
+  rothTspPct?: number;     // Roth TSP % (optional, defaults to 0)
   hasDentalFamily: boolean;
   sglOptOut: boolean;
   stateResidence?: string;
@@ -85,7 +88,7 @@ export interface LESInputs {
 }
 
 export function calcLES(inputs: LESInputs): LESBreakdown {
-  const { payGrade, yos, mhaZip, hasSpouse, specialPaysTotal, tspContribPct, hasDentalFamily, sglOptOut, stateResidence, overrides } = inputs;
+  const { payGrade, yos, mhaZip, hasSpouse, specialPaysTotal, tspContribPct, rothTspPct = 0, hasDentalFamily, sglOptOut, stateResidence, overrides } = inputs;
 
   const calcBasePay = getBasicPay(payGrade as any, yos);
   const calcBah = mhaZip ? (getBahRate(mhaZip, payGrade as any, hasSpouse) ?? 0) : 0;
@@ -102,12 +105,14 @@ export function calcLES(inputs: LESInputs): LESBreakdown {
 
   const grossPay = basePay + bah + bas + specialPaysTotal + extraIncome;
 
-  const fica     = basePay * 0.0765;
-  const fedTax   = estimateFedTax(basePay * 12, hasSpouse);
-  const stateRate = getStateTaxRate(stateResidence);
-  const stateTax = basePay * stateRate;
-  const tsp      = basePay * (tspContribPct / 100);
-  const sgli     = sglOptOut ? 0 : SGLI_MONTHLY;
+  const fica           = basePay * 0.0765;
+  const fedTax         = estimateFedTax(basePay * 12, hasSpouse);
+  const stateRate      = getStateTaxRate(stateResidence);
+  const stateTax       = basePay * stateRate;
+  const traditionalTsp = basePay * (tspContribPct / 100);
+  const rothTsp        = basePay * (rothTspPct / 100);
+  const tsp            = traditionalTsp + rothTsp;
+  const sgli           = sglOptOut ? 0 : SGLI_MONTHLY;
   const dental   = hasDentalFamily ? DENTAL_FAMILY : 0;
 
   const totalDeductions = fica + fedTax + stateTax + tsp + sgli + dental + extraDeductions;
@@ -117,7 +122,7 @@ export function calcLES(inputs: LESInputs): LESBreakdown {
     basePay, bah, bas,
     specialPays: specialPaysTotal,
     extraIncome, grossPay,
-    fica, fedTax, stateTax, tsp, sgli, dental,
+    fica, fedTax, stateTax, tsp, traditionalTsp, rothTsp, sgli, dental,
     extraDeductions, totalDeductions, netPay,
     bahOverridden: overrides?.bahOverride != null,
     basOverridden: overrides?.basOverride != null,

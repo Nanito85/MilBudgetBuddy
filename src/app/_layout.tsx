@@ -6,14 +6,24 @@ import React, { useEffect } from 'react';
 import { AnimatedSplashOverlay } from '@/components/animated-icon';
 import { DisclaimerModal } from '@/components/DisclaimerModal';
 import { KidModeScreen } from '@/components/KidModeScreen';
+import { OfflineBanner } from '@/components/OfflineBanner';
 import { OnboardingFlow } from '@/features/profile/components/OnboardingFlow';
 import { Brand } from '@/constants/theme';
 import { useAuthStore } from '@/store/auth.store';
 import { useEntitlementStore } from '@/store/entitlement.store';
 import { useKidModeStore } from '@/store/kid-mode.store';
+import { useLifeEventsStore } from '@/store/life-events.store';
 import { useTipsStore } from '@/store/tips.store';
 import { useUserStore } from '@/store/user.store';
 import { pullFromCloud, pushToCloud, startSync, stopSync } from '@/services/firestore-sync';
+import { initIAP, destroyIAP } from '@/services/iap';
+import { useKidsStore } from '@/store/kids.store';
+import { initRemoteConfig } from '@/services/remote-config';
+import { initSentry, setUserContext } from '@/services/sentry';
+import { startAnalytics, stopAnalytics, trackEvent } from '@/services/analytics';
+
+// Init Sentry at module load time — before any component renders
+initSentry();
 
 export default function TabLayout() {
   const router = useRouter();
@@ -24,14 +34,22 @@ export default function TabLayout() {
 
   // Hydrate local stores on mount + initialize Firebase auth listener
   useEffect(() => {
+    initRemoteConfig().catch(() => {}); // non-blocking; falls back to cached/default
+    initIAP().catch(() => {});           // non-blocking; IAP unavailable in dev/Expo Go
+    startAnalytics();
+    trackEvent('app_launch');
     useTipsStore.getState().hydrate();
     useUserStore.getState().hydrate();
     useEntitlementStore.getState().hydrate();
     useKidModeStore.getState().hydrate();
+    useKidsStore.getState().hydrate();
+    useLifeEventsStore.getState().hydrate();
     const unsubAuth = initAuth();
     return () => {
       unsubAuth();
       stopSync();
+      stopAnalytics();
+      destroyIAP();
     };
   }, []);
 
@@ -39,6 +57,10 @@ export default function TabLayout() {
   useEffect(() => {
     if (!initialized) return;
     if (user) {
+      setUserContext(user.uid);
+      trackEvent('user_signed_in');
+      // Verify server-side entitlement on every sign-in
+      useEntitlementStore.getState().checkServerEntitlement().catch(() => {});
       // Signed in — pull cloud data (if exists) then start real-time sync
       pullFromCloud(user.uid).then((hadData) => {
         if (!hadData) {
@@ -50,6 +72,7 @@ export default function TabLayout() {
         startSync(user.uid);
       });
     } else {
+      setUserContext(null);
       stopSync();
     }
   }, [user, initialized]);
@@ -128,6 +151,15 @@ export default function TabLayout() {
             ),
           }}
         />
+        <Tabs.Screen
+          name="settings"
+          options={{
+            title: 'SETTINGS',
+            tabBarIcon: ({ color, size }) => (
+              <Ionicons name="settings-outline" size={size} color={color} />
+            ),
+          }}
+        />
         {/* ── Non-tab screens (hidden from tab bar) ──── */}
         <Tabs.Screen name="auth/sign-in"           options={{ href: null }} />
         <Tabs.Screen name="auth/sign-up"           options={{ href: null }} />
@@ -149,7 +181,6 @@ export default function TabLayout() {
         <Tabs.Screen name="schools-finder"         options={{ href: null }} />
         <Tabs.Screen name="les-decoder"            options={{ href: null }} />
         <Tabs.Screen name="tricare-estimator"      options={{ href: null }} />
-        <Tabs.Screen name="settings"               options={{ href: null }} />
         <Tabs.Screen name="scra-guide"             options={{ href: null }} />
         <Tabs.Screen name="net-worth"              options={{ href: null }} />
         <Tabs.Screen name="ets-checklist"          options={{ href: null }} />
@@ -169,7 +200,16 @@ export default function TabLayout() {
         <Tabs.Screen name="savings-rate"           options={{ href: null }} />
         <Tabs.Screen name="bah-guide"              options={{ href: null }} />
         <Tabs.Screen name="upgrade"                options={{ href: null }} />
+        <Tabs.Screen name="reserves"               options={{ href: null }} />
+        <Tabs.Screen name="life-events"            options={{ href: null }} />
+        <Tabs.Screen name="command-mode"           options={{ href: null }} />
+        <Tabs.Screen name="legal"                  options={{ href: null }} />
+        <Tabs.Screen name="admin"                  options={{ href: null }} />
+        <Tabs.Screen name="admin/feedback"         options={{ href: null }} />
+        <Tabs.Screen name="admin/reports"          options={{ href: null }} />
+        <Tabs.Screen name="admin/codes"            options={{ href: null }} />
       </Tabs>
+      <OfflineBanner />
       {kidModeActive && <KidModeScreen />}
     </ThemeProvider>
   );

@@ -1,8 +1,6 @@
 import { TIPS } from '@/data/tips';
 
-const API_URL = 'https://api.anthropic.com/v1/messages';
-const MODEL = 'claude-haiku-4-5-20251001';
-const MAX_TOKENS = 1024;
+const API_BASE = process.env.EXPO_PUBLIC_API_BASE_URL ?? 'http://localhost:3000';
 
 const BASE_SYSTEM_PROMPT = `You are a friendly and knowledgeable military personal finance advisor helping servicemembers and their families make smarter financial decisions.
 
@@ -45,33 +43,22 @@ export interface ApiMessage {
 export async function callClaude(
   messages: ApiMessage[],
   systemPrompt: string,
+  idToken?: string,
 ): Promise<string> {
-  const apiKey = process.env.EXPO_PUBLIC_ANTHROPIC_API_KEY;
+  const headers: Record<string, string> = { 'content-type': 'application/json' };
+  if (idToken) headers['Authorization'] = `Bearer ${idToken}`;
 
-  if (!apiKey || apiKey === 'your_api_key_here') {
-    throw new Error('ANTHROPIC_API_KEY_MISSING');
-  }
-
-  const response = await fetch(API_URL, {
+  const response = await fetch(`${API_BASE}/api/chat`, {
     method: 'POST',
-    headers: {
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01',
-      'content-type': 'application/json',
-    },
-    body: JSON.stringify({
-      model: MODEL,
-      max_tokens: MAX_TOKENS,
-      system: systemPrompt,
-      messages,
-    }),
+    headers,
+    body: JSON.stringify({ messages, system: systemPrompt }),
   });
 
   if (!response.ok) {
     const err = await response.json().catch(() => ({}));
-    throw new Error(err?.error?.message ?? `API error ${response.status}`);
+    throw new Error(err?.error ?? `API error ${response.status}`);
   }
 
   const data = await response.json();
-  return data.content[0].text as string;
+  return data.text as string;
 }

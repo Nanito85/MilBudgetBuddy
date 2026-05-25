@@ -30,3 +30,31 @@ export const ALL_QUICK_ACTIONS: QuickAction[] = [
 ];
 
 export const DEFAULT_QUICK_ACCESS_IDS = ['budget', 'debt', 'credit', 'retirement'];
+
+export function getDefaultQuickAccessIds(
+  serviceStatus?: 'active' | 'reserve' | 'retired',
+  financialGoal?: string,
+): string[] {
+  if (serviceStatus === 'retired') {
+    return ['retirement', 'va_dis', 'ets', 'tricare'];
+  }
+  if (serviceStatus === 'reserve') {
+    switch (financialGoal) {
+      case 'retirement':       return ['tsp', 'retirement', 'va_dis', 'gi_bill'];
+      case 'pay_debt':         return ['debt', 'budget', 'credit', 'les'];
+      case 'pcs_planning':     return ['pcs', 'dity', 'leave', 'tle'];
+      case 'family_budgeting': return ['budget', 'tricare', 'schools', 'leave'];
+      default:                 return ['budget', 'tsp', 'leave', 'deployment'];
+    }
+  }
+  // active duty (default)
+  switch (financialGoal) {
+    case 'save_money':       return ['budget', 'tsp', 'credit', 'net_worth'];
+    case 'pay_debt':         return ['debt', 'budget', 'credit', 'les'];
+    case 'pcs_planning':     return ['pcs', 'dity', 'tle', 'va_loan'];
+    case 'retirement':       return ['tsp', 'retirement', 'scra', 'net_worth'];
+    case 'family_budgeting': return ['budget', 'tricare', 'schools', 'pcs'];
+    case 'emergency_fund':   return ['budget', 'debt', 'credit', 'net_worth'];
+    default:                 return DEFAULT_QUICK_ACCESS_IDS;
+  }
+}

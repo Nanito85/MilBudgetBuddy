@@ -1,5 +1,14 @@
 export type KidGender = 'boy' | 'girl';
 
+export interface PendingCompletion {
+  id: string;
+  choreId: string;
+  choreName: string;
+  choreValue: number;
+  goalId?: string;
+  submittedDate: string; // ISO YYYY-MM-DD
+}
+
 export interface Goal {
   id: string;
   name: string;
@@ -24,6 +33,7 @@ export interface KidProfile {
   gender: KidGender;
   goals: Goal[];
   chores: Chore[];
+  pendingCompletions: PendingCompletion[];
 }
 
 export const BOY_THEME = {

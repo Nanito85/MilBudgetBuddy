@@ -104,18 +104,22 @@ export default function DashboardScreen() {
   const router = useRouter();
   const branch = useUserStore((s) => s.branch);
   const payGrade = useUserStore((s) => s.payGrade);
+  const rankVariant = useUserStore((s) => s.rankVariant);
   const lastName = useUserStore((s) => s.lastName);
   const nickname = useUserStore((s) => s.nickname);
+  const greetingStyle = useUserStore((s) => s.greetingStyle);
+  const specialPays = useUserStore((s) => s.specialPays);
   const yos = useUserStore((s) => s.yos);
   const mhaZip = useUserStore((s) => s.mhaZip);
   const hasSpouse = useUserStore((s) => s.hasSpouse);
   const tspContribPct = useUserStore((s) => s.tspContribPct);
+  const rothTspPct    = useUserStore((s) => s.rothTspPct);
   const hasDentalFamily = useUserStore((s) => s.hasDentalFamily);
   const sglOptOut = useUserStore((s) => s.sglOptOut);
   const stateResidence = useUserStore((s) => s.stateResidence);
-  const specialPays = useUserStore((s) => s.specialPays);
   const lesOverrides = useUserStore((s) => s.lesOverrides);
-  const tip = useDailyTip();
+  const financialGoal = useUserStore((s) => s.financialGoal);
+  const tip = useDailyTip(financialGoal);
 
   React.useEffect(() => {
     useBudgetStore.getState().hydrate();
@@ -144,20 +148,41 @@ export default function DashboardScreen() {
     if (!payGrade) return null;
     return calcLES({
       payGrade, yos, mhaZip, hasSpouse, specialPaysTotal,
-      tspContribPct, hasDentalFamily, sglOptOut, stateResidence,
+      tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence,
       overrides: lesOverrides,
     });
-  }, [payGrade, yos, mhaZip, hasSpouse, specialPaysTotal, tspContribPct, hasDentalFamily, sglOptOut, stateResidence, lesOverrides]);
+  }, [payGrade, yos, mhaZip, hasSpouse, specialPaysTotal, tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence, lesOverrides]);
 
   return (
     <ThemedView style={styles.container}>
-      <DashboardHeader branch={branch} payGrade={payGrade} lastName={lastName} nickname={nickname} />
+      <DashboardHeader
+        branch={branch}
+        payGrade={payGrade}
+        rankVariant={rankVariant}
+        lastName={lastName}
+        nickname={nickname}
+        greetingStyle={greetingStyle}
+      />
 
       <ScrollView
         contentContainerStyle={[styles.content, { paddingBottom: BottomTabInset + Spacing.five }]}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="on-drag">
+
+        {/* ── PROFILE COMPLETION NUDGE ─────────────────────────────── */}
+        {payGrade && specialPays.length === 0 && (
+          <Pressable
+            onPress={() => router.push('/profile' as any)}
+            style={({ pressed }) => [styles.nudgeBanner, pressed && { opacity: 0.75 }]}>
+            <ThemedText style={styles.nudgeIcon}>⚠️</ThemedText>
+            <View style={{ flex: 1 }}>
+              <ThemedText style={styles.nudgeTitle}>PAY ESTIMATE MAY BE INCOMPLETE</ThemedText>
+              <ThemedText style={styles.nudgeBody}>Add special pays (flight, dive, jump, sea pay, etc.) to your profile for an accurate statement.</ThemedText>
+            </View>
+            <ThemedText style={styles.nudgeChevron}>›</ThemedText>
+          </Pressable>
+        )}
 
         {/* ── PAY STATEMENT ─────────────────────────────────────────── */}
         <View style={styles.section}>
@@ -284,6 +309,21 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   setupCtaText: { color: '#000', fontSize: 10, fontWeight: '800', letterSpacing: 0.5 },
+
+  nudgeBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
+    backgroundColor: '#1A1000',
+    borderWidth: 1,
+    borderColor: '#C9A84C50',
+    borderRadius: 4,
+    padding: Spacing.two + 4,
+  },
+  nudgeIcon: { fontSize: 16, lineHeight: 20 },
+  nudgeTitle: { fontSize: 10, fontWeight: '800', color: '#C9A84C', letterSpacing: 0.3, marginBottom: 2 },
+  nudgeBody: { fontSize: 11, color: '#8A7040', lineHeight: 15 },
+  nudgeChevron: { fontSize: 20, color: '#C9A84C', fontWeight: '300' },
 
   budgetSnapshot: {
     backgroundColor: '#050B14',

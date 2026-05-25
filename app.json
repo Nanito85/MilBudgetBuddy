@@ -8,7 +8,7 @@
     "scheme": "milbudgetbuddy",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "icon": "./assets/expo.icon",
+      "icon": "./assets/images/icon.png",
       "bundleIdentifier": "com.nanito85.MilBudgetBuddy",
       "buildNumber": "1",
       "supportsTablet": false,
@@ -20,10 +20,8 @@
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#04080F",
-        "foregroundImage": "./assets/images/android-icon-foreground.png",
-        "backgroundImage": "./assets/images/android-icon-background.png",
-        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+        "backgroundColor": "#1A5F8A",
+        "foregroundImage": "./assets/images/android-icon-foreground.png"
       },
       "predictiveBackGestureEnabled": false,
       "package": "com.nanito85.MilBudgetBuddy",
@@ -60,8 +58,23 @@
         }
       ],
       "expo-image",
-      "expo-web-browser"
+      "expo-web-browser",
+      [
+        "@sentry/react-native",
+        {
+          "organization": "milbudgetbuddy",
+          "project": "milbudgetbuddy"
+        }
+      ],
+      "expo-secure-store",
+      "expo-iap"
     ],
+    "updates": {
+      "url": "https://u.expo.dev/efdc8b09-9740-4992-bd14-1200d6d0e133"
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true

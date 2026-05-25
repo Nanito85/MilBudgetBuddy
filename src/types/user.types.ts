@@ -78,8 +78,38 @@ export function getRankAbbrev(
 
 export type { RankVariant };
 
+export type ServiceStatus = 'active' | 'reserve' | 'retired';
+
+export type FinancialGoal =
+  | 'save_money'
+  | 'pay_debt'
+  | 'pcs_planning'
+  | 'retirement'
+  | 'family_budgeting'
+  | 'emergency_fund';
+
+export const FINANCIAL_GOAL_LABELS: Record<FinancialGoal, string> = {
+  save_money: 'Save Money',
+  pay_debt: 'Pay Off Debt',
+  pcs_planning: 'PCS Planning',
+  retirement: 'Retirement',
+  family_budgeting: 'Family Budgeting',
+  emergency_fund: 'Emergency Fund',
+};
+
+export const FINANCIAL_GOAL_ICONS: Record<FinancialGoal, string> = {
+  save_money: '💰',
+  pay_debt: '📉',
+  pcs_planning: '📦',
+  retirement: '🎖️',
+  family_budgeting: '👨‍👩‍👧‍👦',
+  emergency_fund: '🛡️',
+};
+
 export interface UserPreferences {
   branch?: MilitaryBranch;
+  serviceStatus?: ServiceStatus;
+  financialGoal?: FinancialGoal;
   notificationsEnabled: boolean;
   notificationHour: number;
   notificationMinute: number;
@@ -94,10 +124,15 @@ export interface UserPreferences {
   yos: number;
   // Location & family
   mhaZip?: string;
+  installationName?: string;
   hasSpouse: boolean;
   numChildren: number;
+  // Service dates
+  dateOfEnlistment?: string; // YYYY-MM-DD
+  dateOfRank?: string;       // YYYY-MM-DD
   // Pay setup
-  tspContribPct: number;
+  tspContribPct: number;   // Traditional TSP contribution %
+  rothTspPct: number;      // Roth TSP contribution %
   hasDentalFamily: boolean;
   sglOptOut: boolean;
   // State residence (for state income tax estimate)
@@ -106,6 +141,8 @@ export interface UserPreferences {
   spouseMonthlyIncome: number;
   // Home screen quick-access tile IDs (4 items)
   quickAccessIds: string[];
+  // Greeting preference
+  greetingStyle: 'rank' | 'nickname';
   // Appearance
   appTheme: 'dark' | 'light';
   fontScale: number; // 1.0 | 1.15 | 1.3 | 1.5

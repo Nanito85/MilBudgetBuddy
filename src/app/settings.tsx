@@ -1,16 +1,19 @@
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Alert, Modal, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { FeedbackModal } from '@/components/FeedbackModal';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Brand, Spacing } from '@/constants/theme';
 import { ALL_QUICK_ACTIONS } from '@/data/quick-actions';
 import { useTheme } from '@/hooks/use-theme';
 import { useEntitlement } from '@/hooks/use-entitlement';
+import { useIsAdmin } from '@/hooks/use-admin';
 import { useAuthStore } from '@/store/auth.store';
 import { useUserStore } from '@/store/user.store';
+import { useKidModeStore } from '@/store/kid-mode.store';
 
 const MAX_TILES = 4;
 
@@ -21,17 +24,164 @@ const FONT_SCALE_OPTIONS: { label: string; sublabel: string; value: number }[] =
   { label: 'XX-Large',  sublabel: 'Maximum accessibility',    value: 1.6 },
 ];
 
+// ── PIN Management Modal ────────────────────────────────────────────────────────
+
+function PINManageModal({ visible, onClose }: { visible: boolean; onClose: () => void }) {
+  const currentPin = useKidModeStore((s) => s.pin);
+  const setPin = useKidModeStore((s) => s.setPin);
+  const clearPin = useKidModeStore((s) => s.clearPin);
+
+  const [step, setStep] = useState<'menu' | 'new' | 'confirm'>('menu');
+  const [newPin, setNewPin] = useState('');
+  const [digits, setDigits] = useState('');
+
+  const reset = () => { setStep('menu'); setNewPin(''); setDigits(''); };
+  const handleClose = () => { reset(); onClose(); };
+
+  const handleDigit = (d: string) => {
+    if (digits.length >= 4) return;
+    const next = digits + d;
+    setDigits(next);
+    if (next.length === 4) {
+      setTimeout(() => {
+        if (step === 'new') { setNewPin(next); setDigits(''); setStep('confirm'); }
+        else if (step === 'confirm') {
+          if (next === newPin) {
+            setPin(next).then(() => {
+              Alert.alert('PIN Updated', 'Your Kids Mode PIN has been set.');
+              handleClose();
+            });
+          } else {
+            Alert.alert('Mismatch', 'PINs do not match. Try again.');
+            setDigits(''); setStep('new'); setNewPin('');
+          }
+        }
+      }, 150);
+    }
+  };
+  const handleDel = () => setDigits((d) => d.slice(0, -1));
+
+  const keys = ['1','2','3','4','5','6','7','8','9','⌫','0',''];
+
+  return (
+    <Modal visible={visible} animationType="slide" presentationStyle="pageSheet">
+      <View style={pinModalStyles.bg}>
+        <SafeAreaView style={pinModalStyles.safe}>
+          <View style={pinModalStyles.header}>
+            <Pressable onPress={handleClose}><ThemedText style={pinModalStyles.cancel}>CANCEL</ThemedText></Pressable>
+            <ThemedText style={pinModalStyles.title}>// KIDS MODE PIN</ThemedText>
+            <View style={{ width: 60 }} />
+          </View>
+
+          {step === 'menu' && (
+            <View style={pinModalStyles.menuContent}>
+              <ThemedText style={pinModalStyles.menuIcon}>🔐</ThemedText>
+              <ThemedText style={pinModalStyles.menuHeading}>
+                {currentPin ? 'PIN IS SET' : 'NO PIN SET'}
+              </ThemedText>
+              <ThemedText style={pinModalStyles.menuSub}>
+                {currentPin
+                  ? 'A PIN is required to exit Kids Mode back to the parent view.'
+                  : 'Without a PIN, anyone can exit Kids Mode. Set one to keep your kids in their view.'}
+              </ThemedText>
+
+              <Pressable onPress={() => { setStep('new'); setDigits(''); }} style={pinModalStyles.primaryBtn}>
+                <ThemedText style={pinModalStyles.primaryBtnText}>
+                  {currentPin ? 'CHANGE PIN' : 'SET NEW PIN'}
+                </ThemedText>
+              </Pressable>
+
+              {currentPin && (
+                <Pressable
+                  onPress={() => Alert.alert('Remove PIN', 'Kids will be able to exit Kids Mode without a PIN.', [
+                    { text: 'Cancel', style: 'cancel' },
+                    { text: 'Remove', style: 'destructive', onPress: () => { clearPin().then(handleClose); } },
+                  ])}
+                  style={pinModalStyles.dangerBtn}>
+                  <ThemedText style={pinModalStyles.dangerBtnText}>REMOVE PIN</ThemedText>
+                </Pressable>
+              )}
+            </View>
+          )}
+
+          {(step === 'new' || step === 'confirm') && (
+            <View style={pinModalStyles.padContent}>
+              <ThemedText style={pinModalStyles.padTitle}>
+                {step === 'new' ? 'ENTER NEW PIN' : 'CONFIRM PIN'}
+              </ThemedText>
+              <ThemedText style={pinModalStyles.padSub}>
+                {step === 'new' ? 'Choose a 4-digit PIN' : 'Re-enter the same PIN to confirm'}
+              </ThemedText>
+              <View style={pinModalStyles.dots}>
+                {[0,1,2,3].map((i) => (
+                  <View key={i} style={[pinModalStyles.dot, digits.length > i && pinModalStyles.dotFilled]} />
+                ))}
+              </View>
+              <View style={pinModalStyles.grid}>
+                {keys.map((k, idx) => (
+                  <Pressable key={idx}
+                    onPress={() => { if (k === '⌫') handleDel(); else if (k !== '') handleDigit(k); }}
+                    style={({ pressed }) => [pinModalStyles.key, k === '' && { opacity: 0 }, pressed && k !== '' && { backgroundColor: Brand.accent + '20' }]}>
+                    <ThemedText style={[pinModalStyles.keyText, k === '⌫' && { fontSize: 22 }]}>{k}</ThemedText>
+                  </Pressable>
+                ))}
+              </View>
+              <Pressable onPress={() => { setStep('menu'); setDigits(''); setNewPin(''); }}>
+                <ThemedText style={pinModalStyles.back}>← BACK</ThemedText>
+              </Pressable>
+            </View>
+          )}
+        </SafeAreaView>
+      </View>
+    </Modal>
+  );
+}
+
+const pinModalStyles = StyleSheet.create({
+  bg: { flex: 1, backgroundColor: '#04080F' },
+  safe: { flex: 1 },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: Spacing.three, paddingVertical: Spacing.two + 2, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: Brand.border },
+  title: { fontSize: 13, fontWeight: '800', letterSpacing: 1, color: '#C8D8E8' },
+  cancel: { fontSize: 12, fontWeight: '700', color: '#3D6080', letterSpacing: 0.5, width: 60 },
+  menuContent: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: Spacing.four, gap: Spacing.three },
+  menuIcon: { fontSize: 54, lineHeight: 64 },
+  menuHeading: { fontSize: 18, fontWeight: '900', letterSpacing: 1, color: '#C8D8E8' },
+  menuSub: { fontSize: 13, color: '#6B92B0', textAlign: 'center', lineHeight: 20 },
+  primaryBtn: { backgroundColor: Brand.tactical, borderRadius: 8, paddingHorizontal: Spacing.five, paddingVertical: Spacing.two + 4, width: '100%', alignItems: 'center' },
+  primaryBtnText: { color: '#FFFFFF', fontSize: 14, fontWeight: '900', letterSpacing: 1 },
+  dangerBtn: { borderWidth: 1, borderColor: Brand.classified + '50', borderRadius: 8, paddingHorizontal: Spacing.five, paddingVertical: Spacing.two + 4, width: '100%', alignItems: 'center' },
+  dangerBtnText: { color: Brand.classified, fontSize: 13, fontWeight: '800', letterSpacing: 0.5 },
+  padContent: { flex: 1, alignItems: 'center', gap: Spacing.two, paddingTop: Spacing.four },
+  padTitle: { fontSize: 16, fontWeight: '900', letterSpacing: 0.5, color: '#C8D8E8' },
+  padSub: { fontSize: 12, color: '#6B92B0' },
+  dots: { flexDirection: 'row', gap: 20, marginVertical: Spacing.three },
+  dot: { width: 18, height: 18, borderRadius: 9, borderWidth: 2, borderColor: Brand.tactical, backgroundColor: 'transparent' },
+  dotFilled: { backgroundColor: Brand.tactical },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', width: 240 },
+  key: { width: 80, height: 72, alignItems: 'center', justifyContent: 'center', borderRadius: 8 },
+  keyText: { fontSize: 26, fontWeight: '600', color: '#C8D8E8' },
+  back: { fontSize: 13, fontWeight: '700', color: '#3D6080', marginTop: Spacing.two, letterSpacing: 0.5 },
+});
+
+// ── Main Settings Screen ─────────────────────────────────────────────────────
+
 export default function SettingsScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const theme = useTheme();
 
   const savedIds      = useUserStore((s) => s.quickAccessIds);
+  const resetAll      = useUserStore((s) => s.resetAll);
   const fontScale     = useUserStore((s) => s.fontScale ?? 1.0);
   const setQuickAccessIds = useUserStore((s) => s.setQuickAccessIds);
   const setFontScale  = useUserStore((s) => s.setFontScale);
 
-  const [selected, setSelected] = useState<string[]>(savedIds.slice(0, MAX_TILES));
+  const kidPin = useKidModeStore((s) => s.pin);
+
+  const [selected, setSelected]       = useState<string[]>(savedIds.slice(0, MAX_TILES));
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [showPINManage, setShowPINManage] = useState(false);
+  const isAdmin = useIsAdmin();
 
   const { isPro, isPromo, status, daysLeft } = useEntitlement();
   const { user, signOut: signOutUser } = useAuthStore();
@@ -69,6 +219,22 @@ export default function SettingsScreen() {
       <ScrollView
         contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + Spacing.five }]}
         showsVerticalScrollIndicator={false}>
+
+        {/* ── PROFILE ────────────────────────────────────────────────── */}
+        <Pressable
+          onPress={() => router.push('/profile' as any)}
+          style={({ pressed }) => [
+            styles.profileNavRow,
+            { backgroundColor: card, borderColor: Brand.border },
+            pressed && { opacity: 0.7 },
+          ]}>
+          <ThemedText style={styles.profileNavIcon}>🪖</ThemedText>
+          <View style={{ flex: 1, gap: 2 }}>
+            <ThemedText style={[styles.profileNavTitle, { color: text }]}>PERSONNEL FILE</ThemedText>
+            <ThemedText type="label" style={[styles.profileNavSub, { color: textDim }]}>Branch, pay grade, family, special pays</ThemedText>
+          </View>
+          <ThemedText style={[styles.profileNavChevron, { color: Brand.tactical }]}>›</ThemedText>
+        </Pressable>
 
         {/* ── ACCOUNT / PRO STATUS ───────────────────────────────────── */}
         <View style={styles.section}>
@@ -161,39 +327,65 @@ export default function SettingsScreen() {
           <ThemedText style={[styles.sectionTitle, { color: text }]}>QUICK ACCESS TILES</ThemedText>
           <ThemedText type="label" style={[styles.sectionDesc, { color: textDim }]}>
             SELECT UP TO {MAX_TILES} TOOLS TO SHOW ON YOUR HOME SCREEN.
-            {'\n'}{selected.length}/{MAX_TILES} SELECTED.
           </ThemedText>
         </View>
 
-        <View style={styles.list}>
-          {ALL_QUICK_ACTIONS.map((action) => {
-            const isSelected = selected.includes(action.id);
-            const isDisabled = !isSelected && selected.length >= MAX_TILES;
+        {/* ON HOME SCREEN */}
+        <ThemedText type="label" style={[styles.tileGroupLabel, { color: Brand.tactical }]}>
+          ON HOME SCREEN — {selected.length}/{MAX_TILES}
+        </ThemedText>
+        <View style={styles.tilesGrid}>
+          {ALL_QUICK_ACTIONS.filter((a) => selected.includes(a.id)).map((action) => (
+            <Pressable
+              key={action.id}
+              onPress={() => toggle(action.id)}
+              style={({ pressed }) => [
+                styles.tileCube,
+                { backgroundColor: action.color + '18', borderColor: action.color + '70' },
+                pressed && { opacity: 0.7 },
+              ]}>
+              <ThemedText style={styles.tileCubeIcon}>{action.icon}</ThemedText>
+              <ThemedText style={[styles.tileCubeLabel, { color: action.color }]} numberOfLines={2}>
+                {action.label}
+              </ThemedText>
+              <ThemedText style={[styles.tileCubeRemove, { color: action.color }]}>✕</ThemedText>
+            </Pressable>
+          ))}
+          {selected.length < MAX_TILES && Array.from({ length: MAX_TILES - selected.length }).map((_, i) => (
+            <View key={`empty-${i}`} style={[styles.tileCube, styles.tileCubeEmpty, { borderColor: Brand.border, backgroundColor: card }]}>
+              <ThemedText style={[styles.tileCubeEmptyText, { color: textDim }]}>+</ThemedText>
+            </View>
+          ))}
+        </View>
+
+        {/* Separator */}
+        <View style={[styles.tilesDivider, { borderColor: Brand.border }]}>
+          <View style={[styles.tilesDividerLine, { backgroundColor: Brand.border }]} />
+          <ThemedText type="label" style={[styles.tilesDividerLabel, { color: textDim }]}>
+            AVAILABLE — TAP TO ADD
+          </ThemedText>
+          <View style={[styles.tilesDividerLine, { backgroundColor: Brand.border }]} />
+        </View>
+
+        {/* NOT ON HOME SCREEN */}
+        <View style={styles.tilesGrid}>
+          {ALL_QUICK_ACTIONS.filter((a) => !selected.includes(a.id)).map((action) => {
+            const isDisabled = selected.length >= MAX_TILES;
             return (
               <Pressable
                 key={action.id}
                 onPress={() => toggle(action.id)}
                 disabled={isDisabled}
                 style={({ pressed }) => [
-                  styles.row,
+                  styles.tileCube,
                   { backgroundColor: card, borderColor: Brand.border },
-                  isSelected && { borderColor: Brand.tactical + '60', backgroundColor: Brand.tactical + '08' },
-                  isDisabled && styles.rowDisabled,
+                  isDisabled && { opacity: 0.35 },
                   pressed && !isDisabled && { opacity: 0.7 },
                 ]}>
-                <View style={[styles.colorDot, { backgroundColor: action.color }]} />
-                <View style={[styles.iconWrap, { backgroundColor: action.color + '20' }]}>
-                  <ThemedText style={styles.rowIcon}>{action.icon}</ThemedText>
-                </View>
-                <View style={styles.rowText}>
-                  <ThemedText style={[styles.rowTitle, { color: isDisabled ? textDim : text }]}>
-                    {action.label}
-                  </ThemedText>
-                  <ThemedText type="label" style={[styles.rowSub, { color: textDim }]}>{action.sublabel}</ThemedText>
-                </View>
-                <View style={[styles.checkbox, isSelected && { backgroundColor: Brand.tactical, borderColor: Brand.tactical }]}>
-                  {isSelected && <ThemedText style={styles.checkmark}>✓</ThemedText>}
-                </View>
+                <ThemedText style={styles.tileCubeIcon}>{action.icon}</ThemedText>
+                <ThemedText style={[styles.tileCubeLabel, { color: textDim }]} numberOfLines={2}>
+                  {action.label}
+                </ThemedText>
               </Pressable>
             );
           })}
@@ -231,7 +423,112 @@ export default function SettingsScreen() {
           </Pressable>
         )}
 
+        {/* ── FEEDBACK ───────────────────────────────────────────────── */}
+        <View style={styles.section}>
+          <ThemedText type="label" style={styles.eyebrow}>// HELP US IMPROVE</ThemedText>
+          <ThemedText style={[styles.sectionTitle, { color: text }]}>FEEDBACK</ThemedText>
+        </View>
+
+        <Pressable
+          onPress={() => setShowFeedback(true)}
+          style={({ pressed }) => [settingsProStyles.upgradeCard, { backgroundColor: card, borderColor: Brand.tactical + '40' }, pressed && { opacity: 0.7 }]}>
+          <ThemedText style={settingsProStyles.proIcon}>💬</ThemedText>
+          <View style={{ flex: 1 }}>
+            <ThemedText style={[settingsProStyles.proTitle, { color: Brand.tactical }]}>SEND FEEDBACK</ThemedText>
+            <ThemedText style={[settingsProStyles.proSub, { color: textDim }]}>Report a bug, request a feature, or share a thought.</ThemedText>
+          </View>
+          <ThemedText style={[settingsProStyles.chevron, { color: Brand.tactical }]}>›</ThemedText>
+        </Pressable>
+
+        {/* ── KIDS MODE ──────────────────────────────────────────────── */}
+        <View style={styles.section}>
+          <ThemedText type="label" style={styles.eyebrow}>// PARENTAL CONTROLS</ThemedText>
+          <ThemedText style={[styles.sectionTitle, { color: text }]}>KIDS MODE PIN</ThemedText>
+        </View>
+
+        <Pressable
+          onPress={() => setShowPINManage(true)}
+          style={({ pressed }) => [settingsProStyles.upgradeCard, { backgroundColor: card, borderColor: Brand.tactical + '40' }, pressed && { opacity: 0.7 }]}>
+          <ThemedText style={settingsProStyles.proIcon}>🔐</ThemedText>
+          <View style={{ flex: 1 }}>
+            <ThemedText style={[settingsProStyles.proTitle, { color: Brand.tactical }]}>
+              {kidPin ? 'CHANGE KIDS MODE PIN' : 'SET KIDS MODE PIN'}
+            </ThemedText>
+            <ThemedText style={[settingsProStyles.proSub, { color: textDim }]}>
+              {kidPin ? 'PIN is active — tap to change or remove it.' : 'No PIN set — kids can freely exit Kids Mode.'}
+            </ThemedText>
+          </View>
+          <ThemedText style={[settingsProStyles.chevron, { color: Brand.tactical }]}>›</ThemedText>
+        </Pressable>
+
+        {/* ── DATA ───────────────────────────────────────────────────── */}
+        <View style={styles.section}>
+          <ThemedText type="label" style={styles.eyebrow}>// DATA MANAGEMENT</ThemedText>
+          <ThemedText style={[styles.sectionTitle, { color: text }]}>RESET OPTIONS</ThemedText>
+        </View>
+
+        <Pressable
+          onPress={() =>
+            Alert.alert(
+              'Reset All Data',
+              'This will wipe your profile, budget, and all settings. This cannot be undone.',
+              [
+                { text: 'Cancel', style: 'cancel' },
+                {
+                  text: 'Reset Everything',
+                  style: 'destructive',
+                  onPress: () => { resetAll(); router.replace('/' as any); },
+                },
+              ],
+            )
+          }
+          style={({ pressed }) => [settingsProStyles.upgradeCard, { backgroundColor: card, borderColor: '#E74C3C40' }, pressed && { opacity: 0.7 }]}>
+          <ThemedText style={settingsProStyles.proIcon}>🗑️</ThemedText>
+          <View style={{ flex: 1 }}>
+            <ThemedText style={[settingsProStyles.proTitle, { color: '#E74C3C' }]}>RESET ALL DATA</ThemedText>
+            <ThemedText style={[settingsProStyles.proSub, { color: textDim }]}>Wipe profile, budget, and settings. Starts fresh.</ThemedText>
+          </View>
+        </Pressable>
+
+        {isAdmin && (
+          <>
+            <Pressable
+              onPress={() => router.push('/admin/feedback' as any)}
+              style={({ pressed }) => [settingsProStyles.upgradeCard, { backgroundColor: card, borderColor: '#8B5CF640' }, pressed && { opacity: 0.7 }]}>
+              <ThemedText style={settingsProStyles.proIcon}>🔐</ThemedText>
+              <View style={{ flex: 1 }}>
+                <ThemedText style={[settingsProStyles.proTitle, { color: '#8B5CF6' }]}>ADMIN — FEEDBACK DASHBOARD</ThemedText>
+                <ThemedText style={[settingsProStyles.proSub, { color: textDim }]}>View, filter, and respond to all user feedback.</ThemedText>
+              </View>
+              <ThemedText style={[settingsProStyles.chevron, { color: '#8B5CF6' }]}>›</ThemedText>
+            </Pressable>
+            <Pressable
+              onPress={() => router.push('/admin/reports' as any)}
+              style={({ pressed }) => [settingsProStyles.upgradeCard, { backgroundColor: card, borderColor: '#8B5CF640' }, pressed && { opacity: 0.7 }]}>
+              <ThemedText style={settingsProStyles.proIcon}>📊</ThemedText>
+              <View style={{ flex: 1 }}>
+                <ThemedText style={[settingsProStyles.proTitle, { color: '#8B5CF6' }]}>ADMIN — AI REPORTS</ThemedText>
+                <ThemedText style={[settingsProStyles.proSub, { color: textDim }]}>Generate daily/weekly AI summaries and view past reports.</ThemedText>
+              </View>
+              <ThemedText style={[settingsProStyles.chevron, { color: '#8B5CF6' }]}>›</ThemedText>
+            </Pressable>
+            <Pressable
+              onPress={() => router.push('/admin/codes' as any)}
+              style={({ pressed }) => [settingsProStyles.upgradeCard, { backgroundColor: card, borderColor: '#8B5CF640' }, pressed && { opacity: 0.7 }]}>
+              <ThemedText style={settingsProStyles.proIcon}>🎟️</ThemedText>
+              <View style={{ flex: 1 }}>
+                <ThemedText style={[settingsProStyles.proTitle, { color: '#8B5CF6' }]}>ADMIN — DISCOUNT CODES</ThemedText>
+                <ThemedText style={[settingsProStyles.proSub, { color: textDim }]}>Create and manage promo codes for Pro access.</ThemedText>
+              </View>
+              <ThemedText style={[settingsProStyles.chevron, { color: '#8B5CF6' }]}>›</ThemedText>
+            </Pressable>
+          </>
+        )}
+
       </ScrollView>
+
+      <FeedbackModal visible={showFeedback} onClose={() => setShowFeedback(false)} />
+      <PINManageModal visible={showPINManage} onClose={() => setShowPINManage(false)} />
 
       <View style={[styles.footer, { paddingBottom: insets.bottom + Spacing.two, backgroundColor: bg, borderTopColor: Brand.border }]}>
         <Pressable onPress={save} style={({ pressed }) => [styles.saveBtn, pressed && { opacity: 0.8 }]}>
@@ -261,6 +558,32 @@ const styles = StyleSheet.create({
   sectionTitle: { fontSize: 20, fontWeight: '900', letterSpacing: 1 },
   sectionDesc: { fontSize: 9, lineHeight: 14 },
 
+  profileNavRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderRadius: 6,
+    padding: Spacing.three,
+  },
+  profileNavIcon: { fontSize: 22, lineHeight: 26 },
+  profileNavTitle: { fontSize: 13, fontWeight: '800', letterSpacing: 0.5 },
+  profileNavSub: { fontSize: 10 },
+  profileNavChevron: { fontSize: 22, fontWeight: '300' },
+
+  tileCube: {
+    width: '18%',
+    aspectRatio: 1,
+    borderWidth: 1,
+    borderRadius: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 2,
+    padding: Spacing.one,
+  },
+  tileCubeIcon: { fontSize: 18, lineHeight: 22 },
+  tileCubeLabel: { fontSize: 7, fontWeight: '700', textAlign: 'center', letterSpacing: 0.1, lineHeight: 10 },
+
   fontList: { gap: Spacing.two },
   fontRow: {
     flexDirection: 'row',
@@ -285,40 +608,14 @@ const styles = StyleSheet.create({
   },
   fontRadioMark: { color: '#FFFFFF', fontSize: 12, fontWeight: '900' },
 
-  list: { gap: Spacing.two },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.two,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderRadius: 4,
-    overflow: 'hidden',
-  },
-  rowDisabled: { opacity: 0.35 },
-  colorDot: { width: 3, alignSelf: 'stretch' },
-  iconWrap: {
-    width: 44,
-    height: 44,
-    borderRadius: 4,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginVertical: Spacing.two,
-  },
-  rowIcon: { fontSize: 20 },
-  rowText: { flex: 1, gap: 2, paddingVertical: Spacing.two },
-  rowTitle: { fontSize: 13, fontWeight: '800', letterSpacing: 0.5 },
-  rowSub: { fontSize: 9 },
-  checkbox: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    borderWidth: 2,
-    borderColor: Brand.border,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: Spacing.three,
-  },
-  checkmark: { color: '#FFFFFF', fontSize: 12, fontWeight: '800' },
+  tileGroupLabel: { fontSize: 9, letterSpacing: 0.8 },
+  tilesGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two },
+  tileCubeEmpty: { borderStyle: 'dashed' },
+  tileCubeEmptyText: { fontSize: 18, fontWeight: '300' },
+  tilesDivider: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
+  tilesDividerLine: { flex: 1, height: StyleSheet.hairlineWidth },
+  tilesDividerLabel: { fontSize: 9, letterSpacing: 0.5 },
+  tileCubeRemove: { fontSize: 8, fontWeight: '700', marginTop: -2 },
 
   footer: {
     paddingHorizontal: Spacing.three,

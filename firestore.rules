@@ -1,0 +1,41 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── User documents ────────────────────────────────────────────────────────
+    // Each user can only read/write their own top-level document and sub-collections.
+    match /users/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+
+      match /{document=**} {
+        allow read, write: if request.auth != null && request.auth.uid == uid;
+      }
+    }
+
+    // ── Feedback collection ───────────────────────────────────────────────────
+    // Authenticated users can create feedback. Only admins can read/update/delete.
+    match /feedback/{docId} {
+      allow create: if request.auth != null
+        && request.resource.data.keys().hasOnly(['uid', 'email', 'message', 'category', 'rating', 'appVersion', 'platform', 'createdAt', 'status'])
+        && request.resource.data.message is string
+        && request.resource.data.message.size() <= 2000
+        && request.resource.data.uid == request.auth.uid;
+
+      allow read, update, delete: if request.auth != null
+        && request.auth.token.admin == true;
+    }
+
+    // ── Analytics collection ──────────────────────────────────────────────────
+    // Write-only for authenticated users; admin-only reads.
+    match /analytics/{docId} {
+      allow create: if request.auth != null;
+      allow read, update, delete: if request.auth != null
+        && request.auth.token.admin == true;
+    }
+
+    // ── Deny everything else ──────────────────────────────────────────────────
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

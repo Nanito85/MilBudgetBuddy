@@ -2,12 +2,14 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 
 import { PayGrade } from '@/data/bah-rates';
-import { LESOverrides, MilitaryBranch, RankVariant, SpecialPay, SpecialPayType, UserPreferences } from '@/types/user.types';
+import { FinancialGoal, LESOverrides, MilitaryBranch, RankVariant, ServiceStatus, SpecialPay, SpecialPayType, UserPreferences } from '@/types/user.types';
 
 const STORAGE_KEY = 'mbb_user_prefs';
 
 const DEFAULTS: UserPreferences = {
   branch: undefined,
+  serviceStatus: undefined,
+  financialGoal: undefined,
   notificationsEnabled: false,
   notificationHour: 8,
   notificationMinute: 0,
@@ -21,13 +23,18 @@ const DEFAULTS: UserPreferences = {
   nickname: undefined,
   yos: 0,
   mhaZip: undefined,
+  installationName: undefined,
   hasSpouse: false,
   numChildren: 0,
-  tspContribPct: 5,
+  dateOfEnlistment: undefined,
+  dateOfRank: undefined,
+  tspContribPct: 0,
+  rothTspPct: 0,
   hasDentalFamily: false,
   sglOptOut: false,
   stateResidence: undefined,
   quickAccessIds: ['budget', 'debt', 'credit', 'retirement'],
+  greetingStyle: 'nickname',
   appTheme: 'dark',
   fontScale: 1.0,
   lesOverrides: { extraIncome: [], extraDeductions: [] },
@@ -37,6 +44,8 @@ interface UserState extends UserPreferences {
   hydrated: boolean;
   hydrate: () => Promise<void>;
   setBranch: (branch: MilitaryBranch) => void;
+  setServiceStatus: (status: ServiceStatus) => void;
+  setFinancialGoal: (goal: FinancialGoal) => void;
   setRankVariant: (variant: RankVariant) => void;
   setNotifications: (enabled: boolean) => void;
   setNotificationTime: (hour: number, minute: number) => void;
@@ -44,11 +53,14 @@ interface UserState extends UserPreferences {
   setDisclaimerAcknowledged: () => void;
   setServiceInfo: (payGrade: PayGrade, lastName: string, nickname: string, yos: number) => void;
   setLocationFamily: (mhaZip: string, hasSpouse: boolean, numChildren: number) => void;
-  setPaySetup: (tspContribPct: number, hasDentalFamily: boolean, sglOptOut: boolean) => void;
+  setPaySetup: (tspContribPct: number, rothTspPct: number, hasDentalFamily: boolean, sglOptOut: boolean) => void;
+  setPersonalDetails: (params: { payGrade: PayGrade; lastName: string; nickname: string; yos: number; mhaZip: string; installationName: string; hasSpouse: boolean; numChildren: number; stateResidence: string; dateOfEnlistment: string; dateOfRank: string; rankVariant: RankVariant }) => void;
+  setPayDetails: (params: { tspContribPct: number; rothTspPct: number; hasDentalFamily: boolean; sglOptOut: boolean; spouseMonthlyIncome: number; bahOverride?: number; basOverride?: number; basePayOverride?: number }) => void;
   setStateResidence: (stateCode: string) => void;
   addSpecialPay: (type: SpecialPayType, monthlyAmount: number, customLabel?: string) => void;
   removeSpecialPay: (id: string) => void;
   setQuickAccessIds: (ids: string[]) => void;
+  setGreetingStyle: (style: 'rank' | 'nickname') => void;
   setSpouseMonthlyIncome: (amount: number) => void;
   setAppTheme: (theme: 'dark' | 'light') => void;
   setFontScale: (scale: number) => void;
@@ -64,6 +76,8 @@ function snapshot(get: () => UserState): UserPreferences {
   const s = get();
   return {
     branch: s.branch,
+    serviceStatus: s.serviceStatus,
+    financialGoal: s.financialGoal,
     notificationsEnabled: s.notificationsEnabled,
     notificationHour: s.notificationHour,
     notificationMinute: s.notificationMinute,
@@ -76,13 +90,18 @@ function snapshot(get: () => UserState): UserPreferences {
     nickname: s.nickname,
     yos: s.yos,
     mhaZip: s.mhaZip,
+    installationName: s.installationName,
     hasSpouse: s.hasSpouse,
     numChildren: s.numChildren,
+    dateOfEnlistment: s.dateOfEnlistment,
+    dateOfRank: s.dateOfRank,
     tspContribPct: s.tspContribPct,
+    rothTspPct: s.rothTspPct,
     hasDentalFamily: s.hasDentalFamily,
     sglOptOut: s.sglOptOut,
     stateResidence: s.stateResidence,
     quickAccessIds: s.quickAccessIds,
+    greetingStyle: s.greetingStyle,
     spouseMonthlyIncome: s.spouseMonthlyIncome,
     appTheme: s.appTheme,
     fontScale: s.fontScale,
@@ -107,6 +126,16 @@ export const useUserStore = create<UserState>((set, get) => ({
   setBranch: (branch) => {
     set({ branch });
     save({ ...snapshot(get), branch });
+  },
+
+  setServiceStatus: (serviceStatus) => {
+    set({ serviceStatus });
+    save({ ...snapshot(get), serviceStatus });
+  },
+
+  setFinancialGoal: (financialGoal) => {
+    set({ financialGoal });
+    save({ ...snapshot(get), financialGoal });
   },
 
   setRankVariant: (rankVariant) => {
@@ -144,9 +173,9 @@ export const useUserStore = create<UserState>((set, get) => ({
     save({ ...snapshot(get), mhaZip, hasSpouse, numChildren });
   },
 
-  setPaySetup: (tspContribPct, hasDentalFamily, sglOptOut) => {
-    set({ tspContribPct, hasDentalFamily, sglOptOut });
-    save({ ...snapshot(get), tspContribPct, hasDentalFamily, sglOptOut });
+  setPaySetup: (tspContribPct, rothTspPct, hasDentalFamily, sglOptOut) => {
+    set({ tspContribPct, rothTspPct, hasDentalFamily, sglOptOut });
+    save({ ...snapshot(get), tspContribPct, rothTspPct, hasDentalFamily, sglOptOut });
   },
 
   setStateResidence: (stateResidence) => {
@@ -177,6 +206,11 @@ export const useUserStore = create<UserState>((set, get) => ({
     save({ ...snapshot(get), quickAccessIds });
   },
 
+  setGreetingStyle: (greetingStyle) => {
+    set({ greetingStyle });
+    save({ ...snapshot(get), greetingStyle });
+  },
+
   setSpouseMonthlyIncome: (spouseMonthlyIncome) => {
     set({ spouseMonthlyIncome });
     save({ ...snapshot(get), spouseMonthlyIncome });
@@ -195,6 +229,20 @@ export const useUserStore = create<UserState>((set, get) => ({
   setLesOverrides: (lesOverrides) => {
     set({ lesOverrides });
     save({ ...snapshot(get), lesOverrides });
+  },
+
+  setPersonalDetails: ({ payGrade, lastName, nickname, yos, mhaZip, installationName, hasSpouse, numChildren, stateResidence, dateOfEnlistment, dateOfRank, rankVariant }) => {
+    const update = { payGrade, lastName, nickname, yos, mhaZip, installationName, hasSpouse, numChildren, stateResidence, dateOfEnlistment, dateOfRank, rankVariant };
+    set(update);
+    save({ ...snapshot(get), ...update });
+  },
+
+  setPayDetails: ({ tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, spouseMonthlyIncome, bahOverride, basOverride, basePayOverride }) => {
+    const cur = get().lesOverrides;
+    const lesOverrides = { ...cur, bahOverride, basOverride, basePayOverride };
+    const update = { tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, spouseMonthlyIncome, lesOverrides };
+    set(update);
+    save({ ...snapshot(get), ...update });
   },
 
   resetAll: () => {

@@ -526,13 +526,13 @@ const styles = StyleSheet.create({
   searchIcon: { fontSize: 16 },
   searchInput: { flex: 1, fontSize: 15, paddingVertical: Spacing.two },
 
-  filterRow: { paddingHorizontal: Spacing.three, paddingBottom: Spacing.two, gap: Spacing.one, flexDirection: 'row' },
+  filterRow: { paddingHorizontal: Spacing.three, paddingBottom: Spacing.two, gap: Spacing.two, flexDirection: 'row' },
   filterChip: {
-    flexDirection: 'row', alignItems: 'center', gap: 4,
-    paddingHorizontal: Spacing.two, paddingVertical: 5,
+    flexDirection: 'row', alignItems: 'center', gap: 5,
+    paddingHorizontal: Spacing.three, paddingVertical: 8,
     borderRadius: 99, borderWidth: 1, borderColor: 'rgba(128,128,128,0.25)',
   },
-  filterChipText: { fontSize: 10, fontWeight: '700', letterSpacing: 0.4, color: '#3D6080' },
+  filterChipText: { fontSize: 12, fontWeight: '700', letterSpacing: 0.3, color: '#3D6080' },
 
   content: { paddingHorizontal: Spacing.three, paddingTop: Spacing.two, gap: Spacing.two },
   section: { gap: Spacing.two },

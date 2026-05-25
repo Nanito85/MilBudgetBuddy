@@ -63,17 +63,26 @@ const rowStyles = StyleSheet.create({
 function OverrideModal({
   visible,
   overrides,
+  breakdown,
   onSave,
   onClose,
 }: {
   visible: boolean;
   overrides: LESOverrides;
+  breakdown: LESBreakdown;
   onSave: (o: LESOverrides) => void;
   onClose: () => void;
 }) {
-  const [bahInput,     setBahInput]     = useState(overrides.bahOverride     != null ? String(overrides.bahOverride)     : '');
-  const [basInput,     setBasInput]     = useState(overrides.basOverride     != null ? String(overrides.basOverride)     : '');
-  const [bpInput,      setBpInput]      = useState(overrides.basePayOverride != null ? String(overrides.basePayOverride) : '');
+  // Pre-fill with current resolved values so user can see & edit what's showing
+  const [bahInput, setBahInput] = useState(
+    overrides.bahOverride != null ? String(overrides.bahOverride) : String(Math.round(breakdown.bah)),
+  );
+  const [basInput, setBasInput] = useState(
+    overrides.basOverride != null ? String(overrides.basOverride) : String(Math.round(breakdown.bas)),
+  );
+  const [bpInput, setBpInput] = useState(
+    overrides.basePayOverride != null ? String(overrides.basePayOverride) : String(Math.round(breakdown.basePay)),
+  );
 
   const [extraIncome,      setExtraIncome]      = useState<LESLineItem[]>(overrides.extraIncome);
   const [extraDeductions,  setExtraDeductions]  = useState<LESLineItem[]>(overrides.extraDeductions);
@@ -87,10 +96,14 @@ function OverrideModal({
     const bah = parseFloat(bahInput);
     const bas = parseFloat(basInput);
     const bp  = parseFloat(bpInput);
+    // Only store as override if the value meaningfully differs from the calculated value
+    const bahDiffers = !isNaN(bah) && Math.abs(bah - breakdown.bah) > 0.5;
+    const basDiffers = !isNaN(bas) && Math.abs(bas - breakdown.bas) > 0.5;
+    const bpDiffers  = !isNaN(bp)  && Math.abs(bp  - breakdown.basePay) > 0.5;
     onSave({
-      bahOverride:      !isNaN(bah) && bahInput.trim() ? bah : undefined,
-      basOverride:      !isNaN(bas) && basInput.trim() ? bas : undefined,
-      basePayOverride:  !isNaN(bp)  && bpInput.trim()  ? bp  : undefined,
+      bahOverride:     bahDiffers ? bah : overrides.bahOverride,
+      basOverride:     basDiffers ? bas : overrides.basOverride,
+      basePayOverride: bpDiffers  ? bp  : overrides.basePayOverride,
       extraIncome,
       extraDeductions,
     });
@@ -150,12 +163,17 @@ function OverrideModal({
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}>
 
-            <ThemedText style={mStyles.intro}>
-              Override calculated values with your actual LES amounts. Leave blank to use the app's estimate. All amounts are monthly.
-            </ThemedText>
+            {/* LES annotation tip */}
+            <View style={mStyles.lesTip}>
+              <ThemedText style={mStyles.lesTipTitle}>📋 HOW TO USE YOUR LES</ThemedText>
+              <ThemedText style={mStyles.lesTipBody}>
+                Open your LES at <ThemedText style={mStyles.lesTipLink}>MyPay.DFAS.mil</ThemedText> and compare each section below. Values are pre-filled from the app's estimate — update any that differ from your actual LES.
+              </ThemedText>
+            </View>
 
             {/* ── Entitlement Overrides ── */}
-            <ThemedText style={mStyles.sectionLabel}>ENTITLEMENT OVERRIDES</ThemedText>
+            <ThemedText style={mStyles.sectionLabel}>ENTITLEMENTS (from LES block 3–7)</ThemedText>
+            <ThemedText style={mStyles.hint}>Pre-filled from app estimate. Tap ✕ to reset to calculated value.</ThemedText>
 
             <ThemedText style={mStyles.fieldLabel}>BASE PAY (monthly)</ThemedText>
             <View style={mStyles.inputRow}>
@@ -164,7 +182,7 @@ function OverrideModal({
                 style={mStyles.input}
                 value={bpInput}
                 onChangeText={setBpInput}
-                placeholder="Calculated (leave blank)"
+                placeholder="0"
                 placeholderTextColor="#2A4A60"
                 keyboardType="decimal-pad"
               />
@@ -178,7 +196,7 @@ function OverrideModal({
                 style={mStyles.input}
                 value={bahInput}
                 onChangeText={setBahInput}
-                placeholder="Calculated (leave blank)"
+                placeholder="0"
                 placeholderTextColor="#2A4A60"
                 keyboardType="decimal-pad"
               />
@@ -192,7 +210,7 @@ function OverrideModal({
                 style={mStyles.input}
                 value={basInput}
                 onChangeText={setBasInput}
-                placeholder="Calculated (leave blank)"
+                placeholder="0"
                 placeholderTextColor="#2A4A60"
                 keyboardType="decimal-pad"
               />
@@ -200,8 +218,8 @@ function OverrideModal({
             </View>
 
             {/* ── Extra Income ── */}
-            <ThemedText style={mStyles.sectionLabel}>ADDITIONAL INCOME</ThemedText>
-            <ThemedText style={mStyles.hint}>OHA, Clothing Allowance, COLA, FSA, Hardship Duty Pay, etc.</ThemedText>
+            <ThemedText style={mStyles.sectionLabel}>ADDITIONAL INCOME (LES block 3–18)</ThemedText>
+            <ThemedText style={mStyles.hint}>Add entitlements from your LES not listed above: OHA, Clothing Allowance, COLA, FSA, Hardship Duty Pay, Family Sep, etc.</ThemedText>
 
             {extraIncome.map(item => (
               <View key={item.id} style={mStyles.lineItem}>
@@ -242,9 +260,61 @@ function OverrideModal({
               </View>
             </View>
 
+            {/* ── Calculated Deductions Reference ── */}
+            <ThemedText style={mStyles.sectionLabel}>DEDUCTIONS REFERENCE (LES block 19–24)</ThemedText>
+            <ThemedText style={mStyles.hint}>
+              App estimates shown below. Cross-reference with your LES "DEDUCTIONS" column. To set TSP %, go to Profile → Edit Pay.
+            </ThemedText>
+            <View style={mStyles.refTable}>
+              <View style={mStyles.refRow}>
+                <ThemedText style={mStyles.refLabel}>FICA (Soc Security + Medicare)</ThemedText>
+                <ThemedText style={[mStyles.refValue, { color: Brand.danger }]}>-{fmtPay(breakdown.fica)}/mo</ThemedText>
+              </View>
+              <View style={mStyles.refRow}>
+                <ThemedText style={mStyles.refLabel}>Federal Income Tax (est.)</ThemedText>
+                <ThemedText style={[mStyles.refValue, { color: Brand.danger }]}>-{fmtPay(breakdown.fedTax)}/mo</ThemedText>
+              </View>
+              {breakdown.stateTax > 0 && (
+                <View style={mStyles.refRow}>
+                  <ThemedText style={mStyles.refLabel}>State Income Tax (est.)</ThemedText>
+                  <ThemedText style={[mStyles.refValue, { color: Brand.danger }]}>-{fmtPay(breakdown.stateTax)}/mo</ThemedText>
+                </View>
+              )}
+              {breakdown.traditionalTsp > 0 && (
+                <View style={mStyles.refRow}>
+                  <ThemedText style={mStyles.refLabel}>Traditional TSP</ThemedText>
+                  <ThemedText style={[mStyles.refValue, { color: Brand.danger }]}>-{fmtPay(breakdown.traditionalTsp)}/mo</ThemedText>
+                </View>
+              )}
+              {breakdown.rothTsp > 0 && (
+                <View style={mStyles.refRow}>
+                  <ThemedText style={mStyles.refLabel}>Roth TSP</ThemedText>
+                  <ThemedText style={[mStyles.refValue, { color: Brand.danger }]}>-{fmtPay(breakdown.rothTsp)}/mo</ThemedText>
+                </View>
+              )}
+              {breakdown.tsp === 0 && (
+                <View style={mStyles.refRow}>
+                  <ThemedText style={mStyles.refLabel}>TSP (set in Profile)</ThemedText>
+                  <ThemedText style={[mStyles.refValue, { color: '#3D6080' }]}>$0/mo</ThemedText>
+                </View>
+              )}
+              {breakdown.sgli > 0 && (
+                <View style={mStyles.refRow}>
+                  <ThemedText style={mStyles.refLabel}>SGLI Premium ($500k)</ThemedText>
+                  <ThemedText style={[mStyles.refValue, { color: Brand.danger }]}>-{fmtPay(breakdown.sgli)}/mo</ThemedText>
+                </View>
+              )}
+              {breakdown.dental > 0 && (
+                <View style={mStyles.refRow}>
+                  <ThemedText style={mStyles.refLabel}>Dental (TDP Family)</ThemedText>
+                  <ThemedText style={[mStyles.refValue, { color: Brand.danger }]}>-{fmtPay(breakdown.dental)}/mo</ThemedText>
+                </View>
+              )}
+            </View>
+
             {/* ── Extra Deductions ── */}
-            <ThemedText style={mStyles.sectionLabel}>ADDITIONAL DEDUCTIONS</ThemedText>
-            <ThemedText style={mStyles.hint}>BOP, allotments, AAFES debt, vision plan, Servicemembers Group, etc.</ThemedText>
+            <ThemedText style={mStyles.sectionLabel}>ADDITIONAL DEDUCTIONS (LES block 19+)</ThemedText>
+            <ThemedText style={mStyles.hint}>Add deductions from your LES that aren't listed above: BOP, allotments, AAFES debt, vision plan, mid-month pay, etc.</ThemedText>
 
             {extraDeductions.map(item => (
               <View key={item.id} style={mStyles.lineItem}>
@@ -352,6 +422,27 @@ const mStyles = StyleSheet.create({
 
   clearAllBtn: { marginTop: Spacing.three, alignItems: 'center', padding: Spacing.two },
   clearAllTxt: { fontSize: 11, fontWeight: '700', color: Brand.classified, letterSpacing: 1 },
+
+  lesTip: {
+    backgroundColor: Brand.tactical + '10',
+    borderWidth: 1, borderColor: Brand.tactical + '30',
+    borderRadius: 6, padding: Spacing.two + 2, gap: 4,
+  },
+  lesTipTitle: { fontSize: 10, fontWeight: '800', color: Brand.tactical, letterSpacing: 1 },
+  lesTipBody:  { fontSize: 11, color: '#4D7A9A', lineHeight: 16 },
+  lesTipLink:  { color: Brand.accent, fontWeight: '700' },
+
+  refTable: {
+    backgroundColor: '#04080F', borderWidth: 1, borderColor: Brand.border,
+    borderRadius: 6, overflow: 'hidden',
+  },
+  refRow: {
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+    paddingHorizontal: Spacing.two, paddingVertical: Spacing.one + 2,
+    borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: Brand.border,
+  },
+  refLabel: { fontSize: 11, color: '#4D7A9A', flex: 1 },
+  refValue:  { fontSize: 11, fontWeight: '700', fontFamily: 'monospace' },
 });
 
 // ── Main Card ─────────────────────────────────────────────────────────────────
@@ -470,11 +561,6 @@ export function PaySummaryCard({ breakdown }: Props) {
             <ThemedText type="label" style={styles.quickLabel}>TSP</ThemedText>
             <ThemedText style={[styles.quickValue, { color: Brand.accent }]}>{fmtPay(breakdown.tsp / 2)}</ThemedText>
           </View>
-          <View style={styles.quickSep} />
-          <View style={styles.quickItem}>
-            <ThemedText type="label" style={styles.quickLabel}>10% SAVINGS</ThemedText>
-            <ThemedText style={[styles.quickValue, { color: Brand.success }]}>{fmtPay(breakdown.netPay * 0.10 / 2)}</ThemedText>
-          </View>
         </View>
       )}
 
@@ -503,7 +589,9 @@ export function PaySummaryCard({ breakdown }: Props) {
           {breakdown.stateTax > 0 && (
             <Row label="STATE TAX (EST.)" value={`-${fmtPay(breakdown.stateTax)}`} indent negative />
           )}
-          <Row label="TSP CONTRIB"      value={`-${fmtPay(breakdown.tsp)}`}      indent negative />
+          {breakdown.traditionalTsp > 0 && <Row label="TSP (TRADITIONAL)" value={`-${fmtPay(breakdown.traditionalTsp)}`} indent negative />}
+          {breakdown.rothTsp > 0       && <Row label="TSP (ROTH)"        value={`-${fmtPay(breakdown.rothTsp)}`}        indent negative />}
+          {breakdown.tsp === 0         && <Row label="TSP CONTRIB"       value="$0"                                      indent negative />}
           {breakdown.sgli > 0  && <Row label="SGLI"          value={`-${fmtPay(breakdown.sgli)}`}   indent negative />}
           {breakdown.dental > 0 && <Row label="DENTAL (TDP)" value={`-${fmtPay(breakdown.dental)}`} indent negative />}
           {breakdown.extraDeductionItems.map(item => (
@@ -577,6 +665,7 @@ export function PaySummaryCard({ breakdown }: Props) {
       <OverrideModal
         visible={showEdit}
         overrides={lesOverrides}
+        breakdown={breakdown}
         onSave={setLesOverrides}
         onClose={() => setShowEdit(false)}
       />

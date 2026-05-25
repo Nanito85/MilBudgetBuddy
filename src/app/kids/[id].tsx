@@ -17,7 +17,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ThemedText } from '@/components/themed-text';
 import { ChoresList } from '@/features/kids/components/ChoresList';
 import { GoalMeter } from '@/features/kids/components/GoalMeter';
-import { getDailyKidsTip } from '@/data/kids-tips';
+import { KIDS_TIPS, getDailyKidsTipIndex } from '@/data/kids-tips';
 import { useKidsStore } from '@/store/kids.store';
 import { ChoreFrequency, Goal, getKidTheme } from '@/types/kids.types';
 import { Spacing } from '@/constants/theme';
@@ -496,11 +496,13 @@ export default function KidScreen() {
   const [showAddChore, setShowAddChore] = useState(false);
   const [addChoreFreq, setAddChoreFreq] = useState<ChoreFrequency>('daily');
 
+  const [briefIdx, setBriefIdx] = useState(() => getDailyKidsTipIndex());
+
   const kid = kids.find((k) => k.id === id);
   if (!kid) return null;
 
   const theme = getKidTheme(kid.gender);
-  const tip   = getDailyKidsTip();
+  const tip   = KIDS_TIPS[briefIdx];
 
   const totalEarned = kid.chores.reduce((sum, c) => sum + c.completedDates.length * c.value, 0);
 
@@ -667,12 +669,30 @@ export default function KidScreen() {
           </View>
         )}
 
-        {/* ── Finance Tip ── */}
-        <View style={[styles.tipCard, { backgroundColor: theme.card, borderColor: theme.accent + '30' }]}>
-          <ThemedText style={styles.tipEmoji}>{tip.emoji}</ThemedText>
-          <View style={styles.tipBody}>
-            <ThemedText style={[styles.tipTitle, { color: theme.badge }]}>{tip.title}</ThemedText>
-            <ThemedText style={styles.tipText}>{tip.body}</ThemedText>
+        {/* ── Junior Intel Brief ── */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <ThemedText style={[styles.sectionTitle, { color: theme.accentLight }]}>🎓 JUNIOR INTEL BRIEF</ThemedText>
+            <View style={[styles.briefNav, { borderColor: theme.accent + '40' }]}>
+              <Pressable
+                onPress={() => setBriefIdx((i) => (i - 1 + KIDS_TIPS.length) % KIDS_TIPS.length)}
+                hitSlop={10}>
+                <ThemedText style={[styles.briefArrow, { color: theme.accent }]}>‹</ThemedText>
+              </Pressable>
+              <ThemedText style={styles.briefCounter}>{briefIdx + 1}/{KIDS_TIPS.length}</ThemedText>
+              <Pressable
+                onPress={() => setBriefIdx((i) => (i + 1) % KIDS_TIPS.length)}
+                hitSlop={10}>
+                <ThemedText style={[styles.briefArrow, { color: theme.accent }]}>›</ThemedText>
+              </Pressable>
+            </View>
+          </View>
+          <View style={[styles.tipCard, { backgroundColor: theme.card, borderColor: theme.accent + '30' }]}>
+            <ThemedText style={styles.tipEmoji}>{tip.emoji}</ThemedText>
+            <View style={styles.tipBody}>
+              <ThemedText style={[styles.tipTitle, { color: theme.badge }]}>{tip.title}</ThemedText>
+              <ThemedText style={styles.tipText}>{tip.body}</ThemedText>
+            </View>
           </View>
         </View>
 
@@ -773,9 +793,13 @@ const styles = StyleSheet.create({
   historyName:  { flex: 1, fontSize: 13, color: 'rgba(255,255,255,0.75)' },
   historyValue: { fontSize: 13, fontWeight: '700' },
 
+  briefNav: { flexDirection: 'row', alignItems: 'center', gap: Spacing.one + 2, borderWidth: 1, borderRadius: 12, paddingHorizontal: Spacing.one + 2, paddingVertical: 2 },
+  briefArrow: { fontSize: 20, fontWeight: '300', lineHeight: 26 },
+  briefCounter: { fontSize: 10, fontWeight: '700', color: 'rgba(255,255,255,0.4)', minWidth: 28, textAlign: 'center' },
+
   tipCard: {
     borderRadius: 18, padding: Spacing.three, flexDirection: 'row',
-    gap: Spacing.two, alignItems: 'flex-start', marginTop: Spacing.one,
+    gap: Spacing.two, alignItems: 'flex-start',
     borderWidth: 1,
   },
   tipEmoji: { fontSize: 30, lineHeight: 36 },

@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 
-import { Chore, ChoreFrequency, Goal, KidGender, KidProfile } from '@/types/kids.types';
+import { Chore, ChoreFrequency, Goal, KidGender, KidProfile, PendingCompletion } from '@/types/kids.types';
 
 const STORAGE_KEY = 'mbb_kids';
 
@@ -19,6 +19,9 @@ interface KidsState {
   completeChore: (kidId: string, choreId: string, goalId: string) => void;
   uncompleteChore: (kidId: string, choreId: string, goalId?: string) => void;
   removeChore: (kidId: string, choreId: string) => void;
+  submitChoreForApproval: (kidId: string, choreId: string, goalId?: string) => void;
+  approveCompletion: (kidId: string, completionId: string) => void;
+  rejectCompletion: (kidId: string, completionId: string) => void;
 }
 
 function uid() {
@@ -56,7 +59,9 @@ export const useKidsStore = create<KidsState>((set, get) => ({
   hydrate: async () => {
     try {
       const raw = await AsyncStorage.getItem(STORAGE_KEY);
-      const kids: KidProfile[] = raw ? JSON.parse(raw) : [];
+      const parsed: KidProfile[] = raw ? JSON.parse(raw) : [];
+      // Migrate: ensure pendingCompletions exists on all kids
+      const kids = parsed.map((k) => ({ ...k, pendingCompletions: k.pendingCompletions ?? [] }));
       set({ kids, hydrated: true });
     } catch {
       set({ hydrated: true });
@@ -64,7 +69,7 @@ export const useKidsStore = create<KidsState>((set, get) => ({
   },
 
   addKid: (nickname, gender) => {
-    const kid: KidProfile = { id: uid(), nickname, gender, goals: [], chores: [] };
+    const kid: KidProfile = { id: uid(), nickname, gender, goals: [], chores: [], pendingCompletions: [] };
     const kids = [...get().kids, kid];
     set({ kids });
     saveKids(kids);
@@ -184,6 +189,67 @@ export const useKidsStore = create<KidsState>((set, get) => ({
   removeChore: (kidId, choreId) => {
     const kids = get().kids.map((k) =>
       k.id === kidId ? { ...k, chores: k.chores.filter((c) => c.id !== choreId) } : k,
+    );
+    set({ kids });
+    saveKids(kids);
+  },
+
+  submitChoreForApproval: (kidId, choreId, goalId) => {
+    const date = today();
+    const kids = get().kids.map((k) => {
+      if (k.id !== kidId) return k;
+      const chore = k.chores.find((c) => c.id === choreId);
+      if (!chore) return k;
+      // Already pending or done this period — skip
+      const alreadyPending = (k.pendingCompletions ?? []).some((p) => p.choreId === choreId && p.submittedDate === date);
+      if (alreadyPending) return k;
+      if (getCompletedDateInPeriod(chore.completedDates, chore.frequency ?? 'daily') !== null) return k;
+      const pending: PendingCompletion = {
+        id: uid(),
+        choreId,
+        choreName: chore.name,
+        choreValue: chore.value,
+        goalId,
+        submittedDate: date,
+      };
+      return { ...k, pendingCompletions: [...(k.pendingCompletions ?? []), pending] };
+    });
+    set({ kids });
+    saveKids(kids);
+  },
+
+  approveCompletion: (kidId, completionId) => {
+    const date = today();
+    const kids = get().kids.map((k) => {
+      if (k.id !== kidId) return k;
+      const pending = (k.pendingCompletions ?? []).find((p) => p.id === completionId);
+      if (!pending) return k;
+      // Mark chore as complete
+      const updatedChores = k.chores.map((c) =>
+        c.id === pending.choreId ? { ...c, completedDates: [...c.completedDates, date] } : c,
+      );
+      // Credit goal if set
+      const updatedGoals = k.goals.map((g) =>
+        g.id === pending.goalId
+          ? { ...g, currentAmount: Math.min(g.targetAmount, g.currentAmount + pending.choreValue) }
+          : g,
+      );
+      return {
+        ...k,
+        chores: updatedChores,
+        goals: updatedGoals,
+        pendingCompletions: (k.pendingCompletions ?? []).filter((p) => p.id !== completionId),
+      };
+    });
+    set({ kids });
+    saveKids(kids);
+  },
+
+  rejectCompletion: (kidId, completionId) => {
+    const kids = get().kids.map((k) =>
+      k.id === kidId
+        ? { ...k, pendingCompletions: (k.pendingCompletions ?? []).filter((p) => p.id !== completionId) }
+        : k,
     );
     set({ kids });
     saveKids(kids);

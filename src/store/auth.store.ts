@@ -68,7 +68,7 @@ function friendlyError(code: string): string {
   switch (code) {
     case 'auth/email-already-in-use':   return 'That email is already registered. Try signing in.';
     case 'auth/invalid-email':          return 'Enter a valid email address.';
-    case 'auth/weak-password':          return 'Password must be at least 6 characters.';
+    case 'auth/weak-password':          return 'Password must be at least 8 characters.';
     case 'auth/user-not-found':
     case 'auth/wrong-password':
     case 'auth/invalid-credential':     return 'Incorrect email or password.';
