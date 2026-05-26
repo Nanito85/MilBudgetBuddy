@@ -63,7 +63,8 @@
         "@sentry/react-native",
         {
           "organization": "milbudgetbuddy",
-          "project": "milbudgetbuddy"
+          "project": "milbudgetbuddy",
+          "uploadSourceMaps": false
         }
       ],
       "expo-secure-store",
