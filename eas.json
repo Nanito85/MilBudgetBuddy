@@ -23,7 +23,8 @@
       "android": {
         "autoIncrement": "versionCode"
       },
-      "channel": "production"
+      "channel": "production",
+      "environment": "preview"
     }
   },
   "submit": {
