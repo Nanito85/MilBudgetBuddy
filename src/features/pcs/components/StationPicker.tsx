@@ -19,16 +19,19 @@ interface Props {
   label: string;
   selected: Installation | null;
   onSelect: (inst: Installation) => void;
+  conusOnly?: boolean;
 }
 
-export function StationPicker({ label, selected, onSelect }: Props) {
+export function StationPicker({ label, selected, onSelect, conusOnly = false }: Props) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const insets = useSafeAreaInsets();
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
 
-  const results = searchInstallations(query);
+  const results = conusOnly
+    ? searchInstallations(query).filter((i) => !i.oconus && !!i.mhaZip)
+    : searchInstallations(query);
 
   const handleSelect = (inst: Installation) => {
     onSelect(inst);

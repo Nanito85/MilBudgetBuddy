@@ -51,7 +51,7 @@ export const INSTALLATIONS: Installation[] = [
   { id: 'ns_norfolk',          name: 'Naval Station Norfolk',     city: 'Norfolk',            state: 'VA', mhaZip: '23511', oconus: false, branch: 'Navy' },
   { id: 'nas_jacksonville',    name: 'NAS Jacksonville',          city: 'Jacksonville',       state: 'FL', mhaZip: '32212', oconus: false, branch: 'Navy' },
   { id: 'nas_pensacola',       name: 'NAS Pensacola',             city: 'Pensacola',          state: 'FL', mhaZip: '32508', oconus: false, branch: 'Navy' },
-  { id: 'nas_san_diego',       name: 'Naval Base San Diego',      city: 'San Diego',          state: 'CA', mhaZip: '92054', oconus: false, branch: 'Navy' },
+  { id: 'nas_san_diego',       name: 'Naval Base San Diego',      city: 'San Diego',          state: 'CA', mhaZip: '92136', oconus: false, branch: 'Navy' },
   { id: 'nbk',                 name: 'Naval Base Kitsap',         city: 'Bremerton',          state: 'WA', mhaZip: '98312', oconus: false, branch: 'Navy' },
   { id: 'ns_mayport',          name: 'Naval Station Mayport',     city: 'Jacksonville',       state: 'FL', mhaZip: '32228', oconus: false, branch: 'Navy' },
   { id: 'jbphh',               name: 'JB Pearl Harbor-Hickam',    city: 'Honolulu',           state: 'HI', mhaZip: '96818', oconus: false, branch: 'Joint' },
@@ -77,7 +77,7 @@ export const INSTALLATIONS: Installation[] = [
 
   // ── MARINES ──────────────────────────────────────────────────────────────────
   { id: 'camp_lejeune',        name: 'MCB Camp Lejeune',          city: 'Jacksonville',       state: 'NC', mhaZip: '28542', oconus: false, branch: 'Marines' },
-  { id: 'camp_pendleton',      name: 'MCB Camp Pendleton',        city: 'Oceanside',          state: 'CA', mhaZip: '92054', oconus: false, branch: 'Marines' },
+  { id: 'camp_pendleton',      name: 'MCB Camp Pendleton',        city: 'Oceanside',          state: 'CA', mhaZip: '92058', oconus: false, branch: 'Marines' },
   { id: 'quantico',            name: 'MCB Quantico',              city: 'Triangle',           state: 'VA', mhaZip: '22134', oconus: false, branch: 'Marines' },
   { id: 'mcas_miramar',        name: 'MCAS Miramar',              city: 'San Diego',          state: 'CA', mhaZip: '92145', oconus: false, branch: 'Marines' },
   { id: 'mcas_beaufort',       name: 'MCAS Beaufort',             city: 'Beaufort',           state: 'SC', mhaZip: '29904', oconus: false, branch: 'Marines' },
