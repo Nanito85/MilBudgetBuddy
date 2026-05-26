@@ -32,7 +32,7 @@ export const ALL_QUICK_ACTIONS: QuickAction[] = [
 export const DEFAULT_QUICK_ACCESS_IDS = ['budget', 'debt', 'credit', 'retirement'];
 
 export function getDefaultQuickAccessIds(
-  serviceStatus?: 'active' | 'reserve' | 'retired',
+  serviceStatus?: 'active' | 'reserve' | 'retired' | 'civilian',
   financialGoal?: string,
 ): string[] {
   if (serviceStatus === 'retired') {

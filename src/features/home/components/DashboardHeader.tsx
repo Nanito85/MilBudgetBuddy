@@ -43,13 +43,14 @@ export function DashboardHeader({ branch, payGrade, rankVariant, lastName, nickn
   const rankAbbrev = getRankAbbrev(branch, payGrade, rankVariant);
   const rankName = payGrade && lastName ? `${rankAbbrev} ${lastName.toUpperCase()}` : lastName?.toUpperCase() ?? '';
 
+  // Default to rank display; fall back to nickname only if explicitly set
   let displayName = 'SERVICEMEMBER';
-  if (greetingStyle === 'rank' && rankName) {
-    displayName = rankName;
-  } else if (nickname) {
+  if (greetingStyle === 'nickname' && nickname) {
     displayName = nickname.toUpperCase();
   } else if (rankName) {
     displayName = rankName;
+  } else if (nickname) {
+    displayName = nickname.toUpperCase();
   }
 
   const now = new Date();

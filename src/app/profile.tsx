@@ -16,6 +16,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { DatePickerModal } from '@/components/DatePickerModal';
 import { TacticalCard } from '@/components/TacticalCard';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -338,7 +339,9 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
   const [state, setState]         = useState(stateResidence ?? '');
   const [enlistDate, setEnlistDate] = useState(dateOfEnlist ?? '');
   const [rankDate, setRankDate]   = useState(dateOfRank ?? '');
-  const [showStatePicker, setShowStatePicker] = useState(false);
+  const [showStatePicker, setShowStatePicker]   = useState(false);
+  const [showEnlistPicker, setShowEnlistPicker] = useState(false);
+  const [showRankPicker, setShowRankPicker]     = useState(false);
 
   // Reset variant to default when branch or grade changes and current variant no longer applies
   useEffect(() => {
@@ -437,21 +440,27 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
 
             {/* Dates */}
             <ThemedText style={editStyles.fieldLabel}>DATE OF ENLISTMENT / COMMISSION</ThemedText>
-            <View style={[editStyles.inputWrap, { backgroundColor: inputBg }]}>
-              <TextInput value={enlistDate} onChangeText={setEnlistDate} placeholder="YYYY-MM-DD"
-                placeholderTextColor={placeholder} style={[editStyles.input, { color: '#C8D8E8', fontFamily: Fonts.data }]}
-                keyboardType="numbers-and-punctuation" returnKeyType="next" maxLength={10} />
-            </View>
+            <Pressable
+              onPress={() => setShowEnlistPicker(true)}
+              style={[editStyles.inputWrap, { backgroundColor: inputBg, flexDirection: 'row', alignItems: 'center' }]}>
+              <ThemedText style={[editStyles.input, { color: enlistDate ? '#C8D8E8' : placeholder, flex: 1, paddingVertical: Spacing.two + 4 }]}>
+                {enlistDate ? enlistDate : 'Tap to select date'}
+              </ThemedText>
+              <ThemedText style={{ fontSize: 18, paddingRight: 4 }}>📅</ThemedText>
+            </Pressable>
             {enlistDate && yearsFromDate(enlistDate) !== null && (
               <ThemedText style={editStyles.dateHint}>↳ {yearsFromDate(enlistDate)} years of service (auto-calculated)</ThemedText>
             )}
 
             <ThemedText style={editStyles.fieldLabel}>DATE OF CURRENT RANK</ThemedText>
-            <View style={[editStyles.inputWrap, { backgroundColor: inputBg }]}>
-              <TextInput value={rankDate} onChangeText={setRankDate} placeholder="YYYY-MM-DD"
-                placeholderTextColor={placeholder} style={[editStyles.input, { color: '#C8D8E8', fontFamily: Fonts.data }]}
-                keyboardType="numbers-and-punctuation" returnKeyType="done" maxLength={10} />
-            </View>
+            <Pressable
+              onPress={() => setShowRankPicker(true)}
+              style={[editStyles.inputWrap, { backgroundColor: inputBg, flexDirection: 'row', alignItems: 'center' }]}>
+              <ThemedText style={[editStyles.input, { color: rankDate ? '#C8D8E8' : placeholder, flex: 1, paddingVertical: Spacing.two + 4 }]}>
+                {rankDate ? rankDate : 'Tap to select date'}
+              </ThemedText>
+              <ThemedText style={{ fontSize: 18, paddingRight: 4 }}>📅</ThemedText>
+            </Pressable>
             {rankDate && yearsFromDate(rankDate) !== null && (
               <ThemedText style={editStyles.dateHint}>↳ {yearsFromDate(rankDate)} years in grade · Used for High-3 calculator</ThemedText>
             )}
@@ -492,6 +501,20 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
         selected={state}
         onSelect={setState}
         onClose={() => setShowStatePicker(false)}
+      />
+      <DatePickerModal
+        visible={showEnlistPicker}
+        value={enlistDate}
+        title="Date of Enlistment / Commission"
+        onConfirm={(d) => { setEnlistDate(d); setShowEnlistPicker(false); }}
+        onCancel={() => setShowEnlistPicker(false)}
+      />
+      <DatePickerModal
+        visible={showRankPicker}
+        value={rankDate}
+        title="Date of Current Rank"
+        onConfirm={(d) => { setRankDate(d); setShowRankPicker(false); }}
+        onCancel={() => setShowRankPicker(false)}
       />
     </Modal>
   );

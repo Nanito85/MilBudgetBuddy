@@ -28,13 +28,15 @@ const DEFAULTS: UserPreferences = {
   numChildren: 0,
   dateOfEnlistment: undefined,
   dateOfRank: undefined,
+  gsGrade: undefined,
+  gsStep: undefined,
   tspContribPct: 0,
   rothTspPct: 0,
   hasDentalFamily: false,
   sglOptOut: false,
   stateResidence: undefined,
   quickAccessIds: ['budget', 'debt', 'credit', 'retirement'],
-  greetingStyle: 'nickname',
+  greetingStyle: 'rank',
   appTheme: 'dark',
   fontScale: 1.0,
   lesOverrides: { extraIncome: [], extraDeductions: [] },
@@ -51,7 +53,8 @@ interface UserState extends UserPreferences {
   setNotificationTime: (hour: number, minute: number) => void;
   setOnboarded: () => void;
   setDisclaimerAcknowledged: () => void;
-  setServiceInfo: (payGrade: PayGrade, lastName: string, nickname: string, yos: number) => void;
+  setServiceInfo: (payGrade: PayGrade, lastName: string, nickname: string, yos: number, dateOfEnlistment?: string, dateOfRank?: string) => void;
+  setGSInfo: (gsGrade: number, gsStep: number, lastName: string, nickname: string, dateOfEnlistment?: string) => void;
   setLocationFamily: (mhaZip: string, hasSpouse: boolean, numChildren: number) => void;
   setPaySetup: (tspContribPct: number, rothTspPct: number, hasDentalFamily: boolean, sglOptOut: boolean) => void;
   setPersonalDetails: (params: { payGrade: PayGrade; lastName: string; nickname: string; yos: number; mhaZip: string; installationName: string; hasSpouse: boolean; numChildren: number; stateResidence: string; dateOfEnlistment: string; dateOfRank: string; rankVariant: RankVariant }) => void;
@@ -102,6 +105,8 @@ function snapshot(get: () => UserState): UserPreferences {
     stateResidence: s.stateResidence,
     quickAccessIds: s.quickAccessIds,
     greetingStyle: s.greetingStyle,
+    gsGrade: s.gsGrade,
+    gsStep: s.gsStep,
     spouseMonthlyIncome: s.spouseMonthlyIncome,
     appTheme: s.appTheme,
     fontScale: s.fontScale,
@@ -163,9 +168,14 @@ export const useUserStore = create<UserState>((set, get) => ({
     save({ ...snapshot(get), disclaimerAcknowledged: true });
   },
 
-  setServiceInfo: (payGrade, lastName, nickname, yos) => {
-    set({ payGrade, lastName, nickname, yos, rankVariant: 'default' });
-    save({ ...snapshot(get), payGrade, lastName, nickname, yos, rankVariant: 'default' });
+  setServiceInfo: (payGrade, lastName, nickname, yos, dateOfEnlistment, dateOfRank) => {
+    set({ payGrade, lastName, nickname, yos, rankVariant: 'default', dateOfEnlistment, dateOfRank });
+    save({ ...snapshot(get), payGrade, lastName, nickname, yos, rankVariant: 'default', dateOfEnlistment, dateOfRank });
+  },
+
+  setGSInfo: (gsGrade, gsStep, lastName, nickname, dateOfEnlistment) => {
+    set({ gsGrade, gsStep, lastName, nickname, dateOfEnlistment });
+    save({ ...snapshot(get), gsGrade, gsStep, lastName, nickname, dateOfEnlistment });
   },
 
   setLocationFamily: (mhaZip, hasSpouse, numChildren) => {

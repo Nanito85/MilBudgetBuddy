@@ -78,7 +78,7 @@ export function getRankAbbrev(
 
 export type { RankVariant };
 
-export type ServiceStatus = 'active' | 'reserve' | 'retired';
+export type ServiceStatus = 'active' | 'reserve' | 'retired' | 'civilian';
 
 export type FinancialGoal =
   | 'save_money'
@@ -130,6 +130,9 @@ export interface UserPreferences {
   // Service dates
   dateOfEnlistment?: string; // YYYY-MM-DD
   dateOfRank?: string;       // YYYY-MM-DD
+  // Civilian GS info
+  gsGrade?: number;  // 1-15
+  gsStep?: number;   // 1-10
   // Pay setup
   tspContribPct: number;   // Traditional TSP contribution %
   rothTspPct: number;      // Roth TSP contribution %
