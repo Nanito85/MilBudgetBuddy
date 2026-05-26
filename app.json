@@ -12,6 +12,7 @@
       "bundleIdentifier": "com.nanito85.MilBudgetBuddy",
       "buildNumber": "1",
       "supportsTablet": false,
+      "deploymentTarget": "16.0",
       "infoPlist": {
         "NSUserNotificationsUsageDescription": "MilBudgetBuddy sends pay day reminders and daily finance tips to help you stay on top of your military finances.",
         "ITSAppUsesNonExemptEncryption": false,
