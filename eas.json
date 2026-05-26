@@ -24,7 +24,7 @@
         "autoIncrement": "versionCode"
       },
       "channel": "production",
-      "environment": "preview"
+      "environment": "production"
     }
   },
   "submit": {
