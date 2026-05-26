@@ -4,32 +4,32 @@ import { getBasicPay } from '@/data/basic-pay-rates';
 import { getStateTaxRate } from '@/data/state-tax';
 import { LESOverrides } from '@/types/user.types';
 
-export const SGLI_MONTHLY = 29;    // $500k coverage standard
-export const DENTAL_FAMILY = 36.14; // TDP family plan $/month (FY2025 approx)
+export const SGLI_MONTHLY = 29;      // $500k coverage standard
+export const DENTAL_FAMILY = 38.67;  // TDP family plan $/month (FY2026)
 
 // Federal income tax estimate — base pay only (allowances not taxable)
-// Uses 2025 brackets; filing status: 'single' | 'married'
+// FY2026 brackets (inflation-adjusted); filing status: 'single' | 'married'
 function estimateFedTax(annualBasePay: number, married: boolean): number {
-  const stdDeduction = married ? 30000 : 15000;
+  const stdDeduction = married ? 30900 : 15450;
   const taxable = Math.max(0, annualBasePay - stdDeduction);
 
   const brackets = married
     ? [
-        [23850, 0.10],
-        [96950, 0.12],
-        [206700, 0.22],
-        [394600, 0.24],
-        [501050, 0.32],
-        [751600, 0.35],
+        [24500, 0.10],
+        [99700, 0.12],
+        [212700, 0.22],
+        [405600, 0.24],
+        [515200, 0.32],
+        [772750, 0.35],
         [Infinity, 0.37],
       ]
     : [
-        [11925, 0.10],
-        [48475, 0.12],
-        [103350, 0.22],
-        [197300, 0.24],
-        [250525, 0.32],
-        [626350, 0.35],
+        [12250, 0.10],
+        [49850, 0.12],
+        [106350, 0.22],
+        [202850, 0.24],
+        [257600, 0.32],
+        [643850, 0.35],
         [Infinity, 0.37],
       ];
 

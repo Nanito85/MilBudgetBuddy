@@ -65,7 +65,7 @@ const STEPS: Step[] = [
     icon: '🚀',
     title: 'Max TSP ($23,500/year)',
     why: 'Once Roth IRA is maxed, TSP is the next best tax-advantaged account. Traditional TSP gives you a tax deduction now.',
-    how: 'In MyPay, increase TSP contribution to reach the IRS limit ($23,500 in 2025). Combat zone contributions can go up to $70,000/year.',
+    how: 'In MyPay, increase TSP contribution to reach the IRS limit ($23,500 for FY2026). Combat zone contributions can go up to $70,000/year.',
     target: '$23,500/year (or $70K if deployed to CZ)',
     color: '#00695C',
   },

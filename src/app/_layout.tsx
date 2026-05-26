@@ -203,6 +203,7 @@ export default function TabLayout() {
         <Tabs.Screen name="reserves"               options={{ href: null }} />
         <Tabs.Screen name="life-events"            options={{ href: null }} />
         <Tabs.Screen name="command-mode"           options={{ href: null }} />
+        <Tabs.Screen name="gs-pay-calculator"      options={{ href: null }} />
         <Tabs.Screen name="legal"                  options={{ href: null }} />
         <Tabs.Screen name="admin"                  options={{ href: null }} />
         <Tabs.Screen name="admin/feedback"         options={{ href: null }} />

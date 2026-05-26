@@ -618,7 +618,7 @@ function EditPayModal({ visible, onClose }: { visible: boolean; onClose: () => v
             <NumberStepper label="Traditional TSP" value={tsp} min={0} max={100} onChange={setTsp} unit="%" />
             <NumberStepper label="Roth TSP" value={rothTsp} min={0} max={100} onChange={setRothTsp} unit="%" />
             <ThemedText style={editStyles.fieldHint}>
-              Total TSP: {tsp + rothTsp}% of base pay. Combined cannot exceed IRS annual limit ($23,500 for 2025).
+              Total TSP: {tsp + rothTsp}% of base pay. Combined cannot exceed IRS annual limit ($23,500 for FY2026).
             </ThemedText>
 
             {/* Spouse Income */}

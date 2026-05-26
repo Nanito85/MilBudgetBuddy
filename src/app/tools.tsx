@@ -196,6 +196,15 @@ const CALCULATORS: MenuItem[] = [
     available: true,
     color: '#1565C0',
   },
+  {
+    id: 'gs_pay',
+    icon: '🏛️',
+    title: 'GS Pay Calculator',
+    description: 'Look up federal civilian General Schedule pay by grade, step, and locality — with military comparison',
+    route: '/gs-pay-calculator',
+    available: true,
+    color: '#37474F',
+  },
 ];
 
 const MONEY_TOOLS: MenuItem[] = [
@@ -567,7 +576,7 @@ export default function MoreScreen() {
           <ThemedText style={styles.budgetIcon}>🎖️</ThemedText>
           <View style={styles.budgetText}>
             <ThemedText style={styles.budgetTitle}>COMMAND FINANCIAL READINESS</ThemedText>
-            <ThemedText type="label" style={styles.budgetDesc}>Unit-level dashboards — coming soon</ThemedText>
+            <ThemedText type="label" style={styles.budgetDesc}>Financial readiness worksheet — export for your chain of command</ThemedText>
           </View>
           <ThemedText style={styles.chevron}>›</ThemedText>
         </Pressable>

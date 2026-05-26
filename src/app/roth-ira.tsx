@@ -125,7 +125,7 @@ export default function RothIraScreen() {
 
         {/* Headroom */}
         <ThemedView type="backgroundElement" style={styles.card}>
-          <ThemedText style={styles.cardLabel}>2025 CONTRIBUTION HEADROOM</ThemedText>
+          <ThemedText style={styles.cardLabel}>2026 CONTRIBUTION HEADROOM</ThemedText>
           <View style={styles.headroomRow}>
             <View style={styles.headroomItem}>
               <ThemedText style={styles.headroomItemLabel}>LIMIT</ThemedText>
@@ -191,13 +191,13 @@ export default function RothIraScreen() {
         <ThemedView type="backgroundElement" style={styles.card}>
           <ThemedText style={styles.cardLabel}>ROTH IRA RULES & TIPS</ThemedText>
           {[
-            '2025 limit: $7,000/yr ($583/mo). Age 50+ can contribute $8,000.',
+            '2026 limit: $7,000/yr ($583/mo). Age 50+ can contribute $8,000.',
             'Phase-out starts at $150K MAGI (single). Most junior enlisted are well under.',
             'Combat Zone pay is excluded from MAGI — you can max a Roth even on large CZ bonuses.',
             'Contributions (not earnings) can be withdrawn penalty-free at any time.',
             'Best brokers: Fidelity (zero-fee index funds), Schwab, Vanguard.',
             'Fund to buy: FSKAX (Fidelity), VTI (Vanguard), SCHB (Schwab) — total US market.',
-            'Missed 2024? You have until April 15, 2025 to contribute for tax year 2024.',
+            'Missed 2025? You have until April 15, 2026 to contribute for tax year 2025.',
           ].map((tip, i) => (
             <View key={i} style={styles.tipRow}>
               <ThemedText style={styles.tipBullet}>▸</ThemedText>
