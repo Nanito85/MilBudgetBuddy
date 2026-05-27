@@ -199,6 +199,9 @@ export const INSTALLATIONS: Installation[] = [
   { id: 'kunsan',              name: 'Kunsan AB',                  city: 'Kunsan',             state: 'South Korea', mhaZip: '', oconus: true, branch: 'Air Force' },
   { id: 'camp_walker',         name: 'Camp Walker (USAG Daegu)',   city: 'Daegu',              state: 'South Korea', mhaZip: '', oconus: true, branch: 'Army' },
   { id: 'camp_red_cloud',      name: 'Camp Red Cloud',             city: 'Uijeongbu',          state: 'South Korea', mhaZip: '', oconus: true, branch: 'Army' },
+  { id: 'camp_casey',          name: 'Camp Casey (USAG Area I)',   city: 'Dongducheon',        state: 'South Korea', mhaZip: '', oconus: true, branch: 'Army' },
+  { id: 'camp_carroll',        name: 'Camp Carroll',               city: 'Waegwan',            state: 'South Korea', mhaZip: '', oconus: true, branch: 'Army' },
+  { id: 'camp_henry',          name: 'Camp Henry (USAG Daegu)',    city: 'Daegu',              state: 'South Korea', mhaZip: '', oconus: true, branch: 'Army' },
 
   // ── OCONUS — JAPAN ───────────────────────────────────────────────────────────
   { id: 'kadena',              name: 'Kadena AB',                  city: 'Okinawa',            state: 'Japan', mhaZip: '', oconus: true, branch: 'Air Force' },
@@ -213,6 +216,11 @@ export const INSTALLATIONS: Installation[] = [
   { id: 'sasebo',              name: 'Naval Base Sasebo',          city: 'Sasebo',             state: 'Japan', mhaZip: '', oconus: true, branch: 'Navy' },
   { id: 'camp_zama',           name: 'Camp Zama (USAG Japan)',     city: 'Zama',               state: 'Japan', mhaZip: '', oconus: true, branch: 'Army' },
   { id: 'mcas_iwakuni',        name: 'MCAS Iwakuni',               city: 'Iwakuni',            state: 'Japan', mhaZip: '', oconus: true, branch: 'Marines' },
+  { id: 'torii_station',       name: 'Torii Station',              city: 'Yomitan',            state: 'Japan', mhaZip: '', oconus: true, branch: 'Army' },
+  { id: 'camp_schwab',         name: 'Camp Schwab (Okinawa)',      city: 'Nago',               state: 'Japan', mhaZip: '', oconus: true, branch: 'Marines' },
+  { id: 'camp_hansen',         name: 'Camp Hansen (Okinawa)',      city: 'Kin',                state: 'Japan', mhaZip: '', oconus: true, branch: 'Marines' },
+  { id: 'camp_mctureous',      name: 'Camp McTureous (Okinawa)',   city: 'Uruma',              state: 'Japan', mhaZip: '', oconus: true, branch: 'Marines' },
+  { id: 'white_beach',         name: 'White Beach Naval Facility', city: 'Uruma',              state: 'Japan', mhaZip: '', oconus: true, branch: 'Navy' },
 
   // ── OCONUS — GERMANY / EUROPE ─────────────────────────────────────────────────
   { id: 'ramstein',            name: 'Ramstein AB',                city: 'Ramstein-Miesenbach', state: 'Germany', mhaZip: '', oconus: true, branch: 'Air Force' },
@@ -237,6 +245,10 @@ export const INSTALLATIONS: Installation[] = [
   { id: 'mons',                name: 'SHAPE / USAG Benelux',       city: 'Mons',               state: 'Belgium', mhaZip: '', oconus: true, branch: 'Joint' },
   { id: 'camp_darby',          name: 'Camp Darby',                 city: 'Livorno',            state: 'Italy', mhaZip: '', oconus: true, branch: 'Army' },
   { id: 'patch_barracks',      name: 'Patch Barracks (EUCOM)',     city: 'Stuttgart',          state: 'Germany', mhaZip: '', oconus: true, branch: 'Joint' },
+  { id: 'souda_bay',           name: 'NSA Souda Bay',              city: 'Crete',              state: 'Greece', mhaZip: '', oconus: true, branch: 'Navy' },
+  { id: 'raf_croughton',       name: 'RAF Croughton',              city: 'Northamptonshire',   state: 'United Kingdom', mhaZip: '', oconus: true, branch: 'Joint' },
+  { id: 'moron',               name: 'Morón AB',                   city: 'Morón de la Frontera', state: 'Spain', mhaZip: '', oconus: true, branch: 'Air Force' },
+  { id: 'chievres',            name: 'Chièvres Air Base (USAG Belgium)', city: 'Chièvres',    state: 'Belgium', mhaZip: '', oconus: true, branch: 'Army' },
 
   // ── OCONUS — MIDDLE EAST / AFRICA ────────────────────────────────────────────
   { id: 'bahrain',             name: 'NSA Bahrain (C5F)',          city: 'Manama',             state: 'Bahrain', mhaZip: '', oconus: true, branch: 'Navy' },
@@ -245,6 +257,10 @@ export const INSTALLATIONS: Installation[] = [
   { id: 'ali_al_salem',        name: 'Ali Al Salem AB',            city: 'Ali Al Salem',       state: 'Kuwait', mhaZip: '', oconus: true, branch: 'Air Force' },
   { id: 'jbab_diego_garcia',   name: 'Diego Garcia (BIOT)',        city: 'Diego Garcia',       state: 'British Indian Ocean Territory', mhaZip: '', oconus: true, branch: 'Navy' },
   { id: 'camp_lemonnier',      name: 'Camp Lemonnier',             city: 'Djibouti City',      state: 'Djibouti', mhaZip: '', oconus: true, branch: 'Joint' },
+  { id: 'al_dhafra',           name: 'Al Dhafra AB',               city: 'Abu Dhabi',          state: 'United Arab Emirates', mhaZip: '', oconus: true, branch: 'Air Force' },
+  { id: 'prince_sultan',       name: 'Prince Sultan AB',           city: 'Al Kharj',           state: 'Saudi Arabia', mhaZip: '', oconus: true, branch: 'Air Force' },
+  { id: 'camp_buehring',       name: 'Camp Buehring',              city: 'Udairi',             state: 'Kuwait', mhaZip: '', oconus: true, branch: 'Army' },
+  { id: 'muwaffaq_salti',      name: 'Muwaffaq Salti AB',          city: 'Azraq',              state: 'Jordan', mhaZip: '', oconus: true, branch: 'Air Force' },
 
   // ── OCONUS — PACIFIC ─────────────────────────────────────────────────────────
   { id: 'guam_navy',           name: 'Naval Base Guam',            city: 'Apra Harbor',        state: 'Guam', mhaZip: '', oconus: true, branch: 'Navy' },
@@ -253,6 +269,11 @@ export const INSTALLATIONS: Installation[] = [
   { id: 'kwajalein',           name: 'Kwajalein Atoll (USAKA)',    city: 'Kwajalein',          state: 'Marshall Islands', mhaZip: '', oconus: true, branch: 'Army' },
   { id: 'thule',               name: 'Pituffik Space Base (Thule)', city: 'Pituffik',          state: 'Greenland', mhaZip: '', oconus: true, branch: 'Space Force' },
   { id: 'camp_smith',          name: 'Camp H.M. Smith (INDOPACOM)', city: 'Halawa',            state: 'HI', mhaZip: '96818', oconus: false, branch: 'Joint' },
+
+  // ── OCONUS — AMERICAS ────────────────────────────────────────────────────────
+  { id: 'gtmo',                name: 'Naval Station Guantanamo Bay', city: 'Guantanamo Bay',   state: 'Cuba', mhaZip: '', oconus: true, branch: 'Navy' },
+  { id: 'soto_cano',           name: 'Soto Cano AB (JTF-Bravo)',   city: 'Comayagua',          state: 'Honduras', mhaZip: '', oconus: true, branch: 'Air Force' },
+  { id: 'fort_buchanan',       name: 'Fort Buchanan',               city: 'Guaynabo',          state: 'Puerto Rico', mhaZip: '', oconus: true, branch: 'Army' },
 ];
 
 export function searchInstallations(query: string): Installation[] {
