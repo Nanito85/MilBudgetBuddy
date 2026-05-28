@@ -7,8 +7,10 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { BAH_DATA_YEAR, PayGrade } from '@/data/bah-rates';
 import { Installation, getInstallationByZip } from '@/data/installations';
+import { getOhaAreaForInstallation } from '@/data/oha-rates';
 import { ComparisonTable } from '@/features/pcs/components/ComparisonTable';
 import { GradePicker } from '@/features/pcs/components/GradePicker';
+import { OHACard } from '@/features/pcs/components/OHACard';
 import { StationPicker } from '@/features/pcs/components/StationPicker';
 import { calcPCS } from '@/features/pcs/utils/pcsCalc';
 import { BottomTabInset, Brand, Fonts, Spacing } from '@/constants/theme';
@@ -97,6 +99,10 @@ export default function PCSCalculatorScreen() {
 
   const result = calcPCS(currentStation, gainingStation, grade, withDep);
   const showComparison = currentStation != null && gainingStation != null;
+
+  const currentOHA  = currentStation?.oconus  ? getOhaAreaForInstallation(currentStation.id)  : null;
+  const gainingOHA  = gainingStation?.oconus  ? getOhaAreaForInstallation(gainingStation.id)  : null;
+  const showOHA     = currentOHA != null || gainingOHA != null;
 
   const swapStations = () => {
     setCurrentStation(gainingStation);
@@ -301,6 +307,31 @@ export default function PCSCalculatorScreen() {
           </View>
         )}
 
+        {/* OHA RATES — shown when either station is OCONUS */}
+        {showOHA && (
+          <View style={styles.section}>
+            <ThemedText type="smallBold" themeColor="textSecondary" style={styles.sectionLabel}>
+              OHA RATES
+            </ThemedText>
+            {currentOHA && currentStation && (
+              <OHACard
+                installation={currentStation}
+                area={currentOHA}
+                grade={grade}
+                withDep={withDep}
+              />
+            )}
+            {gainingOHA && gainingStation && (
+              <OHACard
+                installation={gainingStation}
+                area={gainingOHA}
+                grade={grade}
+                withDep={withDep}
+              />
+            )}
+          </View>
+        )}
+
         {/* PCS ENTITLEMENTS */}
         <View style={styles.section}>
           <ThemedText type="smallBold" themeColor="textSecondary" style={styles.sectionLabel}>
@@ -476,7 +507,7 @@ export default function PCSCalculatorScreen() {
 
         {/* Disclaimer */}
         <ThemedText type="small" themeColor="textSecondary" style={styles.disclaimer}>
-          BAH rates: {BAH_DATA_YEAR}. DLA rates: FY2026 (JTR table). MALT rate: ${MALT_RATE.toFixed(2)}/mile FY2026. TLE estimated from local BAH ÷ 30 (split 70% lodging / 30% M&IE) — verify actual entitlements with your installation finance office. OCONUS stations use OHA/TLA — contact finance.
+          BAH rates: {BAH_DATA_YEAR}. OHA rates: Q2 2026 (approx.). DLA: FY2026 (JTR). MALT: ${MALT_RATE.toFixed(2)}/mile FY2026. OHA rates are approximate — verify current rates at DTMO before signing a lease. Verify all entitlements with your installation finance office.
         </ThemedText>
       </ScrollView>
     </ThemedView>
