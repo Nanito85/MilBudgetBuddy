@@ -1,4 +1,4 @@
-import { useRouter } from 'expo-router';
+﻿import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -7,6 +7,7 @@ import { TacticalCard } from '@/components/TacticalCard';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { BottomTabInset, Brand, Fonts, Spacing } from '@/constants/theme';
+import { useThemeColors } from '@/hooks/use-theme';
 
 // ── Data ───────────────────────────────────────────────────────────────────────
 
@@ -98,33 +99,35 @@ const LIFE_IMPACTS = [
 // ── Components ─────────────────────────────────────────────────────────────────
 
 function SectionLabel({ text }: { text: string }) {
+  const tc = useThemeColors();
   return (
     <View style={ss.labelRow}>
-      <View style={ss.labelLine} />
-      <ThemedText type="label" style={ss.labelText}>{text}</ThemedText>
-      <View style={ss.labelLine} />
+      <View style={[ss.labelLine, { backgroundColor: tc.borderColor }]} />
+      <ThemedText type="label" style={[ss.labelText, { color: tc.textMuted }]}>{text}</ThemedText>
+      <View style={[ss.labelLine, { backgroundColor: tc.borderColor }]} />
     </View>
   );
 }
 
 function FactorRow({ factor, expanded, onToggle }: { factor: typeof FACTORS[0]; expanded: boolean; onToggle: () => void }) {
+  const tc = useThemeColors();
   return (
     <Pressable onPress={onToggle} style={ss.factorRow}>
       <View style={ss.factorTop}>
         <ThemedText style={ss.factorIcon}>{factor.icon}</ThemedText>
         <View style={ss.factorMid}>
           <View style={ss.factorLabelRow}>
-            <ThemedText type="label" style={ss.factorLabel}>{factor.label}</ThemedText>
+            <ThemedText type="label" style={[ss.factorLabel, { color: tc.textPrimary }]}>{factor.label}</ThemedText>
             <ThemedText style={[ss.factorPct, { color: factor.color, fontFamily: Fonts.data }]}>{factor.pct}%</ThemedText>
           </View>
-          <View style={ss.factorTrack}>
+          <View style={[ss.factorTrack, { backgroundColor: tc.surfaceInner }]}>
             <View style={[ss.factorFill, { width: `${factor.pct * 2.86}%` as any, backgroundColor: factor.color }]} />
           </View>
         </View>
-        <ThemedText style={[ss.expandChevron, expanded && { transform: [{ rotate: '90deg' }] }]}>›</ThemedText>
+        <ThemedText style={[ss.expandChevron, { color: tc.textMuted }, expanded && { transform: [{ rotate: '90deg' }] }]}>›</ThemedText>
       </View>
       {expanded && (
-        <ThemedText type="label" style={ss.factorTip}>{factor.tip}</ThemedText>
+        <ThemedText type="label" style={[ss.factorTip, { color: tc.textHint }]}>{factor.tip}</ThemedText>
       )}
     </Pressable>
   );
@@ -135,6 +138,7 @@ function FactorRow({ factor, expanded, onToggle }: { factor: typeof FACTORS[0]; 
 export default function CreditScoreScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const tc = useThemeColors();
   const [expandedFactor, setExpandedFactor] = useState<number | null>(null);
 
   return (
@@ -145,7 +149,7 @@ export default function CreditScoreScreen() {
 
         {/* Header */}
         <View style={[ss.header, { paddingTop: insets.top + Spacing.two }]}>
-          <Pressable onPress={() => router.push('/tools')} style={ss.backBtn}>
+          <Pressable onPress={() => router.back()} style={ss.backBtn}>
             <ThemedText style={ss.backText}>‹ BACK</ThemedText>
           </Pressable>
           <View style={ss.classBar}>
@@ -154,12 +158,12 @@ export default function CreditScoreScreen() {
         </View>
 
         <ThemedText type="label" style={ss.eyebrow}>// FINANCIAL INTEL</ThemedText>
-        <ThemedText style={ss.title}>CREDIT SCORE</ThemedText>
-        <ThemedText type="label" style={ss.subtitle}>UNDERSTANDING · BUILDING · PROTECTING</ThemedText>
+        <ThemedText style={[ss.title, { color: tc.textPrimary }]}>CREDIT SCORE</ThemedText>
+        <ThemedText type="label" style={[ss.subtitle, { color: tc.textMuted }]}>UNDERSTANDING · BUILDING · PROTECTING</ThemedText>
 
         {/* Score ranges */}
         <SectionLabel text="SCORE RANGES" />
-        <TacticalCard accentColor={Brand.border} style={ss.rangesCard}>
+        <TacticalCard accentColor={tc.borderColor} style={ss.rangesCard}>
           {SCORE_RANGES.map((r) => (
             <View key={r.label} style={ss.rangeRow}>
               <View style={[ss.rangeDot, { backgroundColor: r.color }]} />
@@ -170,7 +174,7 @@ export default function CreditScoreScreen() {
                     {r.min}–{r.max}
                   </ThemedText>
                 </View>
-                <ThemedText type="label" style={ss.rangeDesc}>{r.desc}</ThemedText>
+                <ThemedText type="label" style={[ss.rangeDesc, { color: tc.textHint }]}>{r.desc}</ThemedText>
               </View>
             </View>
           ))}
@@ -179,12 +183,12 @@ export default function CreditScoreScreen() {
         {/* 5 Factors */}
         <SectionLabel text="WHAT MAKES UP YOUR SCORE" />
         <TacticalCard accentColor={Brand.accent} style={ss.factorsCard}>
-          <ThemedText type="label" style={ss.factorsIntro}>
+          <ThemedText type="label" style={[ss.factorsIntro, { color: tc.textHint }]}>
             Tap each factor to learn what it means and how to improve it.
           </ThemedText>
           {FACTORS.map((f, i) => (
             <React.Fragment key={f.label}>
-              {i > 0 && <View style={ss.divider} />}
+              {i > 0 && <View style={[ss.divider, { backgroundColor: tc.borderColor }]} />}
               <FactorRow
                 factor={f}
                 expanded={expandedFactor === i}
@@ -200,10 +204,10 @@ export default function CreditScoreScreen() {
           {ACTION_ITEMS.map((item, i) => (
             <View key={i} style={ss.actionRow}>
               <ThemedText style={ss.actionIcon}>{item.icon}</ThemedText>
-              <ThemedText type="label" style={ss.actionText}>{item.text}</ThemedText>
+              <ThemedText type="label" style={[ss.actionText, { color: tc.textPrimary }]}>{item.text}</ThemedText>
               <View style={[ss.impactBadge,
                 item.impact === 'HIGH' ? ss.impactHigh :
-                item.impact === 'MED' ? ss.impactMed : ss.impactLow]}>
+                item.impact === 'MED' ? ss.impactMed : [ss.impactLow, { backgroundColor: tc.borderColor }]]}>
                 <ThemedText type="label" style={ss.impactText}>{item.impact}</ThemedText>
               </View>
             </View>
@@ -217,26 +221,26 @@ export default function CreditScoreScreen() {
             <TacticalCard key={p.title} accentColor="#B71C1C" style={ss.protectCard}>
               <View style={ss.protectHeader}>
                 <ThemedText style={ss.protectIcon}>{p.icon}</ThemedText>
-                <ThemedText type="label" style={ss.protectTitle}>{p.title}</ThemedText>
+                <ThemedText type="label" style={[ss.protectTitle, { color: tc.textPrimary }]}>{p.title}</ThemedText>
               </View>
-              <ThemedText type="label" style={ss.protectBody}>{p.body}</ThemedText>
+              <ThemedText type="label" style={[ss.protectBody, { color: tc.textHint }]}>{p.body}</ThemedText>
             </TacticalCard>
           ))}
         </View>
 
         {/* Why It Matters */}
         <SectionLabel text="WHY IT MATTERS FOR MILITARY" />
-        <TacticalCard accentColor={Brand.border} style={ss.impactCard}>
+        <TacticalCard accentColor={tc.borderColor} style={ss.impactCard}>
           {LIFE_IMPACTS.map((item, i) => (
             <React.Fragment key={item.label}>
-              {i > 0 && <View style={ss.divider} />}
+              {i > 0 && <View style={[ss.divider, { backgroundColor: tc.borderColor }]} />}
               <View style={ss.lifeRow}>
-                <View style={ss.lifeIcon}>
+                <View style={[ss.lifeIcon, { backgroundColor: tc.surfaceInner }]}>
                   <ThemedText style={{ fontSize: 20 }}>{item.icon}</ThemedText>
                 </View>
                 <View style={{ flex: 1, gap: 2 }}>
                   <ThemedText type="label" style={ss.lifeLabel}>{item.label}</ThemedText>
-                  <ThemedText type="label" style={ss.lifeDesc}>{item.desc}</ThemedText>
+                  <ThemedText type="label" style={[ss.lifeDesc, { color: tc.textHint }]}>{item.desc}</ThemedText>
                 </View>
               </View>
             </React.Fragment>
@@ -244,8 +248,8 @@ export default function CreditScoreScreen() {
         </TacticalCard>
 
         {/* Disclaimer */}
-        <View style={ss.disclaimer}>
-          <ThemedText type="label" style={ss.disclaimerText}>
+        <View style={[ss.disclaimer, { borderColor: tc.borderColor }]}>
+          <ThemedText type="label" style={[ss.disclaimerText, { color: tc.textMuted }]}>
             Credit scores are calculated by third-party bureaus. Check annualcreditreport.com for your official report. This screen is educational only.
           </ThemedText>
         </View>

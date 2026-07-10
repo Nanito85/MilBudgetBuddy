@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Brand, Spacing } from '@/constants/theme';
+import { useThemeColors } from '@/hooks/use-theme';
 
 interface Props {
   hasSpouse: boolean;
@@ -17,6 +18,7 @@ function childLabel(age: number): string {
 }
 
 export function FamilyComposer({ hasSpouse, childAges, onSpouseChange, onChildAgesChange }: Props) {
+  const tc = useThemeColors();
   const addChild = () => onChildAgesChange([...childAges, 8]);
 
   const updateAge = (idx: number, age: number) => {
@@ -56,7 +58,7 @@ export function FamilyComposer({ hasSpouse, childAges, onSpouseChange, onChildAg
           <ThemedText style={styles.label}>
             Dependent Children ({childAges.length})
           </ThemedText>
-          <ThemedText style={styles.ageNote}>
+          <ThemedText style={[styles.ageNote, { color: tc.textHint }]}>
             Age affects JTR per diem factor (under 12 = 5.42%, 12+ = 8.125%)
           </ThemedText>
         </View>
@@ -108,7 +110,7 @@ export function FamilyComposer({ hasSpouse, childAges, onSpouseChange, onChildAg
       )}
       {childAges.length === 0 && (
         <View style={styles.emptyChildren}>
-          <ThemedText style={styles.emptyChildrenText}>No dependent children added.</ThemedText>
+          <ThemedText style={[styles.emptyChildrenText, { color: tc.textHint }]}>No dependent children added.</ThemedText>
         </View>
       )}
     </ThemedView>
@@ -125,7 +127,7 @@ const styles = StyleSheet.create({
     padding: Spacing.three,
   },
   label: { fontSize: 15, fontWeight: '500', flex: 1 },
-  ageNote: { fontSize: 11, color: '#4D7A9A', marginTop: 2, lineHeight: 15 },
+  ageNote: { fontSize: 11, marginTop: 2, lineHeight: 15 },
 
   toggle: { flexDirection: 'row', gap: Spacing.one },
   toggleBtn: {
@@ -209,5 +211,5 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.three,
     paddingVertical: Spacing.two,
   },
-  emptyChildrenText: { fontSize: 13, color: '#4D7A9A' },
+  emptyChildrenText: { fontSize: 13 },
 });

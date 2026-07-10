@@ -4,6 +4,7 @@ import { StyleSheet, View } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { Brand, Spacing } from '@/constants/theme';
 import { fmtPay } from '@/features/home/utils/lesCalc';
+import { useThemeColors } from '@/hooks/use-theme';
 
 interface Props {
   netPay: number;
@@ -54,6 +55,7 @@ function getPayDayInfo(): { label: string; daysAway: number; date: Date } {
 }
 
 export function PayDayCountdown({ netPay }: Props) {
+  const tc = useThemeColors();
   const { label, daysAway, date } = useMemo(() => getPayDayInfo(), []);
 
   const isToday = daysAway === 0;
@@ -62,28 +64,28 @@ export function PayDayCountdown({ netPay }: Props) {
   const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: tc.surface }]}>
       <View style={styles.left}>
         <ThemedText style={styles.eyebrow}>NEXT PAY DAY</ThemedText>
         {isToday ? (
-          <ThemedText style={styles.countdownBig}>PAY DAY 🎉</ThemedText>
+          <ThemedText style={[styles.countdownBig, { color: tc.textPrimary }]}>PAY DAY 🎉</ThemedText>
         ) : (
           <View style={styles.countdownRow}>
-            <ThemedText style={styles.countdownBig}>{daysAway}</ThemedText>
+            <ThemedText style={[styles.countdownBig, { color: tc.textPrimary }]}>{daysAway}</ThemedText>
             <View style={styles.countdownSub}>
               <ThemedText style={styles.countdownUnit}>DAY{daysAway !== 1 ? 'S' : ''}</ThemedText>
-              <ThemedText style={styles.countdownLabel}>{isTomorrow ? 'TOMORROW' : `UNTIL ${label}`}</ThemedText>
+              <ThemedText style={[styles.countdownLabel, { color: tc.textHint }]}>{isTomorrow ? 'TOMORROW' : `UNTIL ${label}`}</ThemedText>
             </View>
           </View>
         )}
-        <ThemedText style={styles.dateStr}>{dateStr}</ThemedText>
+        <ThemedText style={[styles.dateStr, { color: tc.textHint }]}>{dateStr}</ThemedText>
       </View>
       {netPay > 0 && (
         <View style={styles.right}>
-          <ThemedText style={styles.payLabel}>EST. TAKE-HOME</ThemedText>
+          <ThemedText style={[styles.payLabel, { color: tc.textHint }]}>EST. TAKE-HOME</ThemedText>
           <ThemedText style={styles.payAmount}>{fmtPay(netPay / 2)}</ThemedText>
-          <ThemedText style={styles.payNote}>per paycheck</ThemedText>
-          <ThemedText style={styles.payMonthly}>{fmtPay(netPay)}/mo</ThemedText>
+          <ThemedText style={[styles.payNote, { color: tc.textMuted }]}>per paycheck</ThemedText>
+          <ThemedText style={[styles.payMonthly, { color: tc.textMuted }]}>{fmtPay(netPay)}/mo</ThemedText>
         </View>
       )}
     </View>
@@ -92,7 +94,6 @@ export function PayDayCountdown({ netPay }: Props) {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#080E1C',
     borderWidth: 1,
     borderColor: Brand.tactical + '40',
     borderRadius: 4,
@@ -112,16 +113,15 @@ const styles = StyleSheet.create({
   countdownBig: {
     fontSize: 26,
     fontWeight: '900',
-    color: '#C8D8E8',
     lineHeight: 30,
   },
   countdownSub: { gap: 1, paddingBottom: 4 },
   countdownUnit: { fontSize: 10, fontWeight: '800', color: Brand.tactical, letterSpacing: 1 },
-  countdownLabel: { fontSize: 9, fontWeight: '700', color: '#4D7A9A', letterSpacing: 0.5 },
-  dateStr: { fontSize: 10, color: '#4D7A9A', fontWeight: '600', marginTop: 2 },
+  countdownLabel: { fontSize: 9, fontWeight: '700', letterSpacing: 0.5 },
+  dateStr: { fontSize: 10, fontWeight: '600', marginTop: 2 },
   right: { alignItems: 'flex-end', gap: 2 },
-  payLabel: { fontSize: 8, fontWeight: '700', letterSpacing: 1, color: '#4D7A9A' },
+  payLabel: { fontSize: 8, fontWeight: '700', letterSpacing: 1 },
   payAmount: { fontSize: 20, fontWeight: '900', color: Brand.accent },
-  payNote: { fontSize: 8, color: '#3D6080', fontWeight: '600' },
-  payMonthly: { fontSize: 9, color: '#3D6080', marginTop: 1 },
+  payNote: { fontSize: 8, fontWeight: '600' },
+  payMonthly: { fontSize: 9, marginTop: 1 },
 });

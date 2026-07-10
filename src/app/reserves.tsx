@@ -1,4 +1,4 @@
-import { useRouter } from 'expo-router';
+﻿import { useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
 import {
   Pressable,
@@ -13,6 +13,7 @@ import { ThemedView } from '@/components/themed-view';
 import { Brand, Fonts, Spacing } from '@/constants/theme';
 import { PayGrade } from '@/data/bah-rates';
 import { getBasicPay } from '@/data/basic-pay-rates';
+import { useThemeColors } from '@/hooks/use-theme';
 import { useUserStore } from '@/store/user.store';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -42,21 +43,23 @@ function fmtMoneyWhole(n: number): string {
 }
 
 function SectionHeader({ title, subtitle }: { title: string; subtitle?: string }) {
+  const tc = useThemeColors();
   return (
     <View style={styles.sectionHeader}>
       <View style={styles.sectionAccent} />
       <View style={{ flex: 1 }}>
-        <ThemedText style={styles.sectionTitle}>{title}</ThemedText>
-        {subtitle && <ThemedText style={styles.sectionSub}>{subtitle}</ThemedText>}
+        <ThemedText style={[styles.sectionTitle, { color: tc.textPrimary }]}>{title}</ThemedText>
+        {subtitle && <ThemedText style={[styles.sectionSub, { color: tc.textHint }]}>{subtitle}</ThemedText>}
       </View>
     </View>
   );
 }
 
 function GradeChip({ grade, selected, onPress }: { grade: PayGrade; selected: boolean; onPress: () => void }) {
+  const tc = useThemeColors();
   return (
-    <Pressable onPress={onPress} style={[styles.gradeChip, selected && styles.gradeChipActive]}>
-      <ThemedText style={[styles.gradeChipText, selected && styles.gradeChipTextActive]}>{grade}</ThemedText>
+    <Pressable onPress={onPress} style={[styles.gradeChip, { borderColor: tc.borderColor }, selected && styles.gradeChipActive]}>
+      <ThemedText style={[styles.gradeChipText, { color: tc.textHint }, selected && styles.gradeChipTextActive]}>{grade}</ThemedText>
     </Pressable>
   );
 }
@@ -67,9 +70,10 @@ function GradeGroup({ label, grades, selected, onSelect }: {
   selected: PayGrade;
   onSelect: (g: PayGrade) => void;
 }) {
+  const tc = useThemeColors();
   return (
     <View style={styles.gradeGroup}>
-      <ThemedText style={styles.gradeGroupLabel}>{label}</ThemedText>
+      <ThemedText style={[styles.gradeGroupLabel, { color: tc.textMuted }]}>{label}</ThemedText>
       <View style={styles.gradeRow}>
         {grades.map((g) => (
           <GradeChip key={g} grade={g} selected={selected === g} onPress={() => onSelect(g)} />
@@ -95,6 +99,7 @@ const TABS: { id: Tab; label: string; icon: string }[] = [
 export default function ReservesScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const tc = useThemeColors();
 
   const storeGrade = useUserStore((s) => s.payGrade);
   const storeYos   = useUserStore((s) => s.yos);
@@ -146,8 +151,8 @@ export default function ReservesScreen() {
           <Pressable
             key={y}
             onPress={() => setYos(y)}
-            style={[styles.yosChip, yos >= y && yos < y + 2 && styles.yosChipActive]}>
-            <ThemedText style={[styles.yosChipText, yos >= y && yos < y + 2 && styles.yosChipTextActive]}>
+            style={[styles.yosChip, { borderColor: tc.borderColor }, yos >= y && yos < y + 2 && styles.yosChipActive]}>
+            <ThemedText style={[styles.yosChipText, { color: tc.textHint }, yos >= y && yos < y + 2 && styles.yosChipTextActive]}>
               {y}
             </ThemedText>
           </Pressable>
@@ -160,12 +165,12 @@ export default function ReservesScreen() {
     <ThemedView style={{ flex: 1 }}>
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
-        <Pressable onPress={() => router.push('/tools')} style={styles.back}>
+        <Pressable onPress={() => router.back()} style={styles.back}>
           <ThemedText style={styles.backChevron}>‹</ThemedText>
         </Pressable>
         <View style={{ flex: 1 }}>
           <ThemedText style={styles.eyebrow}>// RESERVE & GUARD</ThemedText>
-          <ThemedText style={styles.title}>Reserve Hub</ThemedText>
+          <ThemedText style={[styles.title, { color: tc.textPrimary }]}>Reserve Hub</ThemedText>
         </View>
       </View>
 
@@ -173,14 +178,14 @@ export default function ReservesScreen() {
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.tabBar}>
+        contentContainerStyle={[styles.tabBar, { borderBottomColor: tc.borderColor }]}>
         {TABS.map((t) => (
           <Pressable
             key={t.id}
             onPress={() => setActiveTab(t.id)}
-            style={[styles.tabBtn, activeTab === t.id && styles.tabBtnActive]}>
+            style={[styles.tabBtn, { borderColor: tc.borderColor }, activeTab === t.id && styles.tabBtnActive]}>
             <ThemedText style={{ fontSize: 14, lineHeight: 18 }}>{t.icon}</ThemedText>
-            <ThemedText style={[styles.tabLabel, activeTab === t.id && styles.tabLabelActive]}>
+            <ThemedText style={[styles.tabLabel, { color: tc.textSecondary }, activeTab === t.id && styles.tabLabelActive]}>
               {t.label}
             </ThemedText>
           </Pressable>
@@ -193,11 +198,11 @@ export default function ReservesScreen() {
 
         {/* ── Grade + YOS picker (shared across tabs) ── */}
         <ThemedView type="backgroundElement" style={styles.card}>
-          <ThemedText style={styles.cardLabel}>YOUR GRADE & YEARS OF SERVICE</ThemedText>
+          <ThemedText style={[styles.cardLabel, { color: tc.textHint }]}>YOUR GRADE & YEARS OF SERVICE</ThemedText>
           <GradeGroup label="ENLISTED" grades={ENLISTED} selected={grade} onSelect={setGrade} />
           <GradeGroup label="WARRANT"  grades={WARRANT}  selected={grade} onSelect={setGrade} />
           <GradeGroup label="OFFICER"  grades={OFFICER}  selected={grade} onSelect={setGrade} />
-          <ThemedText style={[styles.cardLabel, { marginTop: Spacing.two }]}>YEARS OF SERVICE</ThemedText>
+          <ThemedText style={[styles.cardLabel, { color: tc.textHint, marginTop: Spacing.two }]}>YEARS OF SERVICE</ThemedText>
           <YosStepper />
         </ThemedView>
 
@@ -207,54 +212,54 @@ export default function ReservesScreen() {
             <SectionHeader title="Drill Pay Calculator" subtitle="FY2026 rates · Based on 1/30 of monthly basic pay per drill period" />
 
             {/* Hero result */}
-            <ThemedView type="backgroundElement" style={[styles.card, styles.heroCard]}>
+            <ThemedView type="backgroundElement" style={[styles.card, styles.heroCard, { backgroundColor: tc.surface }]}>
               <View style={styles.heroRow}>
                 <View style={styles.heroItem}>
-                  <ThemedText style={styles.heroLabel}>PER DRILL PERIOD</ThemedText>
+                  <ThemedText style={[styles.heroLabel, { color: tc.textHint }]}>PER DRILL PERIOD</ThemedText>
                   <ThemedText style={[styles.heroValue, { color: Brand.accent }]}>{fmtMoney(idt)}</ThemedText>
-                  <ThemedText style={styles.heroSub}>1 IDT / 4 hrs</ThemedText>
+                  <ThemedText style={[styles.heroSub, { color: tc.textMuted }]}>1 IDT / 4 hrs</ThemedText>
                 </View>
-                <View style={styles.heroDiv} />
+                <View style={[styles.heroDiv, { backgroundColor: tc.borderColor }]} />
                 <View style={styles.heroItem}>
-                  <ThemedText style={styles.heroLabel}>DRILL WEEKEND</ThemedText>
+                  <ThemedText style={[styles.heroLabel, { color: tc.textHint }]}>DRILL WEEKEND</ThemedText>
                   <ThemedText style={[styles.heroValue, { color: Brand.tactical }]}>{fmtMoney(drillWeekend)}</ThemedText>
-                  <ThemedText style={styles.heroSub}>4 IDTs (Sat + Sun)</ThemedText>
+                  <ThemedText style={[styles.heroSub, { color: tc.textMuted }]}>4 IDTs (Sat + Sun)</ThemedText>
                 </View>
               </View>
             </ThemedView>
 
             {/* Annual breakdown */}
             <ThemedView type="backgroundElement" style={styles.card}>
-              <ThemedText style={styles.cardLabel}>ANNUAL RESERVE PAY ESTIMATE</ThemedText>
+              <ThemedText style={[styles.cardLabel, { color: tc.textHint }]}>ANNUAL RESERVE PAY ESTIMATE</ThemedText>
               <View style={styles.rowItem}>
-                <ThemedText style={styles.rowLabel}>Monthly Basic Pay (active rate)</ThemedText>
-                <ThemedText style={[styles.rowValue, { color: '#C8D8E8' }]}>{fmtMoneyWhole(monthlyBasicPay)}/mo</ThemedText>
+                <ThemedText style={[styles.rowLabel, { color: tc.textSecondary }]}>Monthly Basic Pay (active rate)</ThemedText>
+                <ThemedText style={[styles.rowValue, { color: tc.textPrimary }]}>{fmtMoneyWhole(monthlyBasicPay)}/mo</ThemedText>
               </View>
-              <View style={styles.divider} />
+              <View style={[styles.divider, { backgroundColor: tc.borderColor }]} />
               <View style={styles.rowItem}>
                 <View style={{ flex: 1 }}>
-                  <ThemedText style={styles.rowLabel}>Drill Pay (12 weekends × 4 IDTs)</ThemedText>
-                  <ThemedText style={styles.rowNote}>48 IDTs per year</ThemedText>
+                  <ThemedText style={[styles.rowLabel, { color: tc.textSecondary }]}>Drill Pay (12 weekends × 4 IDTs)</ThemedText>
+                  <ThemedText style={[styles.rowNote, { color: tc.textMuted }]}>48 IDTs per year</ThemedText>
                 </View>
                 <ThemedText style={[styles.rowValue, { color: Brand.accent }]}>{fmtMoneyWhole(annualDrillPay)}</ThemedText>
               </View>
-              <View style={styles.divider} />
+              <View style={[styles.divider, { backgroundColor: tc.borderColor }]} />
               <View style={styles.rowItem}>
                 <View style={{ flex: 1 }}>
-                  <ThemedText style={styles.rowLabel}>Annual Training (AT) — 15 days</ThemedText>
-                  <ThemedText style={styles.rowNote}>Typical 2-week active duty for training</ThemedText>
+                  <ThemedText style={[styles.rowLabel, { color: tc.textSecondary }]}>Annual Training (AT) — 15 days</ThemedText>
+                  <ThemedText style={[styles.rowNote, { color: tc.textMuted }]}>Typical 2-week active duty for training</ThemedText>
                 </View>
                 <ThemedText style={[styles.rowValue, { color: Brand.tactical }]}>{fmtMoneyWhole(annualAdt)}</ThemedText>
               </View>
-              <View style={styles.divider} />
+              <View style={[styles.divider, { backgroundColor: tc.borderColor }]} />
               <View style={[styles.rowItem, styles.totalRow]}>
-                <ThemedText style={[styles.rowLabel, { color: '#C8D8E8', fontWeight: '800' }]}>ESTIMATED ANNUAL TOTAL</ThemedText>
+                <ThemedText style={[styles.rowLabel, { color: tc.textPrimary, fontWeight: '800' }]}>ESTIMATED ANNUAL TOTAL</ThemedText>
                 <ThemedText style={[styles.rowValue, { color: Brand.success }]}>{fmtMoneyWhole(annualDrillPay + annualAdt)}</ThemedText>
               </View>
             </ThemedView>
 
             <ThemedView type="backgroundElement" style={styles.card}>
-              <ThemedText style={styles.cardLabel}>HOW DRILL PAY WORKS</ThemedText>
+              <ThemedText style={[styles.cardLabel, { color: tc.textHint }]}>HOW DRILL PAY WORKS</ThemedText>
               {[
                 { q: 'What is an IDT?', a: 'Individual Duty Training — one 4-hour drill period. You get paid for 2 IDTs per day (1/15 of monthly basic pay per drill day).' },
                 { q: 'What is a UTA?', a: 'Unit Training Assembly — one full drill period. A standard drill weekend has 4 UTAs (2 per day × 2 days).' },
@@ -262,9 +267,9 @@ export default function ReservesScreen() {
                 { q: 'Do I get BAS at drill?', a: 'BAS is paid for any day of active duty. For short drill periods, it is typically not paid unless serving continuous active duty.' },
                 { q: 'What about SGLI?', a: 'SELRES members get SGLI automatically at the same rates as active duty ($29/mo for $500K coverage).' },
               ].map((item, i) => (
-                <View key={i} style={[styles.faqItem, i > 0 && styles.divider]}>
-                  <ThemedText style={styles.faqQ}>{item.q}</ThemedText>
-                  <ThemedText style={styles.faqA}>{item.a}</ThemedText>
+                <View key={i} style={[styles.faqItem, i > 0 && styles.divider, i > 0 && { backgroundColor: tc.borderColor }]}>
+                  <ThemedText style={[styles.faqQ, { color: tc.textPrimary }]}>{item.q}</ThemedText>
+                  <ThemedText style={[styles.faqA, { color: tc.textSecondary }]}>{item.a}</ThemedText>
                 </View>
               ))}
             </ThemedView>
@@ -277,60 +282,60 @@ export default function ReservesScreen() {
             <SectionHeader title="Reserve Retirement" subtitle="20 qualifying years required · Pay begins at age 60 (reduced for deployment)" />
 
             <ThemedView type="backgroundElement" style={styles.card}>
-              <ThemedText style={styles.cardLabel}>RETIREMENT POINTS CALCULATOR</ThemedText>
-              <ThemedText style={styles.cardHint}>
+              <ThemedText style={[styles.cardLabel, { color: tc.textHint }]}>RETIREMENT POINTS CALCULATOR</ThemedText>
+              <ThemedText style={[styles.cardHint, { color: tc.textMuted }]}>
                 Reserve retirement pay = (total points ÷ 360) × 2.5% × active-duty base pay. You need at least 20 "good years" (≥50 points/year).
               </ThemedText>
 
               <View style={styles.rowItem}>
-                <ThemedText style={styles.rowLabel}>Good Years (qualifying)</ThemedText>
+                <ThemedText style={[styles.rowLabel, { color: tc.textSecondary }]}>Good Years (qualifying)</ThemedText>
                 <View style={styles.stepperWrap}>
-                  <Pressable onPress={() => setGoodYears(Math.max(0, goodYears - 1))} style={styles.stepBtn}>
-                    <ThemedText style={styles.stepBtnText}>−</ThemedText>
+                  <Pressable onPress={() => setGoodYears(Math.max(0, goodYears - 1))} style={[styles.stepBtn, { backgroundColor: tc.borderColor }]}>
+                    <ThemedText style={[styles.stepBtnText, { color: tc.textPrimary }]}>−</ThemedText>
                   </Pressable>
-                  <ThemedText style={styles.stepValue}>{goodYears}</ThemedText>
-                  <Pressable onPress={() => setGoodYears(Math.min(40, goodYears + 1))} style={styles.stepBtn}>
-                    <ThemedText style={styles.stepBtnText}>+</ThemedText>
+                  <ThemedText style={[styles.stepValue, { color: tc.textPrimary }]}>{goodYears}</ThemedText>
+                  <Pressable onPress={() => setGoodYears(Math.min(40, goodYears + 1))} style={[styles.stepBtn, { backgroundColor: tc.borderColor }]}>
+                    <ThemedText style={[styles.stepBtnText, { color: tc.textPrimary }]}>+</ThemedText>
                   </Pressable>
                 </View>
               </View>
-              <View style={styles.divider} />
+              <View style={[styles.divider, { backgroundColor: tc.borderColor }]} />
               <View style={styles.rowItem}>
-                <ThemedText style={styles.rowLabel}>Total Retirement Points</ThemedText>
+                <ThemedText style={[styles.rowLabel, { color: tc.textSecondary }]}>Total Retirement Points</ThemedText>
                 <View style={styles.stepperWrap}>
-                  <Pressable onPress={() => setRetirementPoints(Math.max(0, retirementPoints - 50))} style={styles.stepBtn}>
-                    <ThemedText style={styles.stepBtnText}>−</ThemedText>
+                  <Pressable onPress={() => setRetirementPoints(Math.max(0, retirementPoints - 50))} style={[styles.stepBtn, { backgroundColor: tc.borderColor }]}>
+                    <ThemedText style={[styles.stepBtnText, { color: tc.textPrimary }]}>−</ThemedText>
                   </Pressable>
-                  <ThemedText style={styles.stepValue}>{retirementPoints.toLocaleString()}</ThemedText>
-                  <Pressable onPress={() => setRetirementPoints(retirementPoints + 50)} style={styles.stepBtn}>
-                    <ThemedText style={styles.stepBtnText}>+</ThemedText>
+                  <ThemedText style={[styles.stepValue, { color: tc.textPrimary }]}>{retirementPoints.toLocaleString()}</ThemedText>
+                  <Pressable onPress={() => setRetirementPoints(retirementPoints + 50)} style={[styles.stepBtn, { backgroundColor: tc.borderColor }]}>
+                    <ThemedText style={[styles.stepBtnText, { color: tc.textPrimary }]}>+</ThemedText>
                   </Pressable>
                 </View>
               </View>
             </ThemedView>
 
-            <ThemedView type="backgroundElement" style={[styles.card, styles.heroCard]}>
+            <ThemedView type="backgroundElement" style={[styles.card, styles.heroCard, { backgroundColor: tc.surface }]}>
               <View style={styles.heroRow}>
                 <View style={styles.heroItem}>
-                  <ThemedText style={styles.heroLabel}>EST. MONTHLY</ThemedText>
+                  <ThemedText style={[styles.heroLabel, { color: tc.textHint }]}>EST. MONTHLY</ThemedText>
                   <ThemedText style={[styles.heroValue, { color: Brand.accent }]}>
                     {fmtMoneyWhole(retirementPoints > 0 ? pointsBasedCalc : yearBasedMonthly)}
                   </ThemedText>
-                  <ThemedText style={styles.heroSub}>At age {RETIREMENT_AGE}</ThemedText>
+                  <ThemedText style={[styles.heroSub, { color: tc.textMuted }]}>At age {RETIREMENT_AGE}</ThemedText>
                 </View>
-                <View style={styles.heroDiv} />
+                <View style={[styles.heroDiv, { backgroundColor: tc.borderColor }]} />
                 <View style={styles.heroItem}>
-                  <ThemedText style={styles.heroLabel}>EST. ANNUAL</ThemedText>
+                  <ThemedText style={[styles.heroLabel, { color: tc.textHint }]}>EST. ANNUAL</ThemedText>
                   <ThemedText style={[styles.heroValue, { color: Brand.tactical }]}>
                     {fmtMoneyWhole((retirementPoints > 0 ? pointsBasedCalc : yearBasedMonthly) * 12)}
                   </ThemedText>
-                  <ThemedText style={styles.heroSub}>Pre-tax</ThemedText>
+                  <ThemedText style={[styles.heroSub, { color: tc.textMuted }]}>Pre-tax</ThemedText>
                 </View>
               </View>
             </ThemedView>
 
             <ThemedView type="backgroundElement" style={styles.card}>
-              <ThemedText style={styles.cardLabel}>HOW POINTS ACCUMULATE</ThemedText>
+              <ThemedText style={[styles.cardLabel, { color: tc.textHint }]}>HOW POINTS ACCUMULATE</ThemedText>
               {[
                 { source: 'Each drill period (IDT)', points: '1 point per IDT' },
                 { source: 'Membership points (annual)', points: '15 points/year' },
@@ -338,15 +343,15 @@ export default function ReservesScreen() {
                 { source: 'Correspondence courses', points: 'Varies' },
                 { source: 'Funeral honors duty', points: '1 point per day (2 min)' },
               ].map((item, i) => (
-                <View key={i} style={[styles.rowItem, i > 0 && styles.divider]}>
-                  <ThemedText style={styles.rowLabel}>{item.source}</ThemedText>
+                <View key={i} style={[styles.rowItem, i > 0 && styles.divider, i > 0 && { backgroundColor: tc.borderColor }]}>
+                  <ThemedText style={[styles.rowLabel, { color: tc.textSecondary }]}>{item.source}</ThemedText>
                   <ThemedText style={[styles.rowValue, { color: Brand.tactical }]}>{item.points}</ThemedText>
                 </View>
               ))}
             </ThemedView>
 
             <ThemedView type="backgroundElement" style={styles.card}>
-              <ThemedText style={styles.cardLabel}>KEY RULES</ThemedText>
+              <ThemedText style={[styles.cardLabel, { color: tc.textHint }]}>KEY RULES</ThemedText>
               {[
                 { title: '20 Good Years Required', body: 'You must earn a "good year" (50+ points) for 20 separate years to qualify for retired pay.' },
                 { title: 'Pay Starts at Age 60', body: 'Reserve retirement pay begins at 60, not at the day you stop drilling. Reduced by 90 days for each qualifying deployment after 2008.' },
@@ -354,9 +359,9 @@ export default function ReservesScreen() {
                 { title: 'COLA Adjustments', body: 'Reserve retirement pay is indexed to inflation (CPI-based COLA), same as active duty retirees.' },
                 { title: 'Point Cap (annually)', body: 'Maximum creditable points per year: 365 (366 in leap years). No cap on total career points.' },
               ].map((item, i) => (
-                <View key={i} style={[styles.faqItem, i > 0 && styles.divider]}>
-                  <ThemedText style={styles.faqQ}>{item.title}</ThemedText>
-                  <ThemedText style={styles.faqA}>{item.body}</ThemedText>
+                <View key={i} style={[styles.faqItem, i > 0 && styles.divider, i > 0 && { backgroundColor: tc.borderColor }]}>
+                  <ThemedText style={[styles.faqQ, { color: tc.textPrimary }]}>{item.title}</ThemedText>
+                  <ThemedText style={[styles.faqA, { color: tc.textSecondary }]}>{item.body}</ThemedText>
                 </View>
               ))}
             </ThemedView>
@@ -368,24 +373,24 @@ export default function ReservesScreen() {
           <>
             <SectionHeader title="TRICARE Reserve Select" subtitle="FY2026 premiums · Voluntary coverage for SELRES members" />
 
-            <ThemedView type="backgroundElement" style={[styles.card, styles.heroCard]}>
+            <ThemedView type="backgroundElement" style={[styles.card, styles.heroCard, { backgroundColor: tc.surface }]}>
               <View style={styles.heroRow}>
                 <View style={styles.heroItem}>
-                  <ThemedText style={styles.heroLabel}>MEMBER ONLY</ThemedText>
+                  <ThemedText style={[styles.heroLabel, { color: tc.textHint }]}>MEMBER ONLY</ThemedText>
                   <ThemedText style={[styles.heroValue, { color: Brand.accent }]}>{fmtMoney(TRS_PREMIUMS.member_only)}/mo</ThemedText>
-                  <ThemedText style={styles.heroSub}>{fmtMoney(TRS_PREMIUMS.member_only * 12)}/yr</ThemedText>
+                  <ThemedText style={[styles.heroSub, { color: tc.textMuted }]}>{fmtMoney(TRS_PREMIUMS.member_only * 12)}/yr</ThemedText>
                 </View>
-                <View style={styles.heroDiv} />
+                <View style={[styles.heroDiv, { backgroundColor: tc.borderColor }]} />
                 <View style={styles.heroItem}>
-                  <ThemedText style={styles.heroLabel}>MEMBER + FAMILY</ThemedText>
+                  <ThemedText style={[styles.heroLabel, { color: tc.textHint }]}>MEMBER + FAMILY</ThemedText>
                   <ThemedText style={[styles.heroValue, { color: Brand.tactical }]}>{fmtMoney(TRS_PREMIUMS.member_family)}/mo</ThemedText>
-                  <ThemedText style={styles.heroSub}>{fmtMoney(TRS_PREMIUMS.member_family * 12)}/yr</ThemedText>
+                  <ThemedText style={[styles.heroSub, { color: tc.textMuted }]}>{fmtMoney(TRS_PREMIUMS.member_family * 12)}/yr</ThemedText>
                 </View>
               </View>
             </ThemedView>
 
             <ThemedView type="backgroundElement" style={styles.card}>
-              <ThemedText style={styles.cardLabel}>COVERAGE DETAILS</ThemedText>
+              <ThemedText style={[styles.cardLabel, { color: tc.textHint }]}>COVERAGE DETAILS</ThemedText>
               {[
                 { label: 'Plan Type', value: 'PPO (preferred provider)' },
                 { label: 'Deductible (individual)', value: '$50 E1–E4 / $150 E5+/Officers' },
@@ -396,15 +401,15 @@ export default function ReservesScreen() {
                 { label: 'Prescriptions (mail order)', value: '$0 generic / $13 brand' },
                 { label: 'Emergency care (civilian ER)', value: '$90 copay after deductible' },
               ].map((item, i) => (
-                <View key={i} style={[styles.rowItem, i > 0 && styles.divider]}>
-                  <ThemedText style={styles.rowLabel}>{item.label}</ThemedText>
-                  <ThemedText style={[styles.rowValue, { color: '#C8D8E8', textAlign: 'right', flex: 1 }]} numberOfLines={1}>{item.value}</ThemedText>
+                <View key={i} style={[styles.rowItem, i > 0 && styles.divider, i > 0 && { backgroundColor: tc.borderColor }]}>
+                  <ThemedText style={[styles.rowLabel, { color: tc.textSecondary }]}>{item.label}</ThemedText>
+                  <ThemedText style={[styles.rowValue, { color: tc.textPrimary, textAlign: 'right', flex: 1 }]} numberOfLines={1}>{item.value}</ThemedText>
                 </View>
               ))}
             </ThemedView>
 
             <ThemedView type="backgroundElement" style={styles.card}>
-              <ThemedText style={styles.cardLabel}>ELIGIBILITY & ENROLLMENT</ThemedText>
+              <ThemedText style={[styles.cardLabel, { color: tc.textHint }]}>ELIGIBILITY & ENROLLMENT</ThemedText>
               {[
                 { q: 'Who is eligible?', a: 'SELRES members (Army Reserve, Navy Reserve, AFRC, SMCR, SELRES USCG) not on active duty orders of 30+ days.' },
                 { q: 'When can I enroll?', a: 'Within 90 days of ending qualifying active duty, or within 90 days of a SELRES qualifying event (marriage, loss of other coverage). Otherwise wait for open enrollment.' },
@@ -412,9 +417,9 @@ export default function ReservesScreen() {
                 { q: 'Does it cover dental/vision?', a: 'No. Dental coverage is through TRICARE Dental Program (TDP). Vision through FEDVIP for reservists.' },
                 { q: 'Enrollment phone / website', a: 'Call 1-800-538-9552 or visit tricare.mil to enroll or change coverage.' },
               ].map((item, i) => (
-                <View key={i} style={[styles.faqItem, i > 0 && styles.divider]}>
-                  <ThemedText style={styles.faqQ}>{item.q}</ThemedText>
-                  <ThemedText style={styles.faqA}>{item.a}</ThemedText>
+                <View key={i} style={[styles.faqItem, i > 0 && styles.divider, i > 0 && { backgroundColor: tc.borderColor }]}>
+                  <ThemedText style={[styles.faqQ, { color: tc.textPrimary }]}>{item.q}</ThemedText>
+                  <ThemedText style={[styles.faqA, { color: tc.textSecondary }]}>{item.a}</ThemedText>
                 </View>
               ))}
             </ThemedView>
@@ -427,14 +432,14 @@ export default function ReservesScreen() {
             <SectionHeader title="Mobilization Pay" subtitle="What changes when you're activated on federal orders" />
 
             <ThemedView type="backgroundElement" style={styles.card}>
-              <ThemedText style={styles.cardLabel}>DEPLOYMENT DURATION</ThemedText>
+              <ThemedText style={[styles.cardLabel, { color: tc.textHint }]}>DEPLOYMENT DURATION</ThemedText>
               <View style={styles.yosRow}>
                 {[3, 6, 9, 12, 15, 18].map((m) => (
                   <Pressable
                     key={m}
                     onPress={() => setDeployMonths(m)}
-                    style={[styles.yosChip, deployMonths === m && styles.yosChipActive]}>
-                    <ThemedText style={[styles.yosChipText, deployMonths === m && styles.yosChipTextActive]}>
+                    style={[styles.yosChip, { borderColor: tc.borderColor }, deployMonths === m && styles.yosChipActive]}>
+                    <ThemedText style={[styles.yosChipText, { color: tc.textHint }, deployMonths === m && styles.yosChipTextActive]}>
                       {m}mo
                     </ThemedText>
                   </Pressable>
@@ -442,24 +447,24 @@ export default function ReservesScreen() {
               </View>
             </ThemedView>
 
-            <ThemedView type="backgroundElement" style={[styles.card, styles.heroCard]}>
+            <ThemedView type="backgroundElement" style={[styles.card, styles.heroCard, { backgroundColor: tc.surface }]}>
               <View style={styles.heroRow}>
                 <View style={styles.heroItem}>
-                  <ThemedText style={styles.heroLabel}>TOTAL BASE PAY</ThemedText>
+                  <ThemedText style={[styles.heroLabel, { color: tc.textHint }]}>TOTAL BASE PAY</ThemedText>
                   <ThemedText style={[styles.heroValue, { color: Brand.accent }]}>{fmtMoneyWhole(mobilizationPay)}</ThemedText>
-                  <ThemedText style={styles.heroSub}>{deployMonths} months</ThemedText>
+                  <ThemedText style={[styles.heroSub, { color: tc.textMuted }]}>{deployMonths} months</ThemedText>
                 </View>
-                <View style={styles.heroDiv} />
+                <View style={[styles.heroDiv, { backgroundColor: tc.borderColor }]} />
                 <View style={styles.heroItem}>
-                  <ThemedText style={styles.heroLabel}>COMBAT ZONE TAX</ThemedText>
+                  <ThemedText style={[styles.heroLabel, { color: tc.textHint }]}>COMBAT ZONE TAX</ThemedText>
                   <ThemedText style={[styles.heroValue, { color: Brand.success }]}>+{fmtMoneyWhole(taxSavedCombatZone)}</ThemedText>
-                  <ThemedText style={styles.heroSub}>~22% saved (est.)</ThemedText>
+                  <ThemedText style={[styles.heroSub, { color: tc.textMuted }]}>~22% saved (est.)</ThemedText>
                 </View>
               </View>
             </ThemedView>
 
             <ThemedView type="backgroundElement" style={styles.card}>
-              <ThemedText style={styles.cardLabel}>WHAT YOU GAIN WHEN ACTIVATED</ThemedText>
+              <ThemedText style={[styles.cardLabel, { color: tc.textHint }]}>WHAT YOU GAIN WHEN ACTIVATED</ThemedText>
               {[
                 { item: 'Full basic pay (same as active duty)', value: fmtMoneyWhole(monthlyBasicPay) + '/mo' },
                 { item: 'BAH (with or without dependents)', value: 'Based on duty station ZIP' },
@@ -470,15 +475,15 @@ export default function ReservesScreen() {
                 { item: 'Family Separation Allowance', value: '+$250/mo if separated from family' },
                 { item: 'TSP matching resumes (BRS members)', value: 'Up to 5% match' },
               ].map((item, i) => (
-                <View key={i} style={[styles.rowItem, i > 0 && styles.divider]}>
-                  <ThemedText style={[styles.rowLabel, { flex: 1, paddingRight: Spacing.two }]}>{item.item}</ThemedText>
+                <View key={i} style={[styles.rowItem, i > 0 && styles.divider, i > 0 && { backgroundColor: tc.borderColor }]}>
+                  <ThemedText style={[styles.rowLabel, { color: tc.textSecondary, flex: 1, paddingRight: Spacing.two }]}>{item.item}</ThemedText>
                   <ThemedText style={[styles.rowValue, { color: Brand.tactical }]}>{item.value}</ThemedText>
                 </View>
               ))}
             </ThemedView>
 
             <ThemedView type="backgroundElement" style={styles.card}>
-              <ThemedText style={styles.cardLabel}>KEY LEGAL PROTECTIONS (USERRA / SCRA)</ThemedText>
+              <ThemedText style={[styles.cardLabel, { color: tc.textHint }]}>KEY LEGAL PROTECTIONS (USERRA / SCRA)</ThemedText>
               {[
                 { q: 'USERRA Job Protection', a: 'Your civilian employer must re-employ you in the same or equivalent position after return. You cannot be fired solely for being a reservist.' },
                 { q: 'SCRA Interest Rate Cap', a: '6% max interest on pre-service debts (credit cards, car loans, mortgages) while on active duty. Request in writing to each creditor.' },
@@ -486,9 +491,9 @@ export default function ReservesScreen() {
                 { q: 'SDP (Savings Deposit Program)', a: 'Invest up to $10,000 in SDP while deployed and earn 10% APY — guaranteed by DoD. Enrollment through Finance.' },
                 { q: 'Civilian Pay Differential', a: 'Some states and federal agencies pay the difference if active duty pay is less than your civilian salary. Check your employer policy.' },
               ].map((item, i) => (
-                <View key={i} style={[styles.faqItem, i > 0 && styles.divider]}>
-                  <ThemedText style={styles.faqQ}>{item.q}</ThemedText>
-                  <ThemedText style={styles.faqA}>{item.a}</ThemedText>
+                <View key={i} style={[styles.faqItem, i > 0 && styles.divider, i > 0 && { backgroundColor: tc.borderColor }]}>
+                  <ThemedText style={[styles.faqQ, { color: tc.textPrimary }]}>{item.q}</ThemedText>
+                  <ThemedText style={[styles.faqA, { color: tc.textSecondary }]}>{item.a}</ThemedText>
                 </View>
               ))}
             </ThemedView>
@@ -496,7 +501,7 @@ export default function ReservesScreen() {
         )}
 
         <ThemedView type="backgroundElement" style={styles.disclaimer}>
-          <ThemedText style={styles.disclaimerText}>
+          <ThemedText style={[styles.disclaimerText, { color: tc.textMuted }]}>
             FY2026 rates. Drill pay = 1/30 monthly basic pay per IDT. TRICARE Reserve Select premiums per DHA. Retirement estimates are approximate — verify with HRC/NPC and your unit administrator. Travel to and from drill may qualify for mileage reimbursement.
           </ThemedText>
         </ThemedView>
@@ -517,71 +522,72 @@ const styles = StyleSheet.create({
   back: { width: 40, justifyContent: 'center' },
   backChevron: { fontSize: 28, fontWeight: '300', color: Brand.primary, lineHeight: 34 },
   eyebrow: { fontSize: 9, fontWeight: '800', color: Brand.tactical, letterSpacing: 1 },
-  title: { fontSize: 20, fontWeight: '800', color: '#C8D8E8' },
+  title: { fontSize: 20, fontWeight: '800' },
 
   tabBar: {
     paddingHorizontal: Spacing.three, paddingVertical: Spacing.two,
     gap: Spacing.two, flexDirection: 'row',
-    borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: Brand.border,
+    borderBottomWidth: StyleSheet.hairlineWidth,
   },
   tabBtn: {
-    flexDirection: 'row', alignItems: 'center', gap: Spacing.one,
-    paddingHorizontal: Spacing.two + 4, paddingVertical: Spacing.one + 2,
-    borderRadius: 99, borderWidth: 1, borderColor: Brand.border,
+    flexDirection: 'row', alignItems: 'center', gap: Spacing.one + 2,
+    paddingHorizontal: Spacing.three, paddingVertical: Spacing.two,
+    borderRadius: 99, borderWidth: 1,
+    minWidth: 80,
   },
   tabBtnActive: { backgroundColor: Brand.accent + '20', borderColor: Brand.accent },
-  tabLabel: { fontSize: 9, fontWeight: '800', color: '#3D6080', letterSpacing: 0.5 },
-  tabLabelActive: { color: Brand.accent },
+  tabLabel: { fontSize: 12, fontWeight: '700', letterSpacing: 0.2 },
+  tabLabelActive: { color: Brand.accent, fontWeight: '800' },
 
   scroll: { paddingHorizontal: Spacing.three, paddingTop: Spacing.three, paddingBottom: 80, gap: Spacing.three },
 
   sectionHeader: { flexDirection: 'row', gap: Spacing.two, alignItems: 'flex-start' },
   sectionAccent: { width: 3, borderRadius: 2, backgroundColor: Brand.accent, marginTop: 3, alignSelf: 'stretch' },
-  sectionTitle: { fontSize: 15, fontWeight: '800', color: '#C8D8E8' },
-  sectionSub: { fontSize: 10, color: '#4D7A9A', marginTop: 2, lineHeight: 14 },
+  sectionTitle: { fontSize: 15, fontWeight: '800' },
+  sectionSub: { fontSize: 10, marginTop: 2, lineHeight: 14 },
 
   card: { borderRadius: 4, padding: Spacing.three, gap: Spacing.two },
-  heroCard: { backgroundColor: 'rgba(26,58,92,0.6)' },
-  cardLabel: { fontSize: 9, fontWeight: '800', color: '#4D7A9A', letterSpacing: 1 },
-  cardHint: { fontSize: 11, color: '#3D6080', lineHeight: 16 },
+  heroCard: {},
+  cardLabel: { fontSize: 9, fontWeight: '800', letterSpacing: 1 },
+  cardHint: { fontSize: 11, lineHeight: 16 },
 
   heroRow: { flexDirection: 'row', alignItems: 'center' },
   heroItem: { flex: 1, alignItems: 'center', gap: Spacing.one },
-  heroDiv: { width: StyleSheet.hairlineWidth, height: 60, backgroundColor: Brand.border },
-  heroLabel: { fontSize: 8, fontWeight: '800', color: '#4D7A9A', letterSpacing: 1 },
+  heroDiv: { width: StyleSheet.hairlineWidth, height: 60 },
+  heroLabel: { fontSize: 8, fontWeight: '800', letterSpacing: 1 },
   heroValue: { fontSize: 22, fontWeight: '900', fontFamily: Fonts.data },
-  heroSub: { fontSize: 10, color: '#3D6080' },
+  heroSub: { fontSize: 10 },
 
   gradeGroup: { gap: Spacing.one },
-  gradeGroupLabel: { fontSize: 8, fontWeight: '700', color: '#3D6080', letterSpacing: 0.8 },
+  gradeGroupLabel: { fontSize: 8, fontWeight: '700', letterSpacing: 0.8 },
   gradeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.one },
-  gradeChip: { paddingHorizontal: Spacing.two, paddingVertical: 5, borderRadius: 4, borderWidth: 1, borderColor: Brand.border },
+  gradeChip: { paddingHorizontal: Spacing.two, paddingVertical: 5, borderRadius: 4, borderWidth: 1 },
   gradeChipActive: { backgroundColor: Brand.accent, borderColor: Brand.accent },
-  gradeChipText: { fontSize: 11, fontWeight: '700', color: '#4D7A9A' },
+  gradeChipText: { fontSize: 11, fontWeight: '700' },
   gradeChipTextActive: { color: '#000' },
 
   yosRow: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.one },
-  yosChip: { paddingHorizontal: Spacing.two, paddingVertical: 5, borderRadius: 4, borderWidth: 1, borderColor: Brand.border, minWidth: 40, alignItems: 'center' },
+  yosChip: { paddingHorizontal: Spacing.two, paddingVertical: 5, borderRadius: 4, borderWidth: 1, minWidth: 40, alignItems: 'center' },
   yosChipActive: { backgroundColor: Brand.primary, borderColor: Brand.primary },
-  yosChipText: { fontSize: 11, fontWeight: '700', color: '#4D7A9A' },
+  yosChipText: { fontSize: 11, fontWeight: '700' },
   yosChipTextActive: { color: '#fff' },
 
   rowItem: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 4 },
-  rowLabel: { fontSize: 12, color: '#8AB0CC', flex: 1 },
-  rowNote: { fontSize: 10, color: '#3D6080' },
+  rowLabel: { fontSize: 12, flex: 1 },
+  rowNote: { fontSize: 10 },
   rowValue: { fontSize: 13, fontWeight: '700', fontFamily: Fonts.data, textAlign: 'right' },
-  divider: { height: StyleSheet.hairlineWidth, backgroundColor: Brand.border, marginVertical: 2 },
+  divider: { height: StyleSheet.hairlineWidth, marginVertical: 2 },
   totalRow: { marginTop: 4 },
 
   stepperWrap: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
-  stepBtn: { width: 32, height: 32, borderRadius: 4, backgroundColor: Brand.border, alignItems: 'center', justifyContent: 'center' },
-  stepBtnText: { fontSize: 18, color: '#C8D8E8', fontWeight: '300', lineHeight: 22 },
-  stepValue: { minWidth: 60, textAlign: 'center', fontSize: 16, fontWeight: '700', color: '#C8D8E8', fontFamily: Fonts.data },
+  stepBtn: { width: 32, height: 32, borderRadius: 4, alignItems: 'center', justifyContent: 'center' },
+  stepBtnText: { fontSize: 18, fontWeight: '300', lineHeight: 22 },
+  stepValue: { minWidth: 60, textAlign: 'center', fontSize: 16, fontWeight: '700', fontFamily: Fonts.data },
 
   faqItem: { paddingVertical: Spacing.two },
-  faqQ: { fontSize: 12, fontWeight: '700', color: '#C8D8E8', marginBottom: 4 },
-  faqA: { fontSize: 11, color: '#6B92B0', lineHeight: 17 },
+  faqQ: { fontSize: 12, fontWeight: '700', marginBottom: 4 },
+  faqA: { fontSize: 11, lineHeight: 17 },
 
   disclaimer: { borderRadius: 4, padding: Spacing.three },
-  disclaimerText: { fontSize: 10, color: '#3D6080', lineHeight: 15 },
+  disclaimerText: { fontSize: 10, lineHeight: 15 },
 });

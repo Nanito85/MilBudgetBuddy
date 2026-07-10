@@ -10,6 +10,7 @@ import {
   High3Result,
   lifetimeValue,
 } from '@/features/retirement/utils/retirementCalc';
+import { useThemeColors } from '@/hooks/use-theme';
 
 // ── High-3 Card ───────────────────────────────────────────────────────────────
 
@@ -19,6 +20,7 @@ interface High3Props {
 }
 
 export function High3Card({ result, retirementAge }: High3Props) {
+  const tc = useThemeColors();
   const ltv = lifetimeValue(result.monthlyPension, retirementAge);
   return (
     <ThemedView type="backgroundElement" style={styles.card}>
@@ -43,7 +45,7 @@ export function High3Card({ result, retirementAge }: High3Props) {
         </View>
       </View>
 
-      <View style={styles.divider} />
+      <View style={[styles.divider, { backgroundColor: tc.borderColor }]} />
 
       <View style={styles.detailRow}>
         <ThemedText type="small" themeColor="textSecondary">Lifetime value (to age 80)</ThemedText>
@@ -72,6 +74,7 @@ interface BRSProps {
 }
 
 export function BRSCard({ result, retirementAge, monthlyDiff }: BRSProps) {
+  const tc = useThemeColors();
   const ltv = lifetimeValue(result.monthlyPension, retirementAge);
   const totalWealth = ltv + result.tspBalance + result.continuationPayAmount;
 
@@ -106,7 +109,7 @@ export function BRSCard({ result, retirementAge, monthlyDiff }: BRSProps) {
         </View>
       )}
 
-      <View style={styles.divider} />
+      <View style={[styles.divider, { backgroundColor: tc.borderColor }]} />
 
       <View style={styles.detailRow}>
         <ThemedText type="small" themeColor="textSecondary">TSP balance at retirement</ThemedText>

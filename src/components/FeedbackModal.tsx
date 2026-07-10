@@ -16,6 +16,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { Brand, Spacing } from '@/constants/theme';
+import { useThemeColors } from '@/hooks/use-theme';
 import { useAuthStore } from '@/store/auth.store';
 import { useFeedbackStore } from '@/store/feedback.store';
 import { useUserStore } from '@/store/user.store';
@@ -50,6 +51,7 @@ interface Props {
 }
 
 export function FeedbackModal({ visible, onClose }: Props) {
+  const tc = useThemeColors();
   const pathname           = usePathname();
   const { user }           = useAuthStore();
   const serviceStatus      = useUserStore((s) => s.serviceStatus);
@@ -83,12 +85,12 @@ export function FeedbackModal({ visible, onClose }: Props) {
   return (
     <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={handleClose}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-        <SafeAreaView style={styles.safe}>
+        <SafeAreaView style={[styles.safe, { backgroundColor: tc.background }]}>
           {/* Header */}
-          <View style={styles.header}>
-            <ThemedText style={styles.headerTitle}>SEND FEEDBACK</ThemedText>
+          <View style={[styles.header, { borderBottomColor: tc.borderColor }]}>
+            <ThemedText style={[styles.headerTitle, { color: tc.textPrimary }]}>SEND FEEDBACK</ThemedText>
             <Pressable onPress={handleClose} style={styles.closeBtn} hitSlop={12}>
-              <ThemedText style={styles.closeText}>✕</ThemedText>
+              <ThemedText style={[styles.closeText, { color: tc.textHint }]}>✕</ThemedText>
             </Pressable>
           </View>
 
@@ -96,8 +98,8 @@ export function FeedbackModal({ visible, onClose }: Props) {
             /* ── Success state ── */
             <View style={styles.successBox}>
               <ThemedText style={styles.successEmoji}>✅</ThemedText>
-              <ThemedText style={styles.successTitle}>Feedback received!</ThemedText>
-              <ThemedText style={styles.successSub}>
+              <ThemedText style={[styles.successTitle, { color: tc.textPrimary }]}>Feedback received!</ThemedText>
+              <ThemedText style={[styles.successSub, { color: tc.textSecondary }]}>
                 Thanks — your feedback helps improve MilBudgetBuddy.
               </ThemedText>
               <Pressable onPress={handleClose} style={styles.doneBtn}>
@@ -112,12 +114,12 @@ export function FeedbackModal({ visible, onClose }: Props) {
 
               {/* Eyebrow */}
               <ThemedText style={styles.eyebrow}>// MILBUDGETBUDDY</ThemedText>
-              <ThemedText style={styles.sub}>
+              <ThemedText style={[styles.sub, { color: tc.textSecondary }]}>
                 What's on your mind? We read every submission.
               </ThemedText>
 
               {/* Category */}
-              <ThemedText style={styles.fieldLabel}>CATEGORY</ThemedText>
+              <ThemedText style={[styles.fieldLabel, { color: tc.textHint }]}>CATEGORY</ThemedText>
               <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
@@ -128,8 +130,12 @@ export function FeedbackModal({ visible, onClose }: Props) {
                     <Pressable
                       key={cat}
                       onPress={() => setCategory(cat)}
-                      style={[styles.chip, active && styles.chipActive]}>
-                      <ThemedText style={[styles.chipText, active && styles.chipTextActive]}>
+                      style={[
+                        styles.chip,
+                        { borderColor: tc.borderColor, backgroundColor: tc.surface },
+                        active && styles.chipActive,
+                      ]}>
+                      <ThemedText style={[styles.chipText, { color: tc.textSecondary }, active && styles.chipTextActive]}>
                         {CATEGORY_EMOJI[cat]} {cat}
                       </ThemedText>
                     </Pressable>
@@ -138,29 +144,29 @@ export function FeedbackModal({ visible, onClose }: Props) {
               </ScrollView>
 
               {/* Message */}
-              <ThemedText style={[styles.fieldLabel, { marginTop: Spacing.three }]}>
+              <ThemedText style={[styles.fieldLabel, { color: tc.textHint, marginTop: Spacing.three }]}>
                 MESSAGE <ThemedText style={styles.required}>*</ThemedText>
               </ThemedText>
               <TextInput
                 value={message}
                 onChangeText={setMessage}
                 placeholder="Describe the issue or idea in detail..."
-                placeholderTextColor="#2A4A60"
+                placeholderTextColor={tc.textMuted}
                 multiline
                 numberOfLines={6}
                 textAlignVertical="top"
-                style={styles.messageInput}
+                style={[styles.messageInput, { backgroundColor: tc.inputBg, borderColor: tc.borderColor, color: tc.textPrimary }]}
                 maxLength={2000}
               />
-              <ThemedText style={styles.charCount}>{message.length}/2000</ThemedText>
+              <ThemedText style={[styles.charCount, { color: tc.textMuted }]}>{message.length}/2000</ThemedText>
 
               {/* Auto-captured info */}
-              <View style={styles.autoBox}>
-                <ThemedText style={styles.autoLabel}>AUTO-CAPTURED</ThemedText>
-                <ThemedText style={styles.autoItem}>Screen: {pathname}</ThemedText>
-                <ThemedText style={styles.autoItem}>Version: {Constants.expoConfig?.version ?? '1.0.0'}</ThemedText>
-                <ThemedText style={styles.autoItem}>Device: {Platform.OS}</ThemedText>
-                {user && <ThemedText style={styles.autoItem}>Account: {user.email}</ThemedText>}
+              <View style={[styles.autoBox, { backgroundColor: tc.surfaceInner, borderColor: tc.borderColor }]}>
+                <ThemedText style={[styles.autoLabel, { color: tc.textMuted }]}>AUTO-CAPTURED</ThemedText>
+                <ThemedText style={[styles.autoItem, { color: tc.textHint }]}>Screen: {pathname}</ThemedText>
+                <ThemedText style={[styles.autoItem, { color: tc.textHint }]}>Version: {Constants.expoConfig?.version ?? '1.0.0'}</ThemedText>
+                <ThemedText style={[styles.autoItem, { color: tc.textHint }]}>Device: {Platform.OS}</ThemedText>
+                {user && <ThemedText style={[styles.autoItem, { color: tc.textHint }]}>Account: {user.email}</ThemedText>}
               </View>
 
               {/* Error */}
@@ -185,7 +191,7 @@ export function FeedbackModal({ visible, onClose }: Props) {
               </Pressable>
 
               <Pressable onPress={handleClose} style={styles.cancelBtn}>
-                <ThemedText style={styles.cancelText}>Cancel</ThemedText>
+                <ThemedText style={[styles.cancelText, { color: tc.textMuted }]}>Cancel</ThemedText>
               </Pressable>
             </ScrollView>
           )}
@@ -196,7 +202,7 @@ export function FeedbackModal({ visible, onClose }: Props) {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#04080F' },
+  safe: { flex: 1 },
 
   header: {
     flexDirection: 'row',
@@ -205,18 +211,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.three,
     paddingVertical: Spacing.two + 2,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: Brand.border,
   },
-  headerTitle: { fontSize: 13, fontWeight: '800', color: '#C8D8E8', letterSpacing: 1.5 },
+  headerTitle: { fontSize: 13, fontWeight: '800', letterSpacing: 1.5 },
   closeBtn: { padding: 4 },
-  closeText: { fontSize: 16, color: '#4D7A9A' },
+  closeText: { fontSize: 16 },
 
   body: { paddingHorizontal: Spacing.three, paddingVertical: Spacing.four, gap: Spacing.two },
 
   eyebrow: { color: Brand.tactical, fontSize: 10, fontWeight: '700', letterSpacing: 1.5 },
-  sub: { fontSize: 13, color: '#6B92B0', lineHeight: 19 },
+  sub: { fontSize: 13, lineHeight: 19 },
 
-  fieldLabel: { color: '#4D7A9A', fontSize: 11, fontWeight: '600', letterSpacing: 0.5 },
+  fieldLabel: { fontSize: 11, fontWeight: '600', letterSpacing: 0.5 },
   required: { color: Brand.classified },
 
   chipRow: { paddingVertical: Spacing.one, gap: Spacing.one + 2, flexDirection: 'row' },
@@ -225,37 +230,30 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.one + 2,
     borderRadius: 99,
     borderWidth: 1,
-    borderColor: Brand.border,
-    backgroundColor: '#080E1C',
   },
   chipActive: { borderColor: Brand.tactical, backgroundColor: Brand.tactical + '20' },
-  chipText: { fontSize: 12, color: '#6B92B0', fontWeight: '600' },
+  chipText: { fontSize: 12, fontWeight: '600' },
   chipTextActive: { color: Brand.tactical },
 
   messageInput: {
-    backgroundColor: '#080E1C',
     borderWidth: 1,
-    borderColor: Brand.border,
     borderRadius: 6,
     paddingHorizontal: Spacing.three,
     paddingVertical: Spacing.two + 2,
     fontSize: 15,
-    color: '#C8D8E8',
     minHeight: 130,
   },
-  charCount: { fontSize: 10, color: '#3D6080', textAlign: 'right', marginTop: -Spacing.one },
+  charCount: { fontSize: 10, textAlign: 'right', marginTop: -Spacing.one },
 
   autoBox: {
-    backgroundColor: '#050B14',
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: Brand.border,
     borderRadius: 6,
     padding: Spacing.two + 2,
     gap: 3,
     marginTop: Spacing.one,
   },
-  autoLabel: { color: '#3D6080', fontSize: 9, letterSpacing: 0.5, marginBottom: 2 },
-  autoItem: { fontSize: 11, color: '#4D7A9A' },
+  autoLabel: { fontSize: 9, letterSpacing: 0.5, marginBottom: 2 },
+  autoItem: { fontSize: 11 },
 
   errorBox: {
     backgroundColor: Brand.danger + '15',
@@ -275,13 +273,13 @@ const styles = StyleSheet.create({
   },
   submitBtnText: { color: '#FFFFFF', fontSize: 14, fontWeight: '900', letterSpacing: 1 },
   cancelBtn: { alignItems: 'center', paddingVertical: Spacing.two },
-  cancelText: { color: '#3D5870', fontSize: 13 },
+  cancelText: { fontSize: 13 },
 
   // Success
   successBox: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: Spacing.five, gap: Spacing.three },
   successEmoji: { fontSize: 56 },
-  successTitle: { fontSize: 22, fontWeight: '900', color: '#C8D8E8', textAlign: 'center' },
-  successSub: { fontSize: 14, color: '#6B92B0', textAlign: 'center', lineHeight: 21 },
+  successTitle: { fontSize: 22, fontWeight: '900', textAlign: 'center' },
+  successSub: { fontSize: 14, textAlign: 'center', lineHeight: 21 },
   doneBtn: { backgroundColor: Brand.tactical, borderRadius: 6, paddingHorizontal: Spacing.five, paddingVertical: Spacing.two + 4, marginTop: Spacing.two },
   doneBtnText: { color: '#fff', fontWeight: '900', letterSpacing: 1, fontSize: 13 },
 });

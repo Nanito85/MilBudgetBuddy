@@ -1,4 +1,4 @@
-import { useRouter } from 'expo-router';
+﻿import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -14,6 +14,7 @@ import {
 } from '@/data/schools';
 import { StationPicker } from '@/features/pcs/components/StationPicker';
 import { BottomTabInset, Brand, Spacing } from '@/constants/theme';
+import { useThemeColors } from '@/hooks/use-theme';
 
 // ── Grade badge ───────────────────────────────────────────────────────────────
 
@@ -88,6 +89,7 @@ const TABS: { id: Tab; label: string }[] = [
 export default function SchoolsFinderScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const tc = useThemeColors();
   const [activeTab, setActiveTab] = useState<Tab>('search');
   const [installation, setInstallation] = useState<Installation | null>(null);
 
@@ -98,7 +100,7 @@ export default function SchoolsFinderScreen() {
       {/* ── Header ─────────────────────────────────────────────────────────── */}
       <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
         <Pressable
-          onPress={() => (router.push('/tools'))}
+          onPress={() => (router.back())}
           style={({ pressed }) => [styles.backBtn, pressed && styles.pressed]}>
           <ThemedText style={styles.backChevron}>‹</ThemedText>
         </Pressable>
@@ -115,7 +117,11 @@ export default function SchoolsFinderScreen() {
         {TABS.map((t) => (
           <Pressable key={t.id} onPress={() => setActiveTab(t.id)} style={styles.tabItem}>
             <ThemedText
-              style={[styles.tabLabel, activeTab === t.id && styles.tabLabelActive]}>
+              style={[
+                styles.tabLabel,
+                { color: tc.textMuted },
+                activeTab === t.id && styles.tabLabelActive,
+              ]}>
               {t.label}
             </ThemedText>
             {activeTab === t.id && <View style={styles.tabUnderline} />}
@@ -374,7 +380,7 @@ const styles = StyleSheet.create({
     borderBottomColor: 'rgba(128,128,128,0.2)',
   },
   tabItem: { flex: 1, alignItems: 'center', paddingVertical: Spacing.two, position: 'relative' },
-  tabLabel: { fontSize: 10, fontWeight: '700', letterSpacing: 0.6, color: '#3D6080' },
+  tabLabel: { fontSize: 10, fontWeight: '700', letterSpacing: 0.6 },
   tabLabelActive: { color: Brand.accent },
   tabUnderline: {
     position: 'absolute',

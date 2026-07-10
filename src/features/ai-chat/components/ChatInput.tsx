@@ -4,7 +4,7 @@ import { Platform, Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Brand, Spacing } from '@/constants/theme';
-import { useTheme } from '@/hooks/use-theme';
+import { useThemeColors } from '@/hooks/use-theme';
 
 interface ChatInputProps {
   onSend: (text: string) => void;
@@ -18,7 +18,7 @@ export function ChatInput({
   placeholder = 'Ask about military finances...',
 }: ChatInputProps) {
   const [text, setText] = useState('');
-  const theme = useTheme();
+  const tc = useThemeColors();
   const canSend = text.trim().length > 0 && !disabled;
 
   const handleSend = () => {
@@ -29,13 +29,13 @@ export function ChatInput({
   };
 
   return (
-    <ThemedView type="backgroundElement" style={styles.container}>
+    <ThemedView type="backgroundElement" style={[styles.container, { borderTopColor: tc.borderColor }]}>
       <TextInput
-        style={[styles.input, { color: theme.text }]}
+        style={[styles.input, { color: tc.textPrimary }]}
         value={text}
         onChangeText={setText}
         placeholder={placeholder}
-        placeholderTextColor={theme.textSecondary}
+        placeholderTextColor={tc.textSecondary}
         multiline
         maxLength={1000}
         onSubmitEditing={Platform.OS === 'web' ? handleSend : undefined}
@@ -47,11 +47,11 @@ export function ChatInput({
         disabled={!canSend}
         style={({ pressed }) => [
           styles.sendBtn,
-          { backgroundColor: canSend ? Brand.primary : 'transparent' },
+          { backgroundColor: canSend ? Brand.primary : 'transparent', borderColor: tc.borderColor },
           pressed && styles.sendPressed,
         ]}
         accessibilityLabel="Send message">
-        <ThemedText style={[styles.sendIcon, { color: canSend ? '#FFFFFF' : theme.textSecondary }]}>
+        <ThemedText style={[styles.sendIcon, { color: canSend ? '#FFFFFF' : tc.textSecondary }]}>
           ↑
         </ThemedText>
       </Pressable>
@@ -67,7 +67,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.three,
     paddingVertical: Spacing.two,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: 'rgba(128,128,128,0.2)',
   },
   input: {
     flex: 1,
@@ -84,7 +83,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(128,128,128,0.2)',
   },
   sendPressed: {
     opacity: 0.75,

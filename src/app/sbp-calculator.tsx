@@ -1,4 +1,4 @@
-import { useRouter } from 'expo-router';
+﻿import { useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -7,6 +7,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Brand, Spacing } from '@/constants/theme';
 import { NumberStepper } from '@/features/retirement/components/NumberStepper';
+import { useThemeColors } from '@/hooks/use-theme';
 import { useUserStore } from '@/store/user.store';
 
 // SBP constants (FY2026)
@@ -83,6 +84,7 @@ const COVERAGE_OPTIONS = [
 export default function SbpCalculatorScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const tc = useThemeColors();
 
   const storeGrade = useUserStore((s) => s.payGrade);
   const storeYos   = useUserStore((s) => s.yos);
@@ -119,7 +121,7 @@ export default function SbpCalculatorScreen() {
     <ThemedView style={{ flex: 1 }}>
       <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
         <Pressable
-          onPress={() => (router.push('/tools'))}
+          onPress={() => (router.back())}
           style={styles.back}>
           <ThemedText style={styles.backChevron}>‹</ThemedText>
         </Pressable>
@@ -133,15 +135,15 @@ export default function SbpCalculatorScreen() {
 
         {/* What is SBP */}
         <ThemedView type="backgroundElement" style={styles.card}>
-          <ThemedText style={styles.cardLabel}>WHAT IS SBP?</ThemedText>
-          <ThemedText style={styles.bodyText}>
+          <ThemedText style={[styles.cardLabel, { color: tc.textHint }]}>WHAT IS SBP?</ThemedText>
+          <ThemedText style={[styles.bodyText, { color: tc.textSecondary }]}>
             The Survivor Benefit Plan pays your spouse 55% of your covered retirement base if you die first. You pay a 6.5% monthly premium deducted from your retirement pay. After 30 years of premiums (age 70+ and 30yr service), coverage is paid-up — free for life.
           </ThemedText>
         </ThemedView>
 
         {/* Inputs */}
         <ThemedView type="backgroundElement" style={styles.card}>
-          <ThemedText style={styles.cardLabel}>YOUR INPUTS</ThemedText>
+          <ThemedText style={[styles.cardLabel, { color: tc.textHint }]}>YOUR INPUTS</ThemedText>
 
           <NumberStepper
             label={`Monthly Retirement Pay: ${fmtDollar(retirementPay)}`}
@@ -153,14 +155,14 @@ export default function SbpCalculatorScreen() {
           />
 
           <View style={{ gap: Spacing.one }}>
-            <ThemedText style={styles.fieldLabel}>COVERAGE BASE</ThemedText>
+            <ThemedText style={[styles.fieldLabel, { color: tc.textHint }]}>COVERAGE BASE</ThemedText>
             <View style={styles.chipRow}>
               {COVERAGE_OPTIONS.map((opt) => (
                 <Pressable
                   key={opt.value}
                   onPress={() => setCoverage(opt.value)}
-                  style={[styles.chip, coverage === opt.value && styles.chipActive]}>
-                  <ThemedText style={[styles.chipText, coverage === opt.value && styles.chipTextActive]}>
+                  style={[styles.chip, { borderColor: tc.borderColor }, coverage === opt.value && styles.chipActive]}>
+                  <ThemedText style={[styles.chipText, { color: tc.textHint }, coverage === opt.value && styles.chipTextActive]}>
                     {opt.label}
                   </ThemedText>
                 </Pressable>
@@ -190,11 +192,11 @@ export default function SbpCalculatorScreen() {
         <ThemedView type="backgroundElement" style={[styles.resultCard, { borderLeftColor: Brand.tactical }]}>
           <ThemedText style={styles.resultEyebrow}>MONTHLY BREAKDOWN</ThemedText>
           <View style={styles.resultRow}>
-            <ThemedText style={styles.resultLabel}>Covered base</ThemedText>
-            <ThemedText style={styles.resultValue}>{fmtDollar(result.coveredBase)}/mo</ThemedText>
+            <ThemedText style={[styles.resultLabel, { color: tc.textSecondary }]}>Covered base</ThemedText>
+            <ThemedText style={[styles.resultValue, { color: tc.textPrimary }]}>{fmtDollar(result.coveredBase)}/mo</ThemedText>
           </View>
           <View style={styles.resultRow}>
-            <ThemedText style={styles.resultLabel}>Your premium (6.5%)</ThemedText>
+            <ThemedText style={[styles.resultLabel, { color: tc.textSecondary }]}>Your premium (6.5%)</ThemedText>
             <ThemedText style={[styles.resultValue, { color: Brand.danger }]}>−{fmtDollar(result.monthlyPremium)}/mo</ThemedText>
           </View>
           <View style={[styles.resultRow, styles.resultRowHighlight]}>
@@ -202,47 +204,47 @@ export default function SbpCalculatorScreen() {
             <ThemedText style={[styles.resultValue, { color: Brand.tactical }]}>{fmtDollar(result.monthlyAnnuity)}/mo</ThemedText>
           </View>
           <View style={styles.resultRow}>
-            <ThemedText style={styles.resultLabel}>Annual premium</ThemedText>
-            <ThemedText style={styles.resultValue}>{fmtDollar(result.annualPremium)}/yr</ThemedText>
+            <ThemedText style={[styles.resultLabel, { color: tc.textSecondary }]}>Annual premium</ThemedText>
+            <ThemedText style={[styles.resultValue, { color: tc.textPrimary }]}>{fmtDollar(result.annualPremium)}/yr</ThemedText>
           </View>
           <View style={styles.resultRow}>
-            <ThemedText style={styles.resultLabel}>Annual annuity (to spouse)</ThemedText>
-            <ThemedText style={styles.resultValue}>{fmtDollar(result.annualAnnuity)}/yr</ThemedText>
+            <ThemedText style={[styles.resultLabel, { color: tc.textSecondary }]}>Annual annuity (to spouse)</ThemedText>
+            <ThemedText style={[styles.resultValue, { color: tc.textPrimary }]}>{fmtDollar(result.annualAnnuity)}/yr</ThemedText>
           </View>
         </ThemedView>
 
         {/* Break-even & projection */}
         <ThemedView type="backgroundElement" style={styles.card}>
-          <ThemedText style={styles.cardLabel}>BREAK-EVEN ANALYSIS (30-YR PREMIUMS)</ThemedText>
+          <ThemedText style={[styles.cardLabel, { color: tc.textHint }]}>BREAK-EVEN ANALYSIS (30-YR PREMIUMS)</ThemedText>
           <View style={styles.resultRow}>
-            <ThemedText style={styles.resultLabel}>Total premiums (30 yr)</ThemedText>
-            <ThemedText style={styles.resultValue}>{fmtDollar(result.totalPremiums30yr)}</ThemedText>
+            <ThemedText style={[styles.resultLabel, { color: tc.textSecondary }]}>Total premiums (30 yr)</ThemedText>
+            <ThemedText style={[styles.resultValue, { color: tc.textPrimary }]}>{fmtDollar(result.totalPremiums30yr)}</ThemedText>
           </View>
           <View style={styles.resultRow}>
-            <ThemedText style={styles.resultLabel}>Break-even for spouse</ThemedText>
-            <ThemedText style={styles.resultValue}>{result.breakEvenYears.toFixed(1)} yrs of annuity</ThemedText>
+            <ThemedText style={[styles.resultLabel, { color: tc.textSecondary }]}>Break-even for spouse</ThemedText>
+            <ThemedText style={[styles.resultValue, { color: tc.textPrimary }]}>{result.breakEvenYears.toFixed(1)} yrs of annuity</ThemedText>
           </View>
-          <ThemedText style={styles.hintText}>
+          <ThemedText style={[styles.hintText, { color: tc.textMuted }]}>
             Your spouse must receive the annuity for at least {result.breakEvenYears.toFixed(1)} years to recoup all premiums paid.
           </ThemedText>
         </ThemedView>
 
         {/* Age-based projection */}
         <ThemedView type="backgroundElement" style={styles.card}>
-          <ThemedText style={styles.cardLabel}>ESTIMATED SCENARIO (ACTUARIAL)</ThemedText>
-          <ThemedText style={styles.hintText}>
+          <ThemedText style={[styles.cardLabel, { color: tc.textHint }]}>ESTIMATED SCENARIO (ACTUARIAL)</ThemedText>
+          <ThemedText style={[styles.hintText, { color: tc.textMuted }]}>
             Assumes you die at 78, spouse lives to 84. Adjust ages above to model different scenarios.
           </ThemedText>
           <View style={styles.resultRow}>
-            <ThemedText style={styles.resultLabel}>Premiums you pay</ThemedText>
+            <ThemedText style={[styles.resultLabel, { color: tc.textSecondary }]}>Premiums you pay</ThemedText>
             <ThemedText style={[styles.resultValue, { color: Brand.danger }]}>{fmtDollar(estPremiumTotal)}</ThemedText>
           </View>
           <View style={styles.resultRow}>
-            <ThemedText style={styles.resultLabel}>Spouse collects (~{estCollectYears} yrs)</ThemedText>
+            <ThemedText style={[styles.resultLabel, { color: tc.textSecondary }]}>Spouse collects (~{estCollectYears} yrs)</ThemedText>
             <ThemedText style={[styles.resultValue, { color: Brand.tactical }]}>{fmtDollar(estAnnuityTotal)}</ThemedText>
           </View>
           <View style={[styles.resultRow, styles.resultRowHighlight]}>
-            <ThemedText style={[styles.resultLabel, { fontWeight: '700' }]}>Net benefit to family</ThemedText>
+            <ThemedText style={[styles.resultLabel, { color: tc.textSecondary, fontWeight: '700' }]}>Net benefit to family</ThemedText>
             <ThemedText style={[styles.resultValue, { color: estNetBenefit >= 0 ? Brand.success : Brand.danger, fontWeight: '700' }]}>
               {estNetBenefit >= 0 ? '+' : ''}{fmtDollar(estNetBenefit)}
             </ThemedText>
@@ -251,7 +253,7 @@ export default function SbpCalculatorScreen() {
 
         {/* Key considerations */}
         <ThemedView type="backgroundElement" style={styles.card}>
-          <ThemedText style={styles.cardLabel}>KEY CONSIDERATIONS</ThemedText>
+          <ThemedText style={[styles.cardLabel, { color: tc.textHint }]}>KEY CONSIDERATIONS</ThemedText>
           {[
             { icon: '✅', text: 'Paid-up after 30 years of premiums AND age 70 — coverage continues free.' },
             { icon: '⚠️', text: 'SBP annuity is offset dollar-for-dollar by VA DIC if your spouse qualifies. Spouses can receive both, but SBP is reduced.' },
@@ -261,13 +263,13 @@ export default function SbpCalculatorScreen() {
           ].map((item, i) => (
             <View key={i} style={styles.bulletRow}>
               <ThemedText style={styles.bulletIcon}>{item.icon}</ThemedText>
-              <ThemedText style={styles.bulletText}>{item.text}</ThemedText>
+              <ThemedText style={[styles.bulletText, { color: tc.textSecondary }]}>{item.text}</ThemedText>
             </View>
           ))}
         </ThemedView>
 
         <ThemedView type="backgroundElement" style={styles.noteCard}>
-          <ThemedText style={styles.noteText}>
+          <ThemedText style={[styles.noteText, { color: tc.textMuted }]}>
             Estimates only. SBP annuity rates and DIC amounts are subject to COLA adjustments. Consult your installation finance office or a military financial advisor before making an SBP election.
           </ThemedText>
         </ThemedView>
@@ -287,18 +289,18 @@ const styles = StyleSheet.create({
 
   content: { paddingHorizontal: Spacing.three, gap: Spacing.two },
   card: { borderRadius: 4, padding: Spacing.three, gap: Spacing.two },
-  cardLabel: { fontSize: 9, fontWeight: '800', color: '#4D7A9A', letterSpacing: 1 },
-  bodyText: { fontSize: 13, lineHeight: 20, color: '#A0B8CC' },
-  hintText: { fontSize: 11, color: '#3D6080', lineHeight: 16 },
+  cardLabel: { fontSize: 9, fontWeight: '800', letterSpacing: 1 },
+  bodyText: { fontSize: 13, lineHeight: 20 },
+  hintText: { fontSize: 11, lineHeight: 16 },
 
-  fieldLabel: { fontSize: 9, fontWeight: '700', color: '#4D7A9A', letterSpacing: 0.8 },
+  fieldLabel: { fontSize: 9, fontWeight: '700', letterSpacing: 0.8 },
   chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.one },
   chip: {
     paddingHorizontal: Spacing.two, paddingVertical: 5, borderRadius: 4,
-    borderWidth: 1, borderColor: Brand.border,
+    borderWidth: 1,
   },
   chipActive: { backgroundColor: Brand.accent, borderColor: Brand.accent },
-  chipText: { fontSize: 11, fontWeight: '700', color: '#4D7A9A' },
+  chipText: { fontSize: 11, fontWeight: '700' },
   chipTextActive: { color: '#000' },
 
   resultCard: { borderRadius: 4, padding: Spacing.three, gap: Spacing.one + 2, borderLeftWidth: 3 },
@@ -310,13 +312,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.one,
     marginHorizontal: -Spacing.one,
   },
-  resultLabel: { fontSize: 13, color: '#A0B8CC', flex: 1 },
-  resultValue: { fontSize: 14, fontWeight: '700', color: '#C8D8E8' },
+  resultLabel: { fontSize: 13, flex: 1 },
+  resultValue: { fontSize: 14, fontWeight: '700' },
 
   bulletRow: { flexDirection: 'row', gap: Spacing.two, alignItems: 'flex-start' },
   bulletIcon: { fontSize: 14, width: 22 },
-  bulletText: { flex: 1, fontSize: 12, lineHeight: 18, color: '#A0B8CC' },
+  bulletText: { flex: 1, fontSize: 12, lineHeight: 18 },
 
   noteCard: { borderRadius: 4, padding: Spacing.three },
-  noteText: { fontSize: 10, color: '#3D6080', lineHeight: 16 },
+  noteText: { fontSize: 10, lineHeight: 16 },
 });

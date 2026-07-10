@@ -168,7 +168,8 @@ export function searchOconus(query: string): OconusLocation[] {
 }
 
 // ── Legacy compat (tle-calculator, LocalityPicker) ───────────────────────────
-import { CONUS_DESTINATIONS as _CONUS, STANDARD_TOTAL as _STD } from '@/data/gsa-per-diem';
+import { CONUS_DESTINATIONS as _CONUS, lookupPerDiemByZip as _lookupPD } from '@/data/gsa-per-diem';
+import { INSTALLATIONS } from '@/data/installations';
 
 export const PER_DIEM_DATA_YEAR = 2026;
 
@@ -177,31 +178,57 @@ export interface Locality {
   name: string;
   area: string;
   state: string;
-  perDiem: number;
+  lodging: number;  // max lodging $/night
+  meals: number;    // M&IE $/day
+  perDiem: number;  // lodging + meals
   oconus: boolean;
 }
 
 export const LOCALITIES: Locality[] = [
+  // GSA CONUS city/county destinations (296 non-standard areas)
   ..._CONUS.map((d) => ({
     id: `conus_${d.did}`,
     name: d.city,
     area: d.county ? `${d.county} County` : d.state,
     state: d.state,
+    lodging: d.maxLodging,
+    meals: d.meals,
     perDiem: d.total,
     oconus: false,
   })),
+
+  // All CONUS military installations — searchable by base name
+  ...INSTALLATIONS
+    .filter((i) => !i.oconus && !!i.mhaZip)
+    .map((i) => {
+      const pd = _lookupPD(i.mhaZip);
+      return {
+        id: `inst_${i.id}`,
+        name: i.name,
+        area: `${i.city}, ${i.state} · ${i.branch}`,
+        state: i.state,
+        lodging: pd.lodging,
+        meals: pd.meals,
+        perDiem: pd.total,
+        oconus: false,
+      };
+    }),
+
+  // OCONUS per diem locations
   ...OCONUS_LOCATIONS.map((l) => ({
     id: l.id,
     name: l.name,
     area: l.area,
     state: l.countryCode,
+    lodging: l.lodging,
+    meals: l.meals,
     perDiem: l.total,
     oconus: true,
   })),
 ];
 
 export function searchLocalities(query: string, oconus?: boolean): Locality[] {
-  let list = oconus !== undefined ? LOCALITIES.filter((l) => l.oconus === oconus) : LOCALITIES;
+  const list = oconus !== undefined ? LOCALITIES.filter((l) => l.oconus === oconus) : LOCALITIES;
   if (!query.trim()) return list.slice(0, 30);
   const q = query.toLowerCase();
   return list.filter(
@@ -209,5 +236,5 @@ export function searchLocalities(query: string, oconus?: boolean): Locality[] {
       l.name.toLowerCase().includes(q) ||
       l.area.toLowerCase().includes(q) ||
       l.state.toLowerCase().includes(q),
-  ).slice(0, 20);
+  ).slice(0, 50);
 }

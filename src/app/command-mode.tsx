@@ -1,12 +1,15 @@
 import { useRouter } from 'expo-router';
 import React, { useMemo, useEffect, useState } from 'react';
-import { Alert, Pressable, ScrollView, Share, StyleSheet, View } from 'react-native';
+import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import * as Print from 'expo-print';
+import * as Sharing from 'expo-sharing';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { BottomTabInset, Brand, Spacing } from '@/constants/theme';
 import { calcLES } from '@/features/home/utils/lesCalc';
+import { useThemeColors } from '@/hooks/use-theme';
 import { useBudgetStore } from '@/store/budget.store';
 import { useUserStore } from '@/store/user.store';
 import { getRankAbbrev, BRANCH_LABELS, SPECIAL_PAY_LABELS } from '@/types/user.types';
@@ -27,10 +30,11 @@ function Row({ label, value, dim, accent, bold, indent }: {
   label: string; value: string; dim?: boolean; accent?: string;
   bold?: boolean; indent?: boolean;
 }) {
+  const tc = useThemeColors();
   return (
     <View style={[row.wrap, indent && row.indent]}>
-      <ThemedText style={[row.label, dim && row.dimText, bold && row.boldText]}>{label}</ThemedText>
-      <ThemedText style={[row.value, dim && row.dimText, bold && row.boldText, accent ? { color: accent } : null]}>
+      <ThemedText style={[row.label, { color: tc.textSecondary }, dim && { color: tc.textHint }, bold && row.boldText]}>{label}</ThemedText>
+      <ThemedText style={[row.value, { color: tc.textPrimary }, dim && { color: tc.textHint }, bold && row.boldText, accent ? { color: accent } : null]}>
         {value}
       </ThemedText>
     </View>
@@ -40,26 +44,26 @@ function Row({ label, value, dim, accent, bold, indent }: {
 const row = StyleSheet.create({
   wrap: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 5 },
   indent: { paddingLeft: Spacing.three },
-  label: { fontSize: 12, color: '#8AABCC', flex: 1 },
-  value: { fontSize: 12, fontWeight: '700', color: '#C8D8E8', fontFamily: 'Courier New' },
-  dimText: { color: '#4D7A9A' },
+  label: { fontSize: 12, flex: 1 },
+  value: { fontSize: 12, fontWeight: '700', fontFamily: 'Courier New' },
   boldText: { fontWeight: '900' },
 });
 
 function Divider({ label }: { label?: string }) {
+  const tc = useThemeColors();
   return (
     <View style={div.wrap}>
-      <View style={div.line} />
-      {label && <ThemedText style={div.label}>{label}</ThemedText>}
-      {label && <View style={div.line} />}
+      <View style={[div.line, { backgroundColor: tc.borderColor }]} />
+      {label && <ThemedText style={[div.label, { color: tc.textMuted }]}>{label}</ThemedText>}
+      {label && <View style={[div.line, { backgroundColor: tc.borderColor }]} />}
     </View>
   );
 }
 
 const div = StyleSheet.create({
   wrap: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two, marginVertical: Spacing.one + 2 },
-  line: { flex: 1, height: StyleSheet.hairlineWidth, backgroundColor: '#0D2030' },
-  label: { fontSize: 9, fontWeight: '800', color: '#3D6080', letterSpacing: 1 },
+  line: { flex: 1, height: StyleSheet.hairlineWidth },
+  label: { fontSize: 9, fontWeight: '800', letterSpacing: 1 },
 });
 
 function SectionHeader({ label, color = Brand.tactical }: { label: string; color?: string }) {
@@ -82,6 +86,7 @@ const sh = StyleSheet.create({
 export default function CommandModeScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const tc = useThemeColors();
 
   // User data
   const branch       = useUserStore((s) => s.branch);
@@ -99,8 +104,34 @@ export default function CommandModeScreen() {
   const sglOptOut    = useUserStore((s) => s.sglOptOut);
   const stateResidence  = useUserStore((s) => s.stateResidence);
   const specialPays  = useUserStore((s) => s.specialPays);
-  const lesOverrides = useUserStore((s) => s.lesOverrides);
+  const lesOverrides    = useUserStore((s) => s.lesOverrides);
+  const setLesOverrides = useUserStore((s) => s.setLesOverrides);
   const spouseIncome = useUserStore((s) => s.spouseMonthlyIncome);
+
+  // Add custom item state
+  const [addingType, setAddingType] = useState<'income' | 'deduction' | null>(null);
+  const [addLabel, setAddLabel]     = useState('');
+  const [addAmount, setAddAmount]   = useState('');
+
+  const commitAdd = () => {
+    const amount = parseFloat(addAmount);
+    if (!addLabel.trim() || isNaN(amount) || amount <= 0) return;
+    const item = { id: `${Date.now()}`, label: addLabel.trim(), amount };
+    if (addingType === 'income') {
+      setLesOverrides({ ...lesOverrides, extraIncome: [...(lesOverrides.extraIncome ?? []), item] });
+    } else {
+      setLesOverrides({ ...lesOverrides, extraDeductions: [...(lesOverrides.extraDeductions ?? []), item] });
+    }
+    setAddLabel(''); setAddAmount(''); setAddingType(null);
+  };
+
+  const removeExtraItem = (type: 'income' | 'deduction', id: string) => {
+    if (type === 'income') {
+      setLesOverrides({ ...lesOverrides, extraIncome: (lesOverrides.extraIncome ?? []).filter((i) => i.id !== id) });
+    } else {
+      setLesOverrides({ ...lesOverrides, extraDeductions: (lesOverrides.extraDeductions ?? []).filter((i) => i.id !== id) });
+    }
+  };
 
   // Budget
   const budgetCategories = useBudgetStore((s) => s.categories);
@@ -136,100 +167,141 @@ export default function CommandModeScreen() {
     ? breakdown.netPay + spouseIncome - totalBudgeted
     : null;
 
-  const handleShare = () => {
+  const handleShare = async () => {
     if (!breakdown) {
       Alert.alert('Profile Incomplete', 'Complete your profile first to generate this worksheet.');
       return;
     }
 
-    const pad = (s: string, w: number) => s.padEnd(w, ' ');
-    const fmtR = (n: number) => fmt(n).padStart(10, ' ');
+    const row = (label: string, value: string, bold = false) =>
+      `<tr><td style="padding:4px 8px;color:#555;font-size:12px;${bold ? 'font-weight:700;' : ''}">${label}</td><td style="padding:4px 8px;text-align:right;font-family:monospace;font-size:12px;${bold ? 'font-weight:700;' : ''}">${value}</td></tr>`;
 
-    const lines = [
-      '═══════════════════════════════════════════════',
-      '        COMMAND FINANCIAL READINESS WORKSHEET',
-      '═══════════════════════════════════════════════',
-      `Member:  ${rankAbbrev} ${lastName?.toUpperCase() ?? displayName}`,
-      `Branch:  ${branchLabel.toUpperCase()}`,
-      `Grade:   ${payGrade ?? '—'}    YOS: ${yos}`,
-      `Status:  ${hasSpouse ? 'Married' : 'Single'}   Deps: ${numChildren}`,
-      `Date:    ${today}`,
-      '─────────────────────────────────────────────',
-      'GROSS MONTHLY INCOME',
-      `  ${pad('Base Pay', 28)}${fmtR(breakdown.basePay)}`,
-      `  ${pad('BAH', 28)}${fmtR(breakdown.bah)}`,
-      `  ${pad('BAS', 28)}${fmtR(breakdown.bas)}`,
-      ...(breakdown.specialPays > 0
-        ? [`  ${pad('Special Pays', 28)}${fmtR(breakdown.specialPays)}`]
-        : []),
-      ...specialPays.map((p) => `    ${pad('· ' + (p.customLabel ?? SPECIAL_PAY_LABELS[p.type]), 26)}${fmtR(p.monthlyAmount)}`),
-      ...(spouseIncome > 0
-        ? [`  ${pad('Spouse Income', 28)}${fmtR(spouseIncome)}`]
-        : []),
-      `  ${pad('TOTAL GROSS', 28)}${fmtR(breakdown.grossPay + spouseIncome)}`,
-      '─────────────────────────────────────────────',
-      'DEDUCTIONS',
-      `  ${pad('Federal Income Tax (est.)', 28)}${fmtR(breakdown.fedTax)}`,
-      ...(breakdown.stateTax > 0
-        ? [`  ${pad('State Income Tax (est.)', 28)}${fmtR(breakdown.stateTax)}`]
-        : []),
-      `  ${pad('FICA', 28)}${fmtR(breakdown.fica)}`,
-      ...(breakdown.traditionalTsp > 0 ? [`  ${pad(`Trad TSP (${tspContribPct}%)`, 28)}${fmtR(breakdown.traditionalTsp)}`] : []),
-      ...(breakdown.rothTsp > 0       ? [`  ${pad(`Roth TSP (${rothTspPct}%)`, 28)}${fmtR(breakdown.rothTsp)}`]         : []),
-      ...(breakdown.tsp === 0         ? [`  ${pad('TSP Contribution', 28)}${fmtR(0)}`]                                  : []),
-      ...(breakdown.sgli > 0
-        ? [`  ${pad('SGLI', 28)}${fmtR(breakdown.sgli)}`]
-        : []),
-      ...(breakdown.dental > 0
-        ? [`  ${pad('Dental (FEDVIP)', 28)}${fmtR(breakdown.dental)}`]
-        : []),
-      `  ${pad('TOTAL DEDUCTIONS', 28)}${fmtR(breakdown.totalDeductions)}`,
-      '─────────────────────────────────────────────',
-      `  ${'NET TAKE-HOME PAY'.padEnd(28)}${fmtR(breakdown.netPay)}`,
-      '─────────────────────────────────────────────',
-      'MONTHLY EXPENSES (BUDGET)',
-      ...budgetWithEntries.map((c) => `  ${pad(c.name, 28)}${fmtR(c.monthlyBudget)}`),
-      ...(budgetWithEntries.length === 0 ? ['  No budget entries on file.'] : []),
-      `  ${pad('TOTAL EXPENSES', 28)}${fmtR(totalBudgeted)}`,
-      '═══════════════════════════════════════════════',
-      `  ${'NET AFTER ALL EXPENSES'.padEnd(28)}${fmtR(netAfterExpenses ?? 0)}`,
-      '═══════════════════════════════════════════════',
-      '',
-      'This worksheet was self-generated using MilBudgetBuddy.',
-      'All figures are estimates based on current pay tables.',
-      'Data is self-reported and not verified by the command.',
-    ].join('\n');
+    const sectionHeader = (label: string, color: string) =>
+      `<tr><td colspan="2" style="padding:6px 8px 2px;font-size:10px;font-weight:800;letter-spacing:1px;color:${color};border-top:1px solid #ddd;text-transform:uppercase;">${label}</td></tr>`;
 
-    Share.share({ message: lines, title: 'Financial Readiness Worksheet' });
+    const html = `
+<!DOCTYPE html><html><head><meta charset="utf-8"/>
+<style>
+  body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; margin: 0; padding: 24px; color: #222; }
+  .header { border-bottom: 3px solid #1565C0; padding-bottom: 12px; margin-bottom: 16px; }
+  .header h1 { margin: 0 0 4px; font-size: 18px; color: #1565C0; letter-spacing: 1px; }
+  .header .member { font-size: 22px; font-weight: 900; margin: 4px 0; }
+  .header .meta { font-size: 11px; color: #777; }
+  table { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
+  .net-row td { font-size: 15px; font-weight: 900; color: #1565C0; border-top: 2px solid #1565C0; padding-top: 8px; }
+  .final-row td { font-size: 16px; font-weight: 900; border-top: 3px double #222; padding-top: 8px; }
+  .footer { margin-top: 24px; padding-top: 12px; border-top: 1px solid #ddd; font-size: 9px; color: #999; }
+</style>
+</head><body>
+<div class="header">
+  <h1>COMMAND FINANCIAL READINESS WORKSHEET</h1>
+  <div class="member">${rankAbbrev} ${lastName?.toUpperCase() ?? displayName}</div>
+  <div class="meta">
+    ${branchLabel.toUpperCase()} · ${payGrade ?? '—'} · ${yos} YRS SERVICE · ${hasSpouse ? 'MARRIED' : 'SINGLE'} · ${numChildren} DEPENDENT(S)<br/>
+    Date: ${today}
+  </div>
+</div>
+
+<table>
+  ${sectionHeader('GROSS MONTHLY INCOME', '#2E7D32')}
+  ${row('Base Pay', fmt(breakdown.basePay))}
+  ${row('BAH (Housing Allowance)', fmt(breakdown.bah))}
+  ${row('BAS (Subsistence Allowance)', fmt(breakdown.bas))}
+  ${breakdown.specialPays > 0 ? specialPays.map((p) => row('· ' + (p.customLabel ?? SPECIAL_PAY_LABELS[p.type]), fmt(p.monthlyAmount))).join('') : ''}
+  ${breakdown.extraIncomeItems.map((i) => row('· ' + i.label, fmt(i.amount))).join('')}
+  ${spouseIncome > 0 ? row('Spouse / Household Income', fmt(spouseIncome)) : ''}
+  ${row('TOTAL GROSS', fmt(breakdown.grossPay + spouseIncome), true)}
+
+  ${sectionHeader('DEDUCTIONS', '#B71C1C')}
+  ${row('Federal Income Tax (est.)', fmt(breakdown.fedTax))}
+  ${breakdown.stateTax > 0 ? row('State Income Tax (est.)', fmt(breakdown.stateTax)) : ''}
+  ${row('FICA (Social Security + Medicare)', fmt(breakdown.fica))}
+  ${breakdown.traditionalTsp > 0 ? row(`Traditional TSP (${tspContribPct}%)`, fmt(breakdown.traditionalTsp)) : ''}
+  ${breakdown.rothTsp > 0 ? row(`Roth TSP (${rothTspPct}%)`, fmt(breakdown.rothTsp)) : ''}
+  ${breakdown.sgli > 0 ? row('SGLI Premium', fmt(breakdown.sgli)) : ''}
+  ${breakdown.dental > 0 ? row('FEDVIP Dental', fmt(breakdown.dental)) : ''}
+  ${breakdown.extraDeductionItems.map((i) => row('· ' + i.label, fmt(i.amount))).join('')}
+  ${row('TOTAL DEDUCTIONS', fmt(breakdown.totalDeductions), true)}
+</table>
+
+<table>
+  <tr class="net-row">
+    <td>NET TAKE-HOME PAY</td>
+    <td style="text-align:right;font-family:monospace;">${fmt(breakdown.netPay)}</td>
+  </tr>
+</table>
+
+<table>
+  ${sectionHeader('MONTHLY BUDGET (EXPENSES)', '#C8A800')}
+  ${budgetWithEntries.length === 0
+    ? '<tr><td colspan="2" style="padding:4px 8px;color:#999;font-size:11px;">No budget entries on file.</td></tr>'
+    : budgetWithEntries.map((c) => row(`${c.emoji} ${c.name}`, fmt(c.monthlyBudget))).join('')}
+  ${row('TOTAL EXPENSES', fmt(totalBudgeted), true)}
+</table>
+
+<table>
+  <tr class="final-row">
+    <td>NET AFTER ALL EXPENSES</td>
+    <td style="text-align:right;font-family:monospace;color:${(netAfterExpenses ?? 0) >= 0 ? '#2E7D32' : '#B71C1C'};">
+      ${netAfterExpenses !== null ? ((netAfterExpenses >= 0 ? '+' : '') + fmt(netAfterExpenses)) : '—'}/mo
+    </td>
+  </tr>
+</table>
+
+<div class="footer">
+  Generated by MilBudgetBuddy · milbudgetbuddy.app · ${today}<br/>
+  All figures are estimates based on FY2026 DoD pay tables and self-reported data.
+  This worksheet does not replace an official LES from myPay.dfas.mil.
+  Data is self-reported and not verified by the command or DFAS.
+</div>
+</body></html>`;
+
+    try {
+      const { uri } = await Print.printToFileAsync({ html, base64: false });
+      const canShare = await Sharing.isAvailableAsync();
+      if (canShare) {
+        await Sharing.shareAsync(uri, {
+          mimeType: 'application/pdf',
+          dialogTitle: 'Financial Readiness Worksheet',
+          UTI: 'com.adobe.pdf',
+        });
+      } else {
+        await Print.printAsync({ html });
+      }
+    } catch {
+      Alert.alert('Error', 'Could not generate PDF. Try again.');
+    }
   };
 
   return (
     <ThemedView style={styles.container}>
       <SafeAreaView edges={['top']}>
-        <View style={styles.header}>
+        <View style={[styles.header, { borderBottomColor: tc.borderColor }]}>
           <Pressable onPress={() => router.back()} style={styles.backBtn}>
             <ThemedText style={styles.backText}>‹ Back</ThemedText>
           </Pressable>
-          <ThemedText style={styles.title}>FINANCIAL READINESS</ThemedText>
+          <ThemedText style={[styles.title, { color: tc.textPrimary }]}>FINANCIAL READINESS</ThemedText>
           <Pressable onPress={handleShare} style={styles.shareBtn}>
-            <ThemedText style={styles.shareText}>SHARE ↑</ThemedText>
+            <ThemedText style={styles.shareText}>PDF ↑</ThemedText>
           </Pressable>
         </View>
       </SafeAreaView>
 
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <ScrollView
         contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + Spacing.five }]}
+        keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}>
 
         {/* Identity block */}
-        <View style={styles.idBlock}>
+        <View style={[styles.idBlock, { backgroundColor: tc.surface }]}>
           <View style={styles.idLeft}>
             <ThemedText style={styles.idRank}>{rankAbbrev || '—'}</ThemedText>
-            <ThemedText style={styles.idName}>{displayName}</ThemedText>
-            <ThemedText style={styles.idBranch}>{branchLabel.toUpperCase()} {payGrade ? `· ${payGrade}` : ''}</ThemedText>
+            <ThemedText style={[styles.idName, { color: tc.textPrimary }]}>{displayName}</ThemedText>
+            <ThemedText style={[styles.idBranch, { color: tc.textHint }]}>{branchLabel.toUpperCase()} {payGrade ? `· ${payGrade}` : ''}</ThemedText>
           </View>
           <View style={styles.idRight}>
-            <ThemedText style={styles.idDate}>{today}</ThemedText>
+            <ThemedText style={[styles.idDate, { color: tc.textHint }]}>{today}</ThemedText>
             <View style={styles.idStatus}>
               <View style={styles.idDot} />
               <ThemedText style={styles.idStatusText}>FOR COMMAND USE</ThemedText>
@@ -238,7 +310,7 @@ export default function CommandModeScreen() {
         </View>
 
         <View style={styles.idMeta}>
-          <ThemedText style={styles.idMetaText}>YOS: {yos} · {hasSpouse ? 'MARRIED' : 'SINGLE'} · {numChildren} DEP{numChildren !== 1 ? 'S' : ''}</ThemedText>
+          <ThemedText style={[styles.idMetaText, { color: tc.textMuted }]}>YOS: {yos} · {hasSpouse ? 'MARRIED' : 'SINGLE'} · {numChildren} DEP{numChildren !== 1 ? 'S' : ''}</ThemedText>
         </View>
 
         {!breakdown && (
@@ -257,7 +329,7 @@ export default function CommandModeScreen() {
         {breakdown && (
           <>
             {/* ── GROSS INCOME ── */}
-            <View style={styles.card}>
+            <View style={[styles.card, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
               <SectionHeader label="GROSS MONTHLY INCOME" color={Brand.success} />
               <Row label="Base Pay" value={fmt(breakdown.basePay)} />
               <Row label="BAH (Housing Allowance)" value={fmt(breakdown.bah)} />
@@ -279,8 +351,31 @@ export default function CommandModeScreen() {
               )}
 
               {breakdown.extraIncomeItems.map((item) => (
-                <Row key={item.id} label={item.label} value={fmt(item.amount)} indent dim />
+                <View key={item.id} style={styles.extraItemRow}>
+                  <Row label={item.label} value={fmt(item.amount)} indent dim />
+                  <Pressable onPress={() => removeExtraItem('income', item.id)} hitSlop={8}>
+                    <ThemedText style={styles.removeX}>✕</ThemedText>
+                  </Pressable>
+                </View>
               ))}
+              {addingType === 'income' ? (
+                <View style={styles.addItemForm}>
+                  <TextInput value={addLabel} onChangeText={setAddLabel} placeholder="Label (e.g. Side Income)" placeholderTextColor={tc.textMuted} style={[styles.addItemInput, { backgroundColor: tc.inputBg, borderColor: tc.borderColor, color: tc.textPrimary }]} autoFocus />
+                  <TextInput value={addAmount} onChangeText={setAddAmount} placeholder="Amount" placeholderTextColor={tc.textMuted} keyboardType="decimal-pad" style={[styles.addItemInput, styles.addItemAmtInput, { backgroundColor: tc.inputBg, borderColor: tc.borderColor, color: tc.textPrimary }]} />
+                  <View style={styles.addItemBtns}>
+                    <Pressable onPress={() => { setAddingType(null); setAddLabel(''); setAddAmount(''); }} style={[styles.addItemCancel, { borderColor: tc.borderColor }]}>
+                      <ThemedText style={[styles.addItemCancelText, { color: tc.textHint }]}>Cancel</ThemedText>
+                    </Pressable>
+                    <Pressable onPress={commitAdd} style={styles.addItemConfirm}>
+                      <ThemedText style={styles.addItemConfirmText}>Add</ThemedText>
+                    </Pressable>
+                  </View>
+                </View>
+              ) : (
+                <Pressable onPress={() => setAddingType('income')} style={styles.addItemBtn}>
+                  <ThemedText style={styles.addItemBtnText}>+ Add Income Item</ThemedText>
+                </Pressable>
+              )}
 
               {spouseIncome > 0 && (
                 <Row label="Spouse / Household Income" value={fmt(spouseIncome)} />
@@ -296,7 +391,7 @@ export default function CommandModeScreen() {
             </View>
 
             {/* ── DEDUCTIONS ── */}
-            <View style={styles.card}>
+            <View style={[styles.card, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
               <SectionHeader label="DEDUCTIONS" color="#E74C3C" />
               <Row label="Federal Income Tax (est.)" value={fmt(breakdown.fedTax)} />
               {breakdown.stateTax > 0 && (
@@ -309,8 +404,31 @@ export default function CommandModeScreen() {
               {breakdown.sgli > 0 && <Row label="SGLI Premium" value={fmt(breakdown.sgli)} />}
               {breakdown.dental > 0 && <Row label="FEDVIP Dental" value={fmt(breakdown.dental)} />}
               {breakdown.extraDeductionItems.map((item) => (
-                <Row key={item.id} label={item.label} value={fmt(item.amount)} dim />
+                <View key={item.id} style={styles.extraItemRow}>
+                  <Row label={item.label} value={fmt(item.amount)} dim />
+                  <Pressable onPress={() => removeExtraItem('deduction', item.id)} hitSlop={8}>
+                    <ThemedText style={styles.removeX}>✕</ThemedText>
+                  </Pressable>
+                </View>
               ))}
+              {addingType === 'deduction' ? (
+                <View style={styles.addItemForm}>
+                  <TextInput value={addLabel} onChangeText={setAddLabel} placeholder="Label (e.g. Allotment)" placeholderTextColor={tc.textMuted} style={[styles.addItemInput, { backgroundColor: tc.inputBg, borderColor: tc.borderColor, color: tc.textPrimary }]} autoFocus />
+                  <TextInput value={addAmount} onChangeText={setAddAmount} placeholder="Amount" placeholderTextColor={tc.textMuted} keyboardType="decimal-pad" style={[styles.addItemInput, styles.addItemAmtInput, { backgroundColor: tc.inputBg, borderColor: tc.borderColor, color: tc.textPrimary }]} />
+                  <View style={styles.addItemBtns}>
+                    <Pressable onPress={() => { setAddingType(null); setAddLabel(''); setAddAmount(''); }} style={[styles.addItemCancel, { borderColor: tc.borderColor }]}>
+                      <ThemedText style={[styles.addItemCancelText, { color: tc.textHint }]}>Cancel</ThemedText>
+                    </Pressable>
+                    <Pressable onPress={commitAdd} style={styles.addItemConfirm}>
+                      <ThemedText style={styles.addItemConfirmText}>Add</ThemedText>
+                    </Pressable>
+                  </View>
+                </View>
+              ) : (
+                <Pressable onPress={() => setAddingType('deduction')} style={styles.addItemBtn}>
+                  <ThemedText style={styles.addItemBtnText}>+ Add Deduction</ThemedText>
+                </Pressable>
+              )}
               <Divider />
               <Row label="TOTAL DEDUCTIONS" value={fmt(breakdown.totalDeductions)} bold accent="#E74C3C" />
             </View>
@@ -329,11 +447,11 @@ export default function CommandModeScreen() {
             </View>
 
             {/* ── MONTHLY EXPENSES ── */}
-            <View style={styles.card}>
+            <View style={[styles.card, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
               <SectionHeader label="MONTHLY EXPENSES (BUDGET)" color={Brand.accent} />
               {budgetWithEntries.length === 0 ? (
                 <Pressable onPress={() => router.push('/budget' as any)} style={styles.noBudgetRow}>
-                  <ThemedText style={styles.noBudgetText}>No budget entries yet — tap to add your expenses →</ThemedText>
+                  <ThemedText style={[styles.noBudgetText, { color: tc.textHint }]}>No budget entries yet — tap to add your expenses →</ThemedText>
                 </Pressable>
               ) : (
                 budgetWithEntries.map((cat) => (
@@ -346,7 +464,8 @@ export default function CommandModeScreen() {
 
             {/* ── NET REMAINING ── */}
             <View style={[styles.card, styles.remainCard,
-              { borderColor: netAfterExpenses !== null && netAfterExpenses >= 0
+              { backgroundColor: tc.surface,
+                borderColor: netAfterExpenses !== null && netAfterExpenses >= 0
                   ? Brand.success + '60'
                   : '#E74C3C60' }]}>
               <SectionHeader
@@ -367,7 +486,7 @@ export default function CommandModeScreen() {
               />
               <Divider />
               <View style={styles.remainRow}>
-                <ThemedText style={styles.remainLabel}>REMAINING</ThemedText>
+                <ThemedText style={[styles.remainLabel, { color: tc.textPrimary }]}>REMAINING</ThemedText>
                 <ThemedText style={[
                   styles.remainValue,
                   { color: netAfterExpenses !== null && netAfterExpenses >= 0 ? Brand.success : '#E74C3C' },
@@ -385,9 +504,9 @@ export default function CommandModeScreen() {
             </View>
 
             {/* ── INSTRUCTIONS ── */}
-            <View style={styles.instructionsCard}>
+            <View style={[styles.instructionsCard, { backgroundColor: tc.background, borderColor: tc.borderColor }]}>
               <ThemedText style={styles.instructionsTitle}>📋 HOW TO USE THIS WORKSHEET</ThemedText>
-              <ThemedText style={styles.instructionsText}>
+              <ThemedText style={[styles.instructionsText, { color: tc.textHint }]}>
                 This Financial Data Worksheet is generated from your profile data and is for personal use or voluntary disclosure to your chain of command. Tap <ThemedText style={styles.instructionsHighlight}>SHARE ↑</ThemedText> at the top to export as text and send via email, message, or print.{'\n\n'}
                 All figures are estimates based on current DoD pay tables. This worksheet does not replace official LES data or financial counseling.
               </ThemedText>
@@ -395,6 +514,7 @@ export default function CommandModeScreen() {
           </>
         )}
       </ScrollView>
+      </KeyboardAvoidingView>
     </ThemedView>
   );
 }
@@ -408,11 +528,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.three,
     paddingVertical: Spacing.two,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: Brand.border,
   },
   backBtn: { width: 60 },
   backText: { fontSize: 16, fontWeight: '600', color: Brand.tactical },
-  title: { flex: 1, textAlign: 'center', fontSize: 13, fontWeight: '900', color: '#C8D8E8', letterSpacing: 1.5 },
+  title: { flex: 1, textAlign: 'center', fontSize: 13, fontWeight: '900', letterSpacing: 1.5 },
   shareBtn: { width: 60, alignItems: 'flex-end' },
   shareText: { fontSize: 11, fontWeight: '800', color: Brand.tactical, letterSpacing: 0.5 },
 
@@ -423,7 +542,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    backgroundColor: '#080E1C',
     borderWidth: 1,
     borderColor: Brand.accent + '40',
     borderRadius: 6,
@@ -432,20 +550,18 @@ const styles = StyleSheet.create({
   idLeft: { gap: 3 },
   idRight: { alignItems: 'flex-end', gap: 4 },
   idRank: { fontSize: 10, fontWeight: '800', color: Brand.accent, letterSpacing: 1 },
-  idName: { fontSize: 20, fontWeight: '900', color: '#C8D8E8', letterSpacing: 0.3 },
-  idBranch: { fontSize: 10, color: '#4D7A9A', fontWeight: '700', letterSpacing: 0.5 },
-  idDate: { fontSize: 10, color: '#4D7A9A' },
+  idName: { fontSize: 20, fontWeight: '900', letterSpacing: 0.3 },
+  idBranch: { fontSize: 10, fontWeight: '700', letterSpacing: 0.5 },
+  idDate: { fontSize: 10 },
   idStatus: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   idDot: { width: 5, height: 5, borderRadius: 3, backgroundColor: Brand.tactical },
   idStatusText: { fontSize: 9, color: Brand.tactical, fontWeight: '800', letterSpacing: 0.5 },
 
   idMeta: { marginTop: -Spacing.one },
-  idMetaText: { fontSize: 10, color: '#3D6080', textAlign: 'center', letterSpacing: 0.5 },
+  idMetaText: { fontSize: 10, textAlign: 'center', letterSpacing: 0.5 },
 
   card: {
-    backgroundColor: '#080E1C',
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: Brand.border,
     borderRadius: 6,
     padding: Spacing.three,
   },
@@ -461,10 +577,9 @@ const styles = StyleSheet.create({
 
   remainCard: {
     borderWidth: 1,
-    backgroundColor: '#060C14',
   },
   remainRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: Spacing.one },
-  remainLabel: { fontSize: 13, fontWeight: '900', color: '#C8D8E8', letterSpacing: 0.5 },
+  remainLabel: { fontSize: 13, fontWeight: '900', letterSpacing: 0.5 },
   remainValue: { fontSize: 26, fontWeight: '900', fontFamily: 'Courier New' },
   warningBox: {
     marginTop: Spacing.two,
@@ -475,7 +590,7 @@ const styles = StyleSheet.create({
   warningText: { fontSize: 11, color: '#E74C3C', textAlign: 'center' },
 
   noBudgetRow: { paddingVertical: Spacing.two },
-  noBudgetText: { fontSize: 12, color: '#4D7A9A', fontStyle: 'italic' },
+  noBudgetText: { fontSize: 12, fontStyle: 'italic' },
 
   incompleteBox: {
     flexDirection: 'row',
@@ -493,14 +608,29 @@ const styles = StyleSheet.create({
   incompleteChevron: { fontSize: 22, color: '#C9A84C' },
 
   instructionsCard: {
-    backgroundColor: '#04080F',
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: Brand.border,
     borderRadius: 6,
     padding: Spacing.three,
     gap: Spacing.two,
   },
   instructionsTitle: { fontSize: 11, fontWeight: '800', color: Brand.tactical, letterSpacing: 0.5 },
-  instructionsText: { fontSize: 11, color: '#4D7A9A', lineHeight: 17 },
+  instructionsText: { fontSize: 11, lineHeight: 17 },
   instructionsHighlight: { color: Brand.tactical, fontWeight: '700' },
+
+  extraItemRow: { flexDirection: 'row', alignItems: 'center' },
+  removeX: { fontSize: 12, color: '#E74C3C', paddingLeft: Spacing.two, fontWeight: '700' },
+  addItemBtn: { paddingVertical: Spacing.two, alignItems: 'flex-start' },
+  addItemBtnText: { fontSize: 11, color: Brand.tactical, fontWeight: '700', letterSpacing: 0.3 },
+  addItemForm: { gap: Spacing.two, paddingTop: Spacing.one },
+  addItemInput: {
+    borderWidth: 1,
+    borderRadius: 6, paddingHorizontal: Spacing.two + 2, paddingVertical: Spacing.one + 4,
+    fontSize: 13,
+  },
+  addItemAmtInput: { width: 140 },
+  addItemBtns: { flexDirection: 'row', gap: Spacing.two },
+  addItemCancel: { flex: 1, borderWidth: 1, borderRadius: 4, padding: Spacing.two, alignItems: 'center' },
+  addItemCancelText: { fontSize: 12, fontWeight: '700' },
+  addItemConfirm: { flex: 1, backgroundColor: Brand.tactical, borderRadius: 4, padding: Spacing.two, alignItems: 'center' },
+  addItemConfirmText: { fontSize: 12, color: '#FFFFFF', fontWeight: '800' },
 });

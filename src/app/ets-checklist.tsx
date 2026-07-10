@@ -1,4 +1,4 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
+﻿import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
@@ -13,6 +13,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Brand, Spacing } from '@/constants/theme';
+import { useThemeColors } from '@/hooks/use-theme';
 
 const STORAGE_KEY = 'mbb_ets_checklist';
 
@@ -202,6 +203,7 @@ const SECTIONS: CheckSection[] = [
 
 export default function EtsChecklistScreen() {
   const router = useRouter();
+  const tc = useThemeColors();
   const insets = useSafeAreaInsets();
   const [checked, setChecked] = useState<Record<string, boolean>>({});
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
@@ -246,13 +248,13 @@ export default function EtsChecklistScreen() {
     <ThemedView style={{ flex: 1 }}>
       <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
         <Pressable
-          onPress={() => (router.push('/tools'))}
+          onPress={() => (router.back())}
           style={styles.back}>
           <ThemedText style={styles.backChevron}>‹</ThemedText>
         </Pressable>
         <ThemedText style={styles.title}>EAS/ETS/Separation Checklist</ThemedText>
         <Pressable onPress={handleReset} style={styles.resetBtn}>
-          <ThemedText style={styles.resetText}>Reset</ThemedText>
+          <ThemedText style={[styles.resetText, { color: tc.textSecondary }]}>Reset</ThemedText>
         </Pressable>
       </View>
 
@@ -283,7 +285,7 @@ export default function EtsChecklistScreen() {
                 <ThemedText style={[styles.sectionTitle, { color: section.color }]}>
                   {section.title}
                 </ThemedText>
-                <ThemedText style={styles.sectionCount}>
+                <ThemedText style={[styles.sectionCount, { color: tc.textSecondary }]}>
                   {sectionDone}/{section.items.length}
                 </ThemedText>
               </View>
@@ -294,22 +296,35 @@ export default function EtsChecklistScreen() {
                   <Pressable
                     key={item.id}
                     onPress={() => toggleExpand(item.id)}
-                    style={[styles.itemCard, done && styles.itemCardDone]}>
+                    style={[
+                      styles.itemCard,
+                      { backgroundColor: tc.surface, borderColor: tc.borderColor },
+                      done && styles.itemCardDone,
+                    ]}>
                     <Pressable
                       onPress={() => toggle(item.id)}
-                      style={[styles.checkbox, done && { backgroundColor: section.color, borderColor: section.color }]}>
+                      style={[
+                        styles.checkbox,
+                        { borderColor: tc.textMuted },
+                        done && { backgroundColor: section.color, borderColor: section.color },
+                      ]}>
                       {done && <ThemedText style={styles.checkmark}>✓</ThemedText>}
                     </Pressable>
                     <View style={styles.itemBody}>
-                      <ThemedText style={[styles.itemLabel, done && styles.itemLabelDone]}>
+                      <ThemedText
+                        style={[
+                          styles.itemLabel,
+                          { color: tc.textPrimary },
+                          done && [styles.itemLabelDone, { color: tc.textSecondary }],
+                        ]}>
                         {item.label}
                       </ThemedText>
-                      <ThemedText style={styles.itemTimeframe}>{item.timeframe}</ThemedText>
+                      <ThemedText style={[styles.itemTimeframe, { color: tc.textMuted }]}>{item.timeframe}</ThemedText>
                       {open && (
-                        <ThemedText style={styles.itemDetail}>{item.detail}</ThemedText>
+                        <ThemedText style={[styles.itemDetail, { color: tc.textSecondary }]}>{item.detail}</ThemedText>
                       )}
                     </View>
-                    <ThemedText style={styles.expandChevron}>{open ? '∧' : '∨'}</ThemedText>
+                    <ThemedText style={[styles.expandChevron, { color: tc.textMuted }]}>{open ? '∧' : '∨'}</ThemedText>
                   </Pressable>
                 );
               })}
@@ -318,8 +333,8 @@ export default function EtsChecklistScreen() {
         })}
 
         <ThemedView type="backgroundElement" style={styles.footer}>
-          <ThemedText style={styles.footerTitle}>Need help?</ThemedText>
-          <ThemedText style={styles.footerText}>
+          <ThemedText style={[styles.footerTitle, { color: tc.textPrimary }]}>Need help?</ThemedText>
+          <ThemedText style={[styles.footerText, { color: tc.textSecondary }]}>
             Your installation Transition Center and JAG office provide free one-on-one guidance. DoD Transition GPS is available 24/7 at dodtap.mil.
           </ThemedText>
         </ThemedView>

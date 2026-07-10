@@ -1,4 +1,4 @@
-import { useRouter } from 'expo-router';
+﻿import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Brand, Spacing } from '@/constants/theme';
+import { useThemeColors } from '@/hooks/use-theme';
 
 interface TaxSection {
   id: string;
@@ -187,26 +188,31 @@ const SECTIONS: TaxSection[] = [
 
 function SectionCard({ section }: { section: TaxSection }) {
   const [expanded, setExpanded] = useState(false);
+  const tc = useThemeColors();
   return (
     <Pressable
       onPress={() => setExpanded((v) => !v)}
-      style={({ pressed }) => [styles.card, pressed && { opacity: 0.85 }]}>
+      style={({ pressed }) => [
+        styles.card,
+        { backgroundColor: tc.surface, borderColor: tc.borderColor },
+        pressed && { opacity: 0.85 },
+      ]}>
       <View style={styles.cardHeader}>
         <ThemedText style={styles.cardIcon}>{section.icon}</ThemedText>
         <View style={styles.cardMeta}>
-          <ThemedText style={styles.cardTitle}>{section.title.toUpperCase()}</ThemedText>
-          <ThemedText style={styles.cardSummary}>{section.summary}</ThemedText>
+          <ThemedText style={[styles.cardTitle, { color: tc.textPrimary }]}>{section.title.toUpperCase()}</ThemedText>
+          <ThemedText style={[styles.cardSummary, { color: tc.textHint }]}>{section.summary}</ThemedText>
         </View>
         <ThemedText style={styles.chevron}>{expanded ? '∧' : '∨'}</ThemedText>
       </View>
       {expanded && (
         <View style={styles.cardBody}>
-          <View style={styles.divider} />
-          <ThemedText style={styles.bodyText}>{section.body}</ThemedText>
+          <View style={[styles.divider, { backgroundColor: tc.borderColor }]} />
+          <ThemedText style={[styles.bodyText, { color: tc.textSecondary }]}>{section.body}</ThemedText>
           {section.tip && (
             <View style={styles.tipBox}>
               <ThemedText style={styles.tipLabel}>⚡ PRO TIP</ThemedText>
-              <ThemedText style={styles.tipText}>{section.tip}</ThemedText>
+              <ThemedText style={[styles.tipText, { color: tc.textPrimary }]}>{section.tip}</ThemedText>
             </View>
           )}
         </View>
@@ -218,12 +224,13 @@ function SectionCard({ section }: { section: TaxSection }) {
 export default function TaxGuideScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const tc = useThemeColors();
 
   return (
     <ThemedView style={{ flex: 1 }}>
       <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
         <Pressable
-          onPress={() => (router.push('/tools'))}
+          onPress={() => (router.back())}
           style={styles.back}>
           <ThemedText style={styles.backChevron}>‹</ThemedText>
         </Pressable>
@@ -237,31 +244,31 @@ export default function TaxGuideScreen() {
 
         <ThemedView type="backgroundElement" style={styles.heroBanner}>
           <ThemedText style={styles.heroEyebrow}>FY2026 MILITARY TAX REFERENCE</ThemedText>
-          <ThemedText style={styles.heroTitle}>Tax-Free. Tax-Deferred. Tax-Smart.</ThemedText>
-          <ThemedText style={styles.heroBody}>
+          <ThemedText style={[styles.heroTitle, { color: tc.textPrimary }]}>Tax-Free. Tax-Deferred. Tax-Smart.</ThemedText>
+          <ThemedText style={[styles.heroBody, { color: tc.textHint }]}>
             Military compensation has more tax advantages than almost any other profession. Understanding them is worth thousands of dollars a year.
           </ThemedText>
         </ThemedView>
 
         <View style={styles.sectionRow}>
-          <View style={styles.sectionLine} />
-          <ThemedText style={styles.sectionLabel}>TAP TO EXPAND</ThemedText>
-          <View style={styles.sectionLine} />
+          <View style={[styles.sectionLine, { backgroundColor: tc.borderColor }]} />
+          <ThemedText style={[styles.sectionLabel, { color: tc.textMuted }]}>TAP TO EXPAND</ThemedText>
+          <View style={[styles.sectionLine, { backgroundColor: tc.borderColor }]} />
         </View>
 
         {SECTIONS.map((s) => <SectionCard key={s.id} section={s} />)}
 
         <ThemedView type="backgroundElement" style={styles.resourceBox}>
-          <ThemedText style={styles.resourceTitle}>📞 Free Tax Help</ThemedText>
-          <ThemedText style={styles.resourceItem}>• MilTax (H&R Block): militaryonesource.mil/miltax</ThemedText>
-          <ThemedText style={styles.resourceItem}>• VITA on-base: search "VITA site" on IRS.gov</ThemedText>
-          <ThemedText style={styles.resourceItem}>• JAG / Legal Assistance: installation legal office</ThemedText>
-          <ThemedText style={styles.resourceItem}>• IRS military page: irs.gov/military</ThemedText>
+          <ThemedText style={[styles.resourceTitle, { color: tc.textPrimary }]}>📞 Free Tax Help</ThemedText>
+          <ThemedText style={[styles.resourceItem, { color: tc.textHint }]}>• MilTax (H&R Block): militaryonesource.mil/miltax</ThemedText>
+          <ThemedText style={[styles.resourceItem, { color: tc.textHint }]}>• VITA on-base: search "VITA site" on IRS.gov</ThemedText>
+          <ThemedText style={[styles.resourceItem, { color: tc.textHint }]}>• JAG / Legal Assistance: installation legal office</ThemedText>
+          <ThemedText style={[styles.resourceItem, { color: tc.textHint }]}>• IRS military page: irs.gov/military</ThemedText>
         </ThemedView>
 
         <ThemedView type="backgroundElement" style={styles.disclaimer}>
           <ThemedText style={styles.disclaimerTitle}>⚠ Not Tax Advice</ThemedText>
-          <ThemedText style={styles.disclaimerText}>
+          <ThemedText style={[styles.disclaimerText, { color: tc.textHint }]}>
             This guide is for general informational purposes only. Tax laws change annually. Your situation may differ based on state of domicile, filing status, and other factors. For specific guidance, use MilTax, consult VITA, or see a JAG legal assistance officer.
           </ThemedText>
         </ThemedView>
@@ -283,33 +290,33 @@ const styles = StyleSheet.create({
 
   heroBanner: { borderRadius: 4, padding: Spacing.three, borderLeftWidth: 3, borderLeftColor: Brand.accent, gap: 4 },
   heroEyebrow: { fontSize: 9, fontWeight: '800', letterSpacing: 1.5, color: Brand.accent },
-  heroTitle: { fontSize: 20, fontWeight: '900', color: '#C8D8E8' },
-  heroBody: { fontSize: 12, lineHeight: 18, color: '#4D7A9A', marginTop: 4 },
+  heroTitle: { fontSize: 20, fontWeight: '900' },
+  heroBody: { fontSize: 12, lineHeight: 18, marginTop: 4 },
 
   sectionRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
-  sectionLine: { flex: 1, height: 1, backgroundColor: Brand.border },
-  sectionLabel: { fontSize: 8, fontWeight: '700', color: '#3D6080', letterSpacing: 0.8 },
+  sectionLine: { flex: 1, height: 1 },
+  sectionLabel: { fontSize: 8, fontWeight: '700', letterSpacing: 0.8 },
 
-  card: { backgroundColor: '#080E1C', borderWidth: 1, borderColor: Brand.border, borderRadius: 4 },
+  card: { borderWidth: 1, borderRadius: 4 },
   cardHeader: { flexDirection: 'row', alignItems: 'center', padding: Spacing.three, gap: Spacing.two },
   cardIcon: { fontSize: 22, width: 32, textAlign: 'center' },
   cardMeta: { flex: 1, gap: 3 },
-  cardTitle: { fontSize: 11, fontWeight: '800', color: '#C8D8E8', letterSpacing: 0.5 },
-  cardSummary: { fontSize: 11, color: '#4D7A9A', lineHeight: 16 },
+  cardTitle: { fontSize: 11, fontWeight: '800', letterSpacing: 0.5 },
+  cardSummary: { fontSize: 11, lineHeight: 16 },
   chevron: { fontSize: 14, color: Brand.tactical, width: 16, textAlign: 'center' },
 
   cardBody: { paddingHorizontal: Spacing.three, paddingBottom: Spacing.three, gap: Spacing.two },
-  divider: { height: 1, backgroundColor: Brand.border },
-  bodyText: { fontSize: 12, lineHeight: 19, color: '#8AA8C0' },
+  divider: { height: 1 },
+  bodyText: { fontSize: 12, lineHeight: 19 },
   tipBox: { backgroundColor: Brand.accent + '15', borderRadius: 4, padding: Spacing.two, gap: 4, borderLeftWidth: 2, borderLeftColor: Brand.accent },
   tipLabel: { fontSize: 9, fontWeight: '800', color: Brand.accent, letterSpacing: 1 },
-  tipText: { fontSize: 12, lineHeight: 18, color: '#C8D8E8' },
+  tipText: { fontSize: 12, lineHeight: 18 },
 
   resourceBox: { borderRadius: 4, padding: Spacing.three, gap: 6 },
-  resourceTitle: { fontSize: 13, fontWeight: '700', color: '#C8D8E8', marginBottom: 2 },
-  resourceItem: { fontSize: 11, lineHeight: 17, color: '#4D7A9A' },
+  resourceTitle: { fontSize: 13, fontWeight: '700', marginBottom: 2 },
+  resourceItem: { fontSize: 11, lineHeight: 17 },
 
   disclaimer: { borderRadius: 4, padding: Spacing.three, borderLeftWidth: 3, borderLeftColor: Brand.warning, gap: 6 },
   disclaimerTitle: { fontSize: 12, fontWeight: '700', color: Brand.warning },
-  disclaimerText: { fontSize: 11, lineHeight: 17, color: '#4D7A9A' },
+  disclaimerText: { fontSize: 11, lineHeight: 17 },
 });

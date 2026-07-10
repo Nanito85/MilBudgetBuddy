@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
-import { useTheme } from '@/hooks/use-theme';
+import { useThemeColors } from '@/hooks/use-theme';
 import { Chore, ChoreFrequency, Goal } from '@/types/kids.types';
 
 interface Props {
@@ -37,12 +37,12 @@ function isDoneInPeriod(completedDates: string[], frequency: ChoreFrequency): bo
 
 export function ChoresList({ chores, goals, accentColor, onComplete, onUncomplete }: Props) {
   const primaryGoal = goals[0];
-  const theme = useTheme();
+  const tc = useThemeColors();
 
   if (chores.length === 0) {
     return (
       <View style={styles.empty}>
-        <ThemedText style={[styles.emptyText, { color: theme.textSecondary }]}>
+        <ThemedText style={[styles.emptyText, { color: tc.textSecondary }]}>
           No chores yet. Ask a parent to add some!
         </ThemedText>
       </View>
@@ -65,7 +65,7 @@ export function ChoresList({ chores, goals, accentColor, onComplete, onUncomplet
             }}
             style={({ pressed }) => [
               styles.row,
-              { backgroundColor: theme.backgroundElement + 'CC', borderColor: accentColor + '40' },
+              { backgroundColor: tc.surface + 'CC', borderColor: accentColor + '40' },
               done && styles.rowDone,
               pressed && styles.pressed,
             ]}>
@@ -73,7 +73,7 @@ export function ChoresList({ chores, goals, accentColor, onComplete, onUncomplet
               {done && <ThemedText style={styles.checkmark}>✓</ThemedText>}
             </View>
             <View style={styles.info}>
-              <ThemedText style={[styles.choreName, { color: theme.text }, done && styles.doneText]}>
+              <ThemedText style={[styles.choreName, { color: tc.textPrimary }, done && styles.doneText]}>
                 {chore.name}
               </ThemedText>
             </View>
@@ -92,7 +92,7 @@ export function ChoresList({ chores, goals, accentColor, onComplete, onUncomplet
 const styles = StyleSheet.create({
   container: { gap: Spacing.two },
   empty: { alignItems: 'center', paddingVertical: Spacing.four },
-  emptyText: { color: 'rgba(255,255,255,0.5)', fontSize: 14, textAlign: 'center' },
+  emptyText: { fontSize: 14, textAlign: 'center' },
   row: {
     flexDirection: 'row',
     alignItems: 'center',

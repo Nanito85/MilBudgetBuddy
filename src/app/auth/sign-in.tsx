@@ -14,10 +14,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { Brand, Spacing } from '@/constants/theme';
+import { useThemeColors } from '@/hooks/use-theme';
 import { useAuthStore } from '@/store/auth.store';
 
 export default function SignInScreen() {
   const router = useRouter();
+  const tc = useThemeColors();
   const { signIn, loading, error, clearError } = useAuthStore();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -36,9 +38,9 @@ export default function SignInScreen() {
 
   return (
     <KeyboardAvoidingView
-      style={styles.root}
+      style={[styles.root, { backgroundColor: tc.background }]}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-      <SafeAreaView style={{ flex: 1 }}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: tc.background }}>
         <ScrollView
           contentContainerStyle={styles.content}
           keyboardShouldPersistTaps="handled"
@@ -46,9 +48,9 @@ export default function SignInScreen() {
 
           <View style={styles.hero}>
             <ThemedText style={styles.eyebrow}>// MILBUDGETBUDDY</ThemedText>
-            <ThemedText style={styles.title}>SIGN IN</ThemedText>
+            <ThemedText style={[styles.title, { color: tc.textPrimary }]}>SIGN IN</ThemedText>
             <ThemedText style={styles.slogan}>Your Money. Your Mission.</ThemedText>
-            <ThemedText style={styles.sub}>
+            <ThemedText style={[styles.sub, { color: tc.textSecondary }]}>
               Access your financial data from any device.
             </ThemedText>
           </View>
@@ -61,34 +63,34 @@ export default function SignInScreen() {
             ) : null}
 
             <View style={styles.fieldWrap}>
-              <ThemedText style={styles.label}>EMAIL</ThemedText>
+              <ThemedText style={[styles.label, { color: tc.textHint }]}>EMAIL</ThemedText>
               <TextInput
                 value={email}
                 onChangeText={setEmail}
                 placeholder="your@email.com"
-                placeholderTextColor="#2A4A60"
+                placeholderTextColor={tc.textHint}
                 autoCapitalize="none"
                 keyboardType="email-address"
                 returnKeyType="next"
-                style={styles.input}
+                style={[styles.input, { backgroundColor: tc.inputBg, borderColor: tc.borderColor, color: tc.textPrimary }]}
               />
             </View>
 
             <View style={styles.fieldWrap}>
-              <ThemedText style={styles.label}>PASSWORD</ThemedText>
-              <View style={styles.inputRow}>
+              <ThemedText style={[styles.label, { color: tc.textHint }]}>PASSWORD</ThemedText>
+              <View style={[styles.inputRow, { backgroundColor: tc.inputBg, borderColor: tc.borderColor }]}>
                 <TextInput
                   value={password}
                   onChangeText={setPassword}
                   placeholder="••••••••"
-                  placeholderTextColor="#2A4A60"
+                  placeholderTextColor={tc.textHint}
                   secureTextEntry={!showPassword}
                   returnKeyType="done"
                   onSubmitEditing={handleSignIn}
-                  style={styles.inputFlex}
+                  style={[styles.inputFlex, { color: tc.textPrimary }]}
                 />
                 <Pressable onPress={() => setShowPassword((v) => !v)} style={styles.eyeBtn} hitSlop={8}>
-                  <Ionicons name={showPassword ? 'eye-off-outline' : 'eye-outline'} size={20} color="#4D7A9A" />
+                  <Ionicons name={showPassword ? 'eye-off-outline' : 'eye-outline'} size={20} color={tc.textHint} />
                 </Pressable>
               </View>
             </View>
@@ -108,7 +110,7 @@ export default function SignInScreen() {
           </View>
 
           <View style={styles.footer}>
-            <ThemedText style={styles.footerText}>Don't have an account?</ThemedText>
+            <ThemedText style={[styles.footerText, { color: tc.textSecondary }]}>Don't have an account?</ThemedText>
             <Pressable onPress={() => router.push('/auth/sign-up' as any)}>
               <ThemedText style={styles.footerLink}>Create account →</ThemedText>
             </Pressable>
@@ -117,7 +119,7 @@ export default function SignInScreen() {
           <Pressable
             onPress={() => router.push('/' as any)}
             style={styles.skipBtn}>
-            <ThemedText style={styles.skipText}>Use without account (local only)</ThemedText>
+            <ThemedText style={[styles.skipText, { color: tc.textMuted }]}>Use without account (local only)</ThemedText>
           </Pressable>
 
         </ScrollView>
@@ -127,7 +129,7 @@ export default function SignInScreen() {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#04080F' },
+  root: { flex: 1 },
   content: {
     flexGrow: 1,
     paddingHorizontal: Spacing.three,
@@ -138,32 +140,27 @@ const styles = StyleSheet.create({
 
   hero: { gap: Spacing.one },
   eyebrow: { color: Brand.tactical, fontSize: 10, fontWeight: '700', letterSpacing: 1.5 },
-  title: { fontSize: 30, lineHeight: 36, fontWeight: '900', color: '#C8D8E8', letterSpacing: 0.5, marginTop: 2 },
+  title: { fontSize: 30, lineHeight: 36, fontWeight: '900', letterSpacing: 0.5, marginTop: 2 },
   slogan: { fontSize: 14, fontWeight: '700', color: Brand.tactical, letterSpacing: 0.3, marginTop: 2 },
-  sub: { fontSize: 13, color: '#6B92B0', lineHeight: 19, marginTop: 4 },
+  sub: { fontSize: 13, lineHeight: 19, marginTop: 4 },
 
   form: { gap: Spacing.three },
   errorBox: { backgroundColor: Brand.danger + '15', borderWidth: 1, borderColor: Brand.danger + '40', borderRadius: 6, padding: Spacing.two + 2 },
   errorText: { color: Brand.danger, fontSize: 13, lineHeight: 18 },
 
   fieldWrap: { gap: Spacing.one },
-  label: { color: '#4D7A9A', fontSize: 11, fontWeight: '600', letterSpacing: 0.5 },
+  label: { fontSize: 11, fontWeight: '600', letterSpacing: 0.5 },
   input: {
-    backgroundColor: '#080E1C',
     borderWidth: 1,
-    borderColor: Brand.border,
     borderRadius: 6,
     paddingHorizontal: Spacing.three,
     paddingVertical: Spacing.two + 4,
     fontSize: 16,
-    color: '#C8D8E8',
   },
   inputRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#080E1C',
     borderWidth: 1,
-    borderColor: Brand.border,
     borderRadius: 6,
   },
   inputFlex: {
@@ -171,7 +168,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.three,
     paddingVertical: Spacing.two + 4,
     fontSize: 16,
-    color: '#C8D8E8',
   },
   eyeBtn: { paddingHorizontal: Spacing.two + 2 },
 
@@ -185,9 +181,9 @@ const styles = StyleSheet.create({
   btnText: { color: '#FFFFFF', fontSize: 14, fontWeight: '900', letterSpacing: 1 },
 
   footer: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 6 },
-  footerText: { color: '#6B92B0', fontSize: 13 },
+  footerText: { fontSize: 13 },
   footerLink: { color: Brand.tactical, fontSize: 13, fontWeight: '700' },
 
   skipBtn: { alignItems: 'center', paddingVertical: Spacing.two },
-  skipText: { color: '#3D5870', fontSize: 12 },
+  skipText: { fontSize: 12 },
 });

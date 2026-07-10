@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { Brand, Spacing } from '@/constants/theme';
-import { useTheme } from '@/hooks/use-theme';
+import { useThemeColors } from '@/hooks/use-theme';
 import { BRANCH_LABELS, MilitaryBranch } from '@/types/user.types';
 
 const BRANCHES = Object.keys(BRANCH_LABELS) as MilitaryBranch[];
@@ -14,7 +14,7 @@ interface BranchSelectorProps {
 }
 
 export function BranchSelector({ selected, onSelect }: BranchSelectorProps) {
-  const theme = useTheme();
+  const tc = useThemeColors();
 
   return (
     <View style={styles.grid}>
@@ -27,7 +27,7 @@ export function BranchSelector({ selected, onSelect }: BranchSelectorProps) {
             style={({ pressed }) => [
               styles.chip,
               {
-                backgroundColor: isSelected ? Brand.primary : theme.backgroundElement,
+                backgroundColor: isSelected ? Brand.primary : tc.surface,
                 borderColor: isSelected ? Brand.primary : 'transparent',
                 opacity: pressed ? 0.75 : 1,
               },

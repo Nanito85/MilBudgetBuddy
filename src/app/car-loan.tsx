@@ -1,4 +1,4 @@
-import { useRouter } from 'expo-router';
+﻿import { useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
 import { Keyboard, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -8,6 +8,7 @@ import { ThemedView } from '@/components/themed-view';
 import { Brand, Fonts, Spacing } from '@/constants/theme';
 import { PAY_GRADES, PayGrade } from '@/data/bah-rates';
 import { getBasicPay } from '@/data/basic-pay-rates';
+import { useThemeColors } from '@/hooks/use-theme';
 import { useUserStore } from '@/store/user.store';
 
 const ENLISTED: PayGrade[] = ['E1','E2','E3','E4','E5','E6','E7','E8','E9'];
@@ -52,6 +53,7 @@ const GRADE_BENCHMARKS: Partial<Record<PayGrade, { max: number; note: string }>>
 export default function CarLoanScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const tc = useThemeColors();
 
   const storeGrade = useUserStore((s) => s.payGrade);
   const storeYos   = useUserStore((s) => s.yos);
@@ -85,16 +87,16 @@ export default function CarLoanScreen() {
   function GradeChip({ g }: { g: PayGrade }) {
     const active = grade === g;
     return (
-      <Pressable onPress={() => setGrade(g)} style={[s.chip, active && { backgroundColor: Brand.accent, borderColor: Brand.accent }]}>
-        <ThemedText style={[s.chipTxt, active && { color: '#000' }]}>{g}</ThemedText>
+      <Pressable onPress={() => setGrade(g)} style={[s.chip, { borderColor: tc.borderColor }, active && { backgroundColor: Brand.accent, borderColor: Brand.accent }]}>
+        <ThemedText style={[s.chipTxt, { color: tc.textHint }, active && { color: '#000' }]}>{g}</ThemedText>
       </Pressable>
     );
   }
 
   function PriceBtn({ amount, label }: { amount: number; label: string }) {
     return (
-      <Pressable onPress={() => setPrice(amount)} style={[s.presetBtn, price === amount && s.presetActive]}>
-        <ThemedText style={[s.presetTxt, price === amount && s.presetActiveTxt]}>{label}</ThemedText>
+      <Pressable onPress={() => setPrice(amount)} style={[s.presetBtn, { borderColor: tc.borderColor }, price === amount && s.presetActive]}>
+        <ThemedText style={[s.presetTxt, { color: tc.textHint }, price === amount && s.presetActiveTxt]}>{label}</ThemedText>
       </Pressable>
     );
   }
@@ -104,8 +106,8 @@ export default function CarLoanScreen() {
     return (
       <Pressable
         onPress={() => { setApr(rate); setAprInput(String(rate)); }}
-        style={[s.chip, active && { backgroundColor: Brand.primary, borderColor: Brand.primary }]}>
-        <ThemedText style={[s.chipTxt, active && { color: '#fff' }]}>{rate}%</ThemedText>
+        style={[s.chip, { borderColor: tc.borderColor }, active && { backgroundColor: Brand.primary, borderColor: Brand.primary }]}>
+        <ThemedText style={[s.chipTxt, { color: tc.textHint }, active && { color: '#fff' }]}>{rate}%</ThemedText>
       </Pressable>
     );
   }
@@ -114,7 +116,7 @@ export default function CarLoanScreen() {
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
     <ThemedView style={{ flex: 1 }}>
       <View style={[s.header, { paddingTop: insets.top + Spacing.two }]}>
-        <Pressable onPress={() => router.push('/tools')} style={s.back}>
+        <Pressable onPress={() => router.back()} style={s.back}>
           <ThemedText style={s.chevron}>‹</ThemedText>
         </Pressable>
         <ThemedText style={s.title}>Car Loan Check</ThemedText>
@@ -125,22 +127,22 @@ export default function CarLoanScreen() {
 
         {/* Grade */}
         <ThemedView type="backgroundElement" style={s.card}>
-          <ThemedText style={s.cardLabel}>YOUR PAY GRADE</ThemedText>
-          <ThemedText style={s.cardHint}>Affects estimated take-home pay</ThemedText>
+          <ThemedText style={[s.cardLabel, { color: tc.textHint }]}>YOUR PAY GRADE</ThemedText>
+          <ThemedText style={[s.cardHint, { color: tc.textMuted }]}>Affects estimated take-home pay</ThemedText>
           {[ENLISTED, WARRANT, OFFICER].map((group, gi) => (
             <View key={gi} style={s.chipRow}>
               {group.map((g) => <GradeChip key={g} g={g} />)}
             </View>
           ))}
-          <View style={s.takeHomeRow}>
-            <ThemedText style={s.takeHomeLabel}>EST. MONTHLY TAKE-HOME</ThemedText>
+          <View style={[s.takeHomeRow, { borderTopColor: tc.borderColor }]}>
+            <ThemedText style={[s.takeHomeLabel, { color: tc.textHint }]}>EST. MONTHLY TAKE-HOME</ThemedText>
             <ThemedText style={[s.takeHomeVal, { color: Brand.tactical }]}>{fmt(takeHome)}</ThemedText>
           </View>
         </ThemedView>
 
         {/* Car price */}
         <ThemedView type="backgroundElement" style={s.card}>
-          <ThemedText style={s.cardLabel}>VEHICLE PRICE</ThemedText>
+          <ThemedText style={[s.cardLabel, { color: tc.textHint }]}>VEHICLE PRICE</ThemedText>
           <View style={s.presetRow}>
             <PriceBtn amount={8000}  label="$8K" />
             <PriceBtn amount={12000} label="$12K" />
@@ -150,47 +152,47 @@ export default function CarLoanScreen() {
             <PriceBtn amount={50000} label="$50K" />
           </View>
           <View style={s.inlineRow}>
-            <ThemedText style={s.inlineLabel}>Vehicle Price</ThemedText>
+            <ThemedText style={[s.inlineLabel, { color: tc.textPrimary }]}>Vehicle Price</ThemedText>
             <View style={s.stepCtrl}>
               <Pressable onPress={() => setPrice(Math.max(1000, price - 1000))} style={s.stepBtn}>
                 <ThemedText style={s.stepTxt}>−</ThemedText>
               </Pressable>
-              <ThemedText style={s.stepVal}>{fmt(price)}</ThemedText>
+              <ThemedText style={[s.stepVal, { color: tc.textPrimary }]}>{fmt(price)}</ThemedText>
               <Pressable onPress={() => setPrice(Math.min(150000, price + 1000))} style={s.stepBtn}>
                 <ThemedText style={s.stepTxt}>+</ThemedText>
               </Pressable>
             </View>
           </View>
           <View style={s.inlineRow}>
-            <ThemedText style={s.inlineLabel}>Down Payment</ThemedText>
+            <ThemedText style={[s.inlineLabel, { color: tc.textPrimary }]}>Down Payment</ThemedText>
             <View style={s.stepCtrl}>
               <Pressable onPress={() => setDownPmt(Math.max(0, downPmt - 500))} style={s.stepBtn}>
                 <ThemedText style={s.stepTxt}>−</ThemedText>
               </Pressable>
-              <ThemedText style={s.stepVal}>{fmt(downPmt)}</ThemedText>
+              <ThemedText style={[s.stepVal, { color: tc.textPrimary }]}>{fmt(downPmt)}</ThemedText>
               <Pressable onPress={() => setDownPmt(Math.min(price, downPmt + 500))} style={s.stepBtn}>
                 <ThemedText style={s.stepTxt}>+</ThemedText>
               </Pressable>
             </View>
           </View>
-          <View style={[s.inlineRow, { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: Brand.border, paddingTop: Spacing.two }]}>
-            <ThemedText style={[s.inlineLabel, { color: '#4D7A9A' }]}>Loan Amount</ThemedText>
+          <View style={[s.inlineRow, { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: tc.borderColor, paddingTop: Spacing.two }]}>
+            <ThemedText style={[s.inlineLabel, { color: tc.textHint }]}>Loan Amount</ThemedText>
             <ThemedText style={[s.stepVal, { color: Brand.accent }]}>{fmt(principal)}</ThemedText>
           </View>
         </ThemedView>
 
         {/* APR + term */}
         <ThemedView type="backgroundElement" style={s.card}>
-          <ThemedText style={s.cardLabel}>INTEREST RATE (APR)</ThemedText>
-          <ThemedText style={s.cardHint}>Junior enlisted often see 10–24% at dealer lots near bases</ThemedText>
+          <ThemedText style={[s.cardLabel, { color: tc.textHint }]}>INTEREST RATE (APR)</ThemedText>
+          <ThemedText style={[s.cardHint, { color: tc.textMuted }]}>Junior enlisted often see 10–24% at dealer lots near bases</ThemedText>
           <View style={s.chipRow}>
             {[3.9, 5.9, 8.9, 12.9, 18.9, 24.9].map((r) => <AprBtn key={r} rate={r} />)}
           </View>
 
           {/* Custom APR input */}
           <View style={s.customAprRow}>
-            <ThemedText style={s.customAprLabel}>Custom APR (from lender)</ThemedText>
-            <View style={s.customAprInputWrap}>
+            <ThemedText style={[s.customAprLabel, { color: tc.textSecondary }]}>Custom APR (from lender)</ThemedText>
+            <View style={[s.customAprInputWrap, { backgroundColor: tc.inputBg }]}>
               <TextInput
                 style={s.customAprInput}
                 value={aprInput}
@@ -202,7 +204,7 @@ export default function CarLoanScreen() {
                 }}
                 keyboardType="decimal-pad"
                 placeholder="e.g. 6.74"
-                placeholderTextColor="#3D6080"
+                placeholderTextColor={tc.textMuted}
                 returnKeyType="done"
                 onSubmitEditing={Keyboard.dismiss}
               />
@@ -210,11 +212,11 @@ export default function CarLoanScreen() {
             </View>
           </View>
 
-          <ThemedText style={[s.cardLabel, { marginTop: Spacing.two }]}>LOAN TERM</ThemedText>
+          <ThemedText style={[s.cardLabel, { color: tc.textHint, marginTop: Spacing.two }]}>LOAN TERM</ThemedText>
           <View style={s.chipRow}>
             {TERMS.map((t) => (
-              <Pressable key={t} onPress={() => setTerm(t)} style={[s.chip, term === t && { backgroundColor: Brand.primary, borderColor: Brand.primary }]}>
-                <ThemedText style={[s.chipTxt, term === t && { color: '#fff' }]}>{t}mo</ThemedText>
+              <Pressable key={t} onPress={() => setTerm(t)} style={[s.chip, { borderColor: tc.borderColor }, term === t && { backgroundColor: Brand.primary, borderColor: Brand.primary }]}>
+                <ThemedText style={[s.chipTxt, { color: tc.textHint }, term === t && { color: '#fff' }]}>{t}mo</ThemedText>
               </Pressable>
             ))}
           </View>
@@ -229,24 +231,24 @@ export default function CarLoanScreen() {
 
           <View style={s.bigRow}>
             <View>
-              <ThemedText style={s.bigEyebrow}>MONTHLY PAYMENT</ThemedText>
+              <ThemedText style={[s.bigEyebrow, { color: tc.textHint }]}>MONTHLY PAYMENT</ThemedText>
               <ThemedText style={[s.bigNum, { color: riskColor, fontFamily: Fonts.data }]}>{fmt(payment)}</ThemedText>
-              <ThemedText style={s.bigSub}>per month for {term} months</ThemedText>
+              <ThemedText style={[s.bigSub, { color: tc.textMuted }]}>per month for {term} months</ThemedText>
             </View>
-            <View style={s.pctCircle}>
+            <View style={[s.pctCircle, { backgroundColor: tc.surfaceInner, borderColor: tc.borderColor }]}>
               <ThemedText style={[s.pctNum, { color: riskColor }]}>{Math.round(pct * 100)}%</ThemedText>
-              <ThemedText style={s.pctLabel}>of take-home</ThemedText>
+              <ThemedText style={[s.pctLabel, { color: tc.textMuted }]}>of take-home</ThemedText>
             </View>
           </View>
 
           {/* Progress bar */}
-          <View style={s.barTrack}>
+          <View style={[s.barTrack, { backgroundColor: tc.borderColor }]}>
             <View style={[s.barFill, { width: `${Math.min(pct / DANGER_PCT, 1) * 100}%` as any, backgroundColor: riskColor }]} />
             <View style={[s.barMark, { left: `${(SAFE_PCT / DANGER_PCT) * 100}%` as any }]} />
             <View style={[s.barMark, { left: `${(WARN_PCT / DANGER_PCT) * 100}%` as any }]} />
           </View>
           <View style={s.barLabels}>
-            <ThemedText style={s.barLabelTxt}>0%</ThemedText>
+            <ThemedText style={[s.barLabelTxt, { color: tc.textMuted }]}>0%</ThemedText>
             <ThemedText style={[s.barLabelTxt, { color: Brand.tactical }]}>10% safe</ThemedText>
             <ThemedText style={[s.barLabelTxt, { color: Brand.warning }]}>15% limit</ThemedText>
             <ThemedText style={[s.barLabelTxt, { color: Brand.danger }]}>20%+</ThemedText>
@@ -255,16 +257,16 @@ export default function CarLoanScreen() {
 
         {/* Cost breakdown */}
         <ThemedView type="backgroundElement" style={s.card}>
-          <ThemedText style={s.cardLabel}>TOTAL COST BREAKDOWN</ThemedText>
+          <ThemedText style={[s.cardLabel, { color: tc.textHint }]}>TOTAL COST BREAKDOWN</ThemedText>
           {[
-            { label: 'Vehicle price', val: fmt(price), color: '#C8D8E8' },
+            { label: 'Vehicle price', val: fmt(price), color: tc.textPrimary },
             { label: 'Down payment', val: `−${fmt(downPmt)}`, color: Brand.tactical },
-            { label: 'Amount financed', val: fmt(principal), color: '#C8D8E8' },
+            { label: 'Amount financed', val: fmt(principal), color: tc.textPrimary },
             { label: `Interest (${term} months @ ${apr}%)`, val: fmt(totalInt), color: Brand.danger },
             { label: 'Total you pay', val: fmt(price - downPmt + totalInt + downPmt), color: Brand.accent },
           ].map((row) => (
             <View key={row.label} style={s.breakRow}>
-              <ThemedText style={s.breakLabel}>{row.label}</ThemedText>
+              <ThemedText style={[s.breakLabel, { color: tc.textSecondary }]}>{row.label}</ThemedText>
               <ThemedText style={[s.breakVal, { color: row.color }]}>{row.val}</ThemedText>
             </View>
           ))}
@@ -272,27 +274,27 @@ export default function CarLoanScreen() {
 
         {/* Opportunity cost */}
         <ThemedView type="backgroundElement" style={[s.card, { borderLeftWidth: 3, borderLeftColor: Brand.accent }]}>
-          <ThemedText style={s.cardLabel}>OPPORTUNITY COST</ThemedText>
-          <ThemedText style={s.cardHint}>
+          <ThemedText style={[s.cardLabel, { color: tc.textHint }]}>OPPORTUNITY COST</ThemedText>
+          <ThemedText style={[s.cardHint, { color: tc.textMuted }]}>
             If you invested that {fmt(payment)}/mo into TSP at 7% for 20 years instead:
           </ThemedText>
           <ThemedText style={[s.bigNum, { color: Brand.accent, marginTop: Spacing.one }]}>{fmt(tspVal)}</ThemedText>
-          <ThemedText style={s.cardHint}>That car loan could cost you {fmt(tspVal - price)} in long-term wealth.</ThemedText>
+          <ThemedText style={[s.cardHint, { color: tc.textMuted }]}>That car loan could cost you {fmt(tspVal - price)} in long-term wealth.</ThemedText>
         </ThemedView>
 
         {/* Grade benchmark */}
         {benchmark && (
           <ThemedView type="backgroundElement" style={s.card}>
-            <ThemedText style={s.cardLabel}>RECOMMENDED FOR {grade}</ThemedText>
+            <ThemedText style={[s.cardLabel, { color: tc.textHint }]}>RECOMMENDED FOR {grade}</ThemedText>
             <View style={s.benchRow}>
               <View style={[s.benchBadge, price <= benchmark.max ? { backgroundColor: Brand.tactical + '20', borderColor: Brand.tactical } : { backgroundColor: Brand.danger + '20', borderColor: Brand.danger }]}>
                 <ThemedText style={[s.benchLabel, { color: price <= benchmark.max ? Brand.tactical : Brand.danger }]}>
                   {price <= benchmark.max ? '✓ WITHIN RANGE' : '✗ OVER BUDGET'}
                 </ThemedText>
               </View>
-              <ThemedText style={s.benchVal}>Max recommended: {fmt(benchmark.max)}</ThemedText>
+              <ThemedText style={[s.benchVal, { color: tc.textHint }]}>Max recommended: {fmt(benchmark.max)}</ThemedText>
             </View>
-            <ThemedText style={s.cardHint}>{benchmark.note} — roughly 25% of your annual base pay.</ThemedText>
+            <ThemedText style={[s.cardHint, { color: tc.textMuted }]}>{benchmark.note} — roughly 25% of your annual base pay.</ThemedText>
           </ThemedView>
         )}
 
@@ -306,7 +308,7 @@ export default function CarLoanScreen() {
           ].map((tip, i) => (
             <View key={i} style={s.tipRow}>
               <ThemedText style={s.tipBullet}>›</ThemedText>
-              <ThemedText style={s.tipText}>{tip}</ThemedText>
+              <ThemedText style={[s.tipText, { color: tc.textSecondary }]}>{tip}</ThemedText>
             </View>
           ))}
         </ThemedView>
@@ -325,59 +327,59 @@ const s = StyleSheet.create({
 
   content: { paddingHorizontal: Spacing.three, gap: Spacing.two },
   card: { borderRadius: 4, padding: Spacing.three, gap: Spacing.two },
-  cardLabel: { fontSize: 9, fontWeight: '800', color: '#4D7A9A', letterSpacing: 1 },
-  cardHint: { fontSize: 11, color: '#3D6080', lineHeight: 16 },
+  cardLabel: { fontSize: 9, fontWeight: '800', letterSpacing: 1 },
+  cardHint: { fontSize: 11, lineHeight: 16 },
 
   chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.one },
-  chip: { paddingHorizontal: Spacing.two, paddingVertical: 5, borderRadius: 4, borderWidth: 1, borderColor: Brand.border },
-  chipTxt: { fontSize: 11, fontWeight: '700', color: '#4D7A9A' },
+  chip: { paddingHorizontal: Spacing.two, paddingVertical: 5, borderRadius: 4, borderWidth: 1 },
+  chipTxt: { fontSize: 11, fontWeight: '700' },
 
-  takeHomeRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: Brand.border, paddingTop: Spacing.two },
-  takeHomeLabel: { fontSize: 9, fontWeight: '700', color: '#4D7A9A', letterSpacing: 0.8 },
+  takeHomeRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderTopWidth: StyleSheet.hairlineWidth, paddingTop: Spacing.two },
+  takeHomeLabel: { fontSize: 9, fontWeight: '700', letterSpacing: 0.8 },
   takeHomeVal: { fontSize: 16, fontWeight: '800', fontFamily: Fonts.data },
 
   presetRow: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.one },
-  presetBtn: { paddingHorizontal: Spacing.two + 2, paddingVertical: 6, borderRadius: 4, borderWidth: 1, borderColor: Brand.border },
+  presetBtn: { paddingHorizontal: Spacing.two + 2, paddingVertical: 6, borderRadius: 4, borderWidth: 1 },
   presetActive: { backgroundColor: Brand.accent + '30', borderColor: Brand.accent },
-  presetTxt: { fontSize: 12, fontWeight: '700', color: '#4D7A9A' },
+  presetTxt: { fontSize: 12, fontWeight: '700' },
   presetActiveTxt: { color: Brand.accent },
 
   inlineRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  inlineLabel: { fontSize: 13, color: '#C8D8E8', flex: 1 },
+  inlineLabel: { fontSize: 13, flex: 1 },
   stepCtrl: { flexDirection: 'row', alignItems: 'center', gap: Spacing.one },
   stepBtn: { width: 32, height: 32, borderRadius: 16, backgroundColor: Brand.primary, alignItems: 'center', justifyContent: 'center' },
   stepTxt: { color: '#fff', fontSize: 18, fontWeight: '300', lineHeight: 22, marginTop: -2 },
-  stepVal: { fontSize: 15, fontWeight: '700', color: '#C8D8E8', minWidth: 72, textAlign: 'center', fontFamily: Fonts.data },
+  stepVal: { fontSize: 15, fontWeight: '700', minWidth: 72, textAlign: 'center', fontFamily: Fonts.data },
 
   resultCard: { borderRadius: 4, padding: Spacing.three, gap: Spacing.two, borderLeftWidth: 3 },
   riskBadge: { flexDirection: 'row', alignItems: 'center', gap: Spacing.one },
   riskDot: { width: 6, height: 6, borderRadius: 3 },
   riskLabel: { fontSize: 9, fontWeight: '800', letterSpacing: 1 },
   bigRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' },
-  bigEyebrow: { fontSize: 8, fontWeight: '700', color: '#4D7A9A', letterSpacing: 1, marginBottom: 2 },
+  bigEyebrow: { fontSize: 8, fontWeight: '700', letterSpacing: 1, marginBottom: 2 },
   bigNum: { fontSize: 26, fontWeight: '900', lineHeight: 30 },
-  bigSub: { fontSize: 10, color: '#3D6080', marginTop: 2 },
-  pctCircle: { alignItems: 'center', width: 72, height: 72, borderRadius: 36, backgroundColor: 'rgba(255,255,255,0.03)', borderWidth: 1.5, borderColor: Brand.border, justifyContent: 'center' },
+  bigSub: { fontSize: 10, marginTop: 2 },
+  pctCircle: { alignItems: 'center', width: 72, height: 72, borderRadius: 36, borderWidth: 1.5, justifyContent: 'center' },
   pctNum: { fontSize: 22, fontWeight: '900', lineHeight: 26 },
-  pctLabel: { fontSize: 8, color: '#3D6080', fontWeight: '600', textAlign: 'center' },
-  barTrack: { height: 8, backgroundColor: Brand.border, borderRadius: 4, overflow: 'visible', position: 'relative' },
+  pctLabel: { fontSize: 8, fontWeight: '600', textAlign: 'center' },
+  barTrack: { height: 8, borderRadius: 4, overflow: 'visible', position: 'relative' },
   barFill: { height: '100%', borderRadius: 4, position: 'absolute', top: 0, left: 0 },
   barMark: { position: 'absolute', top: -2, width: 1.5, height: 12, backgroundColor: 'rgba(255,255,255,0.2)' },
   barLabels: { flexDirection: 'row', justifyContent: 'space-between' },
-  barLabelTxt: { fontSize: 8, color: '#3D6080' },
+  barLabelTxt: { fontSize: 8 },
 
   breakRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 4 },
-  breakLabel: { fontSize: 12, color: '#7A9AB5' },
+  breakLabel: { fontSize: 12 },
   breakVal: { fontSize: 13, fontWeight: '700', fontFamily: Fonts.data },
 
   benchRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
   benchBadge: { borderRadius: 4, paddingHorizontal: Spacing.two, paddingVertical: 4, borderWidth: 1 },
   benchLabel: { fontSize: 10, fontWeight: '800', letterSpacing: 0.5 },
-  benchVal: { fontSize: 12, color: '#4D7A9A' },
+  benchVal: { fontSize: 12 },
 
   customAprRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: Spacing.two },
-  customAprLabel: { fontSize: 11, color: '#8AA8C0', flex: 1 },
-  customAprInputWrap: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#04080F', borderWidth: 1, borderColor: Brand.accent, borderRadius: 4, paddingHorizontal: Spacing.two, paddingVertical: 6 },
+  customAprLabel: { fontSize: 11, flex: 1 },
+  customAprInputWrap: { flexDirection: 'row', alignItems: 'center', gap: 4, borderWidth: 1, borderColor: Brand.accent, borderRadius: 4, paddingHorizontal: Spacing.two, paddingVertical: 6 },
   customAprInput: { fontSize: 15, fontWeight: '700', color: Brand.accent, width: 60, textAlign: 'right', fontFamily: 'Courier New' },
   customAprUnit: { fontSize: 13, fontWeight: '700', color: Brand.accent },
 
@@ -385,5 +387,5 @@ const s = StyleSheet.create({
   tipLabel: { fontSize: 9, fontWeight: '800', color: Brand.accent, letterSpacing: 1, marginBottom: Spacing.one },
   tipRow: { flexDirection: 'row', gap: Spacing.two, alignItems: 'flex-start' },
   tipBullet: { color: Brand.accent, fontSize: 13, fontWeight: '700', width: 12 },
-  tipText: { flex: 1, fontSize: 12, color: '#7A9AB5', lineHeight: 17 },
+  tipText: { flex: 1, fontSize: 12, lineHeight: 17 },
 });

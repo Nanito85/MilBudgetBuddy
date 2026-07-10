@@ -1,118 +1,43 @@
-import React, { useEffect, useRef, useState } from 'react';
-import {
-  Modal,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  View,
-} from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from './themed-text';
 import { Brand, Spacing } from '@/constants/theme';
+import { useThemeColors } from '@/hooks/use-theme';
 
-// ── Constants ─────────────────────────────────────────────────────────────────
+// ── Constants ──────────────────────────────────────────────────────────────────
 
-const ITEM_H = 48;
-const VISIBLE = 5; // visible rows in the drum (must be odd)
-const PAD = Math.floor(VISIBLE / 2); // blank spacer rows on each side
-
-const MONTH_LABELS = [
+const MONTH_NAMES = [
   'January', 'February', 'March', 'April', 'May', 'June',
   'July', 'August', 'September', 'October', 'November', 'December',
 ];
-const MONTH_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const MONTH_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                     'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const DAY_LABELS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
 
-function daysInMonth(month: number, year: number): number {
-  return new Date(year, month, 0).getDate();
+function daysInMonth(month: number, year: number) {
+  return new Date(year, month + 1, 0).getDate();
+}
+function firstDayOfMonth(month: number, year: number) {
+  return new Date(year, month, 1).getDay();
 }
 
-function buildYears(): number[] {
-  const now = new Date().getFullYear();
-  const arr: number[] = [];
-  for (let y = now; y >= 1960; y--) arr.push(y);
-  return arr;
-}
-
-// ── Drum Column ────────────────────────────────────────────────────────────────
-
-function DrumColumn({
-  items,
-  selected,
-  onChange,
-  label,
-  flex,
-}: {
-  items: (string | number)[];
-  selected: string | number;
-  onChange: (v: string | number) => void;
-  label: string;
-  flex?: number;
-}) {
-  const ref = useRef<ScrollView>(null);
-  const selIdx = items.indexOf(selected);
-
-  useEffect(() => {
-    if (selIdx >= 0) {
-      // Delay to let layout settle before scrolling
-      setTimeout(() => {
-        ref.current?.scrollTo({ y: selIdx * ITEM_H, animated: false });
-      }, 80);
-    }
-  }, []);
-
-  const handleScrollEnd = (y: number) => {
-    const idx = Math.max(0, Math.min(items.length - 1, Math.round(y / ITEM_H)));
-    onChange(items[idx]);
-  };
-
-  return (
-    <View style={[drum.col, flex != null && { flex }]}>
-      <ThemedText style={drum.colLabel}>{label}</ThemedText>
-      <View style={drum.drumWrap}>
-        {/* Selection highlight */}
-        <View pointerEvents="none" style={drum.highlight} />
-
-        <ScrollView
-          ref={ref}
-          showsVerticalScrollIndicator={false}
-          snapToInterval={ITEM_H}
-          decelerationRate="fast"
-          contentContainerStyle={{ paddingVertical: PAD * ITEM_H }}
-          onMomentumScrollEnd={(e) => handleScrollEnd(e.nativeEvent.contentOffset.y)}
-          onScrollEndDrag={(e) => handleScrollEnd(e.nativeEvent.contentOffset.y)}
-          style={{ height: ITEM_H * VISIBLE }}
-        >
-          {items.map((item) => (
-            <View key={String(item)} style={drum.item}>
-              <ThemedText
-                style={[
-                  drum.itemText,
-                  String(item) === String(selected) && drum.selectedText,
-                ]}
-                numberOfLines={1}
-              >
-                {item}
-              </ThemedText>
-            </View>
-          ))}
-        </ScrollView>
-      </View>
-    </View>
-  );
-}
-
-// ── Main Component ─────────────────────────────────────────────────────────────
+// ── Props ──────────────────────────────────────────────────────────────────────
 
 interface Props {
   visible: boolean;
-  value?: string; // YYYY-MM-DD
+  value?: string;
   onConfirm: (isoDate: string) => void;
   onCancel: () => void;
   title?: string;
   maxYear?: number;
   minYear?: number;
 }
+
+type Mode = 'day' | 'year';
+
+// ── Component ──────────────────────────────────────────────────────────────────
 
 export function DatePickerModal({
   visible,
@@ -123,98 +48,238 @@ export function DatePickerModal({
   maxYear,
   minYear = 1960,
 }: Props) {
+  const tc = useThemeColors();
   const now = new Date();
-  const parsedYear = value ? parseInt(value.slice(0, 4), 10) : now.getFullYear();
-  const parsedMonth = value ? parseInt(value.slice(5, 7), 10) : now.getMonth() + 1;
-  const parsedDay = value ? parseInt(value.slice(8, 10), 10) : now.getDate();
+  const initYear  = value ? parseInt(value.slice(0, 4), 10) : now.getFullYear();
+  const initMonth = value ? parseInt(value.slice(5, 7), 10) - 1 : now.getMonth();
+  const initDay   = value ? parseInt(value.slice(8, 10), 10) : now.getDate();
 
-  const [year, setYear] = useState(parsedYear);
-  const [month, setMonth] = useState(parsedMonth); // 1-12
-  const [day, setDay] = useState(parsedDay);
+  const [mode,      setMode]      = useState<Mode>('day');
+  const [viewYear,  setViewYear]  = useState(initYear);
+  const [viewMonth, setViewMonth] = useState(initMonth);
+  const [selYear,   setSelYear]   = useState(initYear);
+  const [selMonth,  setSelMonth]  = useState(initMonth);
+  const [selDay,    setSelDay]    = useState(initDay);
 
-  // Reset state when modal opens with new value
+  const yearScrollRef = useRef<ScrollView>(null);
+  const maxYr = maxYear ?? now.getFullYear();
+  const years = Array.from({ length: maxYr - minYear + 1 }, (_, i) => maxYr - i);
+
   useEffect(() => {
     if (visible) {
       const y = value ? parseInt(value.slice(0, 4), 10) : now.getFullYear();
-      const m = value ? parseInt(value.slice(5, 7), 10) : now.getMonth() + 1;
+      const m = value ? parseInt(value.slice(5, 7), 10) - 1 : now.getMonth();
       const d = value ? parseInt(value.slice(8, 10), 10) : now.getDate();
-      setYear(y);
-      setMonth(m);
-      setDay(Math.min(d, daysInMonth(m, y)));
+      setMode('day');
+      setViewYear(y); setViewMonth(m);
+      setSelYear(y);  setSelMonth(m); setSelDay(d);
     }
   }, [visible]);
 
-  // Clamp day when month/year changes
+  // Scroll year list to selected year when mode switches
   useEffect(() => {
-    const max = daysInMonth(month, year);
-    if (day > max) setDay(max);
-  }, [month, year]);
+    if (mode === 'year') {
+      const idx = years.indexOf(viewYear);
+      if (idx >= 0) {
+        setTimeout(() => {
+          yearScrollRef.current?.scrollTo({ y: idx * YEAR_ROW_H, animated: false });
+        }, 80);
+      }
+    }
+  }, [mode]);
 
-  const topYear = maxYear ?? now.getFullYear();
-  const years = buildYears().filter((y) => y >= minYear && y <= topYear);
-  const months = MONTH_SHORT.map((_, i) => `${i + 1}`.padStart(2, '0') + ' ' + MONTH_SHORT[i]);
-  const days = Array.from({ length: daysInMonth(month, year) }, (_, i) =>
-    String(i + 1).padStart(2, '0'),
-  );
+  const prevMonth = () => {
+    if (viewMonth === 0) {
+      if (viewYear <= minYear) return;
+      setViewMonth(11); setViewYear(v => v - 1);
+    } else {
+      setViewMonth(v => v - 1);
+    }
+  };
+  const nextMonth = () => {
+    if (viewMonth === 11) {
+      if (viewYear >= maxYr) return;
+      setViewMonth(0); setViewYear(v => v + 1);
+    } else {
+      setViewMonth(v => v + 1);
+    }
+  };
 
-  const selectedMonth = `${String(month).padStart(2, '0')} ${MONTH_SHORT[month - 1]}`;
-  const selectedDay = String(day).padStart(2, '0');
+  const selectDay = (day: number) => {
+    setSelDay(day); setSelMonth(viewMonth); setSelYear(viewYear);
+  };
+
+  const selectYear = (y: number) => {
+    setViewYear(y);
+    setMode('day');
+  };
 
   const confirm = () => {
-    const iso = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-    onConfirm(iso);
+    const mm = String(selMonth + 1).padStart(2, '0');
+    const dd = String(selDay).padStart(2, '0');
+    onConfirm(`${selYear}-${mm}-${dd}`);
   };
+
+  // Build day grid
+  const totalDays   = daysInMonth(viewMonth, viewYear);
+  const startOffset = firstDayOfMonth(viewMonth, viewYear);
+  const cells: (number | null)[] = [
+    ...Array(startOffset).fill(null),
+    ...Array.from({ length: totalDays }, (_, i) => i + 1),
+  ];
+  while (cells.length % 7 !== 0) cells.push(null);
+
+  const isSelected = (d: number) =>
+    d === selDay && viewMonth === selMonth && viewYear === selYear;
+  const isToday = (d: number) =>
+    d === now.getDate() && viewMonth === now.getMonth() && viewYear === now.getFullYear();
+
+  const canGoPrev = !(viewMonth === 0 && viewYear <= minYear);
+  const canGoNext = !(viewMonth === 11 && viewYear >= maxYr);
 
   return (
     <Modal visible={visible} transparent animationType="fade">
-      <Pressable style={overlay.backdrop} onPress={onCancel} />
-      <View style={overlay.container}>
-        <SafeAreaView edges={['bottom']} style={overlay.sheet}>
+      {/* Backdrop */}
+      <Pressable
+        style={[StyleSheet.absoluteFillObject, s.backdrop]}
+        onPress={onCancel}
+      />
+
+      {/* Sheet */}
+      <View style={s.sheetWrap}>
+        <SafeAreaView edges={['bottom']} style={[s.sheet, { backgroundColor: tc.surface }]}>
+
+          {/* Handle */}
+          <View style={s.handleRow}>
+            <View style={[s.handle, { backgroundColor: tc.borderStrong }]} />
+          </View>
+
           {/* Header */}
-          <View style={overlay.header}>
-            <Pressable onPress={onCancel} hitSlop={12}>
-              <ThemedText style={overlay.cancel}>Cancel</ThemedText>
+          <View style={[s.header, { borderBottomColor: tc.borderColor }]}>
+            <Pressable onPress={onCancel} hitSlop={16} style={s.headerSide}>
+              <ThemedText style={[s.cancelText, { color: tc.textSecondary }]}>Cancel</ThemedText>
             </Pressable>
-            <ThemedText style={overlay.title}>{title}</ThemedText>
-            <Pressable onPress={confirm} hitSlop={12}>
-              <ThemedText style={overlay.confirm}>Done</ThemedText>
+            <ThemedText style={[s.titleText, { color: tc.textPrimary }]}>{title}</ThemedText>
+            <Pressable onPress={confirm} hitSlop={16} style={[s.headerSide, s.headerRight]}>
+              <ThemedText style={s.doneText}>Done</ThemedText>
             </Pressable>
           </View>
 
-          {/* Drum columns */}
-          <View style={drum.row}>
-            <DrumColumn
-              flex={2}
-              label="MONTH"
-              items={months}
-              selected={selectedMonth}
-              onChange={(v) => {
-                const idx = months.indexOf(v as string);
-                if (idx >= 0) setMonth(idx + 1);
-              }}
-            />
-            <DrumColumn
-              flex={1}
-              label="DAY"
-              items={days}
-              selected={selectedDay}
-              onChange={(v) => setDay(parseInt(v as string, 10))}
-            />
-            <DrumColumn
-              flex={1}
-              label="YEAR"
-              items={years}
-              selected={year}
-              onChange={(v) => setYear(v as number)}
-            />
-          </View>
+          {/* ── YEAR PICKER MODE ── */}
+          {mode === 'year' && (
+            <>
+              <View style={s.yearHeader}>
+                <ThemedText style={[s.yearHeaderLabel, { color: tc.textMuted }]}>SELECT YEAR</ThemedText>
+                <Pressable onPress={() => setMode('day')} hitSlop={12}>
+                  <ThemedText style={s.yearHeaderBack}>↩ Back</ThemedText>
+                </Pressable>
+              </View>
+              <ScrollView
+                ref={yearScrollRef}
+                style={s.yearList}
+                showsVerticalScrollIndicator={false}
+              >
+                {years.map((y) => {
+                  const isCurrentView = y === viewYear;
+                  return (
+                    <Pressable
+                      key={y}
+                      onPress={() => selectYear(y)}
+                      style={({ pressed }) => [
+                        s.yearRow,
+                        isCurrentView && s.yearRowSelected,
+                        pressed && !isCurrentView && { backgroundColor: tc.surfaceInner },
+                      ]}>
+                      <ThemedText style={[
+                        s.yearRowText,
+                        { color: tc.textSecondary },
+                        isCurrentView && s.yearRowTextSelected,
+                      ]}>
+                        {y}
+                      </ThemedText>
+                      {isCurrentView && <ThemedText style={s.yearCheck}>✓</ThemedText>}
+                    </Pressable>
+                  );
+                })}
+              </ScrollView>
+            </>
+          )}
 
-          {/* Preview */}
-          <View style={overlay.preview}>
-            <ThemedText style={overlay.previewText}>
-              {`${MONTH_LABELS[month - 1]} ${day}, ${year}`}
-            </ThemedText>
-          </View>
+          {/* ── DAY PICKER MODE ── */}
+          {mode === 'day' && (
+            <>
+              {/* Month / Year navigation */}
+              <View style={s.navRow}>
+                <Pressable
+                  onPress={prevMonth}
+                  disabled={!canGoPrev}
+                  hitSlop={12}
+                  style={[s.navBtn, !canGoPrev && s.navBtnDisabled]}>
+                  <ThemedText style={[s.navArrow, !canGoPrev && { color: tc.textMuted }]}>‹</ThemedText>
+                </Pressable>
+
+                {/* Tap label to open year picker */}
+                <Pressable onPress={() => setMode('year')} style={s.navLabelBtn} hitSlop={8}>
+                  <ThemedText style={[s.navLabel, { color: tc.textPrimary }]}>
+                    {MONTH_NAMES[viewMonth]}  {viewYear}
+                  </ThemedText>
+                  <ThemedText style={s.navLabelChevron}>▾</ThemedText>
+                </Pressable>
+
+                <Pressable
+                  onPress={nextMonth}
+                  disabled={!canGoNext}
+                  hitSlop={12}
+                  style={[s.navBtn, !canGoNext && s.navBtnDisabled]}>
+                  <ThemedText style={[s.navArrow, !canGoNext && { color: tc.textMuted }]}>›</ThemedText>
+                </Pressable>
+              </View>
+
+              {/* Day-of-week labels */}
+              <View style={s.weekRow}>
+                {DAY_LABELS.map((d) => (
+                  <ThemedText key={d} style={[s.weekLabel, { color: tc.textMuted }]}>{d}</ThemedText>
+                ))}
+              </View>
+
+              {/* Day grid */}
+              <View style={s.grid}>
+                {cells.map((day, idx) => {
+                  if (day === null) return <View key={`e-${idx}`} style={s.cell} />;
+                  const selected = isSelected(day);
+                  const today    = isToday(day);
+                  return (
+                    <Pressable
+                      key={`d-${day}`}
+                      onPress={() => selectDay(day)}
+                      style={({ pressed }) => [
+                        s.cell,
+                        selected && s.cellSelected,
+                        !selected && today && s.cellToday,
+                        pressed && !selected && s.cellPressed,
+                      ]}>
+                      <ThemedText style={[
+                        s.cellText,
+                        { color: tc.textSecondary },
+                        selected && s.cellTextSelected,
+                        !selected && today && s.cellTextToday,
+                      ]}>
+                        {day}
+                      </ThemedText>
+                    </Pressable>
+                  );
+                })}
+              </View>
+
+              {/* Preview */}
+              <View style={[s.preview, { borderTopColor: tc.borderColor }]}>
+                <ThemedText style={[s.previewText, { color: tc.textHint }]}>
+                  {MONTH_NAMES[selMonth]} {selDay}, {selYear}
+                </ThemedText>
+              </View>
+            </>
+          )}
+
         </SafeAreaView>
       </View>
     </Modal>
@@ -223,88 +288,101 @@ export function DatePickerModal({
 
 // ── Styles ─────────────────────────────────────────────────────────────────────
 
-const overlay = StyleSheet.create({
-  backdrop: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.65)',
-  },
-  container: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-  },
+const CELL_SIZE  = 42;
+const YEAR_ROW_H = 48;
+
+const s = StyleSheet.create({
+  backdrop: { backgroundColor: 'rgba(0,0,0,0.6)' },
+
+  sheetWrap: { position: 'absolute', bottom: 0, left: 0, right: 0 },
   sheet: {
-    backgroundColor: '#050C18',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    paddingTop: Spacing.two,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
     paddingHorizontal: Spacing.three,
     paddingBottom: Spacing.two,
   },
+
+  handleRow: { alignItems: 'center', paddingTop: Spacing.two, paddingBottom: Spacing.one },
+  handle: { width: 40, height: 4, borderRadius: 2 },
+
   header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: Spacing.two,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    marginBottom: Spacing.two,
+  },
+  headerSide: { minWidth: 64 },
+  headerRight: { alignItems: 'flex-end' },
+  titleText:  { fontSize: 14, fontWeight: '700', letterSpacing: 0.3 },
+  cancelText: { fontSize: 14 },
+  doneText:   { fontSize: 14, fontWeight: '800', color: Brand.tactical },
+
+  // Year picker
+  yearHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: Spacing.two,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: 'rgba(255,255,255,0.08)',
     marginBottom: Spacing.two,
+    paddingHorizontal: Spacing.one,
   },
-  title: { fontSize: 15, fontWeight: '700', color: '#C8D8E8' },
-  cancel: { fontSize: 15, color: '#6B92B0' },
-  confirm: { fontSize: 15, fontWeight: '700', color: Brand.tactical },
+  yearHeaderLabel: { fontSize: 11, fontWeight: '800', letterSpacing: 1 },
+  yearHeaderBack:  { fontSize: 13, color: Brand.tactical, fontWeight: '700' },
+  yearList: { maxHeight: YEAR_ROW_H * 6 },
+  yearRow: {
+    height: YEAR_ROW_H,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 8,
+    marginVertical: 1,
+  },
+  yearRowSelected: { backgroundColor: Brand.tactical + '20' },
+  yearRowText:         { fontSize: 22, fontWeight: '400' },
+  yearRowTextSelected: { fontSize: 24, fontWeight: '800', color: Brand.tactical },
+  yearCheck: { position: 'absolute', right: Spacing.three, color: Brand.tactical, fontSize: 16 },
+
+  // Day picker nav
+  navRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: Spacing.two,
+    paddingHorizontal: Spacing.one,
+  },
+  navBtn:         { padding: Spacing.one },
+  navBtnDisabled: { opacity: 0.2 },
+  navArrow:         { fontSize: 28, fontWeight: '300', color: Brand.tactical, lineHeight: 32 },
+  navLabelBtn: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  navLabel: { fontSize: 16, fontWeight: '800', letterSpacing: 0.5 },
+  navLabelChevron: { fontSize: 12, color: Brand.tactical, marginTop: 2 },
+
+  weekRow: { flexDirection: 'row', marginBottom: 4 },
+  weekLabel: {
+    flex: 1, textAlign: 'center',
+    fontSize: 11, fontWeight: '700', letterSpacing: 0.5,
+  },
+
+  grid: { flexDirection: 'row', flexWrap: 'wrap' },
+  cell: {
+    width: `${100 / 7}%` as any,
+    height: CELL_SIZE,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cellSelected: { backgroundColor: Brand.tactical, borderRadius: CELL_SIZE / 2 },
+  cellToday:    { borderWidth: 1, borderColor: Brand.tactical + '80', borderRadius: CELL_SIZE / 2 },
+  cellPressed:  { backgroundColor: Brand.tactical + '20', borderRadius: CELL_SIZE / 2 },
+  cellText:         { fontSize: 15, fontWeight: '500' },
+  cellTextSelected: { color: '#FFFFFF', fontWeight: '800' },
+  cellTextToday:    { color: Brand.tactical, fontWeight: '700' },
+
   preview: {
     alignItems: 'center',
     paddingVertical: Spacing.two,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: 'rgba(255,255,255,0.08)',
     marginTop: Spacing.one,
+    borderTopWidth: StyleSheet.hairlineWidth,
   },
-  previewText: { fontSize: 13, color: '#6B92B0', fontWeight: '600' },
-});
-
-const drum = StyleSheet.create({
-  row: {
-    flexDirection: 'row',
-    gap: Spacing.two,
-  },
-  col: { alignItems: 'center', gap: Spacing.one },
-  colLabel: {
-    fontSize: 9,
-    fontWeight: '800',
-    color: '#3D6080',
-    letterSpacing: 0.8,
-    textTransform: 'uppercase',
-  },
-  drumWrap: { position: 'relative' },
-  highlight: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    top: PAD * ITEM_H,
-    height: ITEM_H,
-    borderTopWidth: 1,
-    borderBottomWidth: 1,
-    borderColor: Brand.primary + '60',
-    backgroundColor: Brand.primary + '10',
-    zIndex: 1,
-  },
-  item: {
-    height: ITEM_H,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 4,
-  },
-  itemText: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#4D7A9A',
-    textAlign: 'center',
-  },
-  selectedText: {
-    color: '#C8D8E8',
-    fontWeight: '700',
-    fontSize: 17,
-  },
+  previewText: { fontSize: 13, fontWeight: '600', letterSpacing: 0.3 },
 });

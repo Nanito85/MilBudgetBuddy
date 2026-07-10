@@ -4,30 +4,33 @@ import { Platform } from 'react-native';
 
 export const Colors = {
   light: {
-    text: '#0D1E2E',
-    background: '#F0F4F8',
+    text: '#0C1826',
+    background: '#F2F5F9',
     backgroundElement: '#FFFFFF',
-    backgroundSelected: '#D8E8F4',
-    textSecondary: '#4A6A84',
+    backgroundSelected: '#DCEAF6',
+    textSecondary: '#3F586F',
     // Extended semantic colors for light mode
-    cardInner: '#EEF3F8',
-    inputBg: '#E4ECF4',
-    border: '#B8CDD8',
-    textHint: '#5A7A9A',
-    textMuted: '#7A9AB0',
+    cardInner: '#EEF3F9',
+    inputBg: '#E9EFF6',
+    border: '#C7D6E3',
+    borderStrong: '#9FB6CC',
+    textHint: '#5A748C',
+    textMuted: '#6E859B',
   },
   dark: {
-    text: '#C8D8E8',
+    // Brightened for legibility on the near-black tactical background.
+    text: '#E6EEF7',
     background: '#04080F',
-    backgroundElement: '#080E1C',
-    backgroundSelected: '#0D1A2E',
-    textSecondary: '#6B92B0',
+    backgroundElement: '#0C1626',
+    backgroundSelected: '#14273F',
+    textSecondary: '#A6C0D8',
     // Extended semantic colors for dark mode
-    cardInner: '#04080F',
-    inputBg: '#04080F',
-    border: '#1A3A5C',
-    textHint: '#4D7A9A',
-    textMuted: '#3D6080',
+    cardInner: '#0A1220',
+    inputBg: '#101E30',
+    border: '#23415F',
+    borderStrong: '#315C87',
+    textHint: '#86A4BE',
+    textMuted: '#7189A2',
   },
 } as const;
 

@@ -1,4 +1,4 @@
-import { useRouter } from 'expo-router';
+﻿import { useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
 import {
   KeyboardAvoidingView,
@@ -12,6 +12,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BranchRegNote } from '@/components/BranchRegNote';
+import { SourceBanner } from '@/components/SourceBanner';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { PayGrade } from '@/data/bah-rates';
@@ -25,6 +26,7 @@ import {
   ZoneType,
 } from '@/features/deployment/utils/deploymentCalc';
 import { BottomTabInset, Brand, Spacing } from '@/constants/theme';
+import { useThemeColors } from '@/hooks/use-theme';
 
 // ── Small reusable chips ──────────────────────────────────────────────────────
 
@@ -118,6 +120,7 @@ const TAX_OPTIONS: { value: TaxBracket; label: string }[] = [
 export default function DeploymentCalculatorScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const tc = useThemeColors();
 
   const [grade, setGrade] = useState<PayGrade>('E5');
   const [yos, setYos] = useState(6);
@@ -158,7 +161,7 @@ export default function DeploymentCalculatorScreen() {
       {/* ── Header ─────────────────────────────────────────────────────────── */}
       <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
         <Pressable
-          onPress={() => (router.push('/tools'))}
+          onPress={() => (router.back())}
           style={({ pressed }) => [styles.backBtn, pressed && styles.pressed]}>
           <ThemedText style={styles.backChevron}>‹</ThemedText>
         </Pressable>
@@ -174,6 +177,15 @@ export default function DeploymentCalculatorScreen() {
         contentContainerStyle={[styles.content, { paddingBottom: BottomTabInset + Spacing.five }]}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled">
+
+        <SourceBanner
+          sources={[
+            { label: 'DoD FMR Vol 7A — IDP/FSA/CZTE/SDP rates', confidence: 'official', year: 2026, url: 'https://comptroller.defense.gov/fmr/07a/' },
+            { label: 'Pay & BAS from DFAS official tables', confidence: 'official', year: 2026 },
+            { label: 'Federal tax savings are estimates based on your selected bracket', confidence: 'estimated' },
+          ]}
+          disclaimer="Actual take-home pay may vary. Verify with myPay.dfas.mil and your finance office."
+        />
 
         {/* ── BLUF ───────────────────────────────────────────────────────────── */}
         <ThemedView type="backgroundElement" style={styles.blufBox}>
@@ -260,7 +272,7 @@ export default function DeploymentCalculatorScreen() {
               </ThemedText>
               <ChipRow
                 options={[
-                  { value: true, label: 'Yes (FSA +$250/mo)' },
+                  { value: true, label: 'Yes (FSA +$300/mo)' },
                   { value: false, label: 'No dependents' },
                 ]}
                 selected={hasDependents}
@@ -284,11 +296,11 @@ export default function DeploymentCalculatorScreen() {
                 <View style={styles.inputRow}>
                   <ThemedText style={styles.inputLabel}>Monthly BAH ($)</ThemedText>
                   <TextInput
-                    style={styles.input}
+                    style={[styles.input, { color: tc.textPrimary }]}
                     keyboardType="numeric"
                     value={bahText}
                     onChangeText={setBahText}
-                    placeholderTextColor="#3D6080"
+                    placeholderTextColor={tc.textMuted}
                     placeholder="0"
                   />
                 </View>
@@ -312,11 +324,11 @@ export default function DeploymentCalculatorScreen() {
                 <View style={styles.inputRow}>
                   <ThemedText style={styles.inputLabel}>SDP Deposit ($)</ThemedText>
                   <TextInput
-                    style={styles.input}
+                    style={[styles.input, { color: tc.textPrimary }]}
                     keyboardType="numeric"
                     value={sdpText}
                     onChangeText={setSdpText}
-                    placeholderTextColor="#3D6080"
+                    placeholderTextColor={tc.textMuted}
                     placeholder="0"
                   />
                 </View>
@@ -494,7 +506,6 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     minWidth: 100,
     textAlign: 'right',
-    color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '600',
   },

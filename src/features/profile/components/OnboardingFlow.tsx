@@ -260,10 +260,19 @@ function ServiceInfoStep({
   const [lastName, setLastName]     = useState('');
   const [nickname, setNickname]     = useState('');
   const [yos, setYos]               = useState(4);
+  const [yosManual, setYosManual]   = useState(false); // true if user overrode auto-calc
   const [enlistDate, setEnlistDate] = useState('');
   const [rankDate, setRankDate]     = useState('');
   const [showEnlistPicker, setShowEnlistPicker] = useState(false);
   const [showRankPicker, setShowRankPicker]     = useState(false);
+
+  // Auto-calculate YOS from enlistment date unless manually overridden
+  useEffect(() => {
+    if (enlistDate && !yosManual) {
+      const calculated = yearsAgo(enlistDate);
+      if (calculated >= 0 && calculated <= 40) setYos(calculated);
+    }
+  }, [enlistDate]);
   const tc = useThemeColors();
 
   const isReserve = status === 'reserve';
@@ -275,6 +284,7 @@ function ServiceInfoStep({
   };
 
   return (
+    <>
     <ScrollView
       style={{ flex: 1 }}
       contentContainerStyle={styles.scrollStep}
@@ -383,7 +393,14 @@ function ServiceInfoStep({
 
       {/* Years of Service */}
       <View style={styles.fieldBlock}>
-        <NumberStepper label="Years of Service" value={yos} min={0} max={40} onChange={setYos} unit="yrs" />
+        <NumberStepper
+        label={enlistDate ? `Years of Service (auto-calculated — override if needed)` : 'Years of Service'}
+        value={yos}
+        min={0}
+        max={40}
+        onChange={(v) => { setYos(v); setYosManual(true); }}
+        unit="yrs"
+      />
       </View>
 
       <View style={styles.btnGroup}>
@@ -400,21 +417,23 @@ function ServiceInfoStep({
         </Pressable>
       </View>
 
-      <DatePickerModal
-        visible={showEnlistPicker}
-        value={enlistDate}
-        title="Date of Enlistment / Commission"
-        onConfirm={(d) => { setEnlistDate(d); setShowEnlistPicker(false); }}
-        onCancel={() => setShowEnlistPicker(false)}
-      />
-      <DatePickerModal
-        visible={showRankPicker}
-        value={rankDate}
-        title="Date of Current Rank"
-        onConfirm={(d) => { setRankDate(d); setShowRankPicker(false); }}
-        onCancel={() => setShowRankPicker(false)}
-      />
     </ScrollView>
+
+    <DatePickerModal
+      visible={showEnlistPicker}
+      value={enlistDate}
+      title="Date of Enlistment / Commission"
+      onConfirm={(d) => { setEnlistDate(d); setShowEnlistPicker(false); }}
+      onCancel={() => setShowEnlistPicker(false)}
+    />
+    <DatePickerModal
+      visible={showRankPicker}
+      value={rankDate}
+      title="Date of Current Rank"
+      onConfirm={(d) => { setRankDate(d); setShowRankPicker(false); }}
+      onCancel={() => setShowRankPicker(false)}
+    />
+    </>
   );
 }
 
@@ -437,6 +456,7 @@ function CivilianServiceInfoStep({
   const tc = useThemeColors();
 
   return (
+    <>
     <ScrollView
       style={{ flex: 1 }}
       contentContainerStyle={styles.scrollStep}
@@ -545,14 +565,16 @@ function CivilianServiceInfoStep({
         </Pressable>
       </View>
 
-      <DatePickerModal
-        visible={showDatePicker}
-        value={startDate}
-        title="Date Federal Service Began"
-        onConfirm={(d) => { setStartDate(d); setShowDatePicker(false); }}
-        onCancel={() => setShowDatePicker(false)}
-      />
     </ScrollView>
+
+    <DatePickerModal
+      visible={showDatePicker}
+      value={startDate}
+      title="Date Federal Service Began"
+      onConfirm={(d) => { setStartDate(d); setShowDatePicker(false); }}
+      onCancel={() => setShowDatePicker(false)}
+    />
+    </>
   );
 }
 
@@ -619,7 +641,7 @@ function LocationFamilyStep({
               />
             </ThemedView>
             {showStateList && stateQuery.length > 0 && (
-              <View style={styles.stateDropdown}>
+              <View style={[styles.stateDropdown, { backgroundColor: tc.surface }]}>
                 {filteredStates.map((s) => (
                   <Pressable
                     key={s.code}
@@ -1016,7 +1038,6 @@ const styles = StyleSheet.create({
   skipBtn: { paddingVertical: Spacing.two },
 
   stateDropdown: {
-    backgroundColor: '#080E1C',
     borderWidth: 1,
     borderColor: 'rgba(128,128,128,0.25)',
     borderRadius: Spacing.two,

@@ -8,6 +8,7 @@ import { ThemedView } from '@/components/themed-view';
 import { CategoryBadge } from '@/features/daily-tip/components/CategoryBadge';
 import { BottomTabInset, Brand, Spacing } from '@/constants/theme';
 import { TIPS } from '@/data/tips';
+import { useThemeColors } from '@/hooks/use-theme';
 import { useChatStore } from '@/store/chat.store';
 import { useTipsStore } from '@/store/tips.store';
 
@@ -15,6 +16,7 @@ export default function TipDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const tc = useThemeColors();
 
   const tip = TIPS.find((t) => t.id === id);
   const saved = useTipsStore((s) => s.savedTipIds.includes(id ?? ''));
@@ -61,7 +63,7 @@ export default function TipDetailScreen() {
             hitSlop={12}
             style={styles.saveBtn}
             accessibilityLabel={saved ? 'Remove from saved' : 'Save tip'}>
-            <ThemedText style={[styles.heart, saved && styles.heartSaved]}>
+            <ThemedText style={[styles.heart, { color: tc.textMuted }, saved && styles.heartSaved]}>
               {saved ? '♥' : '♡'}
             </ThemedText>
           </Pressable>
@@ -125,7 +127,6 @@ const styles = StyleSheet.create({
   },
   heart: {
     fontSize: 26,
-    color: '#94A3B8',
   },
   heartSaved: {
     color: Brand.accent,

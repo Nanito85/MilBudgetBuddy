@@ -2,13 +2,16 @@ import React from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { Brand, Spacing } from '@/constants/theme';
+import { useThemeColors } from '@/hooks/use-theme';
 import { ThemedText } from './themed-text';
 
 export function BranchRegNote() {
+  const tc = useThemeColors();
+
   return (
     <View style={styles.card}>
       <ThemedText style={styles.label}>⚠ BRANCH REGULATIONS APPLY</ThemedText>
-      <ThemedText style={styles.body}>
+      <ThemedText style={[styles.body, { color: tc.textSecondary }]}>
         The JTR establishes baseline DoD policy, but each branch of service maintains its own
         regulations that may differ. Army (AR), Navy (MILPERSMAN/OPNAVINST), Marine Corps (MCO),
         Air Force (DAFI), Space Force (DAFSPMAN), and Coast Guard (COMDTINST) may set additional
@@ -37,6 +40,5 @@ const styles = StyleSheet.create({
   body: {
     fontSize: 12,
     lineHeight: 18,
-    color: '#8BAFC8',
   },
 });

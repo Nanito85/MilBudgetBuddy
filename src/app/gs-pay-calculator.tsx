@@ -1,4 +1,4 @@
-import { useRouter } from 'expo-router';
+﻿import { useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
 import {
   Modal,
@@ -20,6 +20,7 @@ import {
   getGSPay,
   type GSLocality,
 } from '@/data/gs-pay-rates';
+import { useThemeColors } from '@/hooks/use-theme';
 
 const GRADES = Array.from({ length: 15 }, (_, i) => i + 1);
 const STEPS  = Array.from({ length: 10 }, (_, i) => i + 1);
@@ -47,14 +48,15 @@ function estimateAnnualNet(annual: number): number {
 }
 
 function GradePicker({ value, onChange }: { value: number; onChange: (v: number) => void }) {
+  const tc = useThemeColors();
   return (
     <View style={pick.row}>
       {GRADES.map((g) => (
         <Pressable
           key={g}
           onPress={() => onChange(g)}
-          style={[pick.btn, value === g && pick.btnActive]}>
-          <ThemedText style={[pick.label, value === g && pick.labelActive]}>
+          style={[pick.btn, { backgroundColor: tc.surface, borderColor: tc.borderColor }, value === g && pick.btnActive]}>
+          <ThemedText style={[pick.label, { color: tc.textHint }, value === g && pick.labelActive]}>
             {g}
           </ThemedText>
         </Pressable>
@@ -64,14 +66,15 @@ function GradePicker({ value, onChange }: { value: number; onChange: (v: number)
 }
 
 function StepPicker({ value, onChange }: { value: number; onChange: (v: number) => void }) {
+  const tc = useThemeColors();
   return (
     <View style={pick.row}>
       {STEPS.map((s) => (
         <Pressable
           key={s}
           onPress={() => onChange(s)}
-          style={[pick.btn, value === s && pick.btnActive]}>
-          <ThemedText style={[pick.label, value === s && pick.labelActive]}>
+          style={[pick.btn, { backgroundColor: tc.surface, borderColor: tc.borderColor }, value === s && pick.btnActive]}>
+          <ThemedText style={[pick.label, { color: tc.textHint }, value === s && pick.labelActive]}>
             {s}
           </ThemedText>
         </Pressable>
@@ -84,12 +87,11 @@ const pick = StyleSheet.create({
   row: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   btn: {
     width: 36, height: 36, borderRadius: 4,
-    borderWidth: 1, borderColor: Brand.border,
+    borderWidth: 1,
     alignItems: 'center', justifyContent: 'center',
-    backgroundColor: '#080E1C',
   },
   btnActive: { backgroundColor: Brand.primary, borderColor: Brand.primary },
-  label: { fontSize: 12, fontWeight: '700', color: '#4D7A9A' },
+  label: { fontSize: 12, fontWeight: '700' },
   labelActive: { color: '#FFF' },
 });
 
@@ -105,27 +107,28 @@ function LocalityModal({
   onClose: () => void;
 }) {
   const insets = useSafeAreaInsets();
+  const tc = useThemeColors();
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
       <View style={modal.overlay}>
-        <ThemedView style={[modal.sheet, { paddingBottom: insets.bottom + Spacing.three }]}>
-          <View style={modal.handle} />
+        <ThemedView style={[modal.sheet, { backgroundColor: tc.background, paddingBottom: insets.bottom + Spacing.three }]}>
+          <View style={[modal.handle, { backgroundColor: tc.borderColor }]} />
           <ThemedText style={modal.title}>SELECT LOCALITY AREA</ThemedText>
           <ScrollView showsVerticalScrollIndicator={false}>
             {GS_LOCALITIES.map((loc) => (
               <TouchableOpacity
                 key={loc.key}
                 onPress={() => { onSelect(loc); onClose(); }}
-                style={[modal.row, selected === loc.key && modal.rowActive]}>
+                style={[modal.row, { borderBottomColor: tc.borderColor }, selected === loc.key && modal.rowActive]}>
                 <View style={{ flex: 1 }}>
-                  <ThemedText style={[modal.locLabel, selected === loc.key && modal.locLabelActive]}>
+                  <ThemedText style={[modal.locLabel, { color: tc.textPrimary }, selected === loc.key && modal.locLabelActive]}>
                     {loc.label}
                   </ThemedText>
                   {loc.notes && (
-                    <ThemedText style={modal.locNote}>{loc.notes}</ThemedText>
+                    <ThemedText style={[modal.locNote, { color: tc.textHint }]}>{loc.notes}</ThemedText>
                   )}
                 </View>
-                <ThemedText style={[modal.locRate, selected === loc.key && modal.locRateActive]}>
+                <ThemedText style={[modal.locRate, { color: tc.textHint }, selected === loc.key && modal.locRateActive]}>
                   +{(loc.rate * 100).toFixed(2)}%
                 </ThemedText>
               </TouchableOpacity>
@@ -140,7 +143,6 @@ function LocalityModal({
 const modal = StyleSheet.create({
   overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' },
   sheet: {
-    backgroundColor: '#04080F',
     borderTopLeftRadius: 16, borderTopRightRadius: 16,
     paddingTop: Spacing.two,
     paddingHorizontal: Spacing.three,
@@ -148,7 +150,6 @@ const modal = StyleSheet.create({
   },
   handle: {
     width: 36, height: 4, borderRadius: 2,
-    backgroundColor: Brand.border,
     alignSelf: 'center',
     marginBottom: Spacing.two,
   },
@@ -156,19 +157,19 @@ const modal = StyleSheet.create({
   row: {
     flexDirection: 'row', alignItems: 'center',
     paddingVertical: 12, borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: Brand.border,
   },
   rowActive: { backgroundColor: Brand.primary + '15' },
-  locLabel: { fontSize: 13, color: '#C8D8E8', fontWeight: '600' },
+  locLabel: { fontSize: 13, fontWeight: '600' },
   locLabelActive: { color: Brand.primary },
-  locNote: { fontSize: 10, color: '#4D7A9A', marginTop: 1 },
-  locRate: { fontSize: 12, fontWeight: '700', color: '#4D7A9A', width: 64, textAlign: 'right' },
+  locNote: { fontSize: 10, marginTop: 1 },
+  locRate: { fontSize: 12, fontWeight: '700', width: 64, textAlign: 'right' },
   locRateActive: { color: Brand.primary },
 });
 
 export default function GSPayCalculatorScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const tc = useThemeColors();
 
   const [grade, setGrade]             = useState(7);
   const [step, setStep]               = useState(1);
@@ -194,7 +195,7 @@ export default function GSPayCalculatorScreen() {
   return (
     <ThemedView style={{ flex: 1 }}>
       <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
-        <Pressable onPress={() => router.push('/tools')} style={styles.back}>
+        <Pressable onPress={() => router.back()} style={styles.back}>
           <ThemedText style={styles.backChevron}>‹</ThemedText>
         </Pressable>
         <ThemedText style={styles.title}>GS Pay Calculator</ThemedText>
@@ -208,8 +209,8 @@ export default function GSPayCalculatorScreen() {
         {/* Hero banner */}
         <ThemedView type="backgroundElement" style={styles.heroBanner}>
           <ThemedText style={styles.heroEyebrow}>FEDERAL CIVILIAN</ThemedText>
-          <ThemedText style={styles.heroTitle}>General Schedule Pay</ThemedText>
-          <ThemedText style={styles.heroBody}>
+          <ThemedText style={[styles.heroTitle, { color: tc.textPrimary }]}>General Schedule Pay</ThemedText>
+          <ThemedText style={[styles.heroBody, { color: tc.textSecondary }]}>
             FY2026 GS pay table — base pay plus locality adjustment for your duty area.
           </ThemedText>
         </ThemedView>
@@ -218,7 +219,7 @@ export default function GSPayCalculatorScreen() {
         <ThemedView type="backgroundElement" style={styles.card}>
           <ThemedText style={styles.cardLabel}>GS GRADE</ThemedText>
           <GradePicker value={grade} onChange={setGrade} />
-          <ThemedText style={styles.cardHint}>
+          <ThemedText style={[styles.cardHint, { color: tc.textSecondary }]}>
             {milEquiv ? `≈ Military equivalent: ${milEquiv}` : ''}
           </ThemedText>
         </ThemedView>
@@ -228,7 +229,7 @@ export default function GSPayCalculatorScreen() {
           <ThemedText style={styles.cardLabel}>WITHIN-GRADE STEP</ThemedText>
           <StepPicker value={step} onChange={setStep} />
           {nextStepDelta !== null && (
-            <ThemedText style={styles.cardHint}>
+            <ThemedText style={[styles.cardHint, { color: tc.textSecondary }]}>
               Next step increase: +{fmt(nextStepDelta)}/yr · Step increases typically require 1–3 years depending on step level
             </ThemedText>
           )}
@@ -239,11 +240,11 @@ export default function GSPayCalculatorScreen() {
           <ThemedText style={styles.cardLabel}>LOCALITY PAY AREA</ThemedText>
           <Pressable
             onPress={() => setShowLocModal(true)}
-            style={styles.localityBtn}>
+            style={[styles.localityBtn, { backgroundColor: tc.background, borderColor: tc.borderColor }]}>
             <View style={{ flex: 1 }}>
-              <ThemedText style={styles.localityBtnLabel}>{locality.label}</ThemedText>
+              <ThemedText style={[styles.localityBtnLabel, { color: tc.textPrimary }]}>{locality.label}</ThemedText>
               {locality.notes && (
-                <ThemedText style={styles.localityBtnNote}>{locality.notes}</ThemedText>
+                <ThemedText style={[styles.localityBtnNote, { color: tc.textSecondary }]}>{locality.notes}</ThemedText>
               )}
             </View>
             <View style={styles.localityBtnRate}>
@@ -256,27 +257,27 @@ export default function GSPayCalculatorScreen() {
         {/* Pay result */}
         <ThemedView type="backgroundElement" style={[styles.card, styles.resultCard]}>
           <ThemedText style={styles.resultGrade}>GS-{grade} STEP {step}</ThemedText>
-          <ThemedText style={styles.resultAnnual}>{fmt(annualPay)}/yr</ThemedText>
-          <ThemedText style={styles.resultMonthly}>{fmt(monthlyPay)}/mo gross</ThemedText>
+          <ThemedText style={[styles.resultAnnual, { color: tc.textPrimary }]}>{fmt(annualPay)}/yr</ThemedText>
+          <ThemedText style={[styles.resultMonthly, { color: tc.textSecondary }]}>{fmt(monthlyPay)}/mo gross</ThemedText>
 
-          <View style={styles.resultDivider} />
+          <View style={[styles.resultDivider, { backgroundColor: tc.borderColor }]} />
 
           <View style={styles.resultRow}>
             <View style={styles.resultCol}>
-              <ThemedText style={styles.resultColLabel}>GROSS MONTHLY</ThemedText>
-              <ThemedText style={styles.resultColValue}>{fmt(monthlyPay)}</ThemedText>
+              <ThemedText style={[styles.resultColLabel, { color: tc.textMuted }]}>GROSS MONTHLY</ThemedText>
+              <ThemedText style={[styles.resultColValue, { color: tc.textPrimary }]}>{fmt(monthlyPay)}</ThemedText>
             </View>
             <View style={styles.resultCol}>
-              <ThemedText style={styles.resultColLabel}>EST. NET MONTHLY</ThemedText>
+              <ThemedText style={[styles.resultColLabel, { color: tc.textMuted }]}>EST. NET MONTHLY</ThemedText>
               <ThemedText style={[styles.resultColValue, { color: Brand.success }]}>{fmt(monthlyNet)}</ThemedText>
             </View>
           </View>
 
           <View style={styles.resultBreakdown}>
-            <ThemedText style={styles.resultBreakdownRow}>
+            <ThemedText style={[styles.resultBreakdownRow, { color: tc.textMuted }]}>
               Base Pay: {fmt(Math.round(annualPay / (1 + locality.rate)))}/yr
             </ThemedText>
-            <ThemedText style={styles.resultBreakdownRow}>
+            <ThemedText style={[styles.resultBreakdownRow, { color: tc.textMuted }]}>
               Locality (+{(locality.rate * 100).toFixed(2)}%): +{fmt(annualPay - Math.round(annualPay / (1 + locality.rate)))}/yr
             </ThemedText>
           </View>
@@ -286,10 +287,10 @@ export default function GSPayCalculatorScreen() {
         <ThemedView type="backgroundElement" style={styles.card}>
           <ThemedText style={styles.cardLabel}>GS-{grade} ALL STEPS — {locality.label.split('/')[0].trim()}</ThemedText>
           <View style={styles.stepsTable}>
-            <View style={styles.stepsHeader}>
-              <ThemedText style={[styles.stepsCell, styles.stepsCellLabel]}>STEP</ThemedText>
-              <ThemedText style={[styles.stepsCell, styles.stepsCellHeader]}>ANNUAL</ThemedText>
-              <ThemedText style={[styles.stepsCell, styles.stepsCellHeader]}>MONTHLY</ThemedText>
+            <View style={[styles.stepsHeader, { borderBottomColor: tc.borderColor }]}>
+              <ThemedText style={[styles.stepsCell, styles.stepsCellLabel, { color: tc.textSecondary }]}>STEP</ThemedText>
+              <ThemedText style={[styles.stepsCell, styles.stepsCellHeader, { color: tc.textMuted }]}>ANNUAL</ThemedText>
+              <ThemedText style={[styles.stepsCell, styles.stepsCellHeader, { color: tc.textMuted }]}>MONTHLY</ThemedText>
             </View>
             {STEPS.map((s) => {
               const ann = getGSPay(grade, s, localityKey);
@@ -299,14 +300,14 @@ export default function GSPayCalculatorScreen() {
                 <Pressable
                   key={s}
                   onPress={() => setStep(s)}
-                  style={[styles.stepsRow, isSelected && styles.stepsRowSelected]}>
-                  <ThemedText style={[styles.stepsCell, styles.stepsCellLabel, isSelected && { color: Brand.primary }]}>
+                  style={[styles.stepsRow, { borderBottomColor: tc.borderColor + '50' }, isSelected && styles.stepsRowSelected]}>
+                  <ThemedText style={[styles.stepsCell, styles.stepsCellLabel, { color: tc.textSecondary }, isSelected && { color: Brand.primary }]}>
                     {s}
                   </ThemedText>
-                  <ThemedText style={[styles.stepsCell, styles.stepsCellValue, isSelected && { color: '#C8D8E8' }]}>
+                  <ThemedText style={[styles.stepsCell, styles.stepsCellValue, { color: tc.textSecondary }, isSelected && { color: tc.textPrimary }]}>
                     {fmt(ann)}
                   </ThemedText>
-                  <ThemedText style={[styles.stepsCell, styles.stepsCellValue, isSelected && { color: Brand.success }]}>
+                  <ThemedText style={[styles.stepsCell, styles.stepsCellValue, { color: tc.textSecondary }, isSelected && { color: Brand.success }]}>
                     {fmt(mon)}
                   </ThemedText>
                 </Pressable>
@@ -330,8 +331,8 @@ export default function GSPayCalculatorScreen() {
             <View key={i} style={styles.benefitRow}>
               <ThemedText style={styles.benefitIcon}>{b.icon}</ThemedText>
               <View style={{ flex: 1, gap: 1 }}>
-                <ThemedText style={styles.benefitLabel}>{b.label}</ThemedText>
-                <ThemedText style={styles.benefitValue}>{b.value}</ThemedText>
+                <ThemedText style={[styles.benefitLabel, { color: tc.textPrimary }]}>{b.label}</ThemedText>
+                <ThemedText style={[styles.benefitValue, { color: tc.textSecondary }]}>{b.value}</ThemedText>
               </View>
             </View>
           ))}
@@ -340,29 +341,29 @@ export default function GSPayCalculatorScreen() {
         {/* Military comparison */}
         <ThemedView type="backgroundElement" style={styles.card}>
           <ThemedText style={styles.cardLabel}>MILITARY vs. GS COMPARISON</ThemedText>
-          <ThemedText style={styles.compareNote}>
+          <ThemedText style={[styles.compareNote, { color: tc.textSecondary }]}>
             GS pay does NOT include tax-free allowances (BAH/BAS). Military total compensation is typically 30–50% higher than base pay alone. Compare your military LES net pay against the GS net estimate above — not gross vs. gross.
           </ThemedText>
           <View style={styles.compareRow}>
             <View style={styles.compareCol}>
-              <ThemedText style={styles.compareColTitle}>GS-{grade} STEP {step}</ThemedText>
-              <ThemedText style={styles.compareColSub}>{locality.label.split('/')[0].trim()}</ThemedText>
+              <ThemedText style={[styles.compareColTitle, { color: tc.textPrimary }]}>GS-{grade} STEP {step}</ThemedText>
+              <ThemedText style={[styles.compareColSub, { color: tc.textMuted }]}>{locality.label.split('/')[0].trim()}</ThemedText>
               <ThemedText style={[styles.compareColValue, { color: Brand.tactical }]}>{fmt(monthlyNet)}/mo net</ThemedText>
             </View>
-            <ThemedText style={styles.compareVs}>vs.</ThemedText>
+            <ThemedText style={[styles.compareVs, { color: tc.textMuted }]}>vs.</ThemedText>
             <View style={styles.compareCol}>
-              <ThemedText style={styles.compareColTitle}>Military</ThemedText>
-              <ThemedText style={styles.compareColSub}>{milEquiv}</ThemedText>
-              <ThemedText style={styles.compareColValue}>See LES on Home tab</ThemedText>
+              <ThemedText style={[styles.compareColTitle, { color: tc.textPrimary }]}>Military</ThemedText>
+              <ThemedText style={[styles.compareColSub, { color: tc.textMuted }]}>{milEquiv}</ThemedText>
+              <ThemedText style={[styles.compareColValue, { color: tc.textSecondary }]}>See LES on Home tab</ThemedText>
             </View>
           </View>
-          <ThemedText style={styles.compareNote}>
+          <ThemedText style={[styles.compareNote, { color: tc.textSecondary }]}>
             ★ GS offers FERS pension + FEHB (transferable after 5 yrs) + job security. Military offers TRICARE, BAH/BAS, 20-yr pension (BRS), and geographic mobility. Both are strong — the right choice depends on your career goals.
           </ThemedText>
         </ThemedView>
 
         <ThemedView type="backgroundElement" style={styles.disclaimer}>
-          <ThemedText style={styles.disclaimerText}>
+          <ThemedText style={[styles.disclaimerText, { color: tc.textMuted }]}>
             GS pay shown is FY2026 estimate based on OPM 2025 base rates + 2.0% raise. Net pay estimate uses single-filer federal brackets only — state taxes and benefit deductions are not included. Verify exact pay at OPM.gov.
           </ThemedText>
         </ThemedView>
@@ -398,47 +399,44 @@ const styles = StyleSheet.create({
     borderLeftWidth: 3, borderLeftColor: Brand.tactical, gap: 4,
   },
   heroEyebrow: { fontSize: 9, fontWeight: '800', letterSpacing: 1.5, color: Brand.tactical },
-  heroTitle:   { fontSize: 20, fontWeight: '900', color: '#C8D8E8' },
-  heroBody:    { fontSize: 12, lineHeight: 18, color: '#4D7A9A', marginTop: 4 },
+  heroTitle:   { fontSize: 20, fontWeight: '900' },
+  heroBody:    { fontSize: 12, lineHeight: 18, marginTop: 4 },
 
   card: { borderRadius: 4, padding: Spacing.three, gap: Spacing.two },
   cardLabel: { fontSize: 9, fontWeight: '800', letterSpacing: 1.2, color: Brand.tactical, marginBottom: 2 },
-  cardHint: { fontSize: 10, color: '#4D7A9A', lineHeight: 15 },
+  cardHint: { fontSize: 10, lineHeight: 15 },
 
   localityBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#04080F',
     borderWidth: 1,
-    borderColor: Brand.border,
     borderRadius: 4,
     paddingHorizontal: Spacing.two,
     paddingVertical: 10,
     gap: Spacing.two,
   },
-  localityBtnLabel: { fontSize: 13, fontWeight: '600', color: '#C8D8E8' },
-  localityBtnNote:  { fontSize: 10, color: '#4D7A9A', marginTop: 1 },
+  localityBtnLabel: { fontSize: 13, fontWeight: '600' },
+  localityBtnNote:  { fontSize: 10, marginTop: 1 },
   localityBtnRate:  { backgroundColor: Brand.tactical + '20', borderRadius: 3, paddingHorizontal: 6, paddingVertical: 2 },
   localityBtnRateText: { fontSize: 11, fontWeight: '700', color: Brand.tactical },
   localityChevron:  { fontSize: 20, color: Brand.tactical },
 
   resultCard: { borderColor: Brand.tactical + '50', alignItems: 'center', gap: Spacing.one },
   resultGrade:   { fontSize: 10, fontWeight: '800', color: Brand.tactical, letterSpacing: 1 },
-  resultAnnual:  { fontSize: 32, fontWeight: '900', color: '#C8D8E8', fontFamily: 'Courier New' },
-  resultMonthly: { fontSize: 14, color: '#4D7A9A' },
-  resultDivider: { width: '100%', height: StyleSheet.hairlineWidth, backgroundColor: Brand.border, marginVertical: 4 },
+  resultAnnual:  { fontSize: 24, fontWeight: '900', fontFamily: 'Courier New' },
+  resultMonthly: { fontSize: 14 },
+  resultDivider: { width: '100%', height: StyleSheet.hairlineWidth, marginVertical: 4 },
   resultRow: { flexDirection: 'row', width: '100%', gap: Spacing.two },
   resultCol: { flex: 1, alignItems: 'center', gap: 3 },
-  resultColLabel: { fontSize: 8, fontWeight: '800', letterSpacing: 0.8, color: '#3D6080' },
-  resultColValue: { fontSize: 16, fontWeight: '700', color: '#C8D8E8', fontFamily: 'Courier New' },
+  resultColLabel: { fontSize: 8, fontWeight: '800', letterSpacing: 0.8 },
+  resultColValue: { fontSize: 16, fontWeight: '700', fontFamily: 'Courier New' },
   resultBreakdown: { alignItems: 'center', gap: 2, marginTop: 4 },
-  resultBreakdownRow: { fontSize: 10, color: '#3D6080' },
+  resultBreakdownRow: { fontSize: 10 },
 
   stepsTable: { gap: 0 },
   stepsHeader: {
     flexDirection: 'row',
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: Brand.border,
     paddingBottom: 4,
     marginBottom: 2,
   },
@@ -446,28 +444,27 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     paddingVertical: 6,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: Brand.border + '50',
     borderRadius: 3,
   },
   stepsRowSelected: { backgroundColor: Brand.primary + '15' },
   stepsCell: { flex: 1, paddingHorizontal: 2 },
-  stepsCellLabel:  { fontSize: 12, color: '#4D7A9A', fontWeight: '700' },
-  stepsCellHeader: { fontSize: 9, fontWeight: '800', letterSpacing: 0.5, color: '#3D6080', textAlign: 'right' },
-  stepsCellValue:  { fontSize: 12, color: '#8AA8C0', fontFamily: 'Courier New', textAlign: 'right' },
+  stepsCellLabel:  { fontSize: 12, fontWeight: '700' },
+  stepsCellHeader: { fontSize: 9, fontWeight: '800', letterSpacing: 0.5, textAlign: 'right' },
+  stepsCellValue:  { fontSize: 12, fontFamily: 'Courier New', textAlign: 'right' },
 
   benefitRow: { flexDirection: 'row', gap: Spacing.two, alignItems: 'flex-start' },
   benefitIcon: { fontSize: 18, width: 26, textAlign: 'center', lineHeight: 22 },
-  benefitLabel: { fontSize: 12, fontWeight: '700', color: '#C8D8E8' },
-  benefitValue: { fontSize: 11, color: '#4D7A9A', lineHeight: 15 },
+  benefitLabel: { fontSize: 12, fontWeight: '700' },
+  benefitValue: { fontSize: 11, lineHeight: 15 },
 
-  compareNote: { fontSize: 11, color: '#4D7A9A', lineHeight: 16 },
+  compareNote: { fontSize: 11, lineHeight: 16 },
   compareRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two, marginVertical: 4 },
-  compareVs: { fontSize: 14, color: '#3D6080', fontWeight: '700' },
+  compareVs: { fontSize: 14, fontWeight: '700' },
   compareCol: { flex: 1, alignItems: 'center', gap: 2 },
-  compareColTitle: { fontSize: 12, fontWeight: '800', color: '#C8D8E8', letterSpacing: 0.3 },
-  compareColSub: { fontSize: 10, color: '#3D6080' },
-  compareColValue: { fontSize: 13, fontWeight: '700', color: '#4D7A9A', fontFamily: 'Courier New', textAlign: 'center' },
+  compareColTitle: { fontSize: 12, fontWeight: '800', letterSpacing: 0.3 },
+  compareColSub: { fontSize: 10 },
+  compareColValue: { fontSize: 13, fontWeight: '700', fontFamily: 'Courier New', textAlign: 'center' },
 
   disclaimer: { borderRadius: 4, padding: Spacing.two },
-  disclaimerText: { fontSize: 10, lineHeight: 15, color: '#3D6080', textAlign: 'center' },
+  disclaimerText: { fontSize: 10, lineHeight: 15, textAlign: 'center' },
 });

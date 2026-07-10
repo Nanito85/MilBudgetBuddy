@@ -15,6 +15,7 @@ const DEFAULTS: UserPreferences = {
   notificationMinute: 0,
   onboarded: false,
   disclaimerAcknowledged: false,
+  hasSeenTutorial: false,
   specialPays: [],
   spouseMonthlyIncome: 0,
   payGrade: undefined,
@@ -53,6 +54,7 @@ interface UserState extends UserPreferences {
   setNotificationTime: (hour: number, minute: number) => void;
   setOnboarded: () => void;
   setDisclaimerAcknowledged: () => void;
+  setHasSeenTutorial: () => void;
   setServiceInfo: (payGrade: PayGrade, lastName: string, nickname: string, yos: number, dateOfEnlistment?: string, dateOfRank?: string) => void;
   setGSInfo: (gsGrade: number, gsStep: number, lastName: string, nickname: string, dateOfEnlistment?: string) => void;
   setLocationFamily: (mhaZip: string, hasSpouse: boolean, numChildren: number) => void;
@@ -86,6 +88,7 @@ function snapshot(get: () => UserState): UserPreferences {
     notificationMinute: s.notificationMinute,
     onboarded: s.onboarded,
     disclaimerAcknowledged: s.disclaimerAcknowledged,
+    hasSeenTutorial: s.hasSeenTutorial,
     specialPays: s.specialPays,
     payGrade: s.payGrade,
     rankVariant: s.rankVariant,
@@ -166,6 +169,11 @@ export const useUserStore = create<UserState>((set, get) => ({
   setDisclaimerAcknowledged: () => {
     set({ disclaimerAcknowledged: true });
     save({ ...snapshot(get), disclaimerAcknowledged: true });
+  },
+
+  setHasSeenTutorial: () => {
+    set({ hasSeenTutorial: true });
+    save({ ...snapshot(get), hasSeenTutorial: true });
   },
 
   setServiceInfo: (payGrade, lastName, nickname, yos, dateOfEnlistment, dateOfRank) => {

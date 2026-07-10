@@ -1,4 +1,4 @@
-import { useRouter } from 'expo-router';
+﻿import { useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -26,11 +26,12 @@ function fmtM(n: number): string {
 }
 
 function TabBtn({ label, active, onPress }: { label: string; active: boolean; onPress: () => void }) {
+  const tc = useThemeColors();
   return (
     <Pressable
       onPress={onPress}
-      style={[styles.tabBtn, active && styles.tabBtnActive]}>
-      <ThemedText style={[styles.tabBtnText, active && styles.tabBtnTextActive]}>
+      style={[styles.tabBtn, { borderColor: tc.borderColor }, active && styles.tabBtnActive]}>
+      <ThemedText style={[styles.tabBtnText, { color: tc.textMuted }, active && styles.tabBtnTextActive]}>
         {label}
       </ThemedText>
     </Pressable>
@@ -38,8 +39,9 @@ function TabBtn({ label, active, onPress }: { label: string; active: boolean; on
 }
 
 function MiniBar({ pct, color }: { pct: number; color: string }) {
+  const tc = useThemeColors();
   return (
-    <View style={styles.miniBarTrack}>
+    <View style={[styles.miniBarTrack, { backgroundColor: tc.borderColor }]}>
       <View style={[styles.miniBarFill, { width: `${Math.min(100, pct * 100)}%` as any, backgroundColor: color }]} />
     </View>
   );
@@ -79,7 +81,7 @@ export default function TspCalculatorScreen() {
     <ThemedView style={{ flex: 1 }}>
       <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
         <Pressable
-          onPress={() => (router.push('/tools'))}
+          onPress={() => (router.back())}
           style={styles.back}>
           <ThemedText style={styles.backChevron}>‹</ThemedText>
         </Pressable>
@@ -380,10 +382,10 @@ const styles = StyleSheet.create({
   tabBar: { flexDirection: 'row', paddingHorizontal: Spacing.three, gap: Spacing.one, marginBottom: Spacing.two },
   tabBtn: {
     flex: 1, paddingVertical: Spacing.two, borderRadius: 4,
-    borderWidth: 1, borderColor: Brand.border, alignItems: 'center',
+    borderWidth: 1, alignItems: 'center',
   },
   tabBtnActive: { backgroundColor: Brand.tactical, borderColor: Brand.tactical },
-  tabBtnText: { fontSize: 11, fontWeight: '800', color: '#3D6080', letterSpacing: 0.5 },
+  tabBtnText: { fontSize: 11, fontWeight: '800', letterSpacing: 0.5 },
   tabBtnTextActive: { color: '#000' },
 
   content: { paddingHorizontal: Spacing.three, gap: Spacing.two + 2 },
@@ -415,7 +417,7 @@ const styles = StyleSheet.create({
   chartYear: { fontSize: 12, width: 40 },
   chartBarArea: { flex: 1 },
   chartAmt: { fontSize: 12, fontWeight: '700', color: Brand.tactical, width: 64, textAlign: 'right' },
-  miniBarTrack: { height: 6, backgroundColor: Brand.border, borderRadius: 3, overflow: 'hidden' },
+  miniBarTrack: { height: 6, borderRadius: 3, overflow: 'hidden' },
   miniBarFill: { height: '100%', borderRadius: 3 },
 
   // Note card

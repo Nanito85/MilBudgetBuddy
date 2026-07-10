@@ -1,5 +1,6 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -7,6 +8,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { BottomTabInset, Brand, Spacing } from '@/constants/theme';
 import { useEntitlement } from '@/hooks/use-entitlement';
+import { useThemeColors } from '@/hooks/use-theme';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -19,400 +21,189 @@ interface MenuItem {
   available: boolean;
   badge?: string;
   color: string;
+  tags?: string[]; // for search
 }
 
-// ── Situation shortcuts ─────────────────────────────────────────────────────────
+const RECENTLY_USED_KEY = 'mbb_recently_used_tools';
+const MAX_RECENT = 6;
 
-interface SituationCard {
-  id: string;
-  icon: string;
-  title: string;
-  subtitle: string;
-  route: string;
-  color: string;
-}
+// ── Tool Categories ─────────────────────────────────────────────────────────────
 
-const SITUATIONS: SituationCard[] = [
-  {
-    id: 'pcs',
-    icon: '🚚',
-    title: 'Moving / PCS',
-    subtitle: 'Compare pay, housing & schools',
-    route: '/pcs-calculator',
-    color: '#1565C0',
-  },
-  {
-    id: 'deploy',
-    icon: '🪖',
-    title: 'Deploying',
-    subtitle: 'Extra pay, tax savings & savings plan',
-    route: '/deployment-calculator',
-    color: '#2E7D32',
-  },
-  {
-    id: 'ets',
-    icon: '🎖️',
-    title: 'Getting Out',
-    subtitle: 'Separation checklist & leave payout',
-    route: '/ets-checklist',
-    color: '#C8A800',
-  },
-  {
-    id: 'housing',
-    icon: '🏠',
-    title: 'Housing Decision',
-    subtitle: 'Look up your BAH, on vs off-base',
-    route: '/bah-guide',
-    color: '#00695C',
-  },
+const PAY_ENTITLEMENTS: MenuItem[] = [
+  { id: 'pay_chart',    icon: '💰', color: '#00695C', title: 'Pay Chart',
+    description: 'FY2026 base pay by rank and years of service — official DFAS rates', route: '/pay-chart', available: true, tags: ['salary','base pay','basic pay'] },
+  { id: 'promotion',    icon: '⭐', color: '#C8A800', title: 'Promotion Pay Predictor', badge: 'New',
+    description: 'See exactly how much your next promotion is worth — monthly, annual, and 5-year impact', route: '/promotion-calculator', available: true, tags: ['promotion','rank','raise','increase','next rank'] },
+  { id: 'bah_guide',   icon: '🏛️', color: '#1565C0', title: 'BAH / OHA Guide',          description: 'Housing allowance lookup by ZIP and rank — includes OCONUS OHA rates',  route: '/bah-guide',          available: true, tags: ['housing','allowance','bah','oha'] },
+  { id: 'tdy_optimizer',icon: '✈️', color: '#C8A800', title: 'TDY Per Diem Optimizer',  description: 'GSA FY2026 per diem rates — see how much you can pocket under the limit', route: '/tdy-optimizer',      available: true, tags: ['tdy','travel','per diem'] },
+  { id: 'gs_pay',      icon: '🏛️', color: '#37474F', title: 'GS Pay Calculator',        description: 'Federal civilian GS pay by grade, step, and locality — with military comparison', route: '/gs-pay-calculator', available: true, tags: ['civilian','gs','federal','general schedule'] },
+  { id: 'leave',       icon: '📅', color: '#0277BD', title: 'Leave Payout Calculator',  description: 'How much your unused leave days are worth when you separate',            route: '/leave-calculator',   available: true, tags: ['leave','terminal','separation'] },
+  { id: 'reserves',    icon: '🎖️', color: '#1565C0', title: 'Reserve & Guard Hub',      description: 'Drill pay, retirement points, TRICARE Reserve Select, mobilization',    route: '/reserves',           available: true, tags: ['reserve','guard','drill','arng','selres'] },
 ];
 
-// ── Data ───────────────────────────────────────────────────────────────────────
-
-const CALCULATORS: MenuItem[] = [
-  {
-    id: 'pay_chart',
-    icon: '💰',
-    title: 'Pay Chart',
-    description: 'Look up your 2026 base pay by rank and years served',
-    route: '/pay-chart',
-    available: true,
-    color: '#00695C',
-  },
-  {
-    id: 'pcs',
-    icon: '🚚',
-    title: 'PCS Calculator',
-    description: 'Compare your housing allowance and total pay between duty stations',
-    route: '/pcs-calculator',
-    available: true,
-    color: '#1565C0',
-  },
-  {
-    id: 'dity',
-    icon: '📦',
-    title: 'Self-Move Pay (DITY)',
-    description: 'Find out how much the military will pay you to move yourself',
-    route: '/dity-calculator',
-    available: true,
-    color: '#6A1B9A',
-  },
-  {
-    id: 'tle',
-    icon: '🏨',
-    title: 'TLA/TLE Reimbursement',
-    description: 'Calculate how much you\'ll receive for hotel stays during a PCS move',
-    route: '/tle-calculator',
-    available: true,
-    color: '#00695C',
-  },
-  {
-    id: 'va_loan',
-    icon: '🏠',
-    title: 'VA Loan Calculator',
-    description: 'See how much home you can afford using your VA home loan benefit',
-    route: '/va-loan-calculator',
-    available: true,
-    color: '#B71C1C',
-  },
-  {
-    id: 'retirement',
-    icon: '🏁',
-    title: 'Retirement Calculator',
-    description: 'Compare the two military retirement systems and project your pension',
-    route: '/retirement-calculator',
-    available: true,
-    color: '#C8A800',
-  },
-  {
-    id: 'deployment',
-    icon: '🪖',
-    title: 'Deployment Pay Calculator',
-    description: 'Calculate extra pay and tax savings while deployed to a combat zone',
-    route: '/deployment-calculator',
-    available: true,
-    color: '#2E7D32',
-  },
-  {
-    id: 'deployment_savings',
-    icon: '💰',
-    title: 'Deployment Savings Planner',
-    description: 'Set a savings goal and plan how to make the most of your deployment pay',
-    route: '/deployment-savings',
-    available: true,
-    color: '#2E7D32',
-  },
-  {
-    id: 'leave',
-    icon: '📅',
-    title: 'Leave Payout Calculator',
-    description: 'See how much your unused leave days are worth when you separate',
-    route: '/leave-calculator',
-    available: true,
-    color: '#0277BD',
-  },
-  {
-    id: 'tsp',
-    icon: '📊',
-    title: 'TSP Retirement Savings',
-    description: 'Understand your military 401(k) — fund choices, matching, and projections',
-    route: '/tsp-calculator',
-    available: true,
-    color: '#00695C',
-  },
-  {
-    id: 'debt',
-    icon: '💳',
-    title: 'Debt Payoff Planner',
-    description: 'Choose the fastest strategy to pay off your debts and save on interest',
-    route: '/debt-payoff',
-    available: true,
-    color: '#B71C1C',
-  },
-  {
-    id: 'sbp',
-    icon: '🛡️',
-    title: 'Survivor Benefit Plan',
-    description: 'Understand the pension protection for your family if you retire or pass away',
-    route: '/sbp-calculator',
-    available: true,
-    color: '#1A237E',
-  },
-  {
-    id: 'tdy_optimizer',
-    icon: '✈️',
-    title: 'TDY Per Diem Optimizer',
-    description: 'Find out how much you can pocket by spending under your daily travel allowance',
-    route: '/tdy-optimizer',
-    available: true,
-    color: '#C8A800',
-  },
-  {
-    id: 'reserves',
-    icon: '🎖️',
-    title: 'Reserve & Guard Hub',
-    description: 'Drill pay calculator, retirement points, TRICARE Reserve Select, and mobilization tools',
-    route: '/reserves',
-    available: true,
-    color: '#1565C0',
-  },
-  {
-    id: 'gs_pay',
-    icon: '🏛️',
-    title: 'GS Pay Calculator',
-    description: 'Look up federal civilian General Schedule pay by grade, step, and locality — with military comparison',
-    route: '/gs-pay-calculator',
-    available: true,
-    color: '#37474F',
-  },
+const PCS_TRAVEL: MenuItem[] = [
+  { id: 'pcs',         icon: '🚚', color: '#1565C0', title: 'PCS Calculator',           description: 'Compare BAH and total pay between duty stations — find your best move',  route: '/pcs-calculator',     available: true, tags: ['pcs','move','duty station','bah compare'] },
+  { id: 'dity',        icon: '📦', color: '#6A1B9A', title: 'Self-Move Pay (DITY/PPM)', description: 'How much the military pays you to move yourself — estimate your profit', route: '/dity-calculator',    available: true, tags: ['dity','ppm','move','truck'] },
+  { id: 'tle',         icon: '🏨', color: '#00695C', title: 'TLA/TLE Reimbursement',   description: 'Hotel reimbursement during a PCS move — how many days and how much',     route: '/tle-calculator',     available: true, tags: ['tle','tla','lodging','hotel','pcs'] },
+  { id: 'offbase',     icon: '🏠', color: '#1565C0', title: 'Off-Base vs Barracks',    description: 'BAH eligibility by grade — break-even rent and net savings analysis',    route: '/offbase-calculator', available: true, tags: ['barracks','off base','bah','housing','rent'] },
+  { id: 'schools',     icon: '🏫', color: '#5C3D11', title: 'Schools Finder',           description: 'Find and compare rated schools near military installations',              route: '/schools-finder',     available: true, tags: ['schools','education','pcs','kids','family'] },
 ];
 
-const MONEY_TOOLS: MenuItem[] = [
-  {
-    id: 'money_flow',
-    icon: '🗺️',
-    title: 'Where to Put Your Money',
-    description: 'A 6-step checklist showing the right order to save and invest each month',
-    route: '/money-flowchart',
-    available: true,
-    color: '#00B27A',
-  },
-  {
-    id: 'savings_rate',
-    icon: '🎯',
-    title: 'Savings Rate Tracker',
-    description: 'See what percentage of your income you\'re saving and how close you are to financial freedom',
-    route: '/savings-rate',
-    available: true,
-    color: '#0277BD',
-  },
-  {
-    id: 'roth_ira',
-    icon: '📈',
-    title: 'Roth IRA Tracker',
-    description: 'Track your Roth IRA balance and see how it grows over 20–30 years',
-    route: '/roth-ira',
-    available: true,
-    color: '#6A1B9A',
-  },
-  {
-    id: 'car_loan',
-    icon: '🚗',
-    title: 'Car Loan Reality Check',
-    description: 'Check if a car payment fits your budget before you sign at the dealership',
-    route: '/car-loan',
-    available: true,
-    color: '#D32F2F',
-  },
-  {
-    id: 'offbase',
-    icon: '🏠',
-    title: 'Off-Base vs Barracks',
-    description: 'Find out if you\'re eligible to live off-base and whether it makes financial sense',
-    route: '/offbase-calculator',
-    available: true,
-    color: '#1565C0',
-  },
+const BUDGET_WEALTH: MenuItem[] = [
+  { id: 'debt',        icon: '💳', color: '#B71C1C', title: 'Debt Payoff Planner',      description: 'Avalanche vs snowball — fastest path to debt-free with your payoff date', route: '/debt-payoff',        available: true, tags: ['debt','credit card','loans','payoff'] },
+  { id: 'money_flow',  icon: '🗺️', color: '#00B27A', title: 'Where to Put Your Money',  description: '6-step order of operations for saving and investing each month',           route: '/money-flowchart',   available: true, tags: ['savings','invest','priority','order'] },
+  { id: 'savings_rate',icon: '🎯', color: '#0277BD', title: 'Savings Rate Tracker',     description: 'Your savings percentage and how close you are to financial independence', route: '/savings-rate',       available: true, tags: ['savings','fire','fi','financial freedom'] },
+  { id: 'roth_ira',    icon: '📈', color: '#6A1B9A', title: 'Roth IRA Tracker',         description: 'FY2026 contribution limits, balance tracker, and 30-year projection',    route: '/roth-ira',           available: true, tags: ['roth','ira','retirement','invest'] },
+  { id: 'car_loan',    icon: '🚗', color: '#D32F2F', title: 'Car Loan Reality Check',   description: 'True cost of a car payment — monthly burden and TSP opportunity cost',   route: '/car-loan',           available: true, tags: ['car','loan','auto','vehicle','payment'] },
+  { id: 'net_worth',   icon: '📈', color: '#00C8A8', title: 'Net Worth Tracker',        description: 'Assets vs liabilities — track your one true financial number over time', route: '/net-worth',          available: true, tags: ['net worth','assets','liabilities','wealth'] },
+];
+
+const RETIREMENT_VA: MenuItem[] = [
+  { id: 'retirement',  icon: '🏁', color: '#C8A800', title: 'Retirement Calculator',    description: 'BRS vs High-3 side by side — pension, TSP, and break-even analysis',   route: '/retirement-calculator', available: true, tags: ['retirement','brs','high3','pension','20 year'] },
+  { id: 'tsp',         icon: '📊', color: '#00695C', title: 'TSP Deep Dive',            description: 'Fund guide, BRS match gap, and 30-year projection by allocation',        route: '/tsp-calculator',     available: true, tags: ['tsp','401k','retirement','invest','funds'] },
+  { id: 'sbp',         icon: '🛡️', color: '#1A237E', title: 'Survivor Benefit Plan',   description: 'SBP premium, 55% annuity, break-even, and actuarial scenario',           route: '/sbp-calculator',     available: true, tags: ['sbp','survivor','spouse','pension','widow'] },
+  { id: 'va_loan',     icon: '🏠', color: '#B71C1C', title: 'VA Loan Calculator',       description: 'How much home you can afford using your VA benefit — no PMI',            route: '/va-loan-calculator', available: true, tags: ['va loan','home','mortgage','house','buy'] },
+  { id: 'va_disability',icon: '🎖️',color: '#B71C1C', title: 'VA Disability Calculator', description: 'Combined rating using the official VA formula — FY2026 compensation',   route: '/va-disability',      available: true, tags: ['va','disability','rating','compensation','100%'] },
+  { id: 'gi_bill',     icon: '🎓', color: '#1A237E', title: 'GI Bill Calculator',       description: 'Chapter 33 BAH by ZIP, eligibility tiers, and remaining benefit',        route: '/gi-bill-calculator', available: true, tags: ['gi bill','education','college','chapter 33','mha'] },
+];
+
+const DEPLOYMENT: MenuItem[] = [
+  { id: 'deployment',         icon: '🪖', color: '#2E7D32', title: 'Deployment Pay Calculator',  description: 'IDP, CZTE, FSA, SDP — your full tax-free deployment pay breakdown',   route: '/deployment-calculator', available: true, tags: ['deploy','combat','idp','czte','tax free'] },
+  { id: 'deployment_savings', icon: '💰', color: '#2E7D32', title: 'Deployment Savings Planner', description: 'CZTE/IDP toggles, SDP eligibility, and savings goal tracker',          route: '/deployment-savings',    available: true, tags: ['deploy','savings','goal','czte','sdp'] },
 ];
 
 const RESOURCES: MenuItem[] = [
-  {
-    id: 'bah_guide',
-    icon: '🏛️',
-    title: 'Housing Allowance (BAH) Guide',
-    description: 'Look up your monthly housing allowance by location and rank — 2026 rates',
-    route: '/bah-guide',
-    available: true,
-    color: '#1565C0',
-  },
-  {
-    id: 'tax_guide',
-    icon: '🧾',
-    title: 'Military Tax Guide',
-    description: 'Learn what military pay is tax-free and how to file as a servicemember',
-    route: '/tax-guide',
-    available: true,
-    color: '#1A237E',
-  },
-  {
-    id: 'scra',
-    icon: '⚖️',
-    title: 'Legal Protections Guide (SCRA)',
-    description: 'Your rights — interest rate cap at 6%, lease breaks, and eviction protection',
-    route: '/scra-guide',
-    available: true,
-    color: '#1A237E',
-  },
-  {
-    id: 'ets',
-    icon: '🎖️',
-    title: 'Separation Checklist',
-    description: 'Step-by-step transition guide starting 12 months before your last day',
-    route: '/ets-checklist',
-    available: true,
-    color: '#2E7D32',
-  },
-  {
-    id: 'tricare',
-    icon: '🏥',
-    title: 'TRICARE Healthcare Estimator',
-    description: 'Compare your military healthcare plan options and estimate your costs',
-    route: '/tricare-estimator',
-    available: true,
-    color: '#00695C',
-  },
-  {
-    id: 'les',
-    icon: '📄',
-    title: 'Pay Statement (LES) Decoder',
-    description: 'Understand every line on your military pay statement and verify the math',
-    route: '/les-decoder',
-    available: true,
-    color: '#1A237E',
-  },
-  {
-    id: 'credit',
-    icon: '📊',
-    title: 'Credit Score Guide',
-    description: 'Learn how your credit score works and the steps to build strong credit',
-    route: '/credit-score',
-    available: true,
-    color: '#C8A800',
-  },
-  {
-    id: 'invest',
-    icon: '📈',
-    title: 'Investing Basics',
-    description: 'Plain-English guide to building wealth with index funds and your TSP',
-    route: '/invest-101',
-    available: true,
-    color: '#2A9D8F',
-  },
-  {
-    id: 'schools',
-    icon: '🏫',
-    title: 'Schools Finder',
-    description: 'Find and compare rated schools near military installations',
-    route: '/schools-finder',
-    available: true,
-    color: '#5C3D11',
-  },
-  {
-    id: 'va_disability',
-    icon: '🎖️',
-    title: 'VA Disability Calculator',
-    description: 'Calculate your combined disability rating and monthly compensation',
-    route: '/va-disability',
-    available: true,
-    color: '#B71C1C',
-  },
-  {
-    id: 'gi_bill',
-    icon: '🎓',
-    title: 'GI Bill Benefits Calculator',
-    description: 'Calculate your education benefits — housing allowance, tuition coverage, and time remaining',
-    route: '/gi-bill-calculator',
-    available: true,
-    color: '#1A237E',
-  },
+  { id: 'les',         icon: '📄', color: '#1A237E', title: 'LES Decoder',               description: 'Every line on your pay statement explained — verify your math',          route: '/les-decoder',        available: true, tags: ['les','pay statement','entitlements','deductions'] },
+  { id: 'tax_guide',   icon: '🧾', color: '#1A237E', title: 'Military Tax Guide',         description: 'What military pay is tax-free, how to file, and state exemptions',       route: '/tax-guide',          available: true, tags: ['tax','irs','state','w2','combat zone'] },
+  { id: 'scra',        icon: '⚖️', color: '#1A237E', title: 'SCRA Legal Protections',    description: '6% interest cap, lease breaks, eviction protection — know your rights',  route: '/scra-guide',         available: true, tags: ['scra','legal','rights','interest','lease'] },
+  { id: 'tricare',     icon: '🏥', color: '#00695C', title: 'TRICARE Estimator',          description: 'Compare Prime, Select, Overseas — copays, deductibles, out-of-pocket',  route: '/tricare-estimator',  available: true, tags: ['tricare','health','insurance','prime','select'] },
+  { id: 'credit',      icon: '📊', color: '#C8A800', title: 'Credit Score Guide',         description: 'How your score works, what hurts it, and the roadmap to 800+',           route: '/credit-score',       available: true, tags: ['credit','score','fico','report','loan'] },
+  { id: 'invest',      icon: '📈', color: '#2A9D8F', title: 'Investing Basics',           description: 'Index funds, TSP, Roth IRA — plain-English guide for service members',   route: '/invest-101',         available: true, tags: ['invest','index fund','etf','stock','market'] },
+  { id: 'ets',         icon: '🎖️', color: '#2E7D32', title: 'Separation Checklist',      description: '12-month step-by-step transition timeline for getting out',               route: '/ets-checklist',      available: true, tags: ['ets','separation','transition','dd214','tap'] },
+];
+
+const COMMAND_TOOLS: MenuItem[] = [
+  { id: 'life_events',  icon: '📋', color: '#1565C0', title: 'Life Event Checklists',      description: 'PCS, promotion, deployment, marriage, newborn — mission-critical checklists', route: '/life-events',    available: true, tags: ['pcs','promotion','deploy','marriage','baby','checklist'] },
+  { id: 'command_mode', icon: '🎖️', color: Brand.accent, title: 'Financial Readiness Worksheet', description: 'Self-generated pay worksheet — voluntary disclosure to chain of command', route: '/command-mode', available: true, tags: ['command','readiness','worksheet','export','share'] },
+];
+
+const ALL_TOOLS = [...PAY_ENTITLEMENTS, ...PCS_TRAVEL, ...BUDGET_WEALTH, ...RETIREMENT_VA, ...DEPLOYMENT, ...RESOURCES, ...COMMAND_TOOLS];
+
+// ── Category definitions ────────────────────────────────────────────────────────
+
+interface Category {
+  id: string;
+  label: string;
+  eyebrow: string;
+  color: string;
+  items: MenuItem[];
+}
+
+const CATEGORIES: Category[] = [
+  { id: 'pay',        label: 'PAY & ENTITLEMENTS',    eyebrow: '// MILITARY COMPENSATION',  color: '#00695C', items: PAY_ENTITLEMENTS },
+  { id: 'pcs',        label: 'PCS & TRAVEL',          eyebrow: '// MOVES & REIMBURSEMENTS', color: '#1565C0', items: PCS_TRAVEL },
+  { id: 'budget',     label: 'BUDGET & WEALTH',       eyebrow: '// PERSONAL FINANCE',       color: '#B71C1C', items: BUDGET_WEALTH },
+  { id: 'retirement', label: 'RETIREMENT & VETERANS', eyebrow: '// LONG-TERM READINESS',    color: '#C8A800', items: RETIREMENT_VA },
+  { id: 'deployment', label: 'DEPLOYMENT',            eyebrow: '// COMBAT ZONE FINANCE',    color: '#2E7D32', items: DEPLOYMENT },
+  { id: 'resources',  label: 'GUIDES & RESOURCES',    eyebrow: '// REFERENCE & EDUCATION',  color: '#1A237E', items: RESOURCES },
+  { id: 'command',    label: 'FINANCIAL COMMAND',     eyebrow: '// READINESS & OPERATIONS', color: Brand.accent, items: COMMAND_TOOLS },
+];
+
+// ── Quick Situations ────────────────────────────────────────────────────────────
+
+const SITUATIONS = [
+  { id: 'pcs',     icon: '🚚', title: 'Moving / PCS',       subtitle: 'Compare pay, housing & schools', route: '/pcs-calculator',     color: '#1565C0' },
+  { id: 'deploy',  icon: '🪖', title: 'Deploying',           subtitle: 'Extra pay, tax savings & goals', route: '/deployment-calculator', color: '#2E7D32' },
+  { id: 'ets',     icon: '🎖️', title: 'Getting Out',         subtitle: 'Separation checklist & leave',   route: '/ets-checklist',      color: '#C8A800' },
+  { id: 'housing', icon: '🏠', title: 'Housing Decision',    subtitle: 'BAH lookup, on vs off-base',     route: '/bah-guide',          color: '#00695C' },
 ];
 
 // ── Components ─────────────────────────────────────────────────────────────────
 
-function SectionLabel({ text }: { text: string }) {
-  return (
-    <View style={styles.sectionLabelRow}>
-      <View style={styles.sectionLine} />
-      <ThemedText type="label" style={styles.sectionLabel}>{text}</ThemedText>
-      <View style={styles.sectionLine} />
-    </View>
-  );
-}
-
 function MenuCard({ item, locked, onPress }: { item: MenuItem; locked: boolean; onPress: () => void }) {
-  const isComingSoon = !item.available;
-  const dimmed = isComingSoon || locked;
+  const tc = useThemeColors();
+  const dimmed = locked;
   return (
     <Pressable
       onPress={onPress}
-      style={({ pressed }) => [styles.card, dimmed && styles.cardLocked, pressed && !dimmed && { opacity: 0.7 }]}>
-      <View style={[styles.cardAccent, { backgroundColor: dimmed ? Brand.border : item.color }]} />
+      style={({ pressed }) => [styles.card, { backgroundColor: tc.surface, borderBottomColor: tc.borderColor }, dimmed && styles.cardLocked, pressed && !dimmed && { opacity: 0.7 }]}>
+      <View style={[styles.cardAccent, { backgroundColor: dimmed ? tc.borderColor : item.color }]} />
       <View style={[styles.iconWrap, { backgroundColor: item.color + (dimmed ? '10' : '20') }]}>
         <ThemedText style={styles.cardIcon}>{item.icon}</ThemedText>
       </View>
       <View style={styles.cardText}>
-        <ThemedText style={[styles.cardTitle, dimmed && styles.cardTitleLocked]}>{item.title.toUpperCase()}</ThemedText>
-        <ThemedText type="label" style={styles.cardDesc}>{item.description}</ThemedText>
+        <ThemedText style={[styles.cardTitle, { color: tc.textPrimary }, dimmed && [styles.cardTitleLocked, { color: tc.textSecondary }]]}>{item.title}</ThemedText>
+        <ThemedText type="label" style={[styles.cardDesc, { color: tc.textSecondary }]}>{item.description}</ThemedText>
       </View>
       {item.badge && !locked && (
-        <View style={[styles.badge,
-          item.badge === 'New' ? styles.badgeNew : styles.badgeSoon]}>
-          <ThemedText type="label" style={[styles.badgeText,
-            item.badge === 'New' ? styles.badgeTextNew : styles.badgeTextSoon]}>
+        <View style={[styles.badge, item.badge === 'New' ? styles.badgeNew : { backgroundColor: tc.borderColor }]}>
+          <ThemedText type="label" style={[styles.badgeText, item.badge === 'New' ? styles.badgeTextNew : { color: tc.textSecondary }]}>
             {item.badge.toUpperCase()}
           </ThemedText>
         </View>
       )}
-      {locked && !isComingSoon && (
+      {locked ? (
         <View style={styles.lockBadge}>
           <ThemedText style={styles.lockIcon}>🔒</ThemedText>
           <ThemedText style={styles.lockLabel}>PRO</ThemedText>
         </View>
+      ) : (
+        <ThemedText style={styles.chevron}>›</ThemedText>
       )}
-      {!dimmed && <ThemedText style={styles.chevron}>›</ThemedText>}
     </Pressable>
+  );
+}
+
+function CategorySection({
+  category, canUseTool, onPress,
+}: {
+  category: Category;
+  canUseTool: (id: string) => boolean;
+  onPress: (item: MenuItem) => void;
+}) {
+  const tc = useThemeColors();
+  const [expanded, setExpanded] = useState(false);
+  return (
+    <View style={[styles.categoryBlock, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
+      <Pressable onPress={() => setExpanded(v => !v)} style={styles.categoryHeader} hitSlop={8}>
+        <View style={[styles.categoryDot, { backgroundColor: category.color }]} />
+        <View style={{ flex: 1 }}>
+          <ThemedText style={[styles.categoryEyebrow, { color: tc.textMuted }]}>{category.eyebrow}</ThemedText>
+          <ThemedText style={[styles.categoryLabel, { color: category.color }]}>{category.label}</ThemedText>
+        </View>
+        <ThemedText style={[styles.categoryCount, { color: category.color }]}>{category.items.length}</ThemedText>
+        <ThemedText style={[styles.categoryChevron, { color: category.color }]}>{expanded ? '▲' : '▼'}</ThemedText>
+      </Pressable>
+      {expanded && (
+        <View style={[styles.categoryItems, { borderTopColor: tc.borderColor }]}>
+          {category.items.map((item) => (
+            <MenuCard key={item.id} item={item} locked={!canUseTool(item.id)} onPress={() => onPress(item)} />
+          ))}
+        </View>
+      )}
+    </View>
   );
 }
 
 // ── Main Screen ────────────────────────────────────────────────────────────────
 
-const ALL_TOOLS = [...CALCULATORS, ...MONEY_TOOLS, ...RESOURCES];
-
-export default function MoreScreen() {
+export default function ToolsScreen() {
   const router = useRouter();
+  const tc = useThemeColors();
   const { canUseTool, isPro, isPromo, daysLeft } = useEntitlement();
-
   const [searchQuery, setSearchQuery] = useState('');
+  const [recentIds, setRecentIds] = useState<string[]>([]);
+
+  useEffect(() => {
+    AsyncStorage.getItem(RECENTLY_USED_KEY).then((raw) => {
+      if (raw) setRecentIds(JSON.parse(raw));
+    });
+  }, []);
+
+  const recentTools = useMemo(
+    () => recentIds.map((id) => ALL_TOOLS.find((t) => t.id === id)).filter(Boolean) as MenuItem[],
+    [recentIds],
+  );
 
   const searchResults = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
@@ -420,7 +211,8 @@ export default function MoreScreen() {
     return ALL_TOOLS.filter(
       (t) =>
         t.title.toLowerCase().includes(q) ||
-        t.description.toLowerCase().includes(q),
+        t.description.toLowerCase().includes(q) ||
+        t.tags?.some((tag) => tag.includes(q)),
     );
   }, [searchQuery]);
 
@@ -432,6 +224,10 @@ export default function MoreScreen() {
       router.push('/upgrade' as any);
       return;
     }
+    // Track recently used
+    const updated = [item.id, ...recentIds.filter((id) => id !== item.id)].slice(0, MAX_RECENT);
+    setRecentIds(updated);
+    AsyncStorage.setItem(RECENTLY_USED_KEY, JSON.stringify(updated));
     router.push(item.route as any);
   };
 
@@ -442,36 +238,36 @@ export default function MoreScreen() {
         contentContainerStyle={[styles.content, { paddingBottom: BottomTabInset + Spacing.five }]}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled">
+
         <SafeAreaView>
           <ThemedText type="label" style={styles.eyebrow}>// FINANCE OPERATIONS CENTER</ThemedText>
-          <ThemedText style={styles.heading}>OPS TOOLKIT</ThemedText>
-          <ThemedText type="label" style={styles.subhead}>CALCULATORS · RESOURCES · INTEL</ThemedText>
+          <ThemedText style={[styles.heading, { color: tc.textPrimary }]}>OPS TOOLKIT</ThemedText>
+          <ThemedText type="label" style={[styles.subhead, { color: tc.textSecondary }]}>{ALL_TOOLS.length} TOOLS · CALCULATORS · INTEL</ThemedText>
         </SafeAreaView>
 
-        {/* Search bar */}
-        <View style={styles.searchWrap}>
+        {/* Search */}
+        <View style={[styles.searchWrap, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
           <ThemedText style={styles.searchIcon}>🔍</ThemedText>
           <TextInput
-            style={styles.searchInput}
+            style={[styles.searchInput, { color: tc.textPrimary }]}
             value={searchQuery}
             onChangeText={setSearchQuery}
             placeholder="Search all tools..."
-            placeholderTextColor="#3D6080"
+            placeholderTextColor={tc.textMuted}
             returnKeyType="search"
-            clearButtonMode="while-editing"
           />
           {searchQuery.length > 0 && (
             <Pressable onPress={() => setSearchQuery('')} hitSlop={8}>
-              <ThemedText style={styles.searchClear}>✕</ThemedText>
+              <ThemedText style={[styles.searchClear, { color: tc.textMuted }]}>✕</ThemedText>
             </Pressable>
           )}
         </View>
 
+        {/* ── SEARCH RESULTS ── */}
         {isSearching ? (
-          /* Search results */
           <View style={styles.list}>
             {searchResults.length === 0 ? (
-              <ThemedText style={styles.searchEmpty}>No tools match "{searchQuery}"</ThemedText>
+              <ThemedText style={[styles.searchEmpty, { color: tc.textMuted }]}>No tools match "{searchQuery}"</ThemedText>
             ) : (
               searchResults.map((item) => (
                 <MenuCard key={item.id} item={item} locked={!canUseTool(item.id)} onPress={() => handlePress(item)} />
@@ -480,119 +276,70 @@ export default function MoreScreen() {
           </View>
         ) : (
           <>
-        {/* Common Situations */}
-        <SectionLabel text="I WILL BE..." />
-        <View style={styles.situationGrid}>
-          {SITUATIONS.map((s) => (
+            {/* Quick Situations */}
+            <View style={styles.sectionHeaderRow}>
+              <View style={[styles.sectionLine, { backgroundColor: tc.borderColor }]} />
+              <ThemedText style={[styles.sectionLabelText, { color: tc.textSecondary }]}>I WILL BE...</ThemedText>
+              <View style={[styles.sectionLine, { backgroundColor: tc.borderColor }]} />
+            </View>
+            <View style={styles.situationGrid}>
+              {SITUATIONS.map((s) => (
+                <Pressable
+                  key={s.id}
+                  onPress={() => router.push(s.route as any)}
+                  style={({ pressed }) => [styles.situationCard, { backgroundColor: tc.surface, borderColor: s.color + '40' }, pressed && { opacity: 0.7 }]}>
+                  <View style={[styles.situationIconWrap, { backgroundColor: s.color + '20' }]}>
+                    <ThemedText style={styles.situationIcon}>{s.icon}</ThemedText>
+                  </View>
+                  <ThemedText style={[styles.situationTitle, { color: s.color }]}>{s.title.toUpperCase()}</ThemedText>
+                  <ThemedText type="label" style={[styles.situationSub, { color: tc.textSecondary }]}>{s.subtitle}</ThemedText>
+                </Pressable>
+              ))}
+            </View>
+
+
+            {/* Recently Used */}
+            {recentTools.length > 0 && (
+              <>
+                <View style={styles.sectionHeaderRow}>
+                  <View style={[styles.sectionLine, { backgroundColor: tc.borderColor }]} />
+                  <ThemedText style={[styles.sectionLabelText, { color: tc.textSecondary }]}>RECENTLY USED</ThemedText>
+                  <View style={[styles.sectionLine, { backgroundColor: tc.borderColor }]} />
+                </View>
+                <View style={styles.list}>
+                  {recentTools.map((item) => (
+                    <MenuCard key={item.id} item={item} locked={!canUseTool(item.id)} onPress={() => handlePress(item)} />
+                  ))}
+                </View>
+              </>
+            )}
+
+            {/* Categories */}
+            {CATEGORIES.map((cat) => (
+              <CategorySection
+                key={cat.id}
+                category={cat}
+                canUseTool={canUseTool}
+                onPress={handlePress}
+              />
+            ))}
+
+            {/* Settings */}
+            <View style={styles.sectionHeaderRow}>
+              <View style={[styles.sectionLine, { backgroundColor: tc.borderColor }]} />
+              <ThemedText style={[styles.sectionLabelText, { color: tc.textSecondary }]}>APP</ThemedText>
+              <View style={[styles.sectionLine, { backgroundColor: tc.borderColor }]} />
+            </View>
             <Pressable
-              key={s.id}
-              onPress={() => router.push(s.route as any)}
-              style={({ pressed }) => [styles.situationCard, { borderColor: s.color + '40' }, pressed && { opacity: 0.7 }]}>
-              <View style={[styles.situationIconWrap, { backgroundColor: s.color + '20' }]}>
-                <ThemedText style={styles.situationIcon}>{s.icon}</ThemedText>
+              onPress={() => router.push('/settings' as any)}
+              style={({ pressed }) => [styles.shortcutRow, { backgroundColor: tc.surface }, pressed && { opacity: 0.7 }]}>
+              <ThemedText style={styles.shortcutIcon}>⚙️</ThemedText>
+              <View style={styles.shortcutText}>
+                <ThemedText style={[styles.shortcutTitle, { color: tc.textPrimary }]}>SETTINGS</ThemedText>
+                <ThemedText type="label" style={[styles.shortcutDesc, { color: tc.textSecondary }]}>Profile, text size, notifications, quick-access tiles</ThemedText>
               </View>
-              <ThemedText style={[styles.situationTitle, { color: s.color }]}>{s.title.toUpperCase()}</ThemedText>
-              <ThemedText type="label" style={styles.situationSub}>{s.subtitle}</ThemedText>
+              <ThemedText style={styles.chevron}>›</ThemedText>
             </Pressable>
-          ))}
-        </View>
-
-        {/* Promo / upgrade banner */}
-        {!isPro && (
-          <Pressable
-            onPress={() => router.push('/upgrade' as any)}
-            style={({ pressed }) => [styles.upgradeBanner, pressed && { opacity: 0.7 }]}>
-            <ThemedText style={styles.upgradeBannerIcon}>🔓</ThemedText>
-            <View style={{ flex: 1 }}>
-              <ThemedText style={styles.upgradeBannerTitle}>UNLOCK ALL TOOLS — {'→'} Upgrade to Pro</ThemedText>
-              <ThemedText style={styles.upgradeBannerSub}>Free access to 4 tools. Pro unlocks everything.</ThemedText>
-            </View>
-          </Pressable>
-        )}
-        {isPromo && daysLeft > 0 && (
-          <Pressable
-            onPress={() => router.push('/upgrade' as any)}
-            style={({ pressed }) => [styles.promoBanner, pressed && { opacity: 0.7 }]}>
-            <ThemedText style={styles.promoBannerIcon}>⏳</ThemedText>
-            <View style={{ flex: 1 }}>
-              <ThemedText style={styles.promoBannerTitle}>EARLY ACCESS — {daysLeft} day{daysLeft !== 1 ? 's' : ''} left</ThemedText>
-              <ThemedText style={styles.promoBannerSub}>Full access while your free trial lasts. Tap to lock it in.</ThemedText>
-            </View>
-          </Pressable>
-        )}
-
-        {/* Calculators */}
-        <SectionLabel text="CALCULATORS" />
-        <View style={styles.list}>
-          {CALCULATORS.map((item) => (
-            <MenuCard key={item.id} item={item} locked={!canUseTool(item.id)} onPress={() => handlePress(item)} />
-          ))}
-        </View>
-
-        {/* Money Planning Tools */}
-        <SectionLabel text="MONEY PLANNING" />
-        <View style={styles.list}>
-          {MONEY_TOOLS.map((item) => (
-            <MenuCard key={item.id} item={item} locked={!canUseTool(item.id)} onPress={() => handlePress(item)} />
-          ))}
-        </View>
-
-        {/* Resources */}
-        <SectionLabel text="GUIDES & RESOURCES" />
-        <View style={styles.list}>
-          {RESOURCES.map((item) => (
-            <MenuCard key={item.id} item={item} locked={!canUseTool(item.id)} onPress={() => handlePress(item)} />
-          ))}
-        </View>
-
-        {/* Net Worth */}
-        <SectionLabel text="FINANCIAL TRACKING" />
-        <Pressable
-          onPress={() => router.push('/net-worth' as any)}
-          style={({ pressed }) => [styles.budgetShortcut, { borderColor: Brand.tactical + '40' }, pressed && { opacity: 0.7 }]}>
-          <ThemedText style={styles.budgetIcon}>📈</ThemedText>
-          <View style={styles.budgetText}>
-            <ThemedText style={styles.budgetTitle}>NET WORTH TRACKER</ThemedText>
-            <ThemedText type="label" style={styles.budgetDesc}>Assets vs liabilities — your one number</ThemedText>
-          </View>
-          <ThemedText style={styles.chevron}>›</ThemedText>
-        </Pressable>
-
-        {/* Life Events */}
-        <SectionLabel text="LIFE EVENTS" />
-        <Pressable
-          onPress={() => router.push('/life-events' as any)}
-          style={({ pressed }) => [styles.budgetShortcut, { borderColor: '#1565C0' + '40' }, pressed && { opacity: 0.7 }]}>
-          <ThemedText style={styles.budgetIcon}>📋</ThemedText>
-          <View style={styles.budgetText}>
-            <ThemedText style={styles.budgetTitle}>LIFE EVENT CHECKLISTS</ThemedText>
-            <ThemedText type="label" style={styles.budgetDesc}>PCS, promotion, deployment, marriage & more</ThemedText>
-          </View>
-          <ThemedText style={styles.chevron}>›</ThemedText>
-        </Pressable>
-        <Pressable
-          onPress={() => router.push('/command-mode' as any)}
-          style={({ pressed }) => [styles.budgetShortcut, { borderColor: Brand.border }, pressed && { opacity: 0.7 }]}>
-          <ThemedText style={styles.budgetIcon}>🎖️</ThemedText>
-          <View style={styles.budgetText}>
-            <ThemedText style={styles.budgetTitle}>COMMAND FINANCIAL READINESS</ThemedText>
-            <ThemedText type="label" style={styles.budgetDesc}>Financial readiness worksheet — export for your chain of command</ThemedText>
-          </View>
-          <ThemedText style={styles.chevron}>›</ThemedText>
-        </Pressable>
-
-        {/* Settings */}
-        <SectionLabel text="APP" />
-        <Pressable
-          onPress={() => router.push('/settings' as any)}
-          style={({ pressed }) => [styles.budgetShortcut, { borderColor: Brand.border }, pressed && { opacity: 0.7 }]}>
-          <ThemedText style={styles.budgetIcon}>⚙️</ThemedText>
-          <View style={styles.budgetText}>
-            <ThemedText style={styles.budgetTitle}>SETTINGS</ThemedText>
-            <ThemedText type="label" style={styles.budgetDesc}>Customize home screen quick-access tiles</ThemedText>
-          </View>
-          <ThemedText style={styles.chevron}>›</ThemedText>
-        </Pressable>
           </>
         )}
       </ScrollView>
@@ -601,131 +348,108 @@ export default function MoreScreen() {
   );
 }
 
+// ── Styles ─────────────────────────────────────────────────────────────────────
+
 const styles = StyleSheet.create({
   container: { flex: 1 },
   content: { paddingHorizontal: Spacing.three, gap: Spacing.three },
 
+  eyebrow: { color: Brand.tactical, fontSize: 10, marginTop: Spacing.two },
+  heading: { fontSize: 22, fontWeight: '900', letterSpacing: 1, marginTop: 4 },
+  subhead: { fontSize: 10, marginTop: 2 },
+
   searchWrap: {
     flexDirection: 'row', alignItems: 'center', gap: Spacing.two,
-    backgroundColor: '#080E1C', borderWidth: 1, borderColor: Brand.border,
+    borderWidth: 1,
     borderRadius: 8, paddingHorizontal: Spacing.three, paddingVertical: 10,
   },
   searchIcon: { fontSize: 16 },
-  searchInput: { flex: 1, fontSize: 15, color: '#C8D8E8' },
-  searchClear: { fontSize: 14, color: '#3D6080', paddingHorizontal: 4 },
-  searchEmpty: { color: '#3D6080', fontSize: 13, textAlign: 'center', paddingVertical: Spacing.four },
+  searchInput: { flex: 1, fontSize: 15 },
+  searchClear: { fontSize: 14, paddingHorizontal: 4 },
+  searchEmpty: { fontSize: 13, textAlign: 'center', paddingVertical: Spacing.four },
 
-  eyebrow: { color: Brand.tactical, fontSize: 10, marginTop: Spacing.two },
-  heading: { fontSize: 22, fontWeight: '900', letterSpacing: 1, color: '#C8D8E8', marginTop: 4 },
-  subhead: { color: '#6B92B0', fontSize: 10, marginTop: 2 },
-
-  sectionLabelRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
-  sectionLine: { flex: 1, height: StyleSheet.hairlineWidth, backgroundColor: Brand.border },
-  sectionLabel: { color: '#6B92B0', fontSize: 10, letterSpacing: 0.5 },
+  sectionHeaderRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
+  sectionLine: { flex: 1, height: StyleSheet.hairlineWidth },
+  sectionLabelText: { fontSize: 10, letterSpacing: 0.5, fontWeight: '700' },
 
   situationGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two },
   situationCard: {
     width: '47.5%',
-    backgroundColor: '#080E1C',
-    borderWidth: StyleSheet.hairlineWidth,
-    borderRadius: 6,
-    padding: Spacing.two,
-    gap: Spacing.one,
+    borderWidth: StyleSheet.hairlineWidth, borderRadius: 6,
+    padding: Spacing.two, gap: Spacing.one,
   },
-  situationIconWrap: {
-    width: 36,
-    height: 36,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 2,
-  },
+  situationIconWrap: { width: 36, height: 36, borderRadius: 8, alignItems: 'center', justifyContent: 'center', marginBottom: 2 },
   situationIcon: { fontSize: 18 },
   situationTitle: { fontSize: 11, fontWeight: '800', letterSpacing: 0.3 },
-  situationSub: { color: '#6B92B0', fontSize: 10, lineHeight: 14 },
+  situationSub: { fontSize: 10, lineHeight: 14 },
+
+  // Category section
+  categoryBlock: {
+    borderWidth: StyleSheet.hairlineWidth,
+    borderRadius: 8,
+    overflow: 'hidden',
+  },
+  categoryHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
+    padding: Spacing.three,
+    paddingVertical: Spacing.two + 4,
+  },
+  categoryDot: { width: 4, height: 32, borderRadius: 2 },
+  categoryEyebrow: { fontSize: 8, fontWeight: '800', letterSpacing: 1 },
+  categoryLabel: { fontSize: 13, fontWeight: '900', letterSpacing: 0.5, marginTop: 1 },
+  categoryCount: { fontSize: 11, fontWeight: '700', opacity: 0.7, marginRight: 4 },
+  categoryChevron: { fontSize: 12, fontWeight: '700' },
+  categoryItems: { gap: 1, borderTopWidth: StyleSheet.hairlineWidth },
 
   list: { gap: Spacing.two },
   card: {
-    backgroundColor: '#080E1C',
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: Brand.border,
-    borderRadius: 4,
+    borderBottomWidth: StyleSheet.hairlineWidth,
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.two,
     overflow: 'hidden',
   },
-  cardLocked: { opacity: 0.45 },
+  cardLocked: { opacity: 0.4 },
   cardAccent: { width: 3, alignSelf: 'stretch' },
-  iconWrap: {
-    width: 44,
-    height: 44,
-    borderRadius: 4,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginVertical: Spacing.two,
-  },
+  iconWrap: { width: 44, height: 44, borderRadius: 4, alignItems: 'center', justifyContent: 'center', marginVertical: Spacing.two },
   cardIcon: { fontSize: 22 },
   cardText: { flex: 1, gap: 2, paddingVertical: Spacing.two },
-  cardTitle: { fontSize: 12, fontWeight: '800', letterSpacing: 0.5, color: '#C8D8E8' },
-  cardTitleLocked: { color: '#6B92B0' },
-  cardDesc: { color: '#6B92B0', fontSize: 11, lineHeight: 15 },
-  badge: {
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 2,
-    marginRight: Spacing.one,
-  },
+  cardTitle: { fontSize: 12, fontWeight: '800', letterSpacing: 0.5 },
+  cardTitleLocked: {},
+  cardDesc: { fontSize: 11, lineHeight: 15 },
+  badge: { paddingHorizontal: 6, paddingVertical: 2, borderRadius: 2, marginRight: Spacing.one },
   badgeNew: { backgroundColor: Brand.accent + '20' },
-  badgeSoon: { backgroundColor: Brand.border },
   badgeText: { fontSize: 9, fontWeight: '800', letterSpacing: 0.5 },
   badgeTextNew: { color: Brand.accent },
-  badgeTextSoon: { color: '#6B92B0' },
   chevron: { color: Brand.accent, fontSize: 20, paddingRight: Spacing.two },
   lockBadge: { alignItems: 'center', paddingRight: Spacing.two, gap: 1 },
   lockIcon: { fontSize: 14, lineHeight: 18 },
   lockLabel: { fontSize: 8, fontWeight: '800', color: Brand.accent, letterSpacing: 0.5 },
 
-  upgradeBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.two,
-    backgroundColor: Brand.accent + '10',
-    borderWidth: 1,
-    borderColor: Brand.accent + '40',
-    borderRadius: 4,
-    padding: Spacing.three,
-  },
-  upgradeBannerIcon: { fontSize: 20, lineHeight: 24 },
-  upgradeBannerTitle: { fontSize: 12, fontWeight: '800', color: Brand.accent, letterSpacing: 0.3 },
-  upgradeBannerSub: { fontSize: 10, color: '#6B92B0', marginTop: 1 },
-
-  promoBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.two,
-    backgroundColor: Brand.tactical + '10',
-    borderWidth: 1,
-    borderColor: Brand.tactical + '40',
-    borderRadius: 4,
-    padding: Spacing.three,
-  },
-  promoBannerIcon: { fontSize: 20, lineHeight: 24 },
-  promoBannerTitle: { fontSize: 12, fontWeight: '800', color: Brand.tactical, letterSpacing: 0.3 },
-  promoBannerSub: { fontSize: 10, color: '#6B92B0', marginTop: 1 },
-
-  budgetShortcut: {
-    backgroundColor: '#080E1C',
+  shortcutRow: {
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: Brand.tactical + '40',
-    borderRadius: 4,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.two,
-    padding: Spacing.three,
+    borderColor: Brand.tactical + '30', borderRadius: 6,
+    flexDirection: 'row', alignItems: 'center', gap: Spacing.two, padding: Spacing.three,
   },
-  budgetIcon: { fontSize: 24 },
-  budgetText: { flex: 1, gap: 2 },
-  budgetTitle: { fontSize: 13, fontWeight: '800', letterSpacing: 0.5, color: '#C8D8E8' },
-  budgetDesc: { color: '#6B92B0', fontSize: 11 },
+  shortcutIcon: { fontSize: 24 },
+  shortcutText: { flex: 1, gap: 2 },
+  shortcutTitle: { fontSize: 13, fontWeight: '800', letterSpacing: 0.5 },
+  shortcutDesc: { fontSize: 11 },
+
+  upgradeBanner: {
+    flexDirection: 'row', alignItems: 'center', gap: Spacing.two,
+    backgroundColor: Brand.accent + '10', borderWidth: 1,
+    borderColor: Brand.accent + '40', borderRadius: 6, padding: Spacing.three,
+  },
+  promoBanner: {
+    flexDirection: 'row', alignItems: 'center', gap: Spacing.two,
+    backgroundColor: Brand.tactical + '10', borderWidth: 1,
+    borderColor: Brand.tactical + '40', borderRadius: 6, padding: Spacing.three,
+  },
+  bannerIcon: { fontSize: 20, lineHeight: 24 },
+  bannerTitle: { fontSize: 12, fontWeight: '800', color: Brand.accent, letterSpacing: 0.3 },
+  promoBannerTitle: { fontSize: 12, fontWeight: '800', color: Brand.tactical, letterSpacing: 0.3 },
+  bannerSub: { fontSize: 10, marginTop: 1 },
 });

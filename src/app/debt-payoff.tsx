@@ -1,4 +1,4 @@
-import { useRouter } from 'expo-router';
+﻿import { useRouter } from 'expo-router';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   Alert,
@@ -21,6 +21,7 @@ import {
   fmtMonths,
   PayoffStrategy,
 } from '@/features/debt/utils/debtCalc';
+import { useThemeColors } from '@/hooks/use-theme';
 import { Debt, useDebtStore } from '@/store/debt.store';
 
 function fmtDollar(n: number): string {
@@ -28,11 +29,12 @@ function fmtDollar(n: number): string {
 }
 
 function SectionLabel({ text }: { text: string }) {
+  const tc = useThemeColors();
   return (
     <View style={styles.sectionRow}>
-      <View style={styles.sectionLine} />
-      <ThemedText style={styles.sectionText}>{text}</ThemedText>
-      <View style={styles.sectionLine} />
+      <View style={[styles.sectionLine, { backgroundColor: tc.borderColor }]} />
+      <ThemedText style={[styles.sectionText, { color: tc.textMuted }]}>{text}</ThemedText>
+      <View style={[styles.sectionLine, { backgroundColor: tc.borderColor }]} />
     </View>
   );
 }
@@ -59,57 +61,59 @@ function DebtFormModal({
     parseFloat(apr) >= 0 &&
     parseFloat(min) > 0;
 
-  return (
-    <ThemedView type="backgroundElement" style={styles.modal}>
-      <ThemedText style={styles.modalTitle}>{title}</ThemedText>
+  const tc = useThemeColors();
 
-      <ThemedText style={styles.fieldLabel}>Name</ThemedText>
+  return (
+    <ThemedView type="backgroundElement" style={[styles.modal, { borderColor: tc.borderColor }]}>
+      <ThemedText style={[styles.modalTitle, { color: tc.textPrimary }]}>{title}</ThemedText>
+
+      <ThemedText style={[styles.fieldLabel, { color: tc.textHint }]}>Name</ThemedText>
       <TextInput
         value={name}
         onChangeText={setName}
         placeholder="e.g. Credit Card, Car Loan"
-        placeholderTextColor="#3D6080"
-        style={styles.input}
+        placeholderTextColor={tc.textMuted}
+        style={[styles.input, { color: tc.textPrimary }]}
       />
 
       <View style={styles.fieldRow}>
         <View style={styles.fieldHalf}>
-          <ThemedText style={styles.fieldLabel}>Balance ($)</ThemedText>
+          <ThemedText style={[styles.fieldLabel, { color: tc.textHint }]}>Balance ($)</ThemedText>
           <TextInput
             value={balance}
             onChangeText={setBalance}
             placeholder="5000"
-            placeholderTextColor="#3D6080"
+            placeholderTextColor={tc.textMuted}
             keyboardType="decimal-pad"
-            style={styles.input}
+            style={[styles.input, { color: tc.textPrimary }]}
           />
         </View>
         <View style={styles.fieldHalf}>
-          <ThemedText style={styles.fieldLabel}>APR (%)</ThemedText>
+          <ThemedText style={[styles.fieldLabel, { color: tc.textHint }]}>APR (%)</ThemedText>
           <TextInput
             value={apr}
             onChangeText={setApr}
             placeholder="19.99"
-            placeholderTextColor="#3D6080"
+            placeholderTextColor={tc.textMuted}
             keyboardType="decimal-pad"
-            style={styles.input}
+            style={[styles.input, { color: tc.textPrimary }]}
           />
         </View>
       </View>
 
-      <ThemedText style={styles.fieldLabel}>Minimum Payment ($)</ThemedText>
+      <ThemedText style={[styles.fieldLabel, { color: tc.textHint }]}>Minimum Payment ($)</ThemedText>
       <TextInput
         value={min}
         onChangeText={setMin}
         placeholder="150"
-        placeholderTextColor="#3D6080"
+        placeholderTextColor={tc.textMuted}
         keyboardType="decimal-pad"
-        style={styles.input}
+        style={[styles.input, { color: tc.textPrimary }]}
       />
 
       <View style={styles.modalBtns}>
-        <Pressable onPress={onClose} style={styles.cancelBtn}>
-          <ThemedText style={styles.cancelBtnText}>Cancel</ThemedText>
+        <Pressable onPress={onClose} style={[styles.cancelBtn, { borderColor: tc.borderColor }]}>
+          <ThemedText style={[styles.cancelBtnText, { color: tc.textHint }]}>Cancel</ThemedText>
         </Pressable>
         <Pressable
           disabled={!canSave}
@@ -136,6 +140,7 @@ function DebtCard({
   onEdit: () => void;
   onRemove: () => void;
 }) {
+  const tc = useThemeColors();
   return (
     <Pressable
       onLongPress={() =>
@@ -146,13 +151,13 @@ function DebtCard({
       }>
       <ThemedView type="backgroundElement" style={styles.debtCard}>
         <View style={styles.debtLeft}>
-          <ThemedText style={styles.debtName}>{debt.name}</ThemedText>
-          <ThemedText style={styles.debtSub}>
+          <ThemedText style={[styles.debtName, { color: tc.textPrimary }]}>{debt.name}</ThemedText>
+          <ThemedText style={[styles.debtSub, { color: tc.textHint }]}>
             {debt.apr}% APR · min ${debt.minPayment.toLocaleString()}/mo
           </ThemedText>
         </View>
         <View style={styles.debtRight}>
-          <ThemedText style={styles.debtBalance}>{fmtDollar(debt.balance)}</ThemedText>
+          <ThemedText style={[styles.debtBalance, { color: tc.textPrimary }]}>{fmtDollar(debt.balance)}</ThemedText>
           <View style={styles.debtActions}>
             <ThemedText
               style={[
@@ -174,6 +179,7 @@ function DebtCard({
 export default function DebtPayoffScreen() {
   const router    = useRouter();
   const insets    = useSafeAreaInsets();
+  const tc        = useThemeColors();
 
   const debts          = useDebtStore((s) => s.debts);
   const extraMonthly   = useDebtStore((s) => s.extraMonthly);
@@ -220,7 +226,7 @@ export default function DebtPayoffScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <ThemedView style={{ flex: 1 }}>
         <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
-          <Pressable onPress={() => router.push('/tools')} style={styles.back}>
+          <Pressable onPress={() => router.back()} style={styles.back}>
             <ThemedText style={styles.backChevron}>‹</ThemedText>
           </Pressable>
           <ThemedText style={styles.title}>Debt Payoff</ThemedText>
@@ -256,8 +262,8 @@ export default function DebtPayoffScreen() {
 
           {debts.length === 0 ? (
             <ThemedView type="backgroundElement" style={styles.emptyCard}>
-              <ThemedText style={styles.emptyText}>No debts added yet.</ThemedText>
-              <ThemedText style={styles.emptyHint}>Tap the button below to add your first debt.</ThemedText>
+              <ThemedText style={[styles.emptyText, { color: tc.textHint }]}>No debts added yet.</ThemedText>
+              <ThemedText style={[styles.emptyHint, { color: tc.textMuted }]}>Tap the button below to add your first debt.</ThemedText>
             </ThemedView>
           ) : (
             debts.map((d) => (
@@ -279,22 +285,22 @@ export default function DebtPayoffScreen() {
               {/* Extra payment */}
               <SectionLabel text="EXTRA MONTHLY PAYMENT" />
               <ThemedView type="backgroundElement" style={styles.card}>
-                <ThemedText style={styles.cardHint}>
+                <ThemedText style={[styles.cardHint, { color: tc.textMuted }]}>
                   Extra money applied each month on top of minimums, directed at your target debt.
                 </ThemedText>
                 <View style={styles.extraRow}>
-                  <ThemedText style={styles.dollarSign}>$</ThemedText>
+                  <ThemedText style={[styles.dollarSign, { color: tc.textPrimary }]}>$</ThemedText>
                   <TextInput
                     value={extraInput}
                     onChangeText={setExtraInput}
                     onBlur={commitExtra}
                     onSubmitEditing={commitExtra}
                     keyboardType="decimal-pad"
-                    style={styles.extraInput}
+                    style={[styles.extraInput, { color: tc.textPrimary }]}
                     placeholder="0"
                     returnKeyType="done"
                   />
-                  <ThemedText style={styles.perMonth}>/mo extra</ThemedText>
+                  <ThemedText style={[styles.perMonth, { color: tc.textHint }]}>/mo extra</ThemedText>
                 </View>
               </ThemedView>
 
@@ -303,21 +309,21 @@ export default function DebtPayoffScreen() {
               <View style={styles.strategyRow}>
                 <Pressable
                   onPress={() => setStrategy('avalanche')}
-                  style={[styles.stratBtn, strategy === 'avalanche' && styles.stratBtnActiveAvalanche]}>
-                  <ThemedText style={[styles.stratLabel, strategy === 'avalanche' && { color: '#C8D8E8' }]}>
+                  style={[styles.stratBtn, { borderColor: tc.borderColor }, strategy === 'avalanche' && styles.stratBtnActiveAvalanche]}>
+                  <ThemedText style={[styles.stratLabel, { color: tc.textHint }, strategy === 'avalanche' && { color: tc.textPrimary }]}>
                     ❄️ Avalanche
                   </ThemedText>
-                  <ThemedText style={[styles.stratSub, strategy === 'avalanche' && { color: Brand.tactical }]}>
+                  <ThemedText style={[styles.stratSub, { color: tc.textMuted }, strategy === 'avalanche' && { color: Brand.tactical }]}>
                     Highest APR first · saves most interest
                   </ThemedText>
                 </Pressable>
                 <Pressable
                   onPress={() => setStrategy('snowball')}
-                  style={[styles.stratBtn, strategy === 'snowball' && styles.stratBtnActiveSnowball]}>
-                  <ThemedText style={[styles.stratLabel, strategy === 'snowball' && { color: '#C8D8E8' }]}>
+                  style={[styles.stratBtn, { borderColor: tc.borderColor }, strategy === 'snowball' && styles.stratBtnActiveSnowball]}>
+                  <ThemedText style={[styles.stratLabel, { color: tc.textHint }, strategy === 'snowball' && { color: tc.textPrimary }]}>
                     ⛄ Snowball
                   </ThemedText>
-                  <ThemedText style={[styles.stratSub, strategy === 'snowball' && { color: Brand.accent }]}>
+                  <ThemedText style={[styles.stratSub, { color: tc.textMuted }, strategy === 'snowball' && { color: Brand.accent }]}>
                     Smallest balance first · best momentum
                   </ThemedText>
                 </Pressable>
@@ -328,14 +334,14 @@ export default function DebtPayoffScreen() {
                 <ThemedView type="backgroundElement" style={[styles.compareBox, { borderLeftColor: Brand.tactical }]}>
                   <ThemedText style={styles.compareTitle}>❄️ AVALANCHE SAVES MORE</ThemedText>
                   <View style={styles.compareRow}>
-                    <ThemedText style={styles.compareLabel}>Interest saved vs Snowball</ThemedText>
+                    <ThemedText style={[styles.compareLabel, { color: tc.textHint }]}>Interest saved vs Snowball</ThemedText>
                     <ThemedText style={[styles.compareVal, { color: Brand.tactical }]}>
                       {fmtDollar(interestSaved)}
                     </ThemedText>
                   </View>
                   {monthsSaved > 0 && (
                     <View style={styles.compareRow}>
-                      <ThemedText style={styles.compareLabel}>Paid off sooner</ThemedText>
+                      <ThemedText style={[styles.compareLabel, { color: tc.textHint }]}>Paid off sooner</ThemedText>
                       <ThemedText style={[styles.compareVal, { color: Brand.tactical }]}>
                         {fmtMonths(monthsSaved)} faster
                       </ThemedText>
@@ -343,8 +349,8 @@ export default function DebtPayoffScreen() {
                   )}
                   {monthsSaved === 0 && (
                     <View style={styles.compareRow}>
-                      <ThemedText style={styles.compareLabel}>Same payoff timeline</ThemedText>
-                      <ThemedText style={[styles.compareVal, { color: '#4D7A9A' }]}>same date</ThemedText>
+                      <ThemedText style={[styles.compareLabel, { color: tc.textHint }]}>Same payoff timeline</ThemedText>
+                      <ThemedText style={[styles.compareVal, { color: tc.textHint }]}>same date</ThemedText>
                     </View>
                   )}
                 </ThemedView>
@@ -359,29 +365,29 @@ export default function DebtPayoffScreen() {
                     style={[styles.resultCard, {
                       borderLeftColor: strategy === 'avalanche' ? Brand.tactical : Brand.accent,
                     }]}>
-                    <ThemedText style={styles.resultEyebrow}>DEBT-FREE DATE</ThemedText>
+                    <ThemedText style={[styles.resultEyebrow, { color: tc.textHint }]}>DEBT-FREE DATE</ThemedText>
                     <ThemedText
                       style={[styles.resultBig, {
                         color: strategy === 'avalanche' ? Brand.tactical : Brand.accent,
                       }]}>
                       {fmtDate(activeResult.payoffDate)}
                     </ThemedText>
-                    <ThemedText style={styles.resultSub}>{fmtMonths(activeResult.totalMonths)} from now</ThemedText>
+                    <ThemedText style={[styles.resultSub, { color: tc.textHint }]}>{fmtMonths(activeResult.totalMonths)} from now</ThemedText>
 
                     <View style={styles.resultRows}>
                       <View style={styles.resultRow}>
-                        <ThemedText style={styles.resultLabel}>Total interest paid</ThemedText>
+                        <ThemedText style={[styles.resultLabel, { color: tc.textHint }]}>Total interest paid</ThemedText>
                         <ThemedText style={[styles.resultVal, { color: Brand.warning }]}>
                           {fmtDollar(activeResult.totalInterest)}
                         </ThemedText>
                       </View>
                       <View style={styles.resultRow}>
-                        <ThemedText style={styles.resultLabel}>Total amount paid</ThemedText>
-                        <ThemedText style={styles.resultVal}>{fmtDollar(activeResult.totalPaid)}</ThemedText>
+                        <ThemedText style={[styles.resultLabel, { color: tc.textHint }]}>Total amount paid</ThemedText>
+                        <ThemedText style={[styles.resultVal, { color: tc.textPrimary }]}>{fmtDollar(activeResult.totalPaid)}</ThemedText>
                       </View>
                       <View style={styles.resultRow}>
-                        <ThemedText style={styles.resultLabel}>Monthly payment</ThemedText>
-                        <ThemedText style={styles.resultVal}>{fmtDollar(activeResult.monthlyCost)}/mo</ThemedText>
+                        <ThemedText style={[styles.resultLabel, { color: tc.textHint }]}>Monthly payment</ThemedText>
+                        <ThemedText style={[styles.resultVal, { color: tc.textPrimary }]}>{fmtDollar(activeResult.monthlyCost)}/mo</ThemedText>
                       </View>
                     </View>
                   </ThemedView>
@@ -391,15 +397,15 @@ export default function DebtPayoffScreen() {
                   {activeResult.rows.map((row, i) => (
                     <ThemedView key={row.id} type="backgroundElement" style={styles.rowCard}>
                       <View style={styles.rowLeft}>
-                        <ThemedText style={styles.rowOrder}>#{i + 1}</ThemedText>
+                        <ThemedText style={[styles.rowOrder, { color: tc.textMuted }]}>#{i + 1}</ThemedText>
                         <View>
-                          <ThemedText style={styles.rowName}>{row.name}</ThemedText>
-                          <ThemedText style={styles.rowDate}>Paid off: {fmtDate(row.payoffDate)}</ThemedText>
+                          <ThemedText style={[styles.rowName, { color: tc.textPrimary }]}>{row.name}</ThemedText>
+                          <ThemedText style={[styles.rowDate, { color: tc.textHint }]}>Paid off: {fmtDate(row.payoffDate)}</ThemedText>
                         </View>
                       </View>
                       <View style={styles.rowRight}>
                         <ThemedText style={styles.rowInterest}>+{fmtDollar(row.totalInterest)} interest</ThemedText>
-                        <ThemedText style={styles.rowMonths}>{fmtMonths(row.monthsToPayoff)}</ThemedText>
+                        <ThemedText style={[styles.rowMonths, { color: tc.textHint }]}>{fmtMonths(row.monthsToPayoff)}</ThemedText>
                       </View>
                     </ThemedView>
                   ))}
@@ -409,7 +415,7 @@ export default function DebtPayoffScreen() {
           )}
 
           <ThemedView type="backgroundElement" style={styles.noteCard}>
-            <ThemedText style={styles.noteText}>
+            <ThemedText style={[styles.noteText, { color: tc.textMuted }]}>
               Calculations assume fixed interest rates and constant payments. Actual payoff may vary with rate changes, late fees, or payment adjustments.{'\n'}Tap ✏ EDIT to modify a debt · Long-press a debt to remove it.
             </ThemedText>
           </ThemedView>
@@ -431,27 +437,27 @@ const styles = StyleSheet.create({
   content: { paddingHorizontal: Spacing.three, gap: Spacing.two },
 
   sectionRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
-  sectionLine: { flex: 1, height: 1, backgroundColor: Brand.border },
-  sectionText: { fontSize: 8, fontWeight: '800', color: '#3D6080', letterSpacing: 0.8 },
+  sectionLine: { flex: 1, height: 1 },
+  sectionText: { fontSize: 8, fontWeight: '800', letterSpacing: 0.8 },
 
   modal: {
     borderRadius: 4, padding: Spacing.three, gap: Spacing.two,
-    borderWidth: 1, borderColor: Brand.border,
+    borderWidth: 1,
   },
-  modalTitle: { fontSize: 12, fontWeight: '800', color: '#C8D8E8', letterSpacing: 0.5 },
-  fieldLabel: { fontSize: 9, fontWeight: '800', color: '#4D7A9A', letterSpacing: 1 },
+  modalTitle: { fontSize: 12, fontWeight: '800', letterSpacing: 0.5 },
+  fieldLabel: { fontSize: 9, fontWeight: '800', letterSpacing: 1 },
   fieldRow: { flexDirection: 'row', gap: Spacing.two },
   fieldHalf: { flex: 1, gap: Spacing.one },
   input: {
-    fontSize: 15, color: '#C8D8E8', borderBottomWidth: 1.5,
+    fontSize: 15, borderBottomWidth: 1.5,
     borderBottomColor: Brand.primary, paddingVertical: 4,
   },
   modalBtns: { flexDirection: 'row', gap: Spacing.two, justifyContent: 'flex-end', marginTop: Spacing.one },
   cancelBtn: {
     paddingVertical: 8, paddingHorizontal: Spacing.three,
-    borderRadius: 4, borderWidth: 1, borderColor: Brand.border,
+    borderRadius: 4, borderWidth: 1,
   },
-  cancelBtnText: { fontSize: 13, color: '#4D7A9A', fontWeight: '600' },
+  cancelBtnText: { fontSize: 13, fontWeight: '600' },
   addBtn: {
     paddingVertical: 8, paddingHorizontal: Spacing.three,
     borderRadius: 4, backgroundColor: Brand.primary,
@@ -459,18 +465,18 @@ const styles = StyleSheet.create({
   addBtnText: { fontSize: 13, color: '#fff', fontWeight: '700' },
 
   emptyCard: { borderRadius: 4, padding: Spacing.three, gap: 4, alignItems: 'center' },
-  emptyText: { fontSize: 14, fontWeight: '600', color: '#4D7A9A' },
-  emptyHint: { fontSize: 11, color: '#3D6080' },
+  emptyText: { fontSize: 14, fontWeight: '600' },
+  emptyHint: { fontSize: 11 },
 
   debtCard: {
     borderRadius: 4, padding: Spacing.two + 4,
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
   },
   debtLeft: { flex: 1, gap: 3 },
-  debtName: { fontSize: 14, fontWeight: '700', color: '#C8D8E8' },
-  debtSub: { fontSize: 10, color: '#4D7A9A' },
+  debtName: { fontSize: 14, fontWeight: '700' },
+  debtSub: { fontSize: 10 },
   debtRight: { alignItems: 'flex-end', gap: 4 },
-  debtBalance: { fontSize: 16, fontWeight: '800', color: '#C8D8E8' },
+  debtBalance: { fontSize: 16, fontWeight: '800' },
   debtActions: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
   debtApr: { fontSize: 10, fontWeight: '700' },
   highApr: { color: Brand.danger },
@@ -490,54 +496,54 @@ const styles = StyleSheet.create({
   addDebtBtnText: { fontSize: 13, fontWeight: '700', color: Brand.primary },
 
   card: { borderRadius: 4, padding: Spacing.three, gap: Spacing.two },
-  cardHint: { fontSize: 11, color: '#3D6080', lineHeight: 16 },
+  cardHint: { fontSize: 11, lineHeight: 16 },
 
   extraRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.one },
-  dollarSign: { fontSize: 18, fontWeight: '300', color: '#C8D8E8' },
+  dollarSign: { fontSize: 18, fontWeight: '300' },
   extraInput: {
-    fontSize: 22, fontWeight: '700', color: '#C8D8E8',
+    fontSize: 22, fontWeight: '700',
     borderBottomWidth: 2, borderBottomColor: Brand.primary,
     paddingVertical: 2, minWidth: 80,
   },
-  perMonth: { fontSize: 12, color: '#4D7A9A' },
+  perMonth: { fontSize: 12 },
 
   strategyRow: { flexDirection: 'row', gap: Spacing.two },
   stratBtn: {
-    flex: 1, borderRadius: 4, borderWidth: 1, borderColor: Brand.border,
+    flex: 1, borderRadius: 4, borderWidth: 1,
     padding: Spacing.two, gap: 3,
   },
   stratBtnActiveAvalanche: { backgroundColor: Brand.tactical + '20', borderColor: Brand.tactical },
   stratBtnActiveSnowball:  { backgroundColor: Brand.accent  + '20', borderColor: Brand.accent  },
-  stratLabel: { fontSize: 13, fontWeight: '800', color: '#4D7A9A' },
-  stratSub:   { fontSize: 9,  color: '#3D6080', lineHeight: 13 },
+  stratLabel: { fontSize: 13, fontWeight: '800' },
+  stratSub:   { fontSize: 9,  lineHeight: 13 },
 
   compareBox: { borderRadius: 4, padding: Spacing.three, gap: Spacing.one, borderLeftWidth: 3 },
   compareTitle: { fontSize: 9, fontWeight: '800', color: Brand.tactical, letterSpacing: 1, marginBottom: 4 },
   compareRow: { flexDirection: 'row', justifyContent: 'space-between' },
-  compareLabel: { fontSize: 12, color: '#4D7A9A' },
+  compareLabel: { fontSize: 12 },
   compareVal: { fontSize: 12, fontWeight: '700' },
 
   resultCard: { borderRadius: 4, padding: Spacing.three, gap: Spacing.two, borderLeftWidth: 3 },
-  resultEyebrow: { fontSize: 8, fontWeight: '800', color: '#4D7A9A', letterSpacing: 1.5 },
+  resultEyebrow: { fontSize: 8, fontWeight: '800', letterSpacing: 1.5 },
   resultBig: { fontSize: 26, lineHeight: 32, fontWeight: '900' },
-  resultSub: { fontSize: 11, color: '#4D7A9A', marginTop: -6 },
+  resultSub: { fontSize: 11, marginTop: -6 },
   resultRows: { gap: Spacing.one },
   resultRow: { flexDirection: 'row', justifyContent: 'space-between' },
-  resultLabel: { fontSize: 12, color: '#4D7A9A' },
-  resultVal: { fontSize: 12, fontWeight: '700', color: '#C8D8E8' },
+  resultLabel: { fontSize: 12 },
+  resultVal: { fontSize: 12, fontWeight: '700' },
 
   rowCard: {
     borderRadius: 4, padding: Spacing.two + 4,
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
   },
   rowLeft: { flexDirection: 'row', gap: Spacing.two, alignItems: 'center', flex: 1 },
-  rowOrder: { fontSize: 16, fontWeight: '900', color: '#3D6080', width: 24 },
-  rowName: { fontSize: 13, fontWeight: '700', color: '#C8D8E8' },
-  rowDate: { fontSize: 10, color: '#4D7A9A' },
+  rowOrder: { fontSize: 16, fontWeight: '900', width: 24 },
+  rowName: { fontSize: 13, fontWeight: '700' },
+  rowDate: { fontSize: 10 },
   rowRight: { alignItems: 'flex-end', gap: 2 },
   rowInterest: { fontSize: 11, color: Brand.warning, fontWeight: '600' },
-  rowMonths: { fontSize: 11, color: '#4D7A9A' },
+  rowMonths: { fontSize: 11 },
 
   noteCard: { borderRadius: 4, padding: Spacing.three },
-  noteText: { fontSize: 10, color: '#3D6080', lineHeight: 16 },
+  noteText: { fontSize: 10, lineHeight: 16 },
 });

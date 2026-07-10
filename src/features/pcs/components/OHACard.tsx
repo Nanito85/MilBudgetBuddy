@@ -4,6 +4,7 @@ import { Linking, Pressable, StyleSheet, View } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Brand, Fonts, Spacing } from '@/constants/theme';
+import { useThemeColors } from '@/hooks/use-theme';
 import {
   DTMO_OHA_URL,
   OHA_DATA_QUARTER,
@@ -30,6 +31,7 @@ const GRADE_ORDER: PayGrade[] = [
 ];
 
 export function OHACard({ installation, area, grade, withDep }: Props) {
+  const tc = useThemeColors();
   const [expanded, setExpanded] = useState(false);
 
   const rates = area.rates.length === 0 ? null : getOhaRate(area.locationLabel, grade, withDep);
@@ -87,7 +89,7 @@ export function OHACard({ installation, area, grade, withDep }: Props) {
             <View style={styles.colDivider} />
             <View style={styles.summaryCol}>
               <ThemedText type="small" themeColor="textSecondary" style={styles.colLabel}>MIHA (ONE-TIME)</ThemedText>
-              <ThemedText style={[styles.colValue, { color: '#C8D8E8' }]}>{area.miha > 0 ? fmt(area.miha) : '—'}</ThemedText>
+              <ThemedText style={[styles.colValue, { color: tc.textPrimary }]}>{area.miha > 0 ? fmt(area.miha) : '—'}</ThemedText>
             </View>
           </View>
 
@@ -113,10 +115,10 @@ export function OHACard({ installation, area, grade, withDep }: Props) {
           {expanded && (
             <View style={styles.gradeTable}>
               <View style={styles.gradeHeaderRow}>
-                <ThemedText style={[styles.gradeCell, styles.gradeCellHdr]}>GRADE</ThemedText>
-                <ThemedText style={[styles.gradeCell, styles.gradeRentCell, styles.gradeCellHdr]}>RENT</ThemedText>
-                <ThemedText style={[styles.gradeCell, styles.gradeRentCell, styles.gradeCellHdr]}>UTILITY</ThemedText>
-                <ThemedText style={[styles.gradeCell, styles.gradeRentCell, styles.gradeCellHdr]}>TOTAL</ThemedText>
+                <ThemedText style={[styles.gradeCell, styles.gradeCellHdr, { color: tc.textSecondary }]}>GRADE</ThemedText>
+                <ThemedText style={[styles.gradeCell, styles.gradeRentCell, styles.gradeCellHdr, { color: tc.textSecondary }]}>RENT</ThemedText>
+                <ThemedText style={[styles.gradeCell, styles.gradeRentCell, styles.gradeCellHdr, { color: tc.textSecondary }]}>UTILITY</ThemedText>
+                <ThemedText style={[styles.gradeCell, styles.gradeRentCell, styles.gradeCellHdr, { color: tc.textSecondary }]}>TOTAL</ThemedText>
               </View>
               {GRADE_ORDER.map(g => {
                 const r = getOhaRate(area.locationLabel, g, withDep);
@@ -124,14 +126,14 @@ export function OHACard({ installation, area, grade, withDep }: Props) {
                 const isActive = g === grade;
                 return (
                   <View key={g} style={[styles.gradeRow, isActive && styles.gradeRowActive]}>
-                    <ThemedText style={[styles.gradeCell, isActive && styles.gradeCellActive]}>{g}</ThemedText>
-                    <ThemedText style={[styles.gradeCell, styles.gradeRentCell, isActive && styles.gradeCellActive]}>
+                    <ThemedText style={[styles.gradeCell, !isActive && { color: tc.textSecondary }, isActive && styles.gradeCellActive]}>{g}</ThemedText>
+                    <ThemedText style={[styles.gradeCell, styles.gradeRentCell, !isActive && { color: tc.textSecondary }, isActive && styles.gradeCellActive]}>
                       {fmt(r.rentCeilingUSD)}
                     </ThemedText>
-                    <ThemedText style={[styles.gradeCell, styles.gradeRentCell, isActive && styles.gradeCellActive]}>
+                    <ThemedText style={[styles.gradeCell, styles.gradeRentCell, !isActive && { color: tc.textSecondary }, isActive && styles.gradeCellActive]}>
                       {fmt(r.utilityAllowanceUSD)}
                     </ThemedText>
-                    <ThemedText style={[styles.gradeCell, styles.gradeRentCell, isActive && styles.gradeCellActive]}>
+                    <ThemedText style={[styles.gradeCell, styles.gradeRentCell, !isActive && { color: tc.textSecondary }, isActive && styles.gradeCellActive]}>
                       {fmt(r.rentCeilingUSD + r.utilityAllowanceUSD)}
                     </ThemedText>
                   </View>
@@ -200,7 +202,7 @@ const styles = StyleSheet.create({
   gradeHeaderRow: { flexDirection: 'row', borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: 'rgba(128,128,128,0.3)', paddingBottom: 4, marginBottom: 4 },
   gradeRow:       { flexDirection: 'row', paddingVertical: 3 },
   gradeRowActive: { backgroundColor: 'rgba(0,200,168,0.08)', borderRadius: 4, marginHorizontal: -4, paddingHorizontal: 4 },
-  gradeCell:      { fontSize: 12, color: '#7A9AB5', width: 42 },
+  gradeCell:      { fontSize: 12, width: 42 },
   gradeRentCell:  { flex: 1, textAlign: 'right', fontFamily: Fonts.data },
   gradeCellHdr:   { fontSize: 9, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.3 },
   gradeCellActive:{ color: Brand.accent, fontWeight: '700' },

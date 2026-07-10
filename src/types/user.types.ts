@@ -115,6 +115,7 @@ export interface UserPreferences {
   notificationMinute: number;
   onboarded: boolean;
   disclaimerAcknowledged: boolean;
+  hasSeenTutorial: boolean;
   specialPays: SpecialPay[];
   // Service identity
   payGrade?: PayGrade;

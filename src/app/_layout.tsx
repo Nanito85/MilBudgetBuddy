@@ -1,14 +1,18 @@
 import { Ionicons } from '@expo/vector-icons';
-import { DarkTheme, ThemeProvider } from '@react-navigation/native';
+import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { Tabs, useRouter } from 'expo-router';
 import React, { useEffect } from 'react';
+import { Platform } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { AnimatedSplashOverlay } from '@/components/animated-icon';
 import { DisclaimerModal } from '@/components/DisclaimerModal';
 import { KidModeScreen } from '@/components/KidModeScreen';
 import { OfflineBanner } from '@/components/OfflineBanner';
 import { OnboardingFlow } from '@/features/profile/components/OnboardingFlow';
 import { Brand } from '@/constants/theme';
+import { useAppTheme, useThemeColors } from '@/hooks/use-theme';
 import { useAuthStore } from '@/store/auth.store';
 import { useEntitlementStore } from '@/store/entitlement.store';
 import { useKidModeStore } from '@/store/kid-mode.store';
@@ -27,10 +31,19 @@ initSentry();
 
 export default function TabLayout() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
+  const appTheme = useAppTheme();
+  const tc = useThemeColors();
   const hydrated = useUserStore((s) => s.hydrated);
   const onboarded = useUserStore((s) => s.onboarded);
   const kidModeActive = useKidModeStore((s) => s.active);
   const { user, initialized, init: initAuth } = useAuthStore();
+
+  // Setting an explicit tabBarStyle.height disables React Navigation's automatic
+  // safe-area padding, so it must be added back by hand. This matters most on
+  // Android with 3-button navigation (vs. gesture nav), whose system bar
+  // otherwise overlaps the tab bar and makes its buttons untappable.
+  const tabBarHeight = 64 + insets.bottom;
 
   // Hydrate local stores on mount + initialize Firebase auth listener
   useEffect(() => {
@@ -91,19 +104,20 @@ export default function TabLayout() {
   if (!onboarded) return <OnboardingFlow />;
 
   return (
-    <ThemeProvider value={DarkTheme}>
+    <ErrorBoundary>
+    <ThemeProvider value={appTheme === 'light' ? DefaultTheme : DarkTheme}>
       <AnimatedSplashOverlay />
       <DisclaimerModal />
       <Tabs
         screenOptions={{
           tabBarActiveTintColor: Brand.accent,
-          tabBarInactiveTintColor: '#3D6080',
+          tabBarInactiveTintColor: tc.textMuted,
           tabBarStyle: {
-            backgroundColor: '#04080F',
-            borderTopColor: '#0D1E2E',
+            backgroundColor: tc.surface,
+            borderTopColor: tc.borderColor,
             borderTopWidth: 1,
-            height: 64,
-            paddingBottom: 8,
+            height: tabBarHeight,
+            paddingBottom: 8 + insets.bottom,
             paddingTop: 6,
           },
           tabBarLabelStyle: {
@@ -204,6 +218,9 @@ export default function TabLayout() {
         <Tabs.Screen name="life-events"            options={{ href: null }} />
         <Tabs.Screen name="command-mode"           options={{ href: null }} />
         <Tabs.Screen name="gs-pay-calculator"      options={{ href: null }} />
+        <Tabs.Screen name="promotion-calculator"   options={{ href: null }} />
+        <Tabs.Screen name="privacy-center"         options={{ href: null }} />
+        <Tabs.Screen name="terms"                  options={{ href: null }} />
         <Tabs.Screen name="legal"                  options={{ href: null }} />
         <Tabs.Screen name="admin"                  options={{ href: null }} />
         <Tabs.Screen name="admin/feedback"         options={{ href: null }} />
@@ -213,5 +230,6 @@ export default function TabLayout() {
       <OfflineBanner />
       {kidModeActive && <KidModeScreen />}
     </ThemeProvider>
+    </ErrorBoundary>
   );
 }

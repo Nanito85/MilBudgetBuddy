@@ -1,6 +1,6 @@
-import { useRouter } from 'expo-router';
+﻿import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, TextInput, useColorScheme, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BranchRegNote } from '@/components/BranchRegNote';
@@ -25,13 +25,13 @@ import {
   TLE_MAX_DAYS,
 } from '@/features/tle/utils/tleCalc';
 import { NumberStepper } from '@/features/retirement/components/NumberStepper';
-import { BottomTabInset, Brand, Colors, Spacing } from '@/constants/theme';
+import { BottomTabInset, Brand, Spacing } from '@/constants/theme';
+import { useThemeColors } from '@/hooks/use-theme';
 
 export default function TLECalculatorScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const scheme = useColorScheme();
-  const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
+  const tc = useThemeColors();
 
   const [mode, setMode] = useState<MoveMode>('tle');
   const [locality, setLocality] = useState<Locality | null>(null);
@@ -67,7 +67,7 @@ export default function TLECalculatorScreen() {
       {/* ── Header ─────────────────────────────────────────────────────────── */}
       <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
         <Pressable
-          onPress={() => (router.push('/tools'))}
+          onPress={() => (router.back())}
           style={({ pressed }) => [styles.backBtn, pressed && styles.pressed]}>
           <ThemedText style={styles.backChevron}>‹</ThemedText>
         </Pressable>
@@ -149,8 +149,8 @@ export default function TLECalculatorScreen() {
                   onChangeText={setCustomRateText}
                   placeholder="e.g. 185"
                   keyboardType="numeric"
-                  placeholderTextColor={colors.textSecondary}
-                  style={[styles.customRateInput, { color: colors.text, borderBottomColor: Brand.primary }]}
+                  placeholderTextColor={tc.textSecondary}
+                  style={[styles.customRateInput, { color: tc.textPrimary, borderBottomColor: Brand.primary }]}
                 />
                 <ThemedText themeColor="textSecondary" style={styles.perDayLabel}>/day</ThemedText>
               </View>
@@ -367,9 +367,38 @@ export default function TLECalculatorScreen() {
                 <ThemedText type="small" style={{ color: Brand.primaryLight, lineHeight: 18 }}>
                   Family: {familyLabel(hasSpouse, childAges)}
                   {'\n'}
-                  Locality per diem: ${effectivePerDiem}/day
-                  {locality ? ` (${locality.name})` : ' (custom)'}
+                  Locality: {locality ? locality.name : 'Custom rate'}
                 </ThemedText>
+              </View>
+
+              {/* Per diem breakdown — lodging cap and M&IE */}
+              <View style={styles.pdBreakdownCard}>
+                <ThemedText style={[styles.pdBreakdownLabel, { color: tc.textHint }]}>PER DIEM BREAKDOWN</ThemedText>
+                <View style={styles.pdBreakdownRow}>
+                  <View style={styles.pdBreakdownItem}>
+                    <ThemedText style={[styles.pdBreakdownItemLabel, { color: tc.textHint }]}>HOTEL CAP</ThemedText>
+                    <ThemedText style={[styles.pdBreakdownValue, { color: Brand.accent }]}>
+                      ${locality?.lodging ?? Math.round(effectivePerDiem * 0.617)}/night
+                    </ThemedText>
+                    <ThemedText style={[styles.pdBreakdownNote, { color: tc.textHint }]}>max lodging rate</ThemedText>
+                  </View>
+                  <View style={styles.pdBreakdownDivider} />
+                  <View style={styles.pdBreakdownItem}>
+                    <ThemedText style={[styles.pdBreakdownItemLabel, { color: tc.textHint }]}>M&IE</ThemedText>
+                    <ThemedText style={[styles.pdBreakdownValue, { color: Brand.success }]}>
+                      ${locality?.meals ?? Math.round(effectivePerDiem * 0.383)}/day
+                    </ThemedText>
+                    <ThemedText style={[styles.pdBreakdownNote, { color: tc.textHint }]}>meals &amp; incidentals</ThemedText>
+                  </View>
+                  <View style={styles.pdBreakdownDivider} />
+                  <View style={styles.pdBreakdownItem}>
+                    <ThemedText style={[styles.pdBreakdownItemLabel, { color: tc.textHint }]}>TOTAL</ThemedText>
+                    <ThemedText style={[styles.pdBreakdownValue, { color: Brand.primary }]}>
+                      ${effectivePerDiem}/day
+                    </ThemedText>
+                    <ThemedText style={[styles.pdBreakdownNote, { color: tc.textHint }]}>full per diem</ThemedText>
+                  </View>
+                </View>
               </View>
             </ThemedView>
           </View>
@@ -524,6 +553,47 @@ const styles = StyleSheet.create({
   grandTotalValue: { fontSize: 22, fontWeight: '800' },
 
   summaryBox: { borderRadius: Spacing.two, padding: Spacing.two },
+
+  pdBreakdownCard: {
+    borderRadius: Spacing.two,
+    borderWidth: 1,
+    borderColor: 'rgba(128,128,128,0.18)',
+    padding: Spacing.two,
+    gap: Spacing.one,
+  },
+  pdBreakdownLabel: {
+    fontSize: 10,
+    fontWeight: '800',
+    letterSpacing: 1,
+    marginBottom: 2,
+  },
+  pdBreakdownRow: {
+    flexDirection: 'row',
+    alignItems: 'stretch',
+  },
+  pdBreakdownItem: {
+    flex: 1,
+    alignItems: 'center',
+    gap: 2,
+  },
+  pdBreakdownDivider: {
+    width: 1,
+    backgroundColor: 'rgba(128,128,128,0.2)',
+    marginHorizontal: 4,
+  },
+  pdBreakdownItemLabel: {
+    fontSize: 9,
+    fontWeight: '800',
+    letterSpacing: 0.6,
+  },
+  pdBreakdownValue: {
+    fontSize: 15,
+    fontWeight: '800',
+  },
+  pdBreakdownNote: {
+    fontSize: 9,
+    textAlign: 'center',
+  },
 
   emptyState: { borderRadius: Spacing.three, padding: Spacing.five, alignItems: 'center', gap: Spacing.two },
   emptyIcon: { fontSize: 40 },

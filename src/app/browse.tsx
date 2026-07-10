@@ -7,6 +7,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { BottomTabInset, Brand, Spacing } from '@/constants/theme';
 import { useEntitlement } from '@/hooks/use-entitlement';
+import { useThemeColors } from '@/hooks/use-theme';
 import { useKidModeStore } from '@/store/kid-mode.store';
 import { useKidsStore } from '@/store/kids.store';
 import { KidGender, KidProfile, getKidTheme } from '@/types/kids.types';
@@ -18,6 +19,7 @@ function AddKidModal({ visible, onClose, onAdd }: {
   onClose: () => void;
   onAdd: (nickname: string, gender: KidGender) => void;
 }) {
+  const tc = useThemeColors();
   const [nickname, setNickname] = useState('');
   const [gender, setGender] = useState<KidGender>('boy');
 
@@ -31,29 +33,29 @@ function AddKidModal({ visible, onClose, onAdd }: {
 
   return (
     <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
-      <View style={modalStyles.bg}>
+      <View style={[modalStyles.bg, { backgroundColor: tc.background }]}>
         <SafeAreaView style={modalStyles.safe}>
           <View style={modalStyles.header}>
-            <ThemedText style={modalStyles.title}>// NEW CADET</ThemedText>
+            <ThemedText style={[modalStyles.title, { color: tc.textPrimary }]}>// NEW CADET</ThemedText>
             <Pressable onPress={onClose}>
-              <ThemedText style={modalStyles.cancel}>CANCEL</ThemedText>
+              <ThemedText style={[modalStyles.cancel, { color: tc.textMuted }]}>CANCEL</ThemedText>
             </Pressable>
           </View>
 
-          <ThemedText type="label" style={modalStyles.fieldLabel}>CALL SIGN (NICKNAME)</ThemedText>
-          <View style={modalStyles.inputWrap}>
+          <ThemedText type="label" style={[modalStyles.fieldLabel, { color: tc.textMuted }]}>CALL SIGN (NICKNAME)</ThemedText>
+          <View style={[modalStyles.inputWrap, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
             <TextInput
               value={nickname}
               onChangeText={setNickname}
               placeholder="e.g. Maverick"
-              placeholderTextColor="#2A4A60"
-              style={modalStyles.input}
+              placeholderTextColor={tc.textHint}
+              style={[modalStyles.input, { color: tc.textPrimary }]}
               autoFocus
               autoCapitalize="words"
             />
           </View>
 
-          <ThemedText type="label" style={[modalStyles.fieldLabel, { marginTop: Spacing.three }]}>THEME</ThemedText>
+          <ThemedText type="label" style={[modalStyles.fieldLabel, { color: tc.textMuted, marginTop: Spacing.three }]}>THEME</ThemedText>
           <View style={modalStyles.themeRow}>
             {(['boy', 'girl'] as KidGender[]).map((g) => {
               const theme = getKidTheme(g);
@@ -62,9 +64,9 @@ function AddKidModal({ visible, onClose, onAdd }: {
                 <Pressable
                   key={g}
                   onPress={() => setGender(g)}
-                  style={[modalStyles.themeBtn, isSelected && { borderColor: theme.primary, backgroundColor: theme.bg }]}>
+                  style={[modalStyles.themeBtn, { borderColor: tc.borderColor }, isSelected && { borderColor: theme.primary, backgroundColor: theme.bg }]}>
                   <ThemedText style={modalStyles.themeEmoji}>{g === 'boy' ? '💙' : '💗'}</ThemedText>
-                  <ThemedText style={[modalStyles.themeLabel, isSelected && { color: theme.primary }]}>
+                  <ThemedText style={[modalStyles.themeLabel, { color: tc.textMuted }, isSelected && { color: theme.primary }]}>
                     {g === 'boy' ? 'BLUE / SKY' : 'PINK / PURPLE'}
                   </ThemedText>
                 </Pressable>
@@ -187,18 +189,18 @@ const pinSetupStyles = StyleSheet.create({
 });
 
 const modalStyles = StyleSheet.create({
-  bg: { flex: 1, backgroundColor: '#04080F' },
+  bg: { flex: 1 },
   safe: { flex: 1, padding: Spacing.four, gap: Spacing.two },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: Spacing.two },
-  title: { fontSize: 16, fontWeight: '800', letterSpacing: 1, color: '#C8D8E8' },
-  cancel: { fontSize: 12, fontWeight: '700', color: '#3D6080', letterSpacing: 1 },
-  fieldLabel: { color: '#3D6080', fontSize: 9, marginBottom: 6 },
-  inputWrap: { backgroundColor: '#080E1C', borderWidth: 1, borderColor: Brand.border, borderRadius: 4, paddingHorizontal: Spacing.three },
-  input: { fontSize: 18, fontWeight: '700', paddingVertical: Spacing.two + 4, color: '#C8D8E8' },
+  title: { fontSize: 16, fontWeight: '800', letterSpacing: 1 },
+  cancel: { fontSize: 12, fontWeight: '700', letterSpacing: 1 },
+  fieldLabel: { fontSize: 9, marginBottom: 6 },
+  inputWrap: { borderWidth: 1, borderRadius: 4, paddingHorizontal: Spacing.three },
+  input: { fontSize: 18, fontWeight: '700', paddingVertical: Spacing.two + 4 },
   themeRow: { flexDirection: 'row', gap: Spacing.two },
-  themeBtn: { flex: 1, borderWidth: 1.5, borderColor: Brand.border, borderRadius: 4, padding: Spacing.three, alignItems: 'center', gap: Spacing.one },
+  themeBtn: { flex: 1, borderWidth: 1.5, borderRadius: 4, padding: Spacing.three, alignItems: 'center', gap: Spacing.one },
   themeEmoji: { fontSize: 28, lineHeight: 36 },
-  themeLabel: { fontSize: 9, fontWeight: '800', letterSpacing: 1, color: '#3D6080' },
+  themeLabel: { fontSize: 9, fontWeight: '800', letterSpacing: 1 },
   addBtn: { backgroundColor: Brand.accent, borderRadius: 4, padding: Spacing.three, alignItems: 'center', marginTop: 'auto' },
   addBtnText: { color: '#04080F', fontWeight: '900', fontSize: 13, letterSpacing: 1 },
 });
@@ -206,6 +208,7 @@ const modalStyles = StyleSheet.create({
 // ── Kid Card ───────────────────────────────────────────────────────────────────
 
 function KidCard({ kid, onPress, onRemove, onHandOff }: { kid: KidProfile; onPress: () => void; onRemove: () => void; onHandOff: () => void }) {
+  const tc = useThemeColors();
   const theme = getKidTheme(kid.gender);
   const earned = kid.goals.reduce((sum, g) => sum + g.currentAmount, 0);
   const target = kid.goals.reduce((sum, g) => sum + g.targetAmount, 0);
@@ -214,7 +217,7 @@ function KidCard({ kid, onPress, onRemove, onHandOff }: { kid: KidProfile; onPre
   ).length;
 
   return (
-    <View style={[kidCardStyles.wrapper, { borderColor: theme.primary + '40' }]}>
+    <View style={[kidCardStyles.wrapper, { backgroundColor: tc.surface, borderColor: theme.primary + '40' }]}>
       <Pressable
         onPress={onPress}
         onLongPress={onRemove}
@@ -230,13 +233,13 @@ function KidCard({ kid, onPress, onRemove, onHandOff }: { kid: KidProfile; onPre
               <ThemedText style={[kidCardStyles.stat, { color: theme.accent }]}>
                 {kid.goals.length} goal{kid.goals.length !== 1 ? 's' : ''}
               </ThemedText>
-              <ThemedText style={kidCardStyles.statDot}>·</ThemedText>
+              <ThemedText style={[kidCardStyles.statDot, { color: tc.textMuted }]}>·</ThemedText>
               <ThemedText style={[kidCardStyles.stat, { color: theme.accent }]}>
                 {completedToday}/{kid.chores.length} chores today
               </ThemedText>
             </View>
             {target > 0 && (
-              <View style={kidCardStyles.progressTrack}>
+              <View style={[kidCardStyles.progressTrack, { backgroundColor: tc.surfaceInner }]}>
                 <View style={[kidCardStyles.progressFill, {
                   width: `${Math.min(100, (earned / target) * 100)}%` as any,
                   backgroundColor: theme.primary,
@@ -265,18 +268,18 @@ function KidCard({ kid, onPress, onRemove, onHandOff }: { kid: KidProfile; onPre
 }
 
 const kidCardStyles = StyleSheet.create({
-  wrapper: { borderWidth: 1, borderRadius: 4, overflow: 'hidden', backgroundColor: '#080E1C' },
+  wrapper: { borderWidth: 1, borderRadius: 4, overflow: 'hidden' },
   card: { flexDirection: 'row' },
   accentBar: { width: 3 },
   content: { flex: 1, flexDirection: 'row', alignItems: 'center', padding: Spacing.three, gap: Spacing.two },
-  avatar: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#0D1E30', alignItems: 'center', justifyContent: 'center' },
+  avatar: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
   avatarEmoji: { fontSize: 22, lineHeight: 28 },
   info: { flex: 1, gap: 4 },
-  name: { fontSize: 13, fontWeight: '800', letterSpacing: 0.5, color: '#C8D8E8' },
+  name: { fontSize: 13, fontWeight: '800', letterSpacing: 0.5 },
   statsRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   stat: { fontSize: 10, fontWeight: '700', letterSpacing: 0.5 },
-  statDot: { fontSize: 10, color: '#3D5870' },
-  progressTrack: { height: 2, backgroundColor: '#0D1E30', borderRadius: 1, marginTop: 2 },
+  statDot: { fontSize: 10 },
+  progressTrack: { height: 2, borderRadius: 1, marginTop: 2 },
   progressFill: { height: '100%', borderRadius: 1 },
   handOffBtn: { paddingVertical: Spacing.one + 4, paddingHorizontal: Spacing.three, alignItems: 'center', borderTopWidth: StyleSheet.hairlineWidth },
   handOffText: { fontSize: 11, fontWeight: '900', letterSpacing: 0.8 },
@@ -287,6 +290,7 @@ const kidCardStyles = StyleSheet.create({
 
 export default function KidsScreen() {
   const router = useRouter();
+  const tc = useThemeColors();
   const [showAdd, setShowAdd] = useState(false);
   const [handOffKid, setHandOffKid] = useState<KidProfile | null>(null);
   const { isPro, kidsLimit } = useEntitlement();
@@ -344,8 +348,8 @@ export default function KidsScreen() {
             </View>
             <View style={{ flex: 1 }}>
               <ThemedText type="label" style={styles.eyebrow}>// FAMILY COMMAND</ThemedText>
-              <ThemedText style={styles.heading}>CADET HQ</ThemedText>
-              <ThemedText type="label" style={styles.subhead}>GOALS · CHORES · SAVINGS</ThemedText>
+              <ThemedText style={[styles.heading, { color: tc.textPrimary }]}>CADET HQ</ThemedText>
+              <ThemedText type="label" style={[styles.subhead, { color: tc.textMuted }]}>GOALS · CHORES · SAVINGS</ThemedText>
             </View>
           </View>
         </SafeAreaView>
@@ -366,8 +370,8 @@ export default function KidsScreen() {
         ) : (
           <View style={styles.emptyState}>
             <Image source={require('../../assets/images/icon.png')} style={styles.emptyIcon} />
-            <ThemedText style={styles.emptyTitle}>NO CADETS ENROLLED</ThemedText>
-            <ThemedText type="label" style={styles.emptyBody}>
+            <ThemedText style={[styles.emptyTitle, { color: tc.textSecondary }]}>NO CADETS ENROLLED</ThemedText>
+            <ThemedText type="label" style={[styles.emptyBody, { color: tc.textSecondary }]}>
               Add a child profile to give them their own goals, chores, and savings missions.
             </ThemedText>
           </View>
@@ -377,24 +381,24 @@ export default function KidsScreen() {
         {kids.length < kidsLimit ? (
           <Pressable
             onPress={() => setShowAdd(true)}
-            style={({ pressed }) => [styles.addBtn, pressed && { opacity: 0.7 }]}>
+            style={({ pressed }) => [styles.addBtn, { backgroundColor: tc.surface }, pressed && { opacity: 0.7 }]}>
             <ThemedText style={styles.addBtnText}>+ ENROLL NEW CADET</ThemedText>
           </Pressable>
         ) : !isPro ? (
           <Pressable
             onPress={() => router.push('/upgrade' as any)}
-            style={({ pressed }) => [styles.addBtn, styles.addBtnLocked, pressed && { opacity: 0.7 }]}>
+            style={({ pressed }) => [styles.addBtn, { backgroundColor: tc.surface }, styles.addBtnLocked, pressed && { opacity: 0.7 }]}>
             <ThemedText style={styles.addBtnLockedText}>🔒 PRO — ENROLL MORE CADETS</ThemedText>
           </Pressable>
         ) : null}
 
         {/* Info card */}
-        <View style={styles.infoCard}>
+        <View style={[styles.infoCard, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
           <View style={styles.infoRow}>
             <ThemedText style={styles.infoEmoji}>🎯</ThemedText>
             <View style={{ flex: 1, gap: 2 }}>
               <ThemedText type="label" style={styles.infoTitle}>HOW IT WORKS</ThemedText>
-              <ThemedText type="label" style={styles.infoBody}>
+              <ThemedText type="label" style={[styles.infoBody, { color: tc.textSecondary }]}>
                 Kids set savings goals like a new bike or game. Parents add chores with dollar values. Every chore completed moves the bar forward — teaching real money skills.
               </ThemedText>
             </View>
@@ -403,7 +407,7 @@ export default function KidsScreen() {
             <ThemedText style={styles.infoEmoji}>💡</ThemedText>
             <View style={{ flex: 1, gap: 2 }}>
               <ThemedText type="label" style={styles.infoTitle}>PARENT TIP</ThemedText>
-              <ThemedText type="label" style={styles.infoBody}>
+              <ThemedText type="label" style={[styles.infoBody, { color: tc.textSecondary }]}>
                 Long-press a cadet card to remove it. Tap to view goals, chores, and daily finance tips written just for kids.
               </ThemedText>
             </View>
@@ -443,15 +447,14 @@ const styles = StyleSheet.create({
   },
   logoEmoji: { fontSize: 22, lineHeight: 28 },
   eyebrow: { color: Brand.tactical, fontSize: 9 },
-  heading: { fontSize: 22, fontWeight: '900', letterSpacing: 1, color: '#C8D8E8', marginTop: 2 },
-  subhead: { color: '#3D6080', fontSize: 9, marginTop: 2 },
+  heading: { fontSize: 22, fontWeight: '900', letterSpacing: 1, marginTop: 2 },
+  subhead: { fontSize: 9, marginTop: 2 },
   kidsList: { gap: Spacing.two },
   emptyState: { alignItems: 'center', paddingVertical: Spacing.five, gap: Spacing.two },
   emptyIcon: { width: 80, height: 80, borderRadius: 18 },
-  emptyTitle: { fontSize: 14, fontWeight: '900', letterSpacing: 2, color: '#6B92B0' },
-  emptyBody: { color: '#6B92B0', fontSize: 11, textAlign: 'center', lineHeight: 17, paddingHorizontal: Spacing.three },
+  emptyTitle: { fontSize: 14, fontWeight: '900', letterSpacing: 2 },
+  emptyBody: { fontSize: 11, textAlign: 'center', lineHeight: 17, paddingHorizontal: Spacing.three },
   addBtn: {
-    backgroundColor: '#080E1C',
     borderWidth: 1,
     borderColor: Brand.tactical + '60',
     borderRadius: 4,
@@ -462,9 +465,7 @@ const styles = StyleSheet.create({
   addBtnLocked: { borderColor: Brand.accent + '40', borderStyle: 'dashed' },
   addBtnLockedText: { color: Brand.accent, fontSize: 12, fontWeight: '800', letterSpacing: 1 },
   infoCard: {
-    backgroundColor: '#080E1C',
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: Brand.border,
     borderRadius: 4,
     padding: Spacing.three,
     gap: Spacing.three,
@@ -472,5 +473,5 @@ const styles = StyleSheet.create({
   infoRow: { flexDirection: 'row', gap: Spacing.two, alignItems: 'flex-start' },
   infoEmoji: { fontSize: 18, width: 28, textAlign: 'center' },
   infoTitle: { color: Brand.accent, fontSize: 10, marginBottom: 2 },
-  infoBody: { color: '#6B92B0', fontSize: 11, lineHeight: 16 },
+  infoBody: { fontSize: 11, lineHeight: 16 },
 });

@@ -1,4 +1,4 @@
-import { useRouter } from 'expo-router';
+﻿import { useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
 import {
   KeyboardAvoidingView,
@@ -7,7 +7,6 @@ import {
   ScrollView,
   StyleSheet,
   TextInput,
-  useColorScheme,
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -20,7 +19,8 @@ import {
   RED_FLAGS,
   searchLESFields,
 } from '@/data/les-fields';
-import { BottomTabInset, Brand, Colors, Spacing } from '@/constants/theme';
+import { BottomTabInset, Brand, Spacing } from '@/constants/theme';
+import { useThemeColors } from '@/hooks/use-theme';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -148,8 +148,7 @@ function VerifyRow({
 export default function LESDecoderScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const scheme = useColorScheme();
-  const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
+  const tc = useThemeColors();
 
   const [activeTab, setActiveTab] = useState<Tab>('glossary');
   const [searchQuery, setSearchQuery] = useState('');
@@ -200,7 +199,7 @@ export default function LESDecoderScreen() {
       {/* ── Header ─────────────────────────────────────────────────────────── */}
       <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
         <Pressable
-          onPress={() => (router.push('/tools'))}
+          onPress={() => (router.back())}
           style={({ pressed }) => [styles.backBtn, pressed && styles.pressed]}>
           <ThemedText style={styles.backChevron}>‹</ThemedText>
         </Pressable>
@@ -216,7 +215,7 @@ export default function LESDecoderScreen() {
       <View style={styles.tabBar}>
         {TABS.map((t) => (
           <Pressable key={t.id} onPress={() => setActiveTab(t.id)} style={styles.tabItem}>
-            <ThemedText style={[styles.tabLabel, activeTab === t.id && styles.tabLabelActive]}>
+            <ThemedText style={[styles.tabLabel, { color: tc.textMuted }, activeTab === t.id && styles.tabLabelActive]}>
               {t.label}
             </ThemedText>
             {activeTab === t.id && <View style={styles.tabUnderline} />}
@@ -228,14 +227,14 @@ export default function LESDecoderScreen() {
       {activeTab === 'glossary' && (
         <>
           {/* Search bar */}
-          <View style={[styles.searchWrap, { backgroundColor: colors.backgroundElement }]}>
+          <View style={[styles.searchWrap, { backgroundColor: tc.surface }]}>
             <ThemedText style={styles.searchIcon}>🔍</ThemedText>
             <TextInput
               value={searchQuery}
               onChangeText={setSearchQuery}
               placeholder="Search LES fields..."
-              placeholderTextColor={colors.textSecondary}
-              style={[styles.searchInput, { color: colors.text }]}
+              placeholderTextColor={tc.textSecondary}
+              style={[styles.searchInput, { color: tc.textPrimary }]}
               clearButtonMode="while-editing"
             />
           </View>
@@ -257,7 +256,7 @@ export default function LESDecoderScreen() {
                     active && { backgroundColor: (meta?.color ?? Brand.accent) + '22', borderColor: meta?.color ?? Brand.accent },
                   ]}>
                   {meta && <ThemedText style={{ fontSize: 12 }}>{meta.icon}</ThemedText>}
-                  <ThemedText style={[styles.filterChipText, active && { color: meta?.color ?? Brand.accent }]}>
+                  <ThemedText style={[styles.filterChipText, { color: tc.textMuted }, active && { color: meta?.color ?? Brand.accent }]}>
                     {s === 'all' ? 'ALL' : meta!.label}
                   </ThemedText>
                 </Pressable>
@@ -336,12 +335,12 @@ export default function LESDecoderScreen() {
                   <View style={styles.inputRow}>
                     <ThemedText style={styles.inputLabel}>{f.label}</ThemedText>
                     <TextInput
-                      style={[styles.input, { color: colors.text, borderColor: 'rgba(128,128,128,0.3)' }]}
+                      style={[styles.input, { color: tc.textPrimary, borderColor: 'rgba(128,128,128,0.3)' }]}
                       keyboardType="decimal-pad"
                       value={f.value}
                       onChangeText={f.set}
                       placeholder={f.placeholder}
-                      placeholderTextColor={colors.textSecondary}
+                      placeholderTextColor={tc.textSecondary}
                     />
                   </View>
                   {i < arr.length - 1 && <View style={styles.inputDivider} />}
@@ -511,7 +510,7 @@ const styles = StyleSheet.create({
     borderBottomColor: 'rgba(128,128,128,0.2)',
   },
   tabItem: { flex: 1, alignItems: 'center', paddingVertical: Spacing.two, position: 'relative' },
-  tabLabel: { fontSize: 10, fontWeight: '700', letterSpacing: 0.6, color: '#3D6080' },
+  tabLabel: { fontSize: 13, fontWeight: '700', letterSpacing: 0.6 },
   tabLabelActive: { color: Brand.accent },
   tabUnderline: {
     position: 'absolute', bottom: 0, left: 8, right: 8,
@@ -532,7 +531,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.three, paddingVertical: 8,
     borderRadius: 99, borderWidth: 1, borderColor: 'rgba(128,128,128,0.25)',
   },
-  filterChipText: { fontSize: 12, fontWeight: '700', letterSpacing: 0.3, color: '#3D6080' },
+  filterChipText: { fontSize: 13, fontWeight: '700', letterSpacing: 0.3 },
 
   content: { paddingHorizontal: Spacing.three, paddingTop: Spacing.two, gap: Spacing.two },
   section: { gap: Spacing.two },
@@ -557,28 +556,28 @@ const styles = StyleSheet.create({
   fieldAccent: { width: 3 },
   fieldBody: { flex: 1, padding: Spacing.two + 2, gap: 4 },
   fieldHeaderRow: { flexDirection: 'row', alignItems: 'flex-start', gap: Spacing.one },
-  fieldName: { fontSize: 13, fontWeight: '800', letterSpacing: 0.3 },
-  fieldPlain: { fontSize: 11, marginTop: 1 },
-  fieldChevron: { fontSize: 10, marginTop: 3 },
-  fieldSummary: { lineHeight: 16, fontSize: 12 },
+  fieldName: { fontSize: 15, fontWeight: '800', letterSpacing: 0.3 },
+  fieldPlain: { fontSize: 13, marginTop: 1 },
+  fieldChevron: { fontSize: 13, marginTop: 3 },
+  fieldSummary: { lineHeight: 20, fontSize: 14 },
   fieldDetail: { gap: Spacing.one, marginTop: 4 },
-  fieldDetailText: { lineHeight: 18, fontSize: 12 },
+  fieldDetailText: { lineHeight: 20, fontSize: 14 },
   formulaBox: {
     backgroundColor: 'rgba(32,138,239,0.08)',
     borderRadius: Spacing.one,
     padding: Spacing.two,
     gap: 2,
   },
-  formulaLabel: { fontSize: 9, fontWeight: '800', letterSpacing: 0.8, color: '#208AEF' },
-  formulaText: { fontSize: 12, fontFamily: 'monospace', color: '#208AEF' },
+  formulaLabel: { fontSize: 11, fontWeight: '800', letterSpacing: 0.8, color: '#208AEF' },
+  formulaText: { fontSize: 13, fontFamily: 'monospace', color: '#208AEF' },
   tipBox: {
     backgroundColor: 'rgba(255,107,53,0.08)',
     borderRadius: Spacing.one,
     padding: Spacing.two,
     gap: 2,
   },
-  tipLabel: { fontSize: 9, fontWeight: '800', letterSpacing: 0.8, color: '#FF6B35' },
-  tipText: { fontSize: 12, color: '#FF6B35CC', lineHeight: 16 },
+  tipLabel: { fontSize: 11, fontWeight: '800', letterSpacing: 0.8, color: '#FF6B35' },
+  tipText: { fontSize: 13, color: '#FF6B35CC', lineHeight: 18 },
 
   blufBox: { borderRadius: Spacing.three, padding: Spacing.three, gap: Spacing.one },
   blufTitle: { fontSize: 13, fontWeight: '800', letterSpacing: 1, color: Brand.accent },
@@ -606,8 +605,8 @@ const styles = StyleSheet.create({
   emptyTitle: { fontSize: 15, fontWeight: '700' },
 
   whereRow: { flexDirection: 'row', alignItems: 'flex-start', padding: Spacing.two + 2, gap: Spacing.two },
-  whereField: { fontSize: 12, fontWeight: '800', letterSpacing: 0.3, minWidth: 130 },
-  whereDesc: { flex: 1, lineHeight: 16, fontSize: 12 },
+  whereField: { fontSize: 14, fontWeight: '800', letterSpacing: 0.3, minWidth: 130 },
+  whereDesc: { flex: 1, lineHeight: 20, fontSize: 13 },
 
   flagCard: {
     borderRadius: Spacing.three, borderWidth: 1,
@@ -615,21 +614,21 @@ const styles = StyleSheet.create({
   },
   flagHeader: { flexDirection: 'row', alignItems: 'center', gap: Spacing.one },
   flagIcon: { fontSize: 18, width: 26, textAlign: 'center' },
-  flagTitle: { flex: 1, fontSize: 13, fontWeight: '800' },
+  flagTitle: { flex: 1, fontSize: 14, fontWeight: '800' },
   severityBadge: {
     borderRadius: 99, borderWidth: 1,
     paddingHorizontal: Spacing.one + 2, paddingVertical: 2,
   },
-  severityText: { fontSize: 9, fontWeight: '800', letterSpacing: 0.5 },
-  flagBody: { lineHeight: 17, fontSize: 12 },
+  severityText: { fontSize: 11, fontWeight: '800', letterSpacing: 0.5 },
+  flagBody: { lineHeight: 20, fontSize: 14 },
   actionBox: {
     backgroundColor: 'rgba(0,0,0,0.15)',
     borderRadius: Spacing.one, padding: Spacing.two, gap: 3,
   },
-  actionLabel: { fontSize: 9, fontWeight: '800', letterSpacing: 0.8 },
-  actionText: { fontSize: 12, lineHeight: 16, fontWeight: '500' },
+  actionLabel: { fontSize: 11, fontWeight: '800', letterSpacing: 0.8 },
+  actionText: { fontSize: 13, lineHeight: 18, fontWeight: '500' },
   disclaimer: {
-    textAlign: 'center', lineHeight: 18, fontSize: 12,
+    textAlign: 'center', lineHeight: 20, fontSize: 13,
     paddingHorizontal: Spacing.two, paddingTop: Spacing.two,
   },
 });

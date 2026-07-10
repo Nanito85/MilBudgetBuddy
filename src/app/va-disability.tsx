@@ -1,4 +1,4 @@
-import { useRouter } from 'expo-router';
+﻿import { useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Brand, Spacing } from '@/constants/theme';
+import { useThemeColors } from '@/hooks/use-theme';
 import {
   combinedRating,
   monthlyCompensation,
@@ -25,22 +26,30 @@ function fmtDollar(n: number): string {
 type Tab = 'calculator' | 'rates';
 
 function TabBtn({ label, active, onPress }: { label: string; active: boolean; onPress: () => void }) {
+  const tc = useThemeColors();
   return (
-    <Pressable onPress={onPress} style={[styles.tabBtn, active && styles.tabBtnActive]}>
-      <ThemedText style={[styles.tabBtnText, active && styles.tabBtnTextActive]}>{label}</ThemedText>
+    <Pressable
+      onPress={onPress}
+      style={[styles.tabBtn, { borderColor: tc.borderColor }, active && styles.tabBtnActive]}>
+      <ThemedText
+        style={[styles.tabBtnText, { color: tc.textMuted }, active && styles.tabBtnTextActive]}>
+        {label}
+      </ThemedText>
     </Pressable>
   );
 }
 
 function RatingPicker({ value, onChange }: { value: number; onChange: (v: number) => void }) {
+  const tc = useThemeColors();
   return (
     <View style={styles.ratingPicker}>
       {VALID_RATINGS.map((r) => (
         <Pressable
           key={r}
           onPress={() => onChange(r)}
-          style={[styles.ratingChip, value === r && styles.ratingChipActive]}>
-          <ThemedText style={[styles.ratingChipText, value === r && styles.ratingChipTextActive]}>
+          style={[styles.ratingChip, { borderColor: tc.borderColor }, value === r && styles.ratingChipActive]}>
+          <ThemedText
+            style={[styles.ratingChipText, { color: tc.textHint }, value === r && styles.ratingChipTextActive]}>
             {r}%
           </ThemedText>
         </Pressable>
@@ -52,6 +61,7 @@ function RatingPicker({ value, onChange }: { value: number; onChange: (v: number
 export default function VaDisabilityScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const tc = useThemeColors();
 
   const [tab, setTab] = useState<Tab>('calculator');
   const [ratings, setRatings] = useState<RatingInput[]>([{ id: uid(), pct: 50 }]);
@@ -87,7 +97,7 @@ export default function VaDisabilityScreen() {
     <ThemedView style={{ flex: 1 }}>
       <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
         <Pressable
-          onPress={() => (router.push('/tools'))}
+          onPress={() => (router.back())}
           style={styles.back}>
           <ThemedText style={styles.backChevron}>‹</ThemedText>
         </Pressable>
@@ -109,14 +119,14 @@ export default function VaDisabilityScreen() {
           <>
             {/* Rating inputs */}
             <ThemedView type="backgroundElement" style={styles.card}>
-              <ThemedText style={styles.cardLabel}>SERVICE-CONNECTED RATINGS</ThemedText>
-              <ThemedText style={styles.cardHint}>
+              <ThemedText style={[styles.cardLabel, { color: tc.textHint }]}>SERVICE-CONNECTED RATINGS</ThemedText>
+              <ThemedText style={[styles.cardHint, { color: tc.textMuted }]}>
                 Add each separate disability rating. The VA uses the &quot;whole person&quot; method — ratings don&apos;t simply add up.
               </ThemedText>
 
               {ratings.map((r, i) => (
                 <View key={r.id} style={styles.ratingRow}>
-                  <ThemedText style={styles.ratingIndex}>#{i + 1}</ThemedText>
+                  <ThemedText style={[styles.ratingIndex, { color: tc.textHint }]}>#{i + 1}</ThemedText>
                   <View style={styles.ratingPickerWrap}>
                     <RatingPicker value={r.pct} onChange={(v) => updateRating(r.id, v)} />
                   </View>
@@ -134,7 +144,7 @@ export default function VaDisabilityScreen() {
               ))}
 
               {ratings.length < 10 && (
-                <Pressable onPress={addRating} style={styles.addRatingBtn}>
+                <Pressable onPress={addRating} style={[styles.addRatingBtn, { borderColor: tc.borderColor }]}>
                   <ThemedText style={styles.addRatingText}>＋ Add Another Rating</ThemedText>
                 </Pressable>
               )}
@@ -142,10 +152,10 @@ export default function VaDisabilityScreen() {
 
             {/* Combined result */}
             <ThemedView type="backgroundElement" style={[styles.resultCard, { borderLeftColor: ratingColor }]}>
-              <ThemedText style={styles.resultEyebrow}>COMBINED RATING</ThemedText>
+              <ThemedText style={[styles.resultEyebrow, { color: tc.textHint }]}>COMBINED RATING</ThemedText>
               <View style={styles.resultRow}>
                 <View>
-                  <ThemedText style={styles.resultExact}>
+                  <ThemedText style={[styles.resultExact, { color: tc.textHint }]}>
                     {combined.exact.toFixed(1)}% exact
                   </ThemedText>
                   <ThemedText style={[styles.resultRounded, { color: ratingColor }]}>
@@ -153,19 +163,19 @@ export default function VaDisabilityScreen() {
                   </ThemedText>
                 </View>
                 <View style={styles.resultRight}>
-                  <ThemedText style={styles.resultMonthlyLabel}>MONTHLY COMP.</ThemedText>
+                  <ThemedText style={[styles.resultMonthlyLabel, { color: tc.textHint }]}>MONTHLY COMP.</ThemedText>
                   <ThemedText style={[styles.resultMonthly, { color: ratingColor }]}>
                     {fmtDollar(monthly)}
                   </ThemedText>
-                  <ThemedText style={styles.resultAnnual}>
+                  <ThemedText style={[styles.resultAnnual, { color: tc.textHint }]}>
                     {fmtDollar(monthly * 12)}/yr
                   </ThemedText>
                 </View>
               </View>
 
               {/* Step-by-step breakdown */}
-              <View style={styles.breakdownBox}>
-                <ThemedText style={styles.breakdownTitle}>HOW THE VA CALCULATED THIS</ThemedText>
+              <View style={[styles.breakdownBox, { backgroundColor: tc.background }]}>
+                <ThemedText style={[styles.breakdownTitle, { color: tc.textMuted }]}>HOW THE VA CALCULATED THIS</ThemedText>
                 {(() => {
                   const sorted = [...ratings].sort((a, b) => b.pct - a.pct);
                   let remaining = 100;
@@ -173,14 +183,14 @@ export default function VaDisabilityScreen() {
                     const disabled = remaining * (r.pct / 100);
                     remaining = remaining - disabled;
                     return (
-                      <ThemedText key={r.id} style={styles.breakdownStep}>
+                      <ThemedText key={r.id} style={[styles.breakdownStep, { color: tc.textHint }]}>
                         {i === 0 ? `${r.pct}% of 100% = ${disabled.toFixed(1)}% disabled` : `${r.pct}% of ${(remaining + disabled).toFixed(1)}% = ${disabled.toFixed(1)}% more disabled`}
                         {` → ${(100 - remaining).toFixed(1)}% total`}
                       </ThemedText>
                     );
                   });
                 })()}
-                <ThemedText style={styles.breakdownStep}>
+                <ThemedText style={[styles.breakdownStep, { color: tc.textHint }]}>
                   {combined.exact.toFixed(1)}% → rounds to <ThemedText style={{ fontWeight: '800', color: ratingColor }}>{combined.rounded}%</ThemedText>
                 </ThemedText>
               </View>
@@ -189,39 +199,39 @@ export default function VaDisabilityScreen() {
             {/* Dependents */}
             {combined.rounded >= 30 && (
               <ThemedView type="backgroundElement" style={styles.card}>
-                <ThemedText style={styles.cardLabel}>DEPENDENTS (30%+ ONLY)</ThemedText>
+                <ThemedText style={[styles.cardLabel, { color: tc.textHint }]}>DEPENDENTS (30%+ ONLY)</ThemedText>
 
                 <View style={styles.toggleRow}>
-                  <ThemedText style={styles.toggleLabel}>Spouse</ThemedText>
+                  <ThemedText style={[styles.toggleLabel, { color: tc.textPrimary }]}>Spouse</ThemedText>
                   <Pressable
                     onPress={() => setHasSpouse((v) => !v)}
-                    style={[styles.toggle, hasSpouse && styles.toggleActive]}>
-                    <ThemedText style={[styles.toggleText, hasSpouse && styles.toggleTextActive]}>
+                    style={[styles.toggle, { borderColor: tc.borderColor }, hasSpouse && styles.toggleActive]}>
+                    <ThemedText style={[styles.toggleText, { color: tc.textHint }, hasSpouse && styles.toggleTextActive]}>
                       {hasSpouse ? 'YES' : 'NO'}
                     </ThemedText>
                   </Pressable>
                 </View>
 
                 <View style={styles.toggleRow}>
-                  <ThemedText style={styles.toggleLabel}>Children ({numChildren})</ThemedText>
+                  <ThemedText style={[styles.toggleLabel, { color: tc.textPrimary }]}>Children ({numChildren})</ThemedText>
                   <View style={styles.childCounter}>
                     <Pressable
                       onPress={() => setNumChildren((v) => Math.max(0, v - 1))}
-                      style={styles.counterBtn}>
-                      <ThemedText style={styles.counterBtnText}>−</ThemedText>
+                      style={[styles.counterBtn, { borderColor: tc.borderColor }]}>
+                      <ThemedText style={[styles.counterBtnText, { color: tc.textPrimary }]}>−</ThemedText>
                     </Pressable>
-                    <ThemedText style={styles.counterVal}>{numChildren}</ThemedText>
+                    <ThemedText style={[styles.counterVal, { color: tc.textPrimary }]}>{numChildren}</ThemedText>
                     <Pressable
                       onPress={() => setNumChildren((v) => Math.min(10, v + 1))}
-                      style={styles.counterBtn}>
-                      <ThemedText style={styles.counterBtnText}>+</ThemedText>
+                      style={[styles.counterBtn, { borderColor: tc.borderColor }]}>
+                      <ThemedText style={[styles.counterBtnText, { color: tc.textPrimary }]}>+</ThemedText>
                     </Pressable>
                   </View>
                 </View>
 
                 {(hasSpouse || numChildren > 0) && (
-                  <View style={styles.depResult}>
-                    <ThemedText style={styles.depResultLabel}>Monthly with dependents</ThemedText>
+                  <View style={[styles.depResult, { borderTopColor: tc.borderColor }]}>
+                    <ThemedText style={[styles.depResultLabel, { color: tc.textHint }]}>Monthly with dependents</ThemedText>
                     <ThemedText style={[styles.depResultVal, { color: ratingColor }]}>
                       {fmtDollar(monthly)}
                     </ThemedText>
@@ -231,7 +241,7 @@ export default function VaDisabilityScreen() {
             )}
 
             <ThemedView type="backgroundElement" style={styles.noteCard}>
-              <ThemedText style={styles.noteText}>
+              <ThemedText style={[styles.noteText, { color: tc.textMuted }]}>
                 Rates are FY2026 estimates (2.5% COLA). Actual VA compensation depends on official C&P exam findings, VA rating decisions, and individual circumstances. File claims at va.gov or through a VSO. Tax-free for disability compensation.
               </ThemedText>
             </ThemedView>
@@ -242,27 +252,27 @@ export default function VaDisabilityScreen() {
         {tab === 'rates' && (
           <>
             <ThemedView type="backgroundElement" style={styles.card}>
-              <ThemedText style={styles.cardLabel}>FY2026 VA DISABILITY RATES — VETERAN ALONE</ThemedText>
-              <ThemedText style={styles.cardHint}>Effective December 1, 2025. Tax-free.</ThemedText>
+              <ThemedText style={[styles.cardLabel, { color: tc.textHint }]}>FY2026 VA DISABILITY RATES — VETERAN ALONE</ThemedText>
+              <ThemedText style={[styles.cardHint, { color: tc.textMuted }]}>Effective December 1, 2025. Tax-free.</ThemedText>
 
               {Object.entries(VA_RATES_ALONE).map(([rStr, monthly]) => {
                 const r = parseInt(rStr);
-                const color = r >= 70 ? Brand.danger : r >= 50 ? Brand.warning : r >= 30 ? Brand.accent : '#4D7A9A';
+                const color = r >= 70 ? Brand.danger : r >= 50 ? Brand.warning : r >= 30 ? Brand.accent : tc.textHint;
                 return (
                   <View key={r} style={styles.rateRow}>
                     <View style={[styles.rateChip, { backgroundColor: color + '20' }]}>
                       <ThemedText style={[styles.rateChipText, { color }]}>{r}%</ThemedText>
                     </View>
-                    <ThemedText style={styles.rateMonthly}>{fmtDollar(monthly)}/mo</ThemedText>
-                    <ThemedText style={styles.rateAnnual}>{fmtDollar(monthly * 12)}/yr</ThemedText>
+                    <ThemedText style={[styles.rateMonthly, { color: tc.textPrimary }]}>{fmtDollar(monthly)}/mo</ThemedText>
+                    <ThemedText style={[styles.rateAnnual, { color: tc.textHint }]}>{fmtDollar(monthly * 12)}/yr</ThemedText>
                   </View>
                 );
               })}
             </ThemedView>
 
             <ThemedView type="backgroundElement" style={styles.noteCard}>
-              <ThemedText style={styles.cardLabel}>DEPENDENT ADDITIONS (30%+)</ThemedText>
-              <ThemedText style={styles.noteText}>
+              <ThemedText style={[styles.cardLabel, { color: tc.textHint }]}>DEPENDENT ADDITIONS (30%+)</ThemedText>
+              <ThemedText style={[styles.noteText, { color: tc.textMuted }]}>
                 At 30% or higher, your monthly compensation increases for dependents:{'\n'}
                 {'\n'}• Spouse adds ~$58–$193/mo depending on rating.
                 {'\n'}• Each child adds ~$30–$100/mo.
@@ -272,15 +282,15 @@ export default function VaDisabilityScreen() {
             </ThemedView>
 
             <ThemedView type="backgroundElement" style={[styles.noteCard, { borderLeftWidth: 3, borderLeftColor: Brand.tactical }]}>
-              <ThemedText style={styles.cardLabel}>100% TDIU</ThemedText>
-              <ThemedText style={styles.noteText}>
+              <ThemedText style={[styles.cardLabel, { color: tc.textHint }]}>100% TDIU</ThemedText>
+              <ThemedText style={[styles.noteText, { color: tc.textMuted }]}>
                 Total Disability based on Individual Unemployability (TDIU) pays at the 100% rate even if your combined rating is less than 100%, if you cannot secure substantially gainful employment due to service-connected disabilities. Requires 60%+ single rating, or 70%+ combined with one disability at 40%+.
               </ThemedText>
             </ThemedView>
 
             <ThemedView type="backgroundElement" style={styles.noteCard}>
-              <ThemedText style={styles.cardLabel}>SPECIAL MONTHLY COMPENSATION</ThemedText>
-              <ThemedText style={styles.noteText}>
+              <ThemedText style={[styles.cardLabel, { color: tc.textHint }]}>SPECIAL MONTHLY COMPENSATION</ThemedText>
+              <ThemedText style={[styles.noteText, { color: tc.textMuted }]}>
                 SMC provides additional compensation for specific conditions like loss of use of a limb, blindness, deafness, or the need for regular aid and attendance. SMC rates can significantly exceed the standard 100% rate. Ask your VSO about SMC eligibility.
               </ThemedText>
             </ThemedView>

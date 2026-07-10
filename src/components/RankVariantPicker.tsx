@@ -5,6 +5,7 @@ import { PayGrade } from '@/data/bah-rates';
 import { RankVariant, RankVariantOption, getDualVariants } from '@/data/rank-insignia';
 import { BRANCH_COLORS, MilitaryBranch } from '@/types/user.types';
 import { Brand, Spacing } from '@/constants/theme';
+import { useThemeColors } from '@/hooks/use-theme';
 
 import { ThemedText } from './themed-text';
 
@@ -16,6 +17,8 @@ interface Props {
 }
 
 export function RankVariantPicker({ branch, grade, selected, onSelect }: Props) {
+  const tc = useThemeColors();
+
   if (!branch || !grade) return null;
 
   const options: RankVariantOption[] | null = getDualVariants(branch, grade);
@@ -25,7 +28,7 @@ export function RankVariantPicker({ branch, grade, selected, onSelect }: Props) 
 
   return (
     <View style={styles.container}>
-      <ThemedText style={styles.label}>WHICH {grade}?</ThemedText>
+      <ThemedText style={[styles.label, { color: tc.textMuted }]}>WHICH {grade}?</ThemedText>
       <View style={styles.row}>
         {options.map((opt) => {
           const isActive = selected === opt.variant;
@@ -35,12 +38,19 @@ export function RankVariantPicker({ branch, grade, selected, onSelect }: Props) 
               onPress={() => onSelect(opt.variant)}
               style={[
                 styles.chip,
+                { borderColor: tc.borderColor },
                 isActive && { borderColor: color, backgroundColor: color + '20' },
               ]}>
-              <ThemedText style={[styles.chipAbbrev, isActive && { color }]}>
+              <ThemedText
+                style={[styles.chipAbbrev, { color: tc.textHint }, isActive && { color }]}>
                 {opt.abbrev}
               </ThemedText>
-              <ThemedText style={[styles.chipFull, isActive && { color: color + 'CC' }]}>
+              <ThemedText
+                style={[
+                  styles.chipFull,
+                  { color: tc.textMuted },
+                  isActive && { color: color + 'CC' },
+                ]}>
                 {opt.fullName}
               </ThemedText>
             </Pressable>
@@ -53,11 +63,10 @@ export function RankVariantPicker({ branch, grade, selected, onSelect }: Props) 
 
 const styles = StyleSheet.create({
   container: { gap: Spacing.one + 2 },
-  label: { fontSize: 9, fontWeight: '800', letterSpacing: 1, color: '#3D6080' },
+  label: { fontSize: 9, fontWeight: '800', letterSpacing: 1 },
   row: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.one + 2 },
   chip: {
     borderWidth: 1.5,
-    borderColor: '#1E2D3D',
     borderRadius: 4,
     paddingHorizontal: Spacing.two + 2,
     paddingVertical: Spacing.one + 2,
@@ -65,6 +74,6 @@ const styles = StyleSheet.create({
     gap: 2,
     minWidth: 80,
   },
-  chipAbbrev: { fontSize: 13, fontWeight: '800', letterSpacing: 0.5, color: '#4D7A9A' },
-  chipFull: { fontSize: 8, fontWeight: '600', letterSpacing: 0.3, color: '#3D6080', textAlign: 'center' },
+  chipAbbrev: { fontSize: 13, fontWeight: '800', letterSpacing: 0.5 },
+  chipFull: { fontSize: 8, fontWeight: '600', letterSpacing: 0.3, textAlign: 'center' },
 });

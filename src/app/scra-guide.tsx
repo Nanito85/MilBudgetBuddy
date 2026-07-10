@@ -1,4 +1,4 @@
-import { useRouter } from 'expo-router';
+﻿import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Brand, Spacing } from '@/constants/theme';
+import { useThemeColors } from '@/hooks/use-theme';
 
 interface Protection {
   id: string;
@@ -123,26 +124,27 @@ const PROTECTIONS: Protection[] = [
 ];
 
 function ProtectionCard({ item }: { item: Protection }) {
+  const tc = useThemeColors();
   const [expanded, setExpanded] = useState(false);
   return (
     <Pressable
       onPress={() => setExpanded((v) => !v)}
-      style={({ pressed }) => [styles.card, pressed && { opacity: 0.85 }]}>
+      style={({ pressed }) => [styles.card, { backgroundColor: tc.surface, borderColor: tc.borderColor }, pressed && { opacity: 0.85 }]}>
       <View style={styles.cardHeader}>
         <ThemedText style={styles.cardIcon}>{item.icon}</ThemedText>
         <View style={styles.cardMeta}>
-          <ThemedText style={styles.cardTitle}>{item.title.toUpperCase()}</ThemedText>
-          <ThemedText style={styles.cardSummary}>{item.summary}</ThemedText>
+          <ThemedText style={[styles.cardTitle, { color: tc.textPrimary }]}>{item.title.toUpperCase()}</ThemedText>
+          <ThemedText style={[styles.cardSummary, { color: tc.textHint }]}>{item.summary}</ThemedText>
         </View>
         <ThemedText style={styles.chevron}>{expanded ? '∧' : '∨'}</ThemedText>
       </View>
       {expanded && (
         <View style={styles.cardBody}>
-          <View style={styles.divider} />
-          <ThemedText style={styles.details}>{item.details}</ThemedText>
+          <View style={[styles.divider, { backgroundColor: tc.borderColor }]} />
+          <ThemedText style={[styles.details, { color: tc.textSecondary }]}>{item.details}</ThemedText>
           <View style={styles.actionBox}>
             <ThemedText style={styles.actionLabel}>⚡ WHAT TO DO</ThemedText>
-            <ThemedText style={styles.actionText}>{item.action}</ThemedText>
+            <ThemedText style={[styles.actionText, { color: tc.textPrimary }]}>{item.action}</ThemedText>
           </View>
         </View>
       )}
@@ -153,12 +155,13 @@ function ProtectionCard({ item }: { item: Protection }) {
 export default function ScraGuideScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const tc = useThemeColors();
 
   return (
     <ThemedView style={{ flex: 1 }}>
       <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
         <Pressable
-          onPress={() => (router.push('/tools'))}
+          onPress={() => (router.back())}
           style={styles.back}>
           <ThemedText style={styles.backChevron}>‹</ThemedText>
         </Pressable>
@@ -172,16 +175,16 @@ export default function ScraGuideScreen() {
 
         <ThemedView type="backgroundElement" style={styles.heroBanner}>
           <ThemedText style={styles.heroEyebrow}>SERVICEMEMBERS CIVIL RELIEF ACT</ThemedText>
-          <ThemedText style={styles.heroTitle}>Know Your Rights</ThemedText>
-          <ThemedText style={styles.heroBody}>
+          <ThemedText style={[styles.heroTitle, { color: tc.textPrimary }]}>Know Your Rights</ThemedText>
+          <ThemedText style={[styles.heroBody, { color: tc.textHint }]}>
             The SCRA (50 USC Chapter 50) provides automatic legal and financial protections the moment you go on active duty. These rights do not apply automatically — you must assert them.
           </ThemedText>
         </ThemedView>
 
         <View style={styles.sectionLabelRow}>
-          <View style={styles.sectionLine} />
-          <ThemedText style={styles.sectionLabel}>PROTECTIONS — TAP TO EXPAND</ThemedText>
-          <View style={styles.sectionLine} />
+          <View style={[styles.sectionLine, { backgroundColor: tc.borderColor }]} />
+          <ThemedText style={[styles.sectionLabel, { color: tc.textMuted }]}>PROTECTIONS — TAP TO EXPAND</ThemedText>
+          <View style={[styles.sectionLine, { backgroundColor: tc.borderColor }]} />
         </View>
 
         {PROTECTIONS.map((p) => (
@@ -190,17 +193,17 @@ export default function ScraGuideScreen() {
 
         <ThemedView type="backgroundElement" style={styles.disclaimer}>
           <ThemedText style={styles.disclaimerTitle}>⚠ Important Notice</ThemedText>
-          <ThemedText style={styles.disclaimerText}>
+          <ThemedText style={[styles.disclaimerText, { color: tc.textHint }]}>
             This guide is for general information only and is not legal advice. Specific protections depend on individual circumstances, the type of debt, and state law. Always consult a JAG attorney or your installation's legal assistance office for your specific situation. JAG legal assistance is FREE for active duty service members and their families.
           </ThemedText>
         </ThemedView>
 
         <ThemedView type="backgroundElement" style={styles.resourceBox}>
-          <ThemedText style={styles.resourceTitle}>📞 Free Resources</ThemedText>
-          <ThemedText style={styles.resourceItem}>• JAG / Legal Assistance Office — installation-based, free</ThemedText>
-          <ThemedText style={styles.resourceItem}>• Military OneSource — 800-342-9647 (24/7)</ThemedText>
-          <ThemedText style={styles.resourceItem}>• CFPB Servicemember Affairs — consumerfinance.gov/servicemembers</ThemedText>
-          <ThemedText style={styles.resourceItem}>• DoD SCRA portal — scra.dmdc.osd.mil (verify status for lenders)</ThemedText>
+          <ThemedText style={[styles.resourceTitle, { color: tc.textPrimary }]}>📞 Free Resources</ThemedText>
+          <ThemedText style={[styles.resourceItem, { color: tc.textHint }]}>• JAG / Legal Assistance Office — installation-based, free</ThemedText>
+          <ThemedText style={[styles.resourceItem, { color: tc.textHint }]}>• Military OneSource — 800-342-9647 (24/7)</ThemedText>
+          <ThemedText style={[styles.resourceItem, { color: tc.textHint }]}>• CFPB Servicemember Affairs — consumerfinance.gov/servicemembers</ThemedText>
+          <ThemedText style={[styles.resourceItem, { color: tc.textHint }]}>• DoD SCRA portal — scra.dmdc.osd.mil (verify status for lenders)</ThemedText>
         </ThemedView>
 
       </ScrollView>
@@ -231,17 +234,15 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.one,
   },
   heroEyebrow: { fontSize: 9, fontWeight: '800', letterSpacing: 1.5, color: Brand.tactical },
-  heroTitle: { fontSize: 22, fontWeight: '900', color: '#C8D8E8' },
-  heroBody: { fontSize: 12, lineHeight: 18, color: '#4D7A9A', marginTop: 4 },
+  heroTitle: { fontSize: 22, fontWeight: '900' },
+  heroBody: { fontSize: 12, lineHeight: 18, marginTop: 4 },
 
   sectionLabelRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
-  sectionLine: { flex: 1, height: 1, backgroundColor: Brand.border },
-  sectionLabel: { fontSize: 8, fontWeight: '700', color: '#3D6080', letterSpacing: 0.8 },
+  sectionLine: { flex: 1, height: 1 },
+  sectionLabel: { fontSize: 8, fontWeight: '700', letterSpacing: 0.8 },
 
   card: {
-    backgroundColor: '#080E1C',
     borderWidth: 1,
-    borderColor: Brand.border,
     borderRadius: 4,
     overflow: 'hidden',
   },
@@ -253,13 +254,13 @@ const styles = StyleSheet.create({
   },
   cardIcon: { fontSize: 22, width: 32, textAlign: 'center' },
   cardMeta: { flex: 1, gap: 3 },
-  cardTitle: { fontSize: 11, fontWeight: '800', color: '#C8D8E8', letterSpacing: 0.5 },
-  cardSummary: { fontSize: 11, color: '#4D7A9A', lineHeight: 16 },
+  cardTitle: { fontSize: 11, fontWeight: '800', letterSpacing: 0.5 },
+  cardSummary: { fontSize: 11, lineHeight: 16 },
   chevron: { fontSize: 14, color: Brand.tactical, width: 16, textAlign: 'center' },
 
   cardBody: { paddingHorizontal: Spacing.three, paddingBottom: Spacing.three, gap: Spacing.two },
-  divider: { height: 1, backgroundColor: Brand.border },
-  details: { fontSize: 12, lineHeight: 19, color: '#8AA8C0' },
+  divider: { height: 1 },
+  details: { fontSize: 12, lineHeight: 19 },
   actionBox: {
     backgroundColor: Brand.tactical + '15',
     borderRadius: 4,
@@ -269,7 +270,7 @@ const styles = StyleSheet.create({
     borderLeftColor: Brand.tactical,
   },
   actionLabel: { fontSize: 9, fontWeight: '800', color: Brand.tactical, letterSpacing: 1 },
-  actionText: { fontSize: 12, lineHeight: 18, color: '#C8D8E8' },
+  actionText: { fontSize: 12, lineHeight: 18 },
 
   disclaimer: {
     borderRadius: 4,
@@ -280,13 +281,13 @@ const styles = StyleSheet.create({
     marginTop: Spacing.two,
   },
   disclaimerTitle: { fontSize: 12, fontWeight: '700', color: Brand.warning },
-  disclaimerText: { fontSize: 11, lineHeight: 17, color: '#4D7A9A' },
+  disclaimerText: { fontSize: 11, lineHeight: 17 },
 
   resourceBox: {
     borderRadius: 4,
     padding: Spacing.three,
     gap: 6,
   },
-  resourceTitle: { fontSize: 13, fontWeight: '700', color: '#C8D8E8', marginBottom: 2 },
-  resourceItem: { fontSize: 11, lineHeight: 17, color: '#4D7A9A' },
+  resourceTitle: { fontSize: 13, fontWeight: '700', marginBottom: 2 },
+  resourceItem: { fontSize: 11, lineHeight: 17 },
 });

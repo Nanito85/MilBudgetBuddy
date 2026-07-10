@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, View, ViewProps } from 'react-native';
 
-import { Brand } from '@/constants/theme';
+import { useThemeColors } from '@/hooks/use-theme';
 
 interface Props extends ViewProps {
   accentColor?: string;
@@ -9,17 +9,19 @@ interface Props extends ViewProps {
   children: React.ReactNode;
 }
 
-export function TacticalCard({ accentColor = Brand.border, cornerSize = 12, style, children, ...rest }: Props) {
+export function TacticalCard({ accentColor, cornerSize = 12, style, children, ...rest }: Props) {
+  const tc = useThemeColors();
   const cs = cornerSize;
   const bw = 2;
+  const activeAccent = accentColor ?? tc.borderColor;
 
   return (
-    <View style={[styles.card, style]} {...rest}>
+    <View style={[styles.card, { backgroundColor: tc.surface, borderColor: tc.borderColor }, style]} {...rest}>
       {/* Corner brackets */}
-      <View style={[styles.corner, { top: 0, left: 0, borderTopWidth: bw, borderLeftWidth: bw, width: cs, height: cs, borderColor: accentColor }]} />
-      <View style={[styles.corner, { top: 0, right: 0, borderTopWidth: bw, borderRightWidth: bw, width: cs, height: cs, borderColor: accentColor }]} />
-      <View style={[styles.corner, { bottom: 0, left: 0, borderBottomWidth: bw, borderLeftWidth: bw, width: cs, height: cs, borderColor: accentColor }]} />
-      <View style={[styles.corner, { bottom: 0, right: 0, borderBottomWidth: bw, borderRightWidth: bw, width: cs, height: cs, borderColor: accentColor }]} />
+      <View style={[styles.corner, { top: 0, left: 0, borderTopWidth: bw, borderLeftWidth: bw, width: cs, height: cs, borderColor: activeAccent }]} />
+      <View style={[styles.corner, { top: 0, right: 0, borderTopWidth: bw, borderRightWidth: bw, width: cs, height: cs, borderColor: activeAccent }]} />
+      <View style={[styles.corner, { bottom: 0, left: 0, borderBottomWidth: bw, borderLeftWidth: bw, width: cs, height: cs, borderColor: activeAccent }]} />
+      <View style={[styles.corner, { bottom: 0, right: 0, borderBottomWidth: bw, borderRightWidth: bw, width: cs, height: cs, borderColor: activeAccent }]} />
       {children}
     </View>
   );
@@ -27,11 +29,9 @@ export function TacticalCard({ accentColor = Brand.border, cornerSize = 12, styl
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#080E1C',
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: 'rgba(26,58,92,0.8)',
     position: 'relative',
     overflow: 'hidden',
+    borderWidth: StyleSheet.hairlineWidth,
   },
   corner: {
     position: 'absolute',

@@ -69,7 +69,8 @@
         }
       ],
       "expo-secure-store",
-      "expo-iap"
+      "expo-iap",
+      "expo-sharing"
     ],
     "updates": {
       "url": "https://u.expo.dev/efdc8b09-9740-4992-bd14-1200d6d0e133"

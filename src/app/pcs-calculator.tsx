@@ -1,4 +1,4 @@
-import { useRouter } from 'expo-router';
+﻿import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { Keyboard, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -15,6 +15,7 @@ import { StationPicker } from '@/features/pcs/components/StationPicker';
 import { calcPCS } from '@/features/pcs/utils/pcsCalc';
 import { BottomTabInset, Brand, Fonts, Spacing } from '@/constants/theme';
 import { getBahRate } from '@/data/bah-rates';
+import { useThemeColors } from '@/hooks/use-theme';
 import { useUserStore } from '@/store/user.store';
 
 // ── DLA Tables (FY2026, effective Jan 1 2026, per JTR Table 5-A) ──────────────
@@ -71,6 +72,7 @@ function Stepper({ label, value, min, max, onChange }: {
 export default function PCSCalculatorScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const tc = useThemeColors();
 
   const { payGrade: profileGrade, hasSpouse: profileHasSpouse, mhaZip: profileZip, hydrated } = useUserStore();
 
@@ -147,7 +149,7 @@ export default function PCSCalculatorScreen() {
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
         <Pressable
-          onPress={() => (router.push('/tools'))}
+          onPress={() => (router.back())}
           style={({ pressed }) => [styles.backBtn, pressed && styles.pressed]}>
           <ThemedText style={styles.backChevron}>‹</ThemedText>
         </Pressable>
@@ -235,12 +237,12 @@ export default function PCSCalculatorScreen() {
               </ThemedText>
               <View style={styles.milesRow}>
                 <TextInput
-                  style={styles.milesInput}
+                  style={[styles.milesInput, { color: tc.textPrimary, borderColor: tc.borderColor }]}
                   value={milesInput}
                   onChangeText={(t) => setMilesInput(t.replace(/[^0-9]/g, ''))}
                   keyboardType="number-pad"
                   placeholder="e.g. 1500"
-                  placeholderTextColor="#3D6080"
+                  placeholderTextColor={tc.textMuted}
                   returnKeyType="done"
                   onSubmitEditing={Keyboard.dismiss}
                 />
@@ -364,7 +366,7 @@ export default function PCSCalculatorScreen() {
                     {miles === 0 ? ' — enter distance above' : ''}
                   </ThemedText>
                 </View>
-                <ThemedText style={[styles.entitlementAmt, { color: miles > 0 ? Brand.tactical : '#3D6080' }]}>
+                <ThemedText style={[styles.entitlementAmt, { color: miles > 0 ? Brand.tactical : tc.textMuted }]}>
                   {miles > 0 ? fmt(malt) : '—'}
                 </ThemedText>
               </View>
@@ -380,15 +382,15 @@ export default function PCSCalculatorScreen() {
               {tleDepartDays > 0 ? (
                 <>
                   <View style={styles.tleDetailRow}>
-                    <ThemedText style={styles.tleDetailLabel}>Lodging (70%)</ThemedText>
-                    <ThemedText style={styles.tleDetailAmt}>{fmt(tleDepartLodging)}</ThemedText>
+                    <ThemedText style={[styles.tleDetailLabel, { color: tc.textSecondary }]}>Lodging (70%)</ThemedText>
+                    <ThemedText style={[styles.tleDetailAmt, { color: tc.textPrimary }]}>{fmt(tleDepartLodging)}</ThemedText>
                   </View>
                   <View style={styles.tleDetailRow}>
-                    <ThemedText style={styles.tleDetailLabel}>M&IE (30%)</ThemedText>
-                    <ThemedText style={styles.tleDetailAmt}>{fmt(tleDepartMie)}</ThemedText>
+                    <ThemedText style={[styles.tleDetailLabel, { color: tc.textSecondary }]}>M&IE (30%)</ThemedText>
+                    <ThemedText style={[styles.tleDetailAmt, { color: tc.textPrimary }]}>{fmt(tleDepartMie)}</ThemedText>
                   </View>
                   <View style={[styles.tleDetailRow, { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: 'rgba(128,128,128,0.2)', marginTop: 4, paddingTop: 4 }]}>
-                    <ThemedText style={[styles.tleDetailLabel, { fontWeight: '700' }]}>Total departure TLE</ThemedText>
+                    <ThemedText style={[styles.tleDetailLabel, { fontWeight: '700', color: tc.textSecondary }]}>Total departure TLE</ThemedText>
                     <ThemedText style={[styles.entitlementAmt, { color: Brand.primary }]}>{fmt(tleDepartTotal)}</ThemedText>
                   </View>
                   {currentStation && currentBAH === 0 && (
@@ -412,15 +414,15 @@ export default function PCSCalculatorScreen() {
               {tleGainDays > 0 ? (
                 <>
                   <View style={styles.tleDetailRow}>
-                    <ThemedText style={styles.tleDetailLabel}>Lodging (70%)</ThemedText>
-                    <ThemedText style={styles.tleDetailAmt}>{fmt(tleGainLodging)}</ThemedText>
+                    <ThemedText style={[styles.tleDetailLabel, { color: tc.textSecondary }]}>Lodging (70%)</ThemedText>
+                    <ThemedText style={[styles.tleDetailAmt, { color: tc.textPrimary }]}>{fmt(tleGainLodging)}</ThemedText>
                   </View>
                   <View style={styles.tleDetailRow}>
-                    <ThemedText style={styles.tleDetailLabel}>M&IE (30%)</ThemedText>
-                    <ThemedText style={styles.tleDetailAmt}>{fmt(tleGainMie)}</ThemedText>
+                    <ThemedText style={[styles.tleDetailLabel, { color: tc.textSecondary }]}>M&IE (30%)</ThemedText>
+                    <ThemedText style={[styles.tleDetailAmt, { color: tc.textPrimary }]}>{fmt(tleGainMie)}</ThemedText>
                   </View>
                   <View style={[styles.tleDetailRow, { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: 'rgba(128,128,128,0.2)', marginTop: 4, paddingTop: 4 }]}>
-                    <ThemedText style={[styles.tleDetailLabel, { fontWeight: '700' }]}>Total gaining TLE</ThemedText>
+                    <ThemedText style={[styles.tleDetailLabel, { fontWeight: '700', color: tc.textSecondary }]}>Total gaining TLE</ThemedText>
                     <ThemedText style={[styles.entitlementAmt, { color: Brand.primary }]}>{fmt(tleGainTotal)}</ThemedText>
                   </View>
                   {gainingStation && gainingBAH === 0 && (
@@ -445,24 +447,24 @@ export default function PCSCalculatorScreen() {
           <ThemedView type="backgroundElement" style={[styles.card, { borderLeftWidth: 3, borderLeftColor: Brand.accent }]}>
             <View style={styles.cardPadded}>
               <View style={styles.packageRow}>
-                <ThemedText style={styles.packageLabel}>DLA (one-time)</ThemedText>
-                <ThemedText style={[styles.packageAmt, { color: '#C8D8E8' }]}>{fmt(dla)}</ThemedText>
+                <ThemedText style={[styles.packageLabel, { color: tc.textSecondary }]}>DLA (one-time)</ThemedText>
+                <ThemedText style={[styles.packageAmt, { color: tc.textPrimary }]}>{fmt(dla)}</ThemedText>
               </View>
               <View style={styles.packageRow}>
-                <ThemedText style={styles.packageLabel}>MALT</ThemedText>
-                <ThemedText style={[styles.packageAmt, { color: miles > 0 ? '#C8D8E8' : '#3D6080' }]}>
+                <ThemedText style={[styles.packageLabel, { color: tc.textSecondary }]}>MALT</ThemedText>
+                <ThemedText style={[styles.packageAmt, { color: miles > 0 ? tc.textPrimary : tc.textMuted }]}>
                   {miles > 0 ? fmt(malt) : '—'}
                 </ThemedText>
               </View>
               <View style={styles.packageRow}>
-                <ThemedText style={styles.packageLabel}>TLE Total ({tleDepartDays + tleGainDays} days)</ThemedText>
-                <ThemedText style={[styles.packageAmt, { color: '#C8D8E8' }]}>{fmt(tleTotal)}</ThemedText>
+                <ThemedText style={[styles.packageLabel, { color: tc.textSecondary }]}>TLE Total ({tleDepartDays + tleGainDays} days)</ThemedText>
+                <ThemedText style={[styles.packageAmt, { color: tc.textPrimary }]}>{fmt(tleTotal)}</ThemedText>
               </View>
 
               <View style={[styles.divider, { marginVertical: Spacing.two }]} />
 
               <View style={styles.packageRow}>
-                <ThemedText style={[styles.packageLabel, { fontSize: 15, fontWeight: '700' }]}>
+                <ThemedText style={[styles.packageLabel, { fontSize: 15, fontWeight: '700', color: tc.textSecondary }]}>
                   TOTAL ONE-TIME ENTITLEMENTS
                 </ThemedText>
                 <ThemedText style={[styles.packageAmt, { color: Brand.accent, fontSize: 22, fontFamily: Fonts.data }]}>
@@ -475,7 +477,7 @@ export default function PCSCalculatorScreen() {
                   <View style={[styles.divider, { marginVertical: Spacing.two }]} />
                   <View style={styles.packageRow}>
                     <View style={{ flex: 1 }}>
-                      <ThemedText style={styles.packageLabel}>Monthly BAH Change</ThemedText>
+                      <ThemedText style={[styles.packageLabel, { color: tc.textSecondary }]}>Monthly BAH Change</ThemedText>
                       <ThemedText type="small" themeColor="textSecondary">Ongoing after PCS</ThemedText>
                     </View>
                     <ThemedText style={[styles.packageAmt, {
@@ -582,13 +584,11 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.3)',
     borderWidth: 1,
-    borderColor: Brand.border,
     borderRadius: 6,
     paddingHorizontal: Spacing.two,
     paddingVertical: 10,
     fontSize: 16,
     fontWeight: '700',
-    color: '#C8D8E8',
     fontFamily: Fonts.data,
   },
 
@@ -611,11 +611,11 @@ const styles = StyleSheet.create({
   entitlementAmt: { fontSize: 16, fontWeight: '800', fontFamily: Fonts.data },
 
   tleDetailRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 3 },
-  tleDetailLabel: { fontSize: 12, color: '#7A9AB5' },
-  tleDetailAmt: { fontSize: 13, fontWeight: '600', color: '#C8D8E8', fontFamily: Fonts.data },
+  tleDetailLabel: { fontSize: 12 },
+  tleDetailAmt: { fontSize: 13, fontWeight: '600', fontFamily: Fonts.data },
 
   packageRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', paddingVertical: 3 },
-  packageLabel: { fontSize: 13, color: '#7A9AB5', flex: 1 },
+  packageLabel: { fontSize: 13, flex: 1 },
   packageAmt: { fontSize: 16, fontWeight: '800', fontFamily: Fonts.data },
 
   emptyState: {

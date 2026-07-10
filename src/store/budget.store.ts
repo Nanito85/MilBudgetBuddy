@@ -22,7 +22,7 @@ const DEFAULT_CATEGORIES: BudgetCategory[] = [
   { id: 'savings_goal',  name: 'Savings Goal',     emoji: '💰', monthlyBudget: 0 },
 ];
 
-export const MAX_CUSTOM_CATEGORIES = 10;
+export const MAX_TOTAL_CATEGORIES = 50;
 export const CUSTOM_PREFIX = 'custom_';
 
 interface BudgetState {

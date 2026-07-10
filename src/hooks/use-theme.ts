@@ -30,6 +30,7 @@ export function useThemeColors() {
     inputBg:       c.inputBg,
     // Borders
     borderColor:   c.border,
+    borderStrong:  c.borderStrong,
     // Brand (same in both modes)
     accent:        Brand.accent,
     tactical:      Brand.tactical,

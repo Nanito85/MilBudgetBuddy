@@ -4,11 +4,12 @@ import { Alert, Modal, Pressable, ScrollView, StyleSheet, TextInput, View } from
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { FeedbackModal } from '@/components/FeedbackModal';
+import { TutorialModal } from '@/components/TutorialModal';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Brand, Spacing } from '@/constants/theme';
 import { ALL_QUICK_ACTIONS } from '@/data/quick-actions';
-import { useTheme } from '@/hooks/use-theme';
+import { useThemeColors } from '@/hooks/use-theme';
 import { useEntitlement } from '@/hooks/use-entitlement';
 import { useIsAdmin } from '@/hooks/use-admin';
 import { useAuthStore } from '@/store/auth.store';
@@ -168,28 +169,31 @@ const pinModalStyles = StyleSheet.create({
 export default function SettingsScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const theme = useTheme();
+  const tc = useThemeColors();
 
   const savedIds      = useUserStore((s) => s.quickAccessIds);
   const resetAll      = useUserStore((s) => s.resetAll);
   const fontScale     = useUserStore((s) => s.fontScale ?? 1.0);
+  const appTheme      = useUserStore((s) => s.appTheme ?? 'dark');
   const setQuickAccessIds = useUserStore((s) => s.setQuickAccessIds);
   const setFontScale  = useUserStore((s) => s.setFontScale);
+  const setAppTheme   = useUserStore((s) => s.setAppTheme);
 
   const kidPin = useKidModeStore((s) => s.pin);
 
   const [selected, setSelected]       = useState<string[]>(savedIds.slice(0, MAX_TILES));
   const [showFeedback, setShowFeedback] = useState(false);
   const [showPINManage, setShowPINManage] = useState(false);
-  const isAdmin = useIsAdmin();
+  const [showTutorial, setShowTutorial] = useState(false);
+  const { isAdmin, resolving: adminResolving } = useIsAdmin();
 
   const { isPro, isPromo, status, daysLeft } = useEntitlement();
-  const { user, signOut: signOutUser } = useAuthStore();
+  const { user, signOut: signOutUser, deleteAccount } = useAuthStore();
 
-  const bg     = '#04080F';
-  const card   = '#080E1C';
-  const text   = '#C8D8E8';
-  const textDim= '#4D7A9A';
+  const bg     = tc.background;
+  const card   = tc.surface;
+  const text   = tc.textPrimary;
+  const textDim= tc.textMuted;
 
   const toggle = (id: string) => {
     setSelected((prev) => {
@@ -206,8 +210,9 @@ export default function SettingsScreen() {
 
   return (
     <ThemedView style={styles.container}>
+      <TutorialModal visible={showTutorial} onDismiss={() => setShowTutorial(false)} />
       <SafeAreaView edges={['top']}>
-        <View style={[styles.header, { borderBottomColor: Brand.border }]}>
+        <View style={[styles.header, { borderBottomColor: tc.borderColor }]}>
           <Pressable onPress={() => router.back()} style={styles.backBtn}>
             <ThemedText style={styles.backText}>‹ Back</ThemedText>
           </Pressable>
@@ -225,7 +230,7 @@ export default function SettingsScreen() {
           onPress={() => router.push('/profile' as any)}
           style={({ pressed }) => [
             styles.profileNavRow,
-            { backgroundColor: card, borderColor: Brand.border },
+            { backgroundColor: card, borderColor: tc.borderColor },
             pressed && { opacity: 0.7 },
           ]}>
           <ThemedText style={styles.profileNavIcon}>🪖</ThemedText>
@@ -280,6 +285,44 @@ export default function SettingsScreen() {
           </Pressable>
         )}
 
+        {/* ── APPEARANCE ─────────────────────────────────────────────── */}
+        <View style={styles.section}>
+          <ThemedText type="label" style={styles.eyebrow}>// APPEARANCE</ThemedText>
+          <ThemedText style={[styles.sectionTitle, { color: text }]}>THEME</ThemedText>
+          <ThemedText type="label" style={[styles.sectionDesc, { color: textDim }]}>
+            CHOOSE HOW THE APP LOOKS.
+          </ThemedText>
+        </View>
+
+        <View style={styles.fontGrid}>
+          {(['dark', 'light'] as const).map((opt) => {
+            const isSelected = appTheme === opt;
+            return (
+              <Pressable
+                key={opt}
+                onPress={() => setAppTheme(opt)}
+                style={({ pressed }) => [
+                  styles.fontTile,
+                  { backgroundColor: card, borderColor: isSelected ? Brand.accent : tc.borderColor },
+                  isSelected && { backgroundColor: Brand.accent + '12' },
+                  pressed && { opacity: 0.7 },
+                ]}>
+                <ThemedText style={[styles.fontTileLabel, { color: isSelected ? Brand.accent : text }]}>
+                  {opt === 'dark' ? '🌙 Dark' : '☀️ Light'}
+                </ThemedText>
+                <ThemedText style={[styles.fontTileSub, { color: isSelected ? Brand.accent + 'CC' : textDim }]}>
+                  {opt === 'dark' ? 'Tactical, low-glare' : 'Bright, high-contrast'}
+                </ThemedText>
+                {isSelected && (
+                  <View style={styles.fontTileCheck}>
+                    <ThemedText style={styles.fontTileCheckMark}>✓</ThemedText>
+                  </View>
+                )}
+              </Pressable>
+            );
+          })}
+        </View>
+
         {/* ── FONT SIZE ──────────────────────────────────────────────── */}
         <View style={styles.section}>
           <ThemedText type="label" style={styles.eyebrow}>// ACCESSIBILITY</ThemedText>
@@ -289,7 +332,7 @@ export default function SettingsScreen() {
           </ThemedText>
         </View>
 
-        <View style={styles.fontList}>
+        <View style={styles.fontGrid}>
           {FONT_SCALE_OPTIONS.map((opt) => {
             const isSelected = Math.abs(fontScale - opt.value) < 0.05;
             return (
@@ -297,25 +340,22 @@ export default function SettingsScreen() {
                 key={opt.value}
                 onPress={() => setFontScale(opt.value)}
                 style={({ pressed }) => [
-                  styles.fontRow,
-                  { backgroundColor: card, borderColor: isSelected ? Brand.accent : Brand.border },
-                  isSelected && { backgroundColor: Brand.accent + '10' },
+                  styles.fontTile,
+                  { backgroundColor: card, borderColor: isSelected ? Brand.accent : tc.borderColor },
+                  isSelected && { backgroundColor: Brand.accent + '12' },
                   pressed && { opacity: 0.7 },
                 ]}>
-                <View style={styles.fontRowLeft}>
-                  <ThemedText style={[styles.fontLabel, { color: isSelected ? Brand.accent : text, fontSize: 14 * opt.value }]}>
-                    {opt.label}
-                  </ThemedText>
-                  <ThemedText style={[styles.fontSub, { color: textDim, fontSize: 10 * opt.value }]}>
-                    {opt.sublabel}
-                  </ThemedText>
-                </View>
-                <View style={[
-                  styles.fontRadio,
-                  isSelected && { backgroundColor: Brand.accent, borderColor: Brand.accent },
-                ]}>
-                  {isSelected && <ThemedText style={styles.fontRadioMark}>✓</ThemedText>}
-                </View>
+                <ThemedText style={[styles.fontTileLabel, { color: isSelected ? Brand.accent : text, fontSize: 15 * opt.value }]}>
+                  {opt.label}
+                </ThemedText>
+                <ThemedText style={[styles.fontTileSub, { color: isSelected ? Brand.accent + 'CC' : textDim, fontSize: 9 }]}>
+                  {opt.sublabel}
+                </ThemedText>
+                {isSelected && (
+                  <View style={styles.fontTileCheck}>
+                    <ThemedText style={styles.fontTileCheckMark}>✓</ThemedText>
+                  </View>
+                )}
               </Pressable>
             );
           })}
@@ -352,19 +392,19 @@ export default function SettingsScreen() {
             </Pressable>
           ))}
           {selected.length < MAX_TILES && Array.from({ length: MAX_TILES - selected.length }).map((_, i) => (
-            <View key={`empty-${i}`} style={[styles.tileCube, styles.tileCubeEmpty, { borderColor: Brand.border, backgroundColor: card }]}>
+            <View key={`empty-${i}`} style={[styles.tileCube, styles.tileCubeEmpty, { borderColor: tc.borderColor, backgroundColor: card }]}>
               <ThemedText style={[styles.tileCubeEmptyText, { color: textDim }]}>+</ThemedText>
             </View>
           ))}
         </View>
 
         {/* Separator */}
-        <View style={[styles.tilesDivider, { borderColor: Brand.border }]}>
-          <View style={[styles.tilesDividerLine, { backgroundColor: Brand.border }]} />
+        <View style={[styles.tilesDivider, { borderColor: tc.borderColor }]}>
+          <View style={[styles.tilesDividerLine, { backgroundColor: tc.borderColor }]} />
           <ThemedText type="label" style={[styles.tilesDividerLabel, { color: textDim }]}>
             AVAILABLE — TAP TO ADD
           </ThemedText>
-          <View style={[styles.tilesDividerLine, { backgroundColor: Brand.border }]} />
+          <View style={[styles.tilesDividerLine, { backgroundColor: tc.borderColor }]} />
         </View>
 
         {/* NOT ON HOME SCREEN */}
@@ -378,7 +418,7 @@ export default function SettingsScreen() {
                 disabled={isDisabled}
                 style={({ pressed }) => [
                   styles.tileCube,
-                  { backgroundColor: card, borderColor: Brand.border },
+                  { backgroundColor: card, borderColor: tc.borderColor },
                   isDisabled && { opacity: 0.35 },
                   pressed && !isDisabled && { opacity: 0.7 },
                 ]}>
@@ -404,11 +444,13 @@ export default function SettingsScreen() {
               <ThemedText style={[settingsProStyles.proTitle, { color: Brand.tactical }]}>SYNCED — DATA BACKED UP</ThemedText>
               <ThemedText style={[settingsProStyles.proSub, { color: textDim }]} numberOfLines={1}>{user.email}</ThemedText>
             </View>
-            <Pressable
-              onPress={() => signOutUser()}
-              style={[settingsProStyles.upgradeBtn, { backgroundColor: '#1A2A3A' }]}>
-              <ThemedText style={[settingsProStyles.upgradeBtnText, { color: '#6B92B0' }]}>SIGN OUT</ThemedText>
-            </Pressable>
+            <View style={{ gap: 6 }}>
+              <Pressable
+                onPress={() => signOutUser()}
+                style={[settingsProStyles.upgradeBtn, { backgroundColor: tc.surfaceInner }]}>
+                <ThemedText style={[settingsProStyles.upgradeBtnText, { color: tc.textSecondary }]}>SIGN OUT</ThemedText>
+              </Pressable>
+            </View>
           </View>
         ) : (
           <Pressable
@@ -422,6 +464,23 @@ export default function SettingsScreen() {
             <ThemedText style={[settingsProStyles.chevron, { color: Brand.tactical }]}>›</ThemedText>
           </Pressable>
         )}
+
+        {/* ── TUTORIAL ───────────────────────────────────────────────── */}
+        <View style={styles.section}>
+          <ThemedText type="label" style={styles.eyebrow}>// ORIENTATION</ThemedText>
+          <ThemedText style={[styles.sectionTitle, { color: text }]}>TUTORIAL</ThemedText>
+        </View>
+
+        <Pressable
+          onPress={() => setShowTutorial(true)}
+          style={({ pressed }) => [settingsProStyles.upgradeCard, { backgroundColor: card, borderColor: Brand.accent + '40' }, pressed && { opacity: 0.7 }]}>
+          <ThemedText style={settingsProStyles.proIcon}>🎖️</ThemedText>
+          <View style={{ flex: 1 }}>
+            <ThemedText style={[settingsProStyles.proTitle, { color: Brand.accent }]}>APP TUTORIAL</ThemedText>
+            <ThemedText style={[settingsProStyles.proSub, { color: textDim }]}>Review the app orientation and feature overview.</ThemedText>
+          </View>
+          <ThemedText style={[settingsProStyles.chevron, { color: Brand.accent }]}>›</ThemedText>
+        </Pressable>
 
         {/* ── FEEDBACK ───────────────────────────────────────────────── */}
         <View style={styles.section}>
@@ -490,7 +549,46 @@ export default function SettingsScreen() {
           </View>
         </Pressable>
 
-        {isAdmin && (
+        {/* ── PRIVACY & LEGAL ────────────────────────────────────────── */}
+        <View style={styles.section}>
+          <ThemedText type="label" style={styles.eyebrow}>// COMPLIANCE</ThemedText>
+          <ThemedText style={[styles.sectionTitle, { color: text }]}>PRIVACY & LEGAL</ThemedText>
+        </View>
+
+        <Pressable
+          onPress={() => router.push('/privacy-center' as any)}
+          style={({ pressed }) => [settingsProStyles.upgradeCard, { backgroundColor: card, borderColor: Brand.tactical + '40' }, pressed && { opacity: 0.7 }]}>
+          <ThemedText style={settingsProStyles.proIcon}>🔐</ThemedText>
+          <View style={{ flex: 1 }}>
+            <ThemedText style={[settingsProStyles.proTitle, { color: Brand.tactical }]}>PRIVACY CENTER</ThemedText>
+            <ThemedText style={[settingsProStyles.proSub, { color: textDim }]}>What data we collect, how it's protected, your rights.</ThemedText>
+          </View>
+          <ThemedText style={[settingsProStyles.chevron, { color: Brand.tactical }]}>›</ThemedText>
+        </Pressable>
+
+        <Pressable
+          onPress={() => router.push('/terms' as any)}
+          style={({ pressed }) => [settingsProStyles.upgradeCard, { backgroundColor: card, borderColor: tc.borderColor }, pressed && { opacity: 0.7 }]}>
+          <ThemedText style={settingsProStyles.proIcon}>📄</ThemedText>
+          <View style={{ flex: 1 }}>
+            <ThemedText style={[settingsProStyles.proTitle, { color: text }]}>TERMS OF SERVICE</ThemedText>
+            <ThemedText style={[settingsProStyles.proSub, { color: textDim }]}>Subscription terms, disclaimer, and user agreement.</ThemedText>
+          </View>
+          <ThemedText style={[settingsProStyles.chevron, { color: textDim }]}>›</ThemedText>
+        </Pressable>
+
+        <Pressable
+          onPress={() => router.push('/upgrade' as any)}
+          style={({ pressed }) => [settingsProStyles.upgradeCard, { backgroundColor: card, borderColor: tc.borderColor }, pressed && { opacity: 0.7 }]}>
+          <ThemedText style={settingsProStyles.proIcon}>🔄</ThemedText>
+          <View style={{ flex: 1 }}>
+            <ThemedText style={[settingsProStyles.proTitle, { color: text }]}>RESTORE PURCHASES</ThemedText>
+            <ThemedText style={[settingsProStyles.proSub, { color: textDim }]}>Already subscribed? Tap to restore your Pro access.</ThemedText>
+          </View>
+          <ThemedText style={[settingsProStyles.chevron, { color: textDim }]}>›</ThemedText>
+        </Pressable>
+
+        {!adminResolving && isAdmin && (
           <>
             <Pressable
               onPress={() => router.push('/admin/feedback' as any)}
@@ -525,12 +623,49 @@ export default function SettingsScreen() {
           </>
         )}
 
+        {/* ── DELETE ACCOUNT (bottom) ─────────────────────────────────── */}
+        {user && (
+          <>
+            <View style={styles.section}>
+              <ThemedText type="label" style={styles.eyebrow}>// DANGER ZONE</ThemedText>
+            </View>
+            <Pressable
+              onPress={() =>
+                Alert.alert(
+                  'Delete Account',
+                  'This permanently deletes your account and all synced data. Local data on this device will remain until you reset the app. This cannot be undone.',
+                  [
+                    { text: 'Cancel', style: 'cancel' },
+                    {
+                      text: 'Delete Account',
+                      style: 'destructive',
+                      onPress: async () => {
+                        try {
+                          await deleteAccount();
+                        } catch {
+                          Alert.alert('Error', 'Could not delete account. You may need to sign out and sign back in first, then try again.');
+                        }
+                      },
+                    },
+                  ],
+                )
+              }
+              style={({ pressed }) => [settingsProStyles.upgradeCard, { backgroundColor: card, borderColor: Brand.danger + '30' }, pressed && { opacity: 0.7 }]}>
+              <ThemedText style={settingsProStyles.proIcon}>🗑️</ThemedText>
+              <View style={{ flex: 1 }}>
+                <ThemedText style={[settingsProStyles.proTitle, { color: Brand.danger }]}>DELETE ACCOUNT</ThemedText>
+                <ThemedText style={[settingsProStyles.proSub, { color: textDim }]}>Permanently remove your account and all synced data.</ThemedText>
+              </View>
+            </Pressable>
+          </>
+        )}
+
       </ScrollView>
 
       <FeedbackModal visible={showFeedback} onClose={() => setShowFeedback(false)} />
       <PINManageModal visible={showPINManage} onClose={() => setShowPINManage(false)} />
 
-      <View style={[styles.footer, { paddingBottom: insets.bottom + Spacing.two, backgroundColor: bg, borderTopColor: Brand.border }]}>
+      <View style={[styles.footer, { paddingBottom: insets.bottom + Spacing.two, backgroundColor: bg, borderTopColor: tc.borderColor }]}>
         <Pressable onPress={save} style={({ pressed }) => [styles.saveBtn, pressed && { opacity: 0.8 }]}>
           <ThemedText style={styles.saveBtnText}>SAVE CHANGES</ThemedText>
         </Pressable>
@@ -584,29 +719,28 @@ const styles = StyleSheet.create({
   tileCubeIcon: { fontSize: 18, lineHeight: 22 },
   tileCubeLabel: { fontSize: 7, fontWeight: '700', textAlign: 'center', letterSpacing: 0.1, lineHeight: 10 },
 
-  fontList: { gap: Spacing.two },
-  fontRow: {
+  fontGrid: {
     flexDirection: 'row',
-    alignItems: 'center',
+    flexWrap: 'wrap',
     gap: Spacing.two,
-    borderWidth: 1,
-    borderRadius: 6,
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.two + 4,
   },
-  fontRowLeft: { flex: 1, gap: 3 },
-  fontLabel: { fontWeight: '800', letterSpacing: 0.5 },
-  fontSub:   { lineHeight: 14 },
-  fontRadio: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    borderWidth: 2,
-    borderColor: Brand.border,
-    alignItems: 'center',
+  fontTile: {
+    width: '48%',
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: Spacing.three,
+    gap: 4,
+    minHeight: 72,
     justifyContent: 'center',
   },
-  fontRadioMark: { color: '#FFFFFF', fontSize: 12, fontWeight: '900' },
+  fontTileLabel: { fontWeight: '800', letterSpacing: 0.3 },
+  fontTileSub: { lineHeight: 13 },
+  fontTileCheck: {
+    position: 'absolute',
+    top: Spacing.one + 2,
+    right: Spacing.two,
+  },
+  fontTileCheckMark: { color: Brand.accent, fontSize: 14, fontWeight: '900' },
 
   tileGroupLabel: { fontSize: 9, letterSpacing: 0.8 },
   tilesGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two },

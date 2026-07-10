@@ -33,11 +33,13 @@ export function TipListItem({ tip, onPress }: TipListItemProps) {
             hitSlop={12}
             style={styles.saveBtn}
             accessibilityLabel={saved ? 'Remove from saved' : 'Save tip'}>
-            <ThemedText style={[styles.heart, saved && styles.heartSaved]}>
+            <ThemedText
+              themeColor={saved ? undefined : 'textMuted'}
+              style={[styles.heart, saved && styles.heartSaved]}>
               {saved ? '♥' : '♡'}
             </ThemedText>
           </Pressable>
-          <ThemedText style={styles.chevron}>›</ThemedText>
+          <ThemedText themeColor="textMuted" style={styles.chevron}>›</ThemedText>
         </View>
       </ThemedView>
     </Pressable>
@@ -76,14 +78,12 @@ const styles = StyleSheet.create({
   },
   heart: {
     fontSize: 18,
-    color: '#94A3B8',
   },
   heartSaved: {
     color: Brand.accent,
   },
   chevron: {
     fontSize: 20,
-    color: '#94A3B8',
     fontWeight: '300',
   },
 });

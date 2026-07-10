@@ -10,6 +10,7 @@ import {
 
 import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
+import { useThemeColors } from '@/hooks/use-theme';
 import { useKidModeStore } from '@/store/kid-mode.store';
 import { useKidsStore } from '@/store/kids.store';
 import { Chore, getKidTheme, KidProfile } from '@/types/kids.types';
@@ -59,6 +60,7 @@ function PINKeypad({
   onCancel?: () => void;
   accentColor: string;
 }) {
+  const tc = useThemeColors();
   const [digits, setDigits] = useState('');
   const [shake, setShake] = useState(false);
 
@@ -78,7 +80,7 @@ function PINKeypad({
   return (
     <View style={pinStyles.container}>
       <ThemedText style={[pinStyles.title, { color: accentColor }]}>{title}</ThemedText>
-      {subtitle ? <ThemedText style={pinStyles.subtitle}>{subtitle}</ThemedText> : null}
+      {subtitle ? <ThemedText style={[pinStyles.subtitle, { color: tc.textSecondary }]}>{subtitle}</ThemedText> : null}
 
       <View style={pinStyles.dots}>
         {[0, 1, 2, 3].map((i) => (
@@ -106,7 +108,7 @@ function PINKeypad({
               k === '' && { opacity: 0 },
               pressed && k !== '' && { opacity: 0.6, backgroundColor: accentColor + '20' },
             ]}>
-            <ThemedText style={[pinStyles.keyText, k === '⌫' && { fontSize: 22 }]}>{k}</ThemedText>
+            <ThemedText style={[pinStyles.keyText, { color: tc.textPrimary }, k === '⌫' && { fontSize: 22 }]}>{k}</ThemedText>
           </Pressable>
         ))}
       </View>
@@ -123,7 +125,7 @@ function PINKeypad({
 const pinStyles = StyleSheet.create({
   container: { alignItems: 'center', gap: Spacing.two, paddingVertical: Spacing.three },
   title: { fontSize: 16, fontWeight: '900', letterSpacing: 0.5, textAlign: 'center' },
-  subtitle: { fontSize: 12, color: '#6B92B0', textAlign: 'center', paddingHorizontal: Spacing.three },
+  subtitle: { fontSize: 12, textAlign: 'center', paddingHorizontal: Spacing.three },
   dots: { flexDirection: 'row', gap: 20, marginVertical: Spacing.three },
   dot: { width: 18, height: 18, borderRadius: 9, borderWidth: 2, backgroundColor: 'transparent' },
   grid: { flexDirection: 'row', flexWrap: 'wrap', width: 240 },
@@ -134,7 +136,7 @@ const pinStyles = StyleSheet.create({
     justifyContent: 'center',
     borderRadius: 8,
   },
-  keyText: { fontSize: 26, fontWeight: '600', color: '#C8D8E8' },
+  keyText: { fontSize: 26, fontWeight: '600' },
   cancelBtn: { marginTop: Spacing.two, paddingVertical: Spacing.two, paddingHorizontal: Spacing.four },
   cancelText: { fontSize: 13, fontWeight: '800', letterSpacing: 0.5 },
 });
@@ -157,6 +159,7 @@ function ExitPINModal({
   onSuccess: () => void;
   onCancel: () => void;
 }) {
+  const tc = useThemeColors();
   const [error, setError]       = useState('');
   const [attempts, setAttempts] = useState(0);
   const [lockedUntil, setLockedUntil] = useState<number | null>(null);
@@ -204,7 +207,7 @@ function ExitPINModal({
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onCancel}>
       <View style={exitStyles.overlay}>
-        <View style={[exitStyles.card, { borderColor: accentColor + '40' }]}>
+        <View style={[exitStyles.card, { backgroundColor: tc.surface, borderColor: accentColor + '40' }]}>
           <ThemedText style={[exitStyles.heading, { color: accentColor }]}>PARENT ACCESS</ThemedText>
           <PINKeypad
             title="Enter Parent PIN"
@@ -228,7 +231,6 @@ const exitStyles = StyleSheet.create({
     padding: Spacing.three,
   },
   card: {
-    backgroundColor: '#04080F',
     borderWidth: 1,
     borderRadius: 12,
     padding: Spacing.three,
@@ -254,6 +256,7 @@ function ChoreRow({
   pendingIds: Set<string>;
   theme: ReturnType<typeof getKidTheme>;
 }) {
+  const tc = useThemeColors();
   const submitChoreForApproval = useKidsStore((s) => s.submitChoreForApproval);
 
   const todayStr = new Date().toISOString().slice(0, 10);
@@ -283,14 +286,14 @@ function ChoreRow({
         {pending && <ThemedText style={choreStyles.checkMark}>⏳</ThemedText>}
       </View>
       <View style={{ flex: 1 }}>
-        <ThemedText style={[choreStyles.name, done && { textDecorationLine: 'line-through', color: '#6B92B0' }]}>
+        <ThemedText style={[choreStyles.name, { color: tc.textPrimary }, done && { textDecorationLine: 'line-through', color: tc.textSecondary }]}>
           {chore.name}
         </ThemedText>
         {pending && (
           <ThemedText style={choreStyles.pendingLabel}>Awaiting Commander approval</ThemedText>
         )}
       </View>
-      <ThemedText style={[choreStyles.value, { color: done || pending ? '#6B92B0' : theme.accent }]}>
+      <ThemedText style={[choreStyles.value, { color: done || pending ? tc.textSecondary : theme.accent }]}>
         +${chore.value.toFixed(2)}
       </ThemedText>
     </Pressable>
@@ -315,7 +318,7 @@ const choreStyles = StyleSheet.create({
     justifyContent: 'center',
   },
   checkMark: { color: '#fff', fontSize: 13, fontWeight: '900' },
-  name: { fontSize: 14, fontWeight: '600', color: '#C8D8E8' },
+  name: { fontSize: 14, fontWeight: '600' },
   pendingLabel: { fontSize: 10, color: '#FFB300', fontWeight: '700', marginTop: 1 },
   value: { fontSize: 13, fontWeight: '800' },
 });
@@ -323,6 +326,7 @@ const choreStyles = StyleSheet.create({
 // ── Goal progress card ──────────────────────────────────────────────────────────
 
 function GoalCard({ goal, theme }: { goal: KidProfile['goals'][0]; theme: ReturnType<typeof getKidTheme> }) {
+  const tc = useThemeColors();
   const pct = goal.targetAmount > 0 ? Math.min(1, goal.currentAmount / goal.targetAmount) : 0;
   const done = pct >= 1;
 
@@ -339,7 +343,7 @@ function GoalCard({ goal, theme }: { goal: KidProfile['goals'][0]; theme: Return
         <View style={[goalStyles.track, { backgroundColor: theme.primary + '20' }]}>
           <View style={[goalStyles.fill, { width: `${pct * 100}%` as any, backgroundColor: done ? '#00B27A' : theme.primary }]} />
         </View>
-        <ThemedText style={[goalStyles.amounts, { color: '#6B92B0' }]}>
+        <ThemedText style={[goalStyles.amounts, { color: tc.textSecondary }]}>
           ${goal.currentAmount.toFixed(2)} saved of ${goal.targetAmount.toFixed(2)}
         </ThemedText>
       </View>
@@ -360,6 +364,7 @@ const goalStyles = StyleSheet.create({
 // ── Main kid mode screen ────────────────────────────────────────────────────────
 
 export function KidModeScreen() {
+  const tc = useThemeColors();
   const deactivate = useKidModeStore((s) => s.deactivate);
   const pin = useKidModeStore((s) => s.pin);
   const kidId = useKidModeStore((s) => s.kidId);
@@ -372,16 +377,16 @@ export function KidModeScreen() {
 
   if (!kidsHydrated) {
     return (
-      <View style={[screen.container, { backgroundColor: '#04080F', alignItems: 'center', justifyContent: 'center' }]}>
-        <ThemedText style={{ color: '#6B92B0', fontSize: 14 }}>Loading...</ThemedText>
+      <View style={[screen.container, { backgroundColor: tc.background, alignItems: 'center', justifyContent: 'center' }]}>
+        <ThemedText style={{ color: tc.textSecondary, fontSize: 14 }}>Loading...</ThemedText>
       </View>
     );
   }
 
   if (!kid) {
     return (
-      <View style={[screen.container, { backgroundColor: '#04080F', alignItems: 'center', justifyContent: 'center' }]}>
-        <ThemedText style={{ color: '#6B92B0', fontSize: 14 }}>Kid profile not found.</ThemedText>
+      <View style={[screen.container, { backgroundColor: tc.background, alignItems: 'center', justifyContent: 'center' }]}>
+        <ThemedText style={{ color: tc.textSecondary, fontSize: 14 }}>Kid profile not found.</ThemedText>
         <Pressable onPress={deactivate} style={{ marginTop: 20 }}>
           <ThemedText style={{ color: '#00C8A8' }}>Back to Parent View</ThemedText>
         </Pressable>
@@ -434,7 +439,7 @@ export function KidModeScreen() {
 
             {kid.chores.length === 0 ? (
               <View style={[screen.emptyBox, { backgroundColor: theme.card, borderColor: theme.primary + '20' }]}>
-                <ThemedText style={screen.emptyText}>No missions yet — ask your parent to add some!</ThemedText>
+                <ThemedText style={[screen.emptyText, { color: tc.textSecondary }]}>No missions yet — ask your parent to add some!</ThemedText>
               </View>
             ) : (
               kid.chores.map((chore) => (
@@ -448,7 +453,7 @@ export function KidModeScreen() {
             <ThemedText style={[screen.sectionTitle, { color: theme.accent }]}>🎯 SAVINGS GOALS</ThemedText>
             {kid.goals.length === 0 ? (
               <View style={[screen.emptyBox, { backgroundColor: theme.card, borderColor: theme.primary + '20' }]}>
-                <ThemedText style={screen.emptyText}>No goals yet — ask your parent to set one up!</ThemedText>
+                <ThemedText style={[screen.emptyText, { color: tc.textSecondary }]}>No goals yet — ask your parent to set one up!</ThemedText>
               </View>
             ) : (
               kid.goals.map((goal) => (
@@ -467,7 +472,7 @@ export function KidModeScreen() {
                   hitSlop={10} style={screen.tipNavBtn}>
                   <ThemedText style={[screen.tipNavText, { color: theme.primary }]}>‹</ThemedText>
                 </Pressable>
-                <ThemedText style={[screen.tipCounter, { color: '#6B92B0' }]}>{tipIdx + 1}/{MONEY_TIPS.length}</ThemedText>
+                <ThemedText style={[screen.tipCounter, { color: tc.textSecondary }]}>{tipIdx + 1}/{MONEY_TIPS.length}</ThemedText>
                 <Pressable
                   onPress={() => setTipIdx((i) => (i + 1) % MONEY_TIPS.length)}
                   hitSlop={10} style={screen.tipNavBtn}>
@@ -479,7 +484,7 @@ export function KidModeScreen() {
               <ThemedText style={screen.tipIcon}>{tip.icon}</ThemedText>
               <View style={{ flex: 1, gap: 4 }}>
                 <ThemedText style={[screen.tipTitle, { color: theme.primary }]}>{tip.title}</ThemedText>
-                <ThemedText style={screen.tipText}>{tip.body}</ThemedText>
+                <ThemedText style={[screen.tipText, { color: tc.textSecondary }]}>{tip.body}</ThemedText>
               </View>
             </View>
           </View>
@@ -532,7 +537,7 @@ const screen = StyleSheet.create({
   sectionBadge: { fontSize: 10, fontWeight: '800', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10 },
 
   emptyBox: { borderWidth: 1, borderRadius: 8, borderStyle: 'dashed', padding: Spacing.three, alignItems: 'center' },
-  emptyText: { fontSize: 12, color: '#6B92B0', textAlign: 'center' },
+  emptyText: { fontSize: 12, textAlign: 'center' },
 
   tipCard: { borderWidth: 1, borderRadius: 10, padding: Spacing.three, gap: Spacing.two },
   tipHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
@@ -544,5 +549,5 @@ const screen = StyleSheet.create({
   tipBody: { flexDirection: 'row', gap: Spacing.two, alignItems: 'flex-start' },
   tipIcon: { fontSize: 28, lineHeight: 34, marginTop: 2 },
   tipTitle: { fontSize: 14, fontWeight: '900' },
-  tipText: { fontSize: 12, lineHeight: 18, color: '#A0B8CC' },
+  tipText: { fontSize: 12, lineHeight: 18 },
 });

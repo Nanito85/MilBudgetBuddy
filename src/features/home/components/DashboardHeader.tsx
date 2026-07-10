@@ -6,6 +6,7 @@ import { ThemedText } from '@/components/themed-text';
 import { PayGrade } from '@/data/bah-rates';
 import { RankVariant } from '@/data/rank-insignia';
 import { Brand, Spacing } from '@/constants/theme';
+import { useThemeColors } from '@/hooks/use-theme';
 import { BRANCH_COLORS, MilitaryBranch, getRankAbbrev } from '@/types/user.types';
 
 interface Props {
@@ -37,6 +38,7 @@ const BRANCH_DESIGNATOR: Record<MilitaryBranch, string> = {
 
 export function DashboardHeader({ branch, payGrade, rankVariant, lastName, nickname, greetingStyle }: Props) {
   const insets = useSafeAreaInsets();
+  const tc = useThemeColors();
   const branchColor = branch ? (BRANCH_COLORS[branch] ?? Brand.primary) : Brand.primary;
   const branchLabel = branch ? BRANCH_DESIGNATOR[branch] : 'MILBUDGETBUDDY';
 
@@ -58,7 +60,7 @@ export function DashboardHeader({ branch, payGrade, rankVariant, lastName, nickn
   const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <View style={[styles.container, { paddingTop: insets.top, backgroundColor: tc.background, borderBottomColor: tc.borderColor }]}>
       {/* Classification bar */}
       <View style={styles.classBar}>
         <ThemedText type="classified">■ FOR OFFICIAL USE ONLY ■</ThemedText>
@@ -74,14 +76,14 @@ export function DashboardHeader({ branch, payGrade, rankVariant, lastName, nickn
               {branchLabel}
             </ThemedText>
           </View>
-          <ThemedText type="label" style={styles.greetingText}>{greeting()},</ThemedText>
-          <ThemedText style={styles.name} numberOfLines={1}>{displayName}</ThemedText>
+          <ThemedText type="label" style={[styles.greetingText, { color: tc.textMuted }]}>{greeting()},</ThemedText>
+          <ThemedText style={[styles.name, { color: tc.textPrimary }]} numberOfLines={1}>{displayName}</ThemedText>
         </View>
 
         {/* Right: date/time */}
         <View style={styles.right}>
           <ThemedText type="label" style={styles.clock}>{timeStr}</ThemedText>
-          <ThemedText type="label" style={styles.date}>{dateStr}</ThemedText>
+          <ThemedText type="label" style={[styles.date, { color: tc.textMuted }]}>{dateStr}</ThemedText>
           <View style={styles.statusRow}>
             <View style={styles.statusDot} />
             <ThemedText type="label" style={styles.statusText}>SECURE</ThemedText>
@@ -101,9 +103,7 @@ export function DashboardHeader({ branch, payGrade, rankVariant, lastName, nickn
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#04080F',
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: Brand.border,
   },
   classBar: {
     backgroundColor: Brand.classified,
@@ -122,17 +122,16 @@ const styles = StyleSheet.create({
   branchRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.one, marginBottom: 2 },
   branchDot: { width: 6, height: 6, borderRadius: 3 },
   branchLabel: { fontSize: 9 },
-  greetingText: { fontSize: 9, color: '#3D6080' },
+  greetingText: { fontSize: 9 },
   name: {
     fontSize: 22,
     fontWeight: '900',
     letterSpacing: 0.5,
-    color: '#C8D8E8',
     fontFamily: undefined,
   },
   right: { alignItems: 'flex-end', gap: 3, paddingTop: 2 },
   clock: { fontSize: 16, color: Brand.tactical, letterSpacing: 1 },
-  date: { fontSize: 9, color: '#3D6080' },
+  date: { fontSize: 9 },
   statusRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 },
   statusDot: {
     width: 5,

@@ -13,6 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { Brand, Spacing } from '@/constants/theme';
+import { useThemeColors } from '@/hooks/use-theme';
 import { auth } from '@/services/firebase';
 
 const API_BASE = process.env.EXPO_PUBLIC_API_BASE_URL ?? 'http://localhost:3000';
@@ -36,6 +37,7 @@ async function getToken(): Promise<string | null> {
 // ── Create Code Form ───────────────────────────────────────────────────────────
 
 function CreateCodeForm({ onCreated }: { onCreated: () => void }) {
+  const tc = useThemeColors();
   const [code,         setCode]         = useState('');
   const [discountPct,  setDiscountPct]  = useState('100');
   const [durationDays, setDurationDays] = useState('30');
@@ -88,18 +90,18 @@ function CreateCodeForm({ onCreated }: { onCreated: () => void }) {
   };
 
   return (
-    <View style={s.card}>
+    <View style={[s.card, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
       <ThemedText style={s.cardTitle}>// CREATE NEW CODE</ThemedText>
 
-      <ThemedText style={s.label}>CODE</ThemedText>
+      <ThemedText style={[s.label, { color: tc.textMuted }]}>CODE</ThemedText>
       <View style={s.codeRow}>
-        <View style={[s.input, { flex: 1 }]}>
+        <View style={[s.input, { flex: 1, backgroundColor: tc.inputBg, borderColor: tc.borderColor }]}>
           <TextInput
             value={code}
             onChangeText={(t) => setCode(t.toUpperCase())}
             placeholder="e.g. MILSAVE50"
-            placeholderTextColor="#2A4A60"
-            style={s.inputText}
+            placeholderTextColor={tc.textHint}
+            style={[s.inputText, { color: tc.textPrimary }]}
             autoCapitalize="characters"
             maxLength={20}
           />
@@ -111,36 +113,36 @@ function CreateCodeForm({ onCreated }: { onCreated: () => void }) {
 
       <View style={s.row}>
         <View style={{ flex: 1 }}>
-          <ThemedText style={s.label}>DISCOUNT %</ThemedText>
-          <View style={s.input}>
+          <ThemedText style={[s.label, { color: tc.textMuted }]}>DISCOUNT %</ThemedText>
+          <View style={[s.input, { backgroundColor: tc.inputBg, borderColor: tc.borderColor }]}>
             <TextInput value={discountPct} onChangeText={setDiscountPct} keyboardType="number-pad"
-              placeholderTextColor="#2A4A60" style={s.inputText} maxLength={3} />
+              placeholderTextColor={tc.textHint} style={[s.inputText, { color: tc.textPrimary }]} maxLength={3} />
           </View>
-          <ThemedText style={s.hint}>100% = free access for duration</ThemedText>
+          <ThemedText style={[s.hint, { color: tc.textMuted }]}>100% = free access for duration</ThemedText>
         </View>
         <View style={{ flex: 1 }}>
-          <ThemedText style={s.label}>DURATION (DAYS)</ThemedText>
-          <View style={s.input}>
+          <ThemedText style={[s.label, { color: tc.textMuted }]}>DURATION (DAYS)</ThemedText>
+          <View style={[s.input, { backgroundColor: tc.inputBg, borderColor: tc.borderColor }]}>
             <TextInput value={durationDays} onChangeText={setDurationDays} keyboardType="number-pad"
-              placeholderTextColor="#2A4A60" style={s.inputText} maxLength={4} />
+              placeholderTextColor={tc.textHint} style={[s.inputText, { color: tc.textPrimary }]} maxLength={4} />
           </View>
-          <ThemedText style={s.hint}>Days of Pro access granted</ThemedText>
+          <ThemedText style={[s.hint, { color: tc.textMuted }]}>Days of Pro access granted</ThemedText>
         </View>
       </View>
 
       <View style={s.row}>
         <View style={{ flex: 1 }}>
-          <ThemedText style={s.label}>MAX USES (0 = unlimited)</ThemedText>
-          <View style={s.input}>
+          <ThemedText style={[s.label, { color: tc.textMuted }]}>MAX USES (0 = unlimited)</ThemedText>
+          <View style={[s.input, { backgroundColor: tc.inputBg, borderColor: tc.borderColor }]}>
             <TextInput value={maxUses} onChangeText={setMaxUses} keyboardType="number-pad"
-              placeholderTextColor="#2A4A60" style={s.inputText} maxLength={6} />
+              placeholderTextColor={tc.textHint} style={[s.inputText, { color: tc.textPrimary }]} maxLength={6} />
           </View>
         </View>
         <View style={{ flex: 1 }}>
-          <ThemedText style={s.label}>EXPIRES (YYYY-MM-DD)</ThemedText>
-          <View style={s.input}>
+          <ThemedText style={[s.label, { color: tc.textMuted }]}>EXPIRES (YYYY-MM-DD)</ThemedText>
+          <View style={[s.input, { backgroundColor: tc.inputBg, borderColor: tc.borderColor }]}>
             <TextInput value={expiresAt} onChangeText={setExpiresAt} placeholder="Leave blank = never"
-              placeholderTextColor="#2A4A60" style={s.inputText} maxLength={10} />
+              placeholderTextColor={tc.textHint} style={[s.inputText, { color: tc.textPrimary }]} maxLength={10} />
           </View>
         </View>
       </View>
@@ -158,13 +160,14 @@ function CreateCodeForm({ onCreated }: { onCreated: () => void }) {
 // ── Code Row ───────────────────────────────────────────────────────────────────
 
 function CodeRow({ item, onToggle, onDelete }: { item: DiscountCode; onToggle: () => void; onDelete: () => void }) {
+  const tc = useThemeColors();
   const expired = item.expiresAt ? new Date(item.expiresAt) < new Date() : false;
   const exhausted = item.maxUses > 0 && item.usedCount >= item.maxUses;
   const statusColor = !item.active || expired || exhausted ? '#6B7280' : Brand.tactical;
   const statusLabel = !item.active ? 'DISABLED' : expired ? 'EXPIRED' : exhausted ? 'EXHAUSTED' : 'ACTIVE';
 
   return (
-    <View style={s.codeCard}>
+    <View style={[s.codeCard, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
       <View style={s.codeCardTop}>
         <ThemedText style={[s.codeName, { color: statusColor }]}>{item.code}</ThemedText>
         <View style={[s.statusPill, { backgroundColor: statusColor + '20', borderColor: statusColor + '50' }]}>
@@ -172,8 +175,8 @@ function CodeRow({ item, onToggle, onDelete }: { item: DiscountCode; onToggle: (
         </View>
       </View>
       <View style={s.codeMeta}>
-        <ThemedText style={s.codeMetaText}>{item.discountPct}% off · {item.durationDays}d Pro</ThemedText>
-        <ThemedText style={s.codeMetaText}>
+        <ThemedText style={[s.codeMetaText, { color: tc.textSecondary }]}>{item.discountPct}% off · {item.durationDays}d Pro</ThemedText>
+        <ThemedText style={[s.codeMetaText, { color: tc.textSecondary }]}>
           {item.usedCount}/{item.maxUses === 0 ? '∞' : item.maxUses} uses
           {item.expiresAt ? ` · exp ${item.expiresAt}` : ''}
         </ThemedText>
@@ -196,6 +199,7 @@ function CodeRow({ item, onToggle, onDelete }: { item: DiscountCode; onToggle: (
 
 export default function CodesScreen() {
   const router = useRouter();
+  const tc = useThemeColors();
   const [codes,   setCodes]   = useState<DiscountCode[]>([]);
   const [loading, setLoading] = useState(true);
   const [error,   setError]   = useState('');
@@ -260,12 +264,12 @@ export default function CodesScreen() {
   };
 
   return (
-    <SafeAreaView style={s.safe} edges={['top']}>
-      <View style={s.header}>
+    <SafeAreaView style={[s.safe, { backgroundColor: tc.background }]} edges={['top']}>
+      <View style={[s.header, { borderColor: tc.borderColor }]}>
         <Pressable onPress={() => router.back()} style={s.back}>
           <ThemedText style={s.backText}>‹ Admin</ThemedText>
         </Pressable>
-        <ThemedText style={s.headerTitle}>🎟️ DISCOUNT CODES</ThemedText>
+        <ThemedText style={[s.headerTitle, { color: tc.textPrimary }]}>🎟️ DISCOUNT CODES</ThemedText>
         <Pressable onPress={fetchCodes} style={s.back}>
           <ThemedText style={s.refreshText}>REFRESH</ThemedText>
         </Pressable>
@@ -280,7 +284,7 @@ export default function CodesScreen() {
         {!!error  && <ThemedText style={s.errorText}>{error}</ThemedText>}
 
         {!loading && codes.length === 0 && !error && (
-          <ThemedText style={s.emptyText}>No codes yet. Create one above.</ThemedText>
+          <ThemedText style={[s.emptyText, { color: tc.textMuted }]}>No codes yet. Create one above.</ThemedText>
         )}
 
         {codes.map((item) => (
@@ -297,22 +301,22 @@ export default function CodesScreen() {
 }
 
 const s = StyleSheet.create({
-  safe:    { flex: 1, backgroundColor: '#04080F' },
-  header:  { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: Spacing.three, paddingVertical: Spacing.two, borderBottomWidth: StyleSheet.hairlineWidth, borderColor: Brand.border },
+  safe:    { flex: 1 },
+  header:  { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: Spacing.three, paddingVertical: Spacing.two, borderBottomWidth: StyleSheet.hairlineWidth },
   back:    { minWidth: 60 },
   backText:    { color: Brand.tactical, fontSize: 14, fontWeight: '700' },
   refreshText: { color: Brand.accent, fontSize: 11, fontWeight: '700', textAlign: 'right' },
-  headerTitle: { fontSize: 13, fontWeight: '900', color: '#C8D8E8', letterSpacing: 0.5 },
+  headerTitle: { fontSize: 13, fontWeight: '900', letterSpacing: 0.5 },
 
   content: { padding: Spacing.three, gap: Spacing.three, paddingBottom: 60 },
 
-  card:      { backgroundColor: '#080E1C', borderWidth: 1, borderColor: Brand.border, borderRadius: 10, padding: Spacing.three, gap: Spacing.two },
+  card:      { borderWidth: 1, borderRadius: 10, padding: Spacing.three, gap: Spacing.two },
   cardTitle: { fontSize: 11, fontWeight: '800', color: Brand.tactical, letterSpacing: 1 },
 
-  label: { fontSize: 9, fontWeight: '800', color: '#3D6080', letterSpacing: 1, marginBottom: 4 },
-  hint:  { fontSize: 9, color: '#3D5870', marginTop: 2 },
-  input: { backgroundColor: '#04080F', borderWidth: 1, borderColor: Brand.border, borderRadius: 6, paddingHorizontal: Spacing.two, paddingVertical: Spacing.one + 2 },
-  inputText: { color: '#C8D8E8', fontSize: 15, fontWeight: '700' },
+  label: { fontSize: 9, fontWeight: '800', letterSpacing: 1, marginBottom: 4 },
+  hint:  { fontSize: 9, marginTop: 2 },
+  input: { borderWidth: 1, borderRadius: 6, paddingHorizontal: Spacing.two, paddingVertical: Spacing.one + 2 },
+  inputText: { fontSize: 15, fontWeight: '700' },
 
   row:    { flexDirection: 'row', gap: Spacing.two },
   codeRow: { flexDirection: 'row', gap: Spacing.two, alignItems: 'flex-end' },
@@ -324,16 +328,16 @@ const s = StyleSheet.create({
   createBtnText: { color: '#04080F', fontSize: 13, fontWeight: '900', letterSpacing: 1 },
 
   sectionTitle: { fontSize: 10, fontWeight: '800', color: Brand.tactical, letterSpacing: 1 },
-  emptyText:    { color: '#3D6080', fontSize: 12, textAlign: 'center', paddingVertical: Spacing.three },
+  emptyText:    { fontSize: 12, textAlign: 'center', paddingVertical: Spacing.three },
   errorText:    { color: Brand.classified, fontSize: 12, textAlign: 'center' },
 
-  codeCard:    { backgroundColor: '#080E1C', borderWidth: 1, borderColor: Brand.border, borderRadius: 8, padding: Spacing.two + 2, gap: Spacing.one },
+  codeCard:    { borderWidth: 1, borderRadius: 8, padding: Spacing.two + 2, gap: Spacing.one },
   codeCardTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   codeName:    { fontSize: 18, fontWeight: '900', letterSpacing: 2, fontFamily: 'monospace' },
   statusPill:  { borderWidth: 1, borderRadius: 4, paddingHorizontal: 6, paddingVertical: 2 },
   statusText:  { fontSize: 8, fontWeight: '900', letterSpacing: 1 },
   codeMeta:    { gap: 2 },
-  codeMetaText:{ fontSize: 10, color: '#4D7A9A' },
+  codeMetaText:{ fontSize: 10 },
   codeActions: { flexDirection: 'row', gap: Spacing.one, marginTop: Spacing.one },
   actionBtn:   { flex: 1, borderWidth: 1, borderRadius: 4, padding: Spacing.one + 2, alignItems: 'center' },
   actionBtnText: { fontSize: 10, fontWeight: '800', letterSpacing: 0.5 },

@@ -21,6 +21,7 @@ import { KIDS_TIPS, getDailyKidsTipIndex } from '@/data/kids-tips';
 import { useKidsStore } from '@/store/kids.store';
 import { ChoreFrequency, Goal, getKidTheme } from '@/types/kids.types';
 import { Spacing } from '@/constants/theme';
+import { useThemeColors } from '@/hooks/use-theme';
 
 const GOAL_EMOJIS = [
   '🎮','🚲','👟','📚','🎸','🏀','🎨','✈️','🏄','🐶',
@@ -43,6 +44,7 @@ function AddGoalModal({ visible, accentColor, onClose, onAdd }: {
   onClose: () => void;
   onAdd: (name: string, emoji: string, target: number) => void;
 }) {
+  const tc = useThemeColors();
   const [name, setName]     = useState('');
   const [target, setTarget] = useState('');
   const [emoji, setEmoji]   = useState('🎮');
@@ -63,11 +65,11 @@ function AddGoalModal({ visible, accentColor, onClose, onAdd }: {
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-        <SafeAreaView style={[addGoalStyles.container, { borderTopColor: accentColor }]}>
+        <SafeAreaView style={[addGoalStyles.container, { backgroundColor: tc.surface, borderTopColor: accentColor }]}>
           {/* Header */}
-          <View style={addGoalStyles.header}>
-            <Pressable onPress={() => { Keyboard.dismiss(); onClose(); }} style={addGoalStyles.cancelBtn}>
-              <ThemedText style={addGoalStyles.cancelText}>✕</ThemedText>
+          <View style={[addGoalStyles.header, { borderBottomColor: tc.borderColor }]}>
+            <Pressable onPress={() => { Keyboard.dismiss(); onClose(); }} style={[addGoalStyles.cancelBtn, { backgroundColor: tc.surfaceInner }]}>
+              <ThemedText style={[addGoalStyles.cancelText, { color: tc.textSecondary }]}>✕</ThemedText>
             </Pressable>
             <ThemedText style={[addGoalStyles.title, { color: accentColor }]}>🎯 NEW GOAL</ThemedText>
             <Pressable
@@ -84,7 +86,7 @@ function AddGoalModal({ visible, accentColor, onClose, onAdd }: {
             contentContainerStyle={addGoalStyles.scroll}>
 
             {/* Emoji picker */}
-            <ThemedText style={addGoalStyles.fieldLabel}>PICK AN EMOJI</ThemedText>
+            <ThemedText style={[addGoalStyles.fieldLabel, { color: tc.textSecondary }]}>PICK AN EMOJI</ThemedText>
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
@@ -95,6 +97,7 @@ function AddGoalModal({ visible, accentColor, onClose, onAdd }: {
                   onPress={() => setEmoji(e)}
                   style={[
                     addGoalStyles.emojiBtn,
+                    { backgroundColor: tc.surfaceInner },
                     emoji === e && { backgroundColor: accentColor + '30', borderColor: accentColor, borderWidth: 2 },
                   ]}>
                   <ThemedText style={addGoalStyles.emojiChar}>{e}</ThemedText>
@@ -104,30 +107,30 @@ function AddGoalModal({ visible, accentColor, onClose, onAdd }: {
             <ThemedText style={[addGoalStyles.selectedEmoji]}>{emoji}</ThemedText>
 
             {/* Goal name */}
-            <ThemedText style={addGoalStyles.fieldLabel}>WHAT'S YOUR GOAL?</ThemedText>
-            <View style={addGoalStyles.inputWrap}>
+            <ThemedText style={[addGoalStyles.fieldLabel, { color: tc.textSecondary }]}>WHAT'S YOUR GOAL?</ThemedText>
+            <View style={[addGoalStyles.inputWrap, { backgroundColor: tc.inputBg, borderColor: tc.borderColor }]}>
               <TextInput
                 value={name}
                 onChangeText={setName}
                 placeholder="Type your goal here (e.g. New Bike, PS5, Shoes...)"
-                placeholderTextColor="rgba(255,255,255,0.3)"
-                style={addGoalStyles.input}
+                placeholderTextColor={tc.textHint}
+                style={[addGoalStyles.input, { color: tc.textPrimary }]}
                 returnKeyType="next"
                 autoCapitalize="words"
               />
             </View>
 
             {/* Goal cost */}
-            <ThemedText style={addGoalStyles.fieldLabel}>HOW MUCH DOES IT COST?</ThemedText>
-            <View style={addGoalStyles.inputWrap}>
-              <ThemedText style={addGoalStyles.dollarSign}>$</ThemedText>
+            <ThemedText style={[addGoalStyles.fieldLabel, { color: tc.textSecondary }]}>HOW MUCH DOES IT COST?</ThemedText>
+            <View style={[addGoalStyles.inputWrap, { backgroundColor: tc.inputBg, borderColor: tc.borderColor }]}>
+              <ThemedText style={[addGoalStyles.dollarSign, { color: tc.textSecondary }]}>$</ThemedText>
               <TextInput
                 value={target}
                 onChangeText={setTarget}
                 placeholder="Goal cost (e.g. 299.99)"
-                placeholderTextColor="rgba(255,255,255,0.3)"
+                placeholderTextColor={tc.textHint}
                 keyboardType="decimal-pad"
-                style={[addGoalStyles.input, { flex: 1 }]}
+                style={[addGoalStyles.input, { flex: 1, color: tc.textPrimary }]}
                 returnKeyType="done"
                 onSubmitEditing={submit}
               />
@@ -139,7 +142,7 @@ function AddGoalModal({ visible, accentColor, onClose, onAdd }: {
                 <ThemedText style={addGoalStyles.previewEmoji}>{emoji}</ThemedText>
                 <View style={{ flex: 1, gap: 3 }}>
                   <ThemedText style={[addGoalStyles.previewName, { color: accentColor }]}>{name}</ThemedText>
-                  <ThemedText style={addGoalStyles.previewAmt}>
+                  <ThemedText style={[addGoalStyles.previewAmt, { color: tc.textSecondary }]}>
                     Goal: {target ? `$${parseFloat(target).toFixed(2)}` : '$—'}
                   </ThemedText>
                 </View>
@@ -155,7 +158,6 @@ function AddGoalModal({ visible, accentColor, onClose, onAdd }: {
 const addGoalStyles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0A1628',
     borderTopWidth: 4,
   },
   header: {
@@ -165,23 +167,21 @@ const addGoalStyles = StyleSheet.create({
     paddingHorizontal: Spacing.three,
     paddingVertical: Spacing.two + 4,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: 'rgba(255,255,255,0.1)',
   },
-  cancelBtn: { width: 36, height: 36, borderRadius: 18, backgroundColor: 'rgba(255,255,255,0.1)', alignItems: 'center', justifyContent: 'center' },
-  cancelText: { fontSize: 14, color: 'rgba(255,255,255,0.5)', fontWeight: '700' },
+  cancelBtn: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
+  cancelText: { fontSize: 14, fontWeight: '700' },
   title: { fontSize: 16, fontWeight: '900', letterSpacing: 1 },
   saveBtn: { borderRadius: 20, paddingHorizontal: Spacing.three, paddingVertical: 8 },
   saveBtnText: { color: '#FFFFFF', fontSize: 13, fontWeight: '900', letterSpacing: 1 },
 
   scroll: { padding: Spacing.three, gap: Spacing.three, paddingBottom: Spacing.six },
 
-  fieldLabel: { fontSize: 10, fontWeight: '900', letterSpacing: 2, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase' },
+  fieldLabel: { fontSize: 10, fontWeight: '900', letterSpacing: 2, textTransform: 'uppercase' },
 
   emojiScroll: { paddingVertical: Spacing.one, gap: Spacing.one },
   emojiBtn: {
     width: 52, height: 52, borderRadius: 26,
     alignItems: 'center', justifyContent: 'center',
-    backgroundColor: 'rgba(255,255,255,0.08)',
   },
   emojiChar: { fontSize: 26, lineHeight: 32 },
   selectedEmoji: { fontSize: 48, textAlign: 'center', lineHeight: 56 },
@@ -189,19 +189,16 @@ const addGoalStyles = StyleSheet.create({
   inputWrap: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.08)',
     borderRadius: 14,
     borderWidth: 1.5,
-    borderColor: 'rgba(255,255,255,0.15)',
     paddingHorizontal: Spacing.three,
     paddingVertical: Spacing.two + 2,
     gap: 4,
   },
-  dollarSign: { fontSize: 20, fontWeight: '700', color: 'rgba(255,255,255,0.6)' },
+  dollarSign: { fontSize: 20, fontWeight: '700' },
   input: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#FFFFFF',
     padding: 0,
   },
 
@@ -215,7 +212,7 @@ const addGoalStyles = StyleSheet.create({
   },
   previewEmoji: { fontSize: 36, lineHeight: 44 },
   previewName:  { fontSize: 16, fontWeight: '800' },
-  previewAmt:   { fontSize: 13, color: 'rgba(255,255,255,0.6)' },
+  previewAmt:   { fontSize: 13 },
 });
 
 // ── Edit Goal Modal ────────────────────────────────────────────────────────────
@@ -228,6 +225,7 @@ function EditGoalModal({ visible, goal, accentColor, onClose, onSave, onDelete }
   onSave: (id: string, name: string, emoji: string, target: number, current: number) => void;
   onDelete: (id: string) => void;
 }) {
+  const tc = useThemeColors();
   const [name, setName]     = useState(goal?.name ?? '');
   const [target, setTarget] = useState(goal?.targetAmount?.toString() ?? '');
   const [current, setCurrent] = useState(goal?.currentAmount?.toString() ?? '');
@@ -266,10 +264,10 @@ function EditGoalModal({ visible, goal, accentColor, onClose, onSave, onDelete }
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-        <SafeAreaView style={[addGoalStyles.container, { borderTopColor: accentColor }]}>
-          <View style={addGoalStyles.header}>
-            <Pressable onPress={() => { Keyboard.dismiss(); onClose(); }} style={addGoalStyles.cancelBtn}>
-              <ThemedText style={addGoalStyles.cancelText}>✕</ThemedText>
+        <SafeAreaView style={[addGoalStyles.container, { backgroundColor: tc.surface, borderTopColor: accentColor }]}>
+          <View style={[addGoalStyles.header, { borderBottomColor: tc.borderColor }]}>
+            <Pressable onPress={() => { Keyboard.dismiss(); onClose(); }} style={[addGoalStyles.cancelBtn, { backgroundColor: tc.surfaceInner }]}>
+              <ThemedText style={[addGoalStyles.cancelText, { color: tc.textSecondary }]}>✕</ThemedText>
             </Pressable>
             <ThemedText style={[addGoalStyles.title, { color: accentColor }]}>✏️ EDIT GOAL</ThemedText>
             <Pressable onPress={submit} style={[addGoalStyles.saveBtn, { backgroundColor: accentColor }]}>
@@ -282,7 +280,7 @@ function EditGoalModal({ visible, goal, accentColor, onClose, onSave, onDelete }
             keyboardShouldPersistTaps="handled"
             contentContainerStyle={addGoalStyles.scroll}>
 
-            <ThemedText style={addGoalStyles.fieldLabel}>PICK AN EMOJI</ThemedText>
+            <ThemedText style={[addGoalStyles.fieldLabel, { color: tc.textSecondary }]}>PICK AN EMOJI</ThemedText>
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
@@ -293,6 +291,7 @@ function EditGoalModal({ visible, goal, accentColor, onClose, onSave, onDelete }
                   onPress={() => setEmoji(e)}
                   style={[
                     addGoalStyles.emojiBtn,
+                    { backgroundColor: tc.surfaceInner },
                     emoji === e && { backgroundColor: accentColor + '30', borderColor: accentColor, borderWidth: 2 },
                   ]}>
                   <ThemedText style={addGoalStyles.emojiChar}>{e}</ThemedText>
@@ -301,43 +300,43 @@ function EditGoalModal({ visible, goal, accentColor, onClose, onSave, onDelete }
             </ScrollView>
             <ThemedText style={addGoalStyles.selectedEmoji}>{emoji}</ThemedText>
 
-            <ThemedText style={addGoalStyles.fieldLabel}>GOAL NAME</ThemedText>
-            <View style={addGoalStyles.inputWrap}>
+            <ThemedText style={[addGoalStyles.fieldLabel, { color: tc.textSecondary }]}>GOAL NAME</ThemedText>
+            <View style={[addGoalStyles.inputWrap, { backgroundColor: tc.inputBg, borderColor: tc.borderColor }]}>
               <TextInput
                 value={name}
                 onChangeText={setName}
                 placeholder="Goal name (e.g. New Bike)"
-                placeholderTextColor="rgba(255,255,255,0.3)"
-                style={addGoalStyles.input}
+                placeholderTextColor={tc.textHint}
+                style={[addGoalStyles.input, { color: tc.textPrimary }]}
                 returnKeyType="next"
                 autoCapitalize="words"
               />
             </View>
 
-            <ThemedText style={addGoalStyles.fieldLabel}>GOAL COST</ThemedText>
-            <View style={addGoalStyles.inputWrap}>
-              <ThemedText style={addGoalStyles.dollarSign}>$</ThemedText>
+            <ThemedText style={[addGoalStyles.fieldLabel, { color: tc.textSecondary }]}>GOAL COST</ThemedText>
+            <View style={[addGoalStyles.inputWrap, { backgroundColor: tc.inputBg, borderColor: tc.borderColor }]}>
+              <ThemedText style={[addGoalStyles.dollarSign, { color: tc.textSecondary }]}>$</ThemedText>
               <TextInput
                 value={target}
                 onChangeText={setTarget}
                 placeholder="Total cost (e.g. 299.99)"
-                placeholderTextColor="rgba(255,255,255,0.3)"
+                placeholderTextColor={tc.textHint}
                 keyboardType="decimal-pad"
-                style={[addGoalStyles.input, { flex: 1 }]}
+                style={[addGoalStyles.input, { flex: 1, color: tc.textPrimary }]}
                 returnKeyType="next"
               />
             </View>
 
-            <ThemedText style={addGoalStyles.fieldLabel}>AMOUNT SAVED SO FAR</ThemedText>
-            <View style={addGoalStyles.inputWrap}>
-              <ThemedText style={addGoalStyles.dollarSign}>$</ThemedText>
+            <ThemedText style={[addGoalStyles.fieldLabel, { color: tc.textSecondary }]}>AMOUNT SAVED SO FAR</ThemedText>
+            <View style={[addGoalStyles.inputWrap, { backgroundColor: tc.inputBg, borderColor: tc.borderColor }]}>
+              <ThemedText style={[addGoalStyles.dollarSign, { color: tc.textSecondary }]}>$</ThemedText>
               <TextInput
                 value={current}
                 onChangeText={setCurrent}
                 placeholder="Current savings (e.g. 50.00)"
-                placeholderTextColor="rgba(255,255,255,0.3)"
+                placeholderTextColor={tc.textHint}
                 keyboardType="decimal-pad"
-                style={[addGoalStyles.input, { flex: 1 }]}
+                style={[addGoalStyles.input, { flex: 1, color: tc.textPrimary }]}
                 returnKeyType="done"
                 onSubmitEditing={submit}
               />
@@ -375,6 +374,7 @@ function AddChoreModal({ visible, defaultFrequency, accentColor, onClose, onAdd 
   onClose: () => void;
   onAdd: (name: string, value: number, frequency: ChoreFrequency) => void;
 }) {
+  const tc = useThemeColors();
   const [name, setName]         = useState('');
   const [value, setValue]       = useState('');
   const [frequency, setFrequency] = useState<ChoreFrequency>(defaultFrequency);
@@ -395,10 +395,10 @@ function AddChoreModal({ visible, defaultFrequency, accentColor, onClose, onAdd 
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-        <SafeAreaView style={[addGoalStyles.container, { borderTopColor: accentColor }]}>
-          <View style={addGoalStyles.header}>
-            <Pressable onPress={() => { Keyboard.dismiss(); onClose(); }} style={addGoalStyles.cancelBtn}>
-              <ThemedText style={addGoalStyles.cancelText}>✕</ThemedText>
+        <SafeAreaView style={[addGoalStyles.container, { backgroundColor: tc.surface, borderTopColor: accentColor }]}>
+          <View style={[addGoalStyles.header, { borderBottomColor: tc.borderColor }]}>
+            <Pressable onPress={() => { Keyboard.dismiss(); onClose(); }} style={[addGoalStyles.cancelBtn, { backgroundColor: tc.surfaceInner }]}>
+              <ThemedText style={[addGoalStyles.cancelText, { color: tc.textSecondary }]}>✕</ThemedText>
             </Pressable>
             <ThemedText style={[addGoalStyles.title, { color: accentColor }]}>⚡ NEW MISSION</ThemedText>
             <Pressable
@@ -414,7 +414,7 @@ function AddChoreModal({ visible, defaultFrequency, accentColor, onClose, onAdd 
             keyboardShouldPersistTaps="handled"
             contentContainerStyle={addGoalStyles.scroll}>
 
-            <ThemedText style={addGoalStyles.fieldLabel}>FREQUENCY</ThemedText>
+            <ThemedText style={[addGoalStyles.fieldLabel, { color: tc.textSecondary }]}>FREQUENCY</ThemedText>
             <View style={choreStyles.freqRow}>
               {FREQ_OPTIONS.map((f) => (
                 <Pressable
@@ -422,39 +422,40 @@ function AddChoreModal({ visible, defaultFrequency, accentColor, onClose, onAdd 
                   onPress={() => setFrequency(f.key)}
                   style={[
                     choreStyles.freqBtn,
+                    { borderColor: tc.borderColor },
                     frequency === f.key && { borderColor: accentColor, backgroundColor: accentColor + '20' },
                   ]}>
                   <ThemedText style={choreStyles.freqEmoji}>{f.emoji}</ThemedText>
-                  <ThemedText style={[choreStyles.freqLabel, frequency === f.key && { color: accentColor }]}>
+                  <ThemedText style={[choreStyles.freqLabel, { color: tc.textSecondary }, frequency === f.key && { color: accentColor }]}>
                     {f.label}
                   </ThemedText>
                 </Pressable>
               ))}
             </View>
 
-            <ThemedText style={addGoalStyles.fieldLabel}>MISSION NAME</ThemedText>
-            <View style={addGoalStyles.inputWrap}>
+            <ThemedText style={[addGoalStyles.fieldLabel, { color: tc.textSecondary }]}>MISSION NAME</ThemedText>
+            <View style={[addGoalStyles.inputWrap, { backgroundColor: tc.inputBg, borderColor: tc.borderColor }]}>
               <TextInput
                 value={name}
                 onChangeText={setName}
                 placeholder="Mission name (e.g. Clean Room, Feed Dog...)"
-                placeholderTextColor="rgba(255,255,255,0.3)"
-                style={addGoalStyles.input}
+                placeholderTextColor={tc.textHint}
+                style={[addGoalStyles.input, { color: tc.textPrimary }]}
                 returnKeyType="next"
                 autoCapitalize="words"
               />
             </View>
 
-            <ThemedText style={addGoalStyles.fieldLabel}>REWARD AMOUNT</ThemedText>
-            <View style={addGoalStyles.inputWrap}>
-              <ThemedText style={addGoalStyles.dollarSign}>$</ThemedText>
+            <ThemedText style={[addGoalStyles.fieldLabel, { color: tc.textSecondary }]}>REWARD AMOUNT</ThemedText>
+            <View style={[addGoalStyles.inputWrap, { backgroundColor: tc.inputBg, borderColor: tc.borderColor }]}>
+              <ThemedText style={[addGoalStyles.dollarSign, { color: tc.textSecondary }]}>$</ThemedText>
               <TextInput
                 value={value}
                 onChangeText={setValue}
                 placeholder="Reward per completion (e.g. 2.50)"
-                placeholderTextColor="rgba(255,255,255,0.3)"
+                placeholderTextColor={tc.textHint}
                 keyboardType="decimal-pad"
-                style={[addGoalStyles.input, { flex: 1 }]}
+                style={[addGoalStyles.input, { flex: 1, color: tc.textPrimary }]}
                 returnKeyType="done"
                 onSubmitEditing={submit}
               />
@@ -470,11 +471,11 @@ const choreStyles = StyleSheet.create({
   freqRow: { flexDirection: 'row', gap: Spacing.two },
   freqBtn: {
     flex: 1, alignItems: 'center', paddingVertical: Spacing.two + 4,
-    borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.15)',
+    borderWidth: 1.5,
     borderRadius: 14, gap: 4,
   },
   freqEmoji: { fontSize: 22, lineHeight: 28 },
-  freqLabel: { fontSize: 12, fontWeight: '700', color: 'rgba(255,255,255,0.5)', letterSpacing: 0.5 },
+  freqLabel: { fontSize: 12, fontWeight: '700', letterSpacing: 0.5 },
 });
 
 // ── Main Kid Screen ────────────────────────────────────────────────────────────

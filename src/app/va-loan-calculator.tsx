@@ -1,4 +1,4 @@
-import { useRouter } from 'expo-router';
+﻿import { useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
 import {
   KeyboardAvoidingView,
@@ -17,43 +17,46 @@ import { ThemedView } from '@/components/themed-view';
 import { BottomTabInset, Brand, Fonts, Spacing } from '@/constants/theme';
 import { CONFORMING_LOAN_LIMIT, FUNDING_FEE_EXEMPT_NOTE, VAUsage } from '@/data/va-loan-rates';
 import { VALoanInputs, calcVALoan, fmtMoney, fmtMoneyExact } from '@/features/va-loan/utils/vaLoanCalc';
+import { useThemeColors } from '@/hooks/use-theme';
+
+type ThemeColors = ReturnType<typeof useThemeColors>;
 
 // ── Sub-components ─────────────────────────────────────────────────────────────
 
-function SectionLabel({ text }: { text: string }) {
+function SectionLabel({ text, tc }: { text: string; tc: ThemeColors }) {
   return (
     <View style={ss.labelRow}>
-      <View style={ss.labelLine} />
-      <ThemedText type="label" style={ss.labelText}>{text}</ThemedText>
-      <View style={ss.labelLine} />
+      <View style={[ss.labelLine, { backgroundColor: tc.borderColor }]} />
+      <ThemedText type="label" style={[ss.labelText, { color: tc.textHint }]}>{text}</ThemedText>
+      <View style={[ss.labelLine, { backgroundColor: tc.borderColor }]} />
     </View>
   );
 }
 
-function ResultRow({ label, value, accent, indent, bold }: { label: string; value: string; accent?: string; indent?: boolean; bold?: boolean }) {
+function ResultRow({ label, value, accent, indent, bold, tc }: { label: string; value: string; accent?: string; indent?: boolean; bold?: boolean; tc: ThemeColors }) {
   return (
     <View style={[ss.row, indent && ss.rowIndent]}>
-      <ThemedText style={[ss.rowLabel, bold && ss.rowLabelBold, indent && { opacity: 0.7 }]}>{label}</ThemedText>
-      <View style={ss.dotLine} />
-      <ThemedText style={[ss.rowValue, bold && ss.rowValueBold, accent ? { color: accent } : undefined]}>
+      <ThemedText style={[ss.rowLabel, { color: tc.textSecondary }, bold && [ss.rowLabelBold, { color: tc.textPrimary }], indent && { opacity: 0.7 }]}>{label}</ThemedText>
+      <View style={[ss.dotLine, { backgroundColor: tc.borderColor }]} />
+      <ThemedText style={[ss.rowValue, { color: tc.textPrimary }, bold && ss.rowValueBold, accent ? { color: accent } : undefined]}>
         {value}
       </ThemedText>
     </View>
   );
 }
 
-function MoneyInput({ label, value, onChange, prefix = '$' }: { label: string; value: string; onChange: (v: string) => void; prefix?: string }) {
+function MoneyInput({ label, value, onChange, prefix = '$', tc }: { label: string; value: string; onChange: (v: string) => void; prefix?: string; tc: ThemeColors }) {
   return (
     <View style={ss.inputGroup}>
-      <ThemedText type="label" style={ss.inputLabel}>{label}</ThemedText>
-      <View style={ss.inputWrap}>
+      <ThemedText type="label" style={[ss.inputLabel, { color: tc.textHint }]}>{label}</ThemedText>
+      <View style={[ss.inputWrap, { backgroundColor: tc.inputBg, borderColor: tc.borderColor }]}>
         <ThemedText style={ss.inputPrefix}>{prefix}</ThemedText>
         <TextInput
           value={value}
           onChangeText={onChange}
           keyboardType="decimal-pad"
-          style={ss.input}
-          placeholderTextColor="#2A4A60"
+          style={[ss.input, { color: tc.textPrimary }]}
+          placeholderTextColor={tc.textMuted}
           placeholder="0"
         />
       </View>
@@ -61,17 +64,17 @@ function MoneyInput({ label, value, onChange, prefix = '$' }: { label: string; v
   );
 }
 
-function ChipRow<T extends string | number>({ label, options, selected, onSelect }: { label: string; options: { value: T; label: string }[]; selected: T; onSelect: (v: T) => void }) {
+function ChipRow<T extends string | number>({ label, options, selected, onSelect, tc }: { label: string; options: { value: T; label: string }[]; selected: T; onSelect: (v: T) => void; tc: ThemeColors }) {
   return (
     <View style={ss.chipGroup}>
-      <ThemedText type="label" style={ss.inputLabel}>{label}</ThemedText>
+      <ThemedText type="label" style={[ss.inputLabel, { color: tc.textHint }]}>{label}</ThemedText>
       <View style={ss.chipRow}>
         {options.map((o) => (
           <Pressable
             key={o.value}
             onPress={() => onSelect(o.value)}
-            style={[ss.chip, selected === o.value && ss.chipActive]}>
-            <ThemedText style={[ss.chipText, selected === o.value && ss.chipTextActive]}>
+            style={[ss.chip, { borderColor: tc.borderColor, backgroundColor: tc.inputBg }, selected === o.value && ss.chipActive]}>
+            <ThemedText style={[ss.chipText, { color: tc.textSecondary }, selected === o.value && ss.chipTextActive]}>
               {o.label}
             </ThemedText>
           </Pressable>
@@ -99,6 +102,7 @@ const BOOL_OPTIONS = [
 export default function VALoanCalculatorScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const tc = useThemeColors();
 
   const [homePrice, setHomePrice] = useState('400000');
   const [downPayment, setDownPayment] = useState('0');
@@ -134,13 +138,13 @@ export default function VALoanCalculatorScreen() {
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
     <ThemedView style={ss.screen}>
       {/* Header */}
-      <View style={[ss.header, { paddingTop: insets.top + Spacing.two }]}>
-        <Pressable onPress={() => router.push('/tools')} style={ss.back}>
+      <View style={[ss.header, { paddingTop: insets.top + Spacing.two, borderBottomColor: tc.borderColor }]}>
+        <Pressable onPress={() => router.back()} style={ss.back}>
           <ThemedText style={ss.backChevron}>‹</ThemedText>
         </Pressable>
         <View style={ss.headerCenter}>
           <ThemedText type="label" style={ss.headerSub}>// BENEFIT CALCULATOR</ThemedText>
-          <ThemedText style={ss.headerTitle}>VA LOAN</ThemedText>
+          <ThemedText style={[ss.headerTitle, { color: tc.textPrimary }]}>VA LOAN</ThemedText>
         </View>
         <View style={{ width: 40 }} />
       </View>
@@ -155,97 +159,99 @@ export default function VALoanCalculatorScreen() {
           <View style={ss.blufBar} />
           <View style={ss.blufText}>
             <ThemedText type="label" style={ss.blufLabel}>COMMANDER'S BRIEF</ThemedText>
-            <ThemedText style={ss.blufBody}>
+            <ThemedText style={[ss.blufBody, { color: tc.textSecondary }]}>
               VA loans require no down payment or PMI, saving most buyers hundreds per month. A funding fee applies unless you receive VA disability compensation.
             </ThemedText>
           </View>
         </TacticalCard>
 
         {/* ── INPUTS ── */}
-        <SectionLabel text="PROPERTY & LOAN" />
+        <SectionLabel text="PROPERTY & LOAN" tc={tc} />
 
-        <TacticalCard accentColor={Brand.border} style={ss.inputCard}>
+        <TacticalCard style={ss.inputCard}>
           <View style={ss.inputGrid}>
-            <MoneyInput label="HOME PRICE" value={homePrice} onChange={setHomePrice} />
-            <MoneyInput label="DOWN PAYMENT" value={downPayment} onChange={setDownPayment} />
+            <MoneyInput label="HOME PRICE" value={homePrice} onChange={setHomePrice} tc={tc} />
+            <MoneyInput label="DOWN PAYMENT" value={downPayment} onChange={setDownPayment} tc={tc} />
           </View>
           <View style={ss.inputGrid}>
-            <MoneyInput label="INTEREST RATE" value={interestRate} onChange={setInterestRate} prefix="%" />
-            <ChipRow label="LOAN TERM" options={TERM_OPTIONS} selected={loanTerm} onSelect={setLoanTerm} />
+            <MoneyInput label="INTEREST RATE" value={interestRate} onChange={setInterestRate} prefix="%" tc={tc} />
+            <ChipRow label="LOAN TERM" options={TERM_OPTIONS} selected={loanTerm} onSelect={setLoanTerm} tc={tc} />
           </View>
         </TacticalCard>
 
-        <SectionLabel text="VA ENTITLEMENT" />
+        <SectionLabel text="VA ENTITLEMENT" tc={tc} />
 
-        <TacticalCard accentColor={Brand.border} style={ss.inputCard}>
-          <ChipRow label="VA LOAN USAGE" options={USAGE_OPTIONS} selected={usage} onSelect={setUsage} />
+        <TacticalCard style={ss.inputCard}>
+          <ChipRow label="VA LOAN USAGE" options={USAGE_OPTIONS} selected={usage} onSelect={setUsage} tc={tc} />
           <ChipRow
             label="DISABILITY EXEMPT"
             options={BOOL_OPTIONS}
             selected={exempt}
             onSelect={(v) => setExempt(v as 'yes' | 'no')}
+            tc={tc}
           />
           {exempt === 'no' && (
-            <ThemedText type="label" style={ss.exemptNote}>{FUNDING_FEE_EXEMPT_NOTE}</ThemedText>
+            <ThemedText type="label" style={[ss.exemptNote, { color: tc.textHint }]}>{FUNDING_FEE_EXEMPT_NOTE}</ThemedText>
           )}
           <ChipRow
             label="FINANCE FUNDING FEE"
             options={BOOL_OPTIONS.map((o) => ({ ...o, label: o.value === 'yes' ? 'ROLL INTO LOAN' : 'PAY UPFRONT' }))}
             selected={financeFee}
             onSelect={(v) => setFinanceFee(v as 'yes' | 'no')}
+            tc={tc}
           />
         </TacticalCard>
 
-        <SectionLabel text="MONTHLY COSTS (OPTIONAL)" />
+        <SectionLabel text="MONTHLY COSTS (OPTIONAL)" tc={tc} />
 
-        <TacticalCard accentColor={Brand.border} style={ss.inputCard}>
+        <TacticalCard style={ss.inputCard}>
           <View style={ss.inputGrid}>
-            <MoneyInput label="PROPERTY TAX / YR" value={annualTax} onChange={setAnnualTax} />
-            <MoneyInput label="HOMEOWNERS INS / YR" value={annualIns} onChange={setAnnualIns} />
+            <MoneyInput label="PROPERTY TAX / YR" value={annualTax} onChange={setAnnualTax} tc={tc} />
+            <MoneyInput label="HOMEOWNERS INS / YR" value={annualIns} onChange={setAnnualIns} tc={tc} />
           </View>
         </TacticalCard>
 
         {/* ── RESULTS ── */}
         {result && (
           <>
-            <SectionLabel text="PAYMENT BREAKDOWN" />
+            <SectionLabel text="PAYMENT BREAKDOWN" tc={tc} />
 
             <TacticalCard accentColor={Brand.accent} cornerSize={14} style={ss.resultCard}>
               <View style={ss.resultHeader}>
                 <View style={ss.resultHeaderDot} />
-                <ThemedText type="label" style={ss.resultHeaderLabel}>ESTIMATED MONTHLY PAYMENT</ThemedText>
+                <ThemedText type="label" style={[ss.resultHeaderLabel, { color: tc.textHint }]}>ESTIMATED MONTHLY PAYMENT</ThemedText>
               </View>
 
               <View style={ss.heroRow}>
                 <ThemedText style={ss.heroAmount}>{fmtMoneyExact(result.monthlyTotal)}</ThemedText>
-                <ThemedText type="label" style={ss.heroPer}>/MO</ThemedText>
+                <ThemedText type="label" style={[ss.heroPer, { color: tc.textHint }]}>/MO</ThemedText>
               </View>
 
-              <View style={ss.divider} />
+              <View style={[ss.divider, { backgroundColor: tc.borderColor }]} />
 
-              <ResultRow label="PRINCIPAL & INTEREST" value={fmtMoneyExact(result.monthlyPI)} accent={Brand.tactical} indent />
-              <ResultRow label="PROPERTY TAX (EST.)" value={fmtMoneyExact(result.monthlyTax)} indent />
-              <ResultRow label="HOMEOWNERS INS (EST.)" value={fmtMoneyExact(result.monthlyInsurance)} indent />
-              <ResultRow label="PMI" value="$0.00  ✓" accent={Brand.success} indent />
-              <ResultRow label="TOTAL / MONTH" value={fmtMoneyExact(result.monthlyTotal)} bold />
+              <ResultRow label="PRINCIPAL & INTEREST" value={fmtMoneyExact(result.monthlyPI)} accent={Brand.tactical} indent tc={tc} />
+              <ResultRow label="PROPERTY TAX (EST.)" value={fmtMoneyExact(result.monthlyTax)} indent tc={tc} />
+              <ResultRow label="HOMEOWNERS INS (EST.)" value={fmtMoneyExact(result.monthlyInsurance)} indent tc={tc} />
+              <ResultRow label="PMI" value="$0.00  ✓" accent={Brand.success} indent tc={tc} />
+              <ResultRow label="TOTAL / MONTH" value={fmtMoneyExact(result.monthlyTotal)} bold tc={tc} />
             </TacticalCard>
 
-            <SectionLabel text="LOAN STRUCTURE" />
+            <SectionLabel text="LOAN STRUCTURE" tc={tc} />
 
-            <TacticalCard accentColor={Brand.border} style={ss.resultCard}>
-              <ResultRow label="HOME PRICE" value={fmtMoney(parseFloat(homePrice) || 0)} />
-              <ResultRow label="DOWN PAYMENT" value={`${fmtMoney(result.downPayment)} (${result.downPct.toFixed(1)}%)`} />
-              <ResultRow label="BASE LOAN AMOUNT" value={fmtMoney(result.baseLoanAmount)} />
+            <TacticalCard style={ss.resultCard}>
+              <ResultRow label="HOME PRICE" value={fmtMoney(parseFloat(homePrice) || 0)} tc={tc} />
+              <ResultRow label="DOWN PAYMENT" value={`${fmtMoney(result.downPayment)} (${result.downPct.toFixed(1)}%)`} tc={tc} />
+              <ResultRow label="BASE LOAN AMOUNT" value={fmtMoney(result.baseLoanAmount)} tc={tc} />
               {result.fundingFeePct > 0 ? (
                 <>
-                  <ResultRow label={`VA FUNDING FEE (${result.fundingFeePct}%)`} value={fmtMoney(result.fundingFeeAmount)} accent={Brand.warning} />
-                  <ResultRow label="FEE FINANCED" value={financeFee === 'yes' ? 'YES' : 'NO — PAID UPFRONT'} />
+                  <ResultRow label={`VA FUNDING FEE (${result.fundingFeePct}%)`} value={fmtMoney(result.fundingFeeAmount)} accent={Brand.warning} tc={tc} />
+                  <ResultRow label="FEE FINANCED" value={financeFee === 'yes' ? 'YES' : 'NO — PAID UPFRONT'} tc={tc} />
                 </>
               ) : (
-                <ResultRow label="VA FUNDING FEE" value="EXEMPT ✓" accent={Brand.success} />
+                <ResultRow label="VA FUNDING FEE" value="EXEMPT ✓" accent={Brand.success} tc={tc} />
               )}
-              <View style={ss.divider} />
-              <ResultRow label="TOTAL LOAN AMOUNT" value={fmtMoney(result.totalLoanAmount)} bold accent={Brand.accent} />
+              <View style={[ss.divider, { backgroundColor: tc.borderColor }]} />
+              <ResultRow label="TOTAL LOAN AMOUNT" value={fmtMoney(result.totalLoanAmount)} bold accent={Brand.accent} tc={tc} />
               {result.aboveConforming && (
                 <ThemedText type="label" style={ss.warningNote}>
                   ⚠ ABOVE {fmtMoney(CONFORMING_LOAN_LIMIT)} CONFORMING LIMIT — JUMBO VA LOAN TERMS APPLY
@@ -253,21 +259,21 @@ export default function VALoanCalculatorScreen() {
               )}
             </TacticalCard>
 
-            <SectionLabel text="LIFETIME COST" />
+            <SectionLabel text="LIFETIME COST" tc={tc} />
 
-            <TacticalCard accentColor={Brand.border} style={ss.resultCard}>
-              <ResultRow label="LOAN TERM" value={`${loanTerm} YEARS`} />
-              <ResultRow label="TOTAL INTEREST" value={fmtMoney(result.totalInterest, true)} accent={Brand.warning} />
-              <ResultRow label="TOTAL LOAN COST" value={fmtMoney(result.totalCost, true)} bold />
+            <TacticalCard style={ss.resultCard}>
+              <ResultRow label="LOAN TERM" value={`${loanTerm} YEARS`} tc={tc} />
+              <ResultRow label="TOTAL INTEREST" value={fmtMoney(result.totalInterest, true)} accent={Brand.warning} tc={tc} />
+              <ResultRow label="TOTAL LOAN COST" value={fmtMoney(result.totalCost, true)} bold tc={tc} />
             </TacticalCard>
 
-            <SectionLabel text="VS. CONVENTIONAL (0% DOWN)" />
+            <SectionLabel text="VS. CONVENTIONAL (0% DOWN)" tc={tc} />
 
             <TacticalCard accentColor={Brand.tactical} cornerSize={10} style={ss.resultCard}>
-              <ResultRow label="CONV. P&I" value={fmtMoneyExact(result.conventionalMonthlyPI)} indent />
-              <ResultRow label="CONV. PMI (EST.)" value={`+${fmtMoneyExact(result.conventionalMonthlyPMI)}`} accent={Brand.danger} indent />
-              <ResultRow label="CONV. MONTHLY TOTAL" value={fmtMoneyExact(result.conventionalMonthlyTotal)} />
-              <View style={ss.divider} />
+              <ResultRow label="CONV. P&I" value={fmtMoneyExact(result.conventionalMonthlyPI)} indent tc={tc} />
+              <ResultRow label="CONV. PMI (EST.)" value={`+${fmtMoneyExact(result.conventionalMonthlyPMI)}`} accent={Brand.danger} indent tc={tc} />
+              <ResultRow label="CONV. MONTHLY TOTAL" value={fmtMoneyExact(result.conventionalMonthlyTotal)} tc={tc} />
+              <View style={[ss.divider, { backgroundColor: tc.borderColor }]} />
               <ResultRow
                 label="YOUR VA MONTHLY SAVINGS"
                 value={result.monthlySavingsVsConventional >= 0
@@ -275,12 +281,13 @@ export default function VALoanCalculatorScreen() {
                   : fmtMoneyExact(result.monthlySavingsVsConventional)}
                 bold
                 accent={result.monthlySavingsVsConventional >= 0 ? Brand.tactical : Brand.danger}
+                tc={tc}
               />
-              <ResultRow label="LIFETIME PMI AVOIDED (EST.)" value={fmtMoney(result.pmiSavingsLifetime, true)} accent={Brand.success} />
+              <ResultRow label="LIFETIME PMI AVOIDED (EST.)" value={fmtMoney(result.pmiSavingsLifetime, true)} accent={Brand.success} tc={tc} />
             </TacticalCard>
 
-            <TacticalCard accentColor={Brand.border} style={ss.disclaimer}>
-              <ThemedText type="label" style={ss.disclaimerText}>
+            <TacticalCard style={ss.disclaimer}>
+              <ThemedText type="label" style={[ss.disclaimerText, { color: tc.textMuted }]}>
                 ⚠ ESTIMATE ONLY — RATES, FEES & TAX VARY BY LENDER AND LOCATION.{'\n'}
                 VERIFY ENTITLEMENT AT BENEFITS.VA.GOV — CONSULT A VA-APPROVED LENDER FOR EXACT FIGURES.
               </ThemedText>

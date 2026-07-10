@@ -2,7 +2,7 @@ import React from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
-import { useTheme } from '@/hooks/use-theme';
+import { useThemeColors } from '@/hooks/use-theme';
 import { Brand, Spacing } from '@/constants/theme';
 import { ChatMessage } from '@/types/chat.types';
 
@@ -12,7 +12,7 @@ interface MessageBubbleProps {
 
 export function MessageBubble({ message }: MessageBubbleProps) {
   const isUser = message.role === 'user';
-  const theme = useTheme();
+  const tc = useThemeColors();
 
   return (
     <View style={[styles.wrapper, isUser ? styles.wrapperUser : styles.wrapperAI]}>
@@ -26,7 +26,7 @@ export function MessageBubble({ message }: MessageBubbleProps) {
           styles.bubble,
           isUser
             ? styles.bubbleUser
-            : [styles.bubbleAI, { backgroundColor: theme.backgroundElement }],
+            : [styles.bubbleAI, { backgroundColor: tc.surface }],
         ]}>
         <ThemedText style={[styles.text, isUser && styles.textUser]}>
           {message.content}

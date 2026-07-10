@@ -4,7 +4,9 @@ import { getBasicPay } from '@/data/basic-pay-rates';
 import { getStateTaxRate } from '@/data/state-tax';
 import { LESOverrides } from '@/types/user.types';
 
-export const SGLI_MONTHLY = 29;      // $500k coverage standard
+// SGLI: $0.065/month per $1,000 × $500,000 coverage = $32.50 + $1.00 TSGLI = $33.50
+// Source: DFAS SGLI rates — dfas.mil/MilitaryMembers/payentitlements/SGLI
+export const SGLI_MONTHLY = 34;      // $500k coverage — rounded from $33.50
 export const DENTAL_FAMILY = 38.67;  // TDP family plan $/month (FY2026)
 
 // Federal income tax estimate — base pay only (allowances not taxable)

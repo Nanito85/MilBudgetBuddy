@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -182,7 +182,7 @@ export default function Invest101Screen() {
   return (
     <ThemedView style={styles.container}>
       <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
-        <Pressable onPress={() => router.push('/tools')} hitSlop={12}>
+        <Pressable onPress={() => router.back()} hitSlop={12}>
           <ThemedText style={styles.backText}>← Back</ThemedText>
         </Pressable>
       </View>

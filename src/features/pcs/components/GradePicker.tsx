@@ -4,6 +4,7 @@ import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { Brand, Spacing } from '@/constants/theme';
 import { PAY_GRADES, PayGrade } from '@/data/bah-rates';
+import { useThemeColors } from '@/hooks/use-theme';
 
 interface Props {
   selected: PayGrade;
@@ -17,6 +18,7 @@ const GROUPS: { label: string; grades: PayGrade[] }[] = [
 ];
 
 export function GradePicker({ selected, onSelect }: Props) {
+  const tc = useThemeColors();
   return (
     <View style={styles.container}>
       {GROUPS.map((group) => (
@@ -34,8 +36,17 @@ export function GradePicker({ selected, onSelect }: Props) {
                 <Pressable
                   key={grade}
                   onPress={() => onSelect(grade)}
-                  style={[styles.chip, active && styles.chipActive]}>
-                  <ThemedText style={[styles.chipText, active && styles.chipTextActive]}>
+                  style={[
+                    styles.chip,
+                    { borderColor: tc.borderColor },
+                    active && styles.chipActive,
+                  ]}>
+                  <ThemedText
+                    style={[
+                      styles.chipText,
+                      { color: tc.textPrimary },
+                      active && styles.chipTextActive,
+                    ]}>
                     {grade}
                   </ThemedText>
                 </Pressable>
@@ -64,7 +75,6 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.one + 2,
     borderRadius: 99,
     borderWidth: 1,
-    borderColor: 'rgba(128,128,128,0.3)',
     minWidth: 40,
     alignItems: 'center',
   },

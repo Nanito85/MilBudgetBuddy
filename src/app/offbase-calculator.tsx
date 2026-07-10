@@ -1,4 +1,4 @@
-import { useRouter } from 'expo-router';
+﻿import { useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -8,6 +8,7 @@ import { ThemedView } from '@/components/themed-view';
 import { Brand, Spacing } from '@/constants/theme';
 import { getBahRate, hasBahData, PAY_GRADES, PayGrade } from '@/data/bah-rates';
 import { Installation, getInstallationByZip, searchInstallations } from '@/data/installations';
+import { useThemeColors } from '@/hooks/use-theme';
 import { useUserStore } from '@/store/user.store';
 
 // ── Grade groups ───────────────────────────────────────────────────────────────
@@ -22,36 +23,35 @@ const BARRACKS_LIKELY: PayGrade[] = ['E4'];
 
 const fmt = (n: number) => `$${Math.round(n).toLocaleString()}`;
 
-function Chip({
-  label, selected, onPress,
-}: { label: string; selected: boolean; onPress: () => void }) {
-  return (
-    <Pressable
-      onPress={onPress}
-      style={[styles.chip, selected && styles.chipSelected]}>
-      <ThemedText style={[styles.chipText, selected && styles.chipTextSelected]}>
-        {label}
-      </ThemedText>
-    </Pressable>
-  );
-}
-
-function Row({ label, value, bold, color }: { label: string; value: string; bold?: boolean; color?: string }) {
-  return (
-    <View style={styles.dataRow}>
-      <ThemedText style={styles.dataLabel}>{label}</ThemedText>
-      <ThemedText style={[styles.dataValue, bold && { fontWeight: '700', color: color ?? '#C8D8E8' }]}>
-        {value}
-      </ThemedText>
-    </View>
-  );
-}
-
 export default function OffbaseCalculatorScreen() {
   const router   = useRouter();
   const insets   = useSafeAreaInsets();
-  const inputBg   = '#050B14';
-  const inputText = '#C8D8E8';
+  const tc = useThemeColors();
+
+  function Chip({
+    label, selected, onPress,
+  }: { label: string; selected: boolean; onPress: () => void }) {
+    return (
+      <Pressable
+        onPress={onPress}
+        style={[styles.chip, { backgroundColor: tc.background, borderColor: tc.borderColor }, selected && styles.chipSelected]}>
+        <ThemedText style={[styles.chipText, { color: tc.textHint }, selected && styles.chipTextSelected]}>
+          {label}
+        </ThemedText>
+      </Pressable>
+    );
+  }
+
+  function Row({ label, value, bold, color }: { label: string; value: string; bold?: boolean; color?: string }) {
+    return (
+      <View style={styles.dataRow}>
+        <ThemedText style={[styles.dataLabel, { color: tc.textHint }]}>{label}</ThemedText>
+        <ThemedText style={[styles.dataValue, { color: tc.textSecondary }, bold && { fontWeight: '700', color: color ?? tc.textPrimary }]}>
+          {value}
+        </ThemedText>
+      </View>
+    );
+  }
 
   const storedGrade = useUserStore((s) => s.payGrade);
   const storedZip   = useUserStore((s) => s.mhaZip);
@@ -92,13 +92,13 @@ export default function OffbaseCalculatorScreen() {
   }) {
     return (
       <View style={styles.stepperRow}>
-        <ThemedText style={styles.stepperLabel}>{label}</ThemedText>
+        <ThemedText style={[styles.stepperLabel, { color: tc.textSecondary }]}>{label}</ThemedText>
         <View style={styles.stepperControls}>
-          <Pressable style={styles.stepBtn} onPress={() => onChange(Math.max(min, value - step))}>
+          <Pressable style={[styles.stepBtn, { backgroundColor: tc.background, borderColor: tc.borderColor }]} onPress={() => onChange(Math.max(min, value - step))}>
             <ThemedText style={styles.stepBtnText}>−</ThemedText>
           </Pressable>
-          <ThemedText style={styles.stepperValue}>{fmt(value)}</ThemedText>
-          <Pressable style={styles.stepBtn} onPress={() => onChange(Math.min(max, value + step))}>
+          <ThemedText style={[styles.stepperValue, { color: tc.textPrimary }]}>{fmt(value)}</ThemedText>
+          <Pressable style={[styles.stepBtn, { backgroundColor: tc.background, borderColor: tc.borderColor }]} onPress={() => onChange(Math.min(max, value + step))}>
             <ThemedText style={styles.stepBtnText}>+</ThemedText>
           </Pressable>
         </View>
@@ -110,7 +110,7 @@ export default function OffbaseCalculatorScreen() {
     <ThemedView style={{ flex: 1 }}>
       <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
         <Pressable
-          onPress={() => (router.push('/tools'))}
+          onPress={() => (router.back())}
           style={styles.back}>
           <ThemedText style={styles.backChevron}>‹</ThemedText>
         </Pressable>
@@ -125,8 +125,8 @@ export default function OffbaseCalculatorScreen() {
         {/* Hero */}
         <ThemedView type="backgroundElement" style={styles.heroBanner}>
           <ThemedText style={styles.heroEyebrow}>SINGLE SERVICE MEMBER</ThemedText>
-          <ThemedText style={styles.heroTitle}>Housing Decision Tool</ThemedText>
-          <ThemedText style={styles.heroBody}>
+          <ThemedText style={[styles.heroTitle, { color: tc.textPrimary }]}>Housing Decision Tool</ThemedText>
+          <ThemedText style={[styles.heroBody, { color: tc.textHint }]}>
             Compare real off-base costs against your BAH entitlement to find your break-even and monthly net.
           </ThemedText>
         </ThemedView>
@@ -134,19 +134,19 @@ export default function OffbaseCalculatorScreen() {
         {/* Grade picker */}
         <ThemedView type="backgroundElement" style={styles.card}>
           <ThemedText style={styles.cardLabel}>PAY GRADE</ThemedText>
-          <ThemedText style={styles.groupLabel}>ENLISTED</ThemedText>
+          <ThemedText style={[styles.groupLabel, { color: tc.textMuted }]}>ENLISTED</ThemedText>
           <View style={styles.chipRow}>
             {ENLISTED.map((g) => (
               <Chip key={g} label={g} selected={grade === g} onPress={() => setGrade(g)} />
             ))}
           </View>
-          <ThemedText style={[styles.groupLabel, { marginTop: Spacing.two }]}>WARRANT</ThemedText>
+          <ThemedText style={[styles.groupLabel, { color: tc.textMuted, marginTop: Spacing.two }]}>WARRANT</ThemedText>
           <View style={styles.chipRow}>
             {WARRANT.map((g) => (
               <Chip key={g} label={g} selected={grade === g} onPress={() => setGrade(g)} />
             ))}
           </View>
-          <ThemedText style={[styles.groupLabel, { marginTop: Spacing.two }]}>OFFICER</ThemedText>
+          <ThemedText style={[styles.groupLabel, { color: tc.textMuted, marginTop: Spacing.two }]}>OFFICER</ThemedText>
           <View style={styles.chipRow}>
             {OFFICER.map((g) => (
               <Chip key={g} label={g} selected={grade === g} onPress={() => setGrade(g)} />
@@ -157,38 +157,38 @@ export default function OffbaseCalculatorScreen() {
         {/* MHA search */}
         <ThemedView type="backgroundElement" style={styles.card}>
           <ThemedText style={styles.cardLabel}>DUTY STATION</ThemedText>
-          <ThemedText style={styles.groupLabel}>Type your installation, city, state, or ZIP code</ThemedText>
-          <View style={[styles.searchWrap, { backgroundColor: inputBg }]}>
+          <ThemedText style={[styles.groupLabel, { color: tc.textMuted }]}>Type your installation, city, state, or ZIP code</ThemedText>
+          <View style={[styles.searchWrap, { backgroundColor: tc.inputBg, borderColor: tc.borderColor }]}>
             <ThemedText style={{ fontSize: 14 }}>🔍</ThemedText>
             <TextInput
               value={locSearch}
               onChangeText={setLocSearch}
               placeholder="Fort Liberty · Norfolk · San Diego · 28301"
-              placeholderTextColor="#3D6080"
-              style={[styles.searchInput, { color: inputText }]}
+              placeholderTextColor={tc.textMuted}
+              style={[styles.searchInput, { color: tc.textPrimary }]}
               returnKeyType="search"
               autoCorrect={false}
             />
             {locSearch.length > 0 && (
               <Pressable onPress={() => setLocSearch('')} style={{ padding: 4 }}>
-                <ThemedText style={{ fontSize: 12, color: '#4D7A9A', fontWeight: '700' }}>✕</ThemedText>
+                <ThemedText style={{ fontSize: 12, color: tc.textHint, fontWeight: '700' }}>✕</ThemedText>
               </Pressable>
             )}
           </View>
 
           {hasSearch && (
-            <View style={styles.resultsList}>
+            <View style={[styles.resultsList, { borderColor: tc.borderColor }]}>
               {searchResults.length === 0 && (
-                <ThemedText style={styles.resultsEmpty}>No locations match — try the installation name or city.</ThemedText>
+                <ThemedText style={[styles.resultsEmpty, { color: tc.textHint }]}>No locations match — try the installation name or city.</ThemedText>
               )}
               {searchResults.map((inst) => (
                 <Pressable
                   key={inst.id}
                   onPress={() => { setZip(inst.mhaZip); setSelectedInstallation(inst); setLocSearch(''); }}
-                  style={({ pressed }) => [styles.resultRow, pressed && { opacity: 0.7 }]}>
+                  style={({ pressed }) => [styles.resultRow, { borderBottomColor: tc.borderColor, backgroundColor: tc.surface }, pressed && { opacity: 0.7 }]}>
                   <View style={{ flex: 1 }}>
-                    <ThemedText style={styles.resultLabel}>{inst.name}</ThemedText>
-                    <ThemedText style={styles.resultSub}>{inst.city}, {inst.state} · {inst.branch}</ThemedText>
+                    <ThemedText style={[styles.resultLabel, { color: tc.textPrimary }]}>{inst.name}</ThemedText>
+                    <ThemedText style={[styles.resultSub, { color: tc.textMuted }]}>{inst.city}, {inst.state} · {inst.branch}</ThemedText>
                   </View>
                 </Pressable>
               ))}
@@ -198,24 +198,24 @@ export default function OffbaseCalculatorScreen() {
           {!hasSearch && selectedInstallation && (
             <View style={styles.selectedCard}>
               <ThemedText style={styles.selectedCardLabel}>SELECTED LOCATION</ThemedText>
-              <ThemedText style={styles.selectedCardName}>{selectedInstallation.name}</ThemedText>
-              <ThemedText style={styles.selectedCardSub}>{selectedInstallation.city}, {selectedInstallation.state} · {selectedInstallation.branch}</ThemedText>
-              <Pressable onPress={() => { setZip(''); setSelectedInstallation(null); }} style={styles.changeBtn}>
-                <ThemedText style={styles.changeBtnText}>Change Location</ThemedText>
+              <ThemedText style={[styles.selectedCardName, { color: tc.textPrimary }]}>{selectedInstallation.name}</ThemedText>
+              <ThemedText style={[styles.selectedCardSub, { color: tc.textHint }]}>{selectedInstallation.city}, {selectedInstallation.state} · {selectedInstallation.branch}</ThemedText>
+              <Pressable onPress={() => { setZip(''); setSelectedInstallation(null); }} style={[styles.changeBtn, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
+                <ThemedText style={[styles.changeBtnText, { color: tc.textHint }]}>Change Location</ThemedText>
               </Pressable>
             </View>
           )}
 
           {!hasSearch && !selectedInstallation && (
-            <ThemedText style={styles.resultsEmpty}>Search for your duty station to see your BAH rate.</ThemedText>
+            <ThemedText style={[styles.resultsEmpty, { color: tc.textHint }]}>Search for your duty station to see your BAH rate.</ThemedText>
           )}
         </ThemedView>
 
         {/* BAH display */}
         <ThemedView type="backgroundElement" style={[styles.card, styles.bahCard]}>
           <View>
-            <ThemedText style={styles.bahLabel}>YOUR BAH (WITHOUT DEPENDENTS)</ThemedText>
-            <ThemedText style={styles.bahAmount}>{fmt(bah)}<ThemedText style={styles.bahUnit}>/mo</ThemedText></ThemedText>
+            <ThemedText style={[styles.bahLabel, { color: tc.textHint }]}>YOUR BAH (WITHOUT DEPENDENTS)</ThemedText>
+            <ThemedText style={styles.bahAmount}>{fmt(bah)}<ThemedText style={[styles.bahUnit, { color: tc.textHint }]}>/mo</ThemedText></ThemedText>
           </View>
           {isRequired && (
             <View style={[styles.eligBadge, { backgroundColor: Brand.danger + '20', borderColor: Brand.danger }]}>
@@ -246,8 +246,8 @@ export default function OffbaseCalculatorScreen() {
           <Stepper label="Rent" value={rent} step={50} min={0} max={5000} onChange={setRent} />
           <Stepper label="Utilities (elec/gas/internet)" value={utils} step={25} min={0} max={1000} onChange={setUtils} />
           <Stepper label="Commute / gas / tolls" value={commute} step={25} min={0} max={500} onChange={setCommute} />
-          <View style={styles.divider} />
-          <Row label="Total monthly cost" value={fmt(offbaseMonthlyCost)} bold />
+          <View style={[styles.divider, { backgroundColor: tc.borderColor }]} />
+          <Row label="Total monthly cost" value={fmt(offbaseMonthlyCost)} bold color={tc.textPrimary} />
         </ThemedView>
 
         {/* Setup costs */}
@@ -261,23 +261,23 @@ export default function OffbaseCalculatorScreen() {
           <ThemedText style={styles.cardLabel}>RESULTS</ThemedText>
 
           <View style={styles.resultGrid}>
-            <View style={[styles.resultBox, { borderColor: offbaseNet >= 0 ? Brand.success : Brand.danger }]}>
-              <ThemedText style={styles.resultBoxLabel}>MONTHLY NET</ThemedText>
+            <View style={[styles.resultBox, { backgroundColor: tc.background, borderColor: offbaseNet >= 0 ? Brand.success : Brand.danger }]}>
+              <ThemedText style={[styles.resultBoxLabel, { color: tc.textHint }]}>MONTHLY NET</ThemedText>
               <ThemedText style={[styles.resultBoxValue, { color: offbaseNet >= 0 ? Brand.success : Brand.danger }]}>
                 {offbaseNet >= 0 ? '+' : ''}{fmt(offbaseNet)}
               </ThemedText>
-              <ThemedText style={styles.resultBoxSub}>BAH minus your costs</ThemedText>
+              <ThemedText style={[styles.resultBoxSub, { color: tc.textMuted }]}>BAH minus your costs</ThemedText>
             </View>
-            <View style={[styles.resultBox, { borderColor: Brand.accent }]}>
-              <ThemedText style={styles.resultBoxLabel}>BARRACKS SAVES</ThemedText>
+            <View style={[styles.resultBox, { backgroundColor: tc.background, borderColor: Brand.accent }]}>
+              <ThemedText style={[styles.resultBoxLabel, { color: tc.textHint }]}>BARRACKS SAVES</ThemedText>
               <ThemedText style={[styles.resultBoxValue, { color: Brand.accent }]}>{fmt(bah)}</ThemedText>
-              <ThemedText style={styles.resultBoxSub}>
+              <ThemedText style={[styles.resultBoxSub, { color: tc.textMuted }]}>
                 {isRequired ? 'Full BAH stays in pocket' : 'No BAH if living on-base'}
               </ThemedText>
             </View>
           </View>
 
-          <View style={styles.divider} />
+          <View style={[styles.divider, { backgroundColor: tc.borderColor }]} />
           <Row label="Monthly rent + utils + commute" value={fmt(offbaseMonthlyCost)} />
           <Row label="BAH entitlement" value={fmt(bah)} />
           <Row
@@ -293,7 +293,7 @@ export default function OffbaseCalculatorScreen() {
 
           {offbaseNet < 0 && (
             <View style={[styles.warningBox, { borderLeftColor: Brand.danger }]}>
-              <ThemedText style={styles.warningText}>
+              <ThemedText style={[styles.warningText, { color: tc.textSecondary }]}>
                 Your off-base costs exceed your BAH by {fmt(Math.abs(offbaseNet))}/mo. You will be paying out-of-pocket each month.
               </ThemedText>
             </View>
@@ -320,13 +320,13 @@ export default function OffbaseCalculatorScreen() {
           ].map((tip, i) => (
             <View key={i} style={styles.tipRow}>
               <ThemedText style={styles.tipBullet}>▸</ThemedText>
-              <ThemedText style={styles.tipText}>{tip}</ThemedText>
+              <ThemedText style={[styles.tipText, { color: tc.textHint }]}>{tip}</ThemedText>
             </View>
           ))}
         </ThemedView>
 
         <ThemedView type="backgroundElement" style={styles.disclaimer}>
-          <ThemedText style={styles.disclaimerText}>
+          <ThemedText style={[styles.disclaimerText, { color: tc.textMuted }]}>
             BAH rates are FY2026 DoD figures. Actual BAH eligibility is determined by your command and official orders. This tool is for planning purposes only.
           </ThemedText>
         </ThemedView>
@@ -358,12 +358,12 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   heroEyebrow: { fontSize: 9, fontWeight: '800', letterSpacing: 1.5, color: Brand.tactical },
-  heroTitle: { fontSize: 20, fontWeight: '900', color: '#C8D8E8' },
-  heroBody: { fontSize: 12, lineHeight: 18, color: '#4D7A9A', marginTop: 4 },
+  heroTitle: { fontSize: 20, fontWeight: '900' },
+  heroBody: { fontSize: 12, lineHeight: 18, marginTop: 4 },
 
   card: { borderRadius: 4, padding: Spacing.three, gap: Spacing.two },
   cardLabel: { fontSize: 9, fontWeight: '800', letterSpacing: 1.2, color: Brand.tactical, marginBottom: 2 },
-  groupLabel: { fontSize: 8, fontWeight: '700', letterSpacing: 0.8, color: '#3D6080' },
+  groupLabel: { fontSize: 8, fontWeight: '700', letterSpacing: 0.8 },
 
   chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   chip: {
@@ -371,41 +371,37 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     borderRadius: 3,
     borderWidth: 1,
-    borderColor: Brand.border,
-    backgroundColor: '#04080F',
   },
   chipSelected: { borderColor: Brand.tactical, backgroundColor: Brand.tactical + '20' },
-  chipText: { fontSize: 11, fontWeight: '700', color: '#4D7A9A' },
+  chipText: { fontSize: 11, fontWeight: '700' },
   chipTextSelected: { color: Brand.tactical },
 
   bahCard: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: Spacing.two },
-  bahLabel: { fontSize: 9, fontWeight: '700', color: '#4D7A9A', letterSpacing: 0.8 },
+  bahLabel: { fontSize: 9, fontWeight: '700', letterSpacing: 0.8 },
   bahAmount: { fontSize: 26, fontWeight: '900', color: Brand.accent, fontFamily: 'Courier New', lineHeight: 30 },
-  bahUnit: { fontSize: 13, fontWeight: '600', color: '#4D7A9A' },
+  bahUnit: { fontSize: 13, fontWeight: '600' },
   eligBadge: { borderWidth: 1, borderRadius: 4, padding: Spacing.two, flex: 1, minWidth: 180 },
   eligText: { fontSize: 10, lineHeight: 15 },
 
   stepperRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  stepperLabel: { fontSize: 12, color: '#8AA8C0', flex: 1 },
+  stepperLabel: { fontSize: 12, flex: 1 },
   stepperControls: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
   stepBtn: {
     width: 30,
     height: 30,
     borderRadius: 3,
     borderWidth: 1,
-    borderColor: Brand.border,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#04080F',
   },
   stepBtnText: { fontSize: 18, fontWeight: '300', color: Brand.tactical },
-  stepperValue: { fontSize: 13, fontWeight: '700', color: '#C8D8E8', width: 80, textAlign: 'center', fontFamily: 'Courier New' },
+  stepperValue: { fontSize: 13, fontWeight: '700', width: 80, textAlign: 'center', fontFamily: 'Courier New' },
 
-  divider: { height: StyleSheet.hairlineWidth, backgroundColor: Brand.border },
+  divider: { height: StyleSheet.hairlineWidth },
 
   dataRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  dataLabel: { fontSize: 12, color: '#4D7A9A', flex: 1 },
-  dataValue: { fontSize: 13, color: '#8AA8C0', fontFamily: 'Courier New' },
+  dataLabel: { fontSize: 12, flex: 1 },
+  dataValue: { fontSize: 13, fontFamily: 'Courier New' },
 
   resultGrid: { flexDirection: 'row', gap: Spacing.two },
   resultBox: {
@@ -415,11 +411,10 @@ const styles = StyleSheet.create({
     padding: Spacing.two,
     alignItems: 'center',
     gap: 4,
-    backgroundColor: '#04080F',
   },
-  resultBoxLabel: { fontSize: 8, fontWeight: '800', letterSpacing: 0.8, color: '#4D7A9A' },
+  resultBoxLabel: { fontSize: 8, fontWeight: '800', letterSpacing: 0.8 },
   resultBoxValue: { fontSize: 22, fontWeight: '900', fontFamily: 'Courier New' },
-  resultBoxSub: { fontSize: 9, color: '#3D6080', textAlign: 'center' },
+  resultBoxSub: { fontSize: 9, textAlign: 'center' },
 
   warningBox: {
     borderLeftWidth: 3,
@@ -427,40 +422,39 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.one,
     marginTop: Spacing.one,
   },
-  warningText: { fontSize: 12, lineHeight: 17, color: '#8AA8C0' },
+  warningText: { fontSize: 12, lineHeight: 17 },
 
   tipRow: { flexDirection: 'row', gap: 6, alignItems: 'flex-start' },
   tipBullet: { fontSize: 10, color: Brand.tactical, marginTop: 2 },
-  tipText: { flex: 1, fontSize: 12, lineHeight: 18, color: '#4D7A9A' },
+  tipText: { flex: 1, fontSize: 12, lineHeight: 18 },
 
   disclaimer: { borderRadius: 4, padding: Spacing.two },
-  disclaimerText: { fontSize: 10, lineHeight: 15, color: '#3D6080', textAlign: 'center' },
+  disclaimerText: { fontSize: 10, lineHeight: 15, textAlign: 'center' },
 
   searchWrap: {
     flexDirection: 'row', alignItems: 'center',
-    borderWidth: 1, borderColor: Brand.border, borderRadius: 6,
+    borderWidth: 1, borderRadius: 6,
     paddingHorizontal: Spacing.two, gap: Spacing.one,
   },
   searchInput: { flex: 1, fontSize: 14, paddingVertical: Spacing.two + 2 },
 
-  resultsList: { borderWidth: 1, borderColor: Brand.border, borderRadius: 4, overflow: 'hidden' },
+  resultsList: { borderWidth: 1, borderRadius: 4, overflow: 'hidden' },
   resultRow: {
     flexDirection: 'row', alignItems: 'center', gap: Spacing.two,
     paddingHorizontal: Spacing.two, paddingVertical: Spacing.two + 2,
-    borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: '#0D1E30',
-    backgroundColor: '#060C18',
+    borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  resultLabel: { fontSize: 12, fontWeight: '600', color: '#C8D8E8' },
-  resultSub:   { fontSize: 10, color: '#3D6080', fontFamily: 'monospace', marginTop: 1 },
-  resultsEmpty:{ fontSize: 12, color: '#4D7A9A', textAlign: 'center', padding: Spacing.two },
+  resultLabel: { fontSize: 12, fontWeight: '600' },
+  resultSub:   { fontSize: 10, fontFamily: 'monospace', marginTop: 1 },
+  resultsEmpty:{ fontSize: 12, textAlign: 'center', padding: Spacing.two },
 
   selectedCard: {
     borderWidth: 1, borderColor: Brand.tactical + '50', borderRadius: 4,
     padding: Spacing.two, backgroundColor: Brand.tactical + '08', gap: 4,
   },
   selectedCardLabel: { fontSize: 8, fontWeight: '800', letterSpacing: 1, color: Brand.tactical },
-  selectedCardName:  { fontSize: 13, fontWeight: '700', color: '#C8D8E8' },
-  selectedCardSub:   { fontSize: 10, color: '#4D7A9A', fontFamily: 'monospace' },
-  changeBtn:     { alignSelf: 'flex-start', marginTop: 6, paddingVertical: 4, paddingHorizontal: 10, borderRadius: 3, backgroundColor: '#0D1E30', borderWidth: 1, borderColor: Brand.border },
-  changeBtnText: { fontSize: 10, fontWeight: '700', color: '#4D7A9A' },
+  selectedCardName:  { fontSize: 13, fontWeight: '700' },
+  selectedCardSub:   { fontSize: 10, fontFamily: 'monospace' },
+  changeBtn:     { alignSelf: 'flex-start', marginTop: 6, paddingVertical: 4, paddingHorizontal: 10, borderRadius: 3, borderWidth: 1 },
+  changeBtnText: { fontSize: 10, fontWeight: '700' },
 });

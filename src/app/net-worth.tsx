@@ -1,4 +1,4 @@
-import { useRouter } from 'expo-router';
+﻿import { useRouter } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
 import {
   Alert,
@@ -15,6 +15,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Brand, Spacing } from '@/constants/theme';
+import { useThemeColors } from '@/hooks/use-theme';
 import { NetWorthCategory, NetWorthEntry, useNetWorthStore } from '@/store/networth.store';
 import { NwSnapshot, useNwSnapshotsStore } from '@/store/networth-snapshots.store';
 
@@ -41,6 +42,7 @@ interface EntryRowProps {
 }
 
 function EntryRow({ entry, isDefault }: EntryRowProps) {
+  const tc = useThemeColors();
   const [editing, setEditing] = useState(false);
   const [editingLabel, setEditingLabel] = useState(false);
   const [val, setVal] = useState(entry.amount > 0 ? String(entry.amount) : '');
@@ -88,11 +90,11 @@ function EntryRow({ entry, isDefault }: EntryRowProps) {
             />
           ) : (
             <Pressable onPress={!isDefault ? () => { setLabelVal(entry.label); setEditingLabel(true); } : undefined}>
-              <ThemedText style={styles.entryLabel}>{entry.label}</ThemedText>
+              <ThemedText style={[styles.entryLabel, { color: tc.textPrimary }]}>{entry.label}</ThemedText>
             </Pressable>
           )}
           {!isDefault && !editingLabel && (
-            <ThemedText style={styles.tapHint}>Tap to rename · Long-press to delete</ThemedText>
+            <ThemedText style={[styles.tapHint, { color: tc.textMuted }]}>Tap to rename · Long-press to delete</ThemedText>
           )}
         </View>
         {editing ? (
@@ -103,14 +105,14 @@ function EntryRow({ entry, isDefault }: EntryRowProps) {
             onSubmitEditing={commitAmount}
             keyboardType="decimal-pad"
             autoFocus
-            style={[styles.amountInput, { borderBottomColor: accentColor }]}
+            style={[styles.amountInput, { borderBottomColor: accentColor, color: tc.textPrimary }]}
             placeholder="0"
           />
         ) : (
           <Pressable
             onPress={() => { setVal(entry.amount > 0 ? String(entry.amount) : ''); setEditing(true); }}
             style={styles.amountBtn}>
-            <ThemedText style={[styles.entryAmount, { color: entry.amount > 0 ? accentColor : '#3D6080' }]}>
+            <ThemedText style={[styles.entryAmount, { color: entry.amount > 0 ? accentColor : tc.textMuted }]}>
               {entry.amount > 0 ? fmtDollar(entry.amount) : 'Set'}
             </ThemedText>
           </Pressable>
@@ -121,6 +123,7 @@ function EntryRow({ entry, isDefault }: EntryRowProps) {
 }
 
 function AddRow({ category, onAdd }: { category: NetWorthCategory; onAdd: (label: string) => void }) {
+  const tc = useThemeColors();
   const [name, setName] = useState('');
   const ref = useRef<TextInput>(null);
 
@@ -132,15 +135,15 @@ function AddRow({ category, onAdd }: { category: NetWorthCategory; onAdd: (label
   };
 
   return (
-    <ThemedView type="backgroundElement" style={styles.addRow}>
-      <ThemedText style={styles.addPlus}>＋</ThemedText>
+    <ThemedView type="backgroundElement" style={[styles.addRow, { borderColor: tc.borderColor }]}>
+      <ThemedText style={[styles.addPlus, { color: tc.textMuted }]}>＋</ThemedText>
       <TextInput
         ref={ref}
         value={name}
         onChangeText={setName}
         placeholder={`Add ${category === 'asset' ? 'asset' : 'liability'}...`}
         placeholderTextColor="rgba(128,128,128,0.4)"
-        style={styles.addInput}
+        style={[styles.addInput, { color: tc.textPrimary }]}
         returnKeyType="done"
         onSubmitEditing={submit}
       />
@@ -156,6 +159,7 @@ function AddRow({ category, onAdd }: { category: NetWorthCategory; onAdd: (label
 // ── History bar chart ────────────────────────────────────────────────────────
 
 function HistoryChart({ snapshots }: { snapshots: NwSnapshot[] }) {
+  const tc = useThemeColors();
   if (snapshots.length === 0) return null;
 
   const maxAbs = Math.max(...snapshots.map((s) => Math.abs(s.netWorth)), 1);
@@ -185,7 +189,7 @@ function HistoryChart({ snapshots }: { snapshots: NwSnapshot[] }) {
                 <View style={[styles.chartBar, { height: barH, backgroundColor: Brand.danger }]} />
               )}
             </View>
-            <ThemedText style={styles.chartLabel}>{dateLabel}</ThemedText>
+            <ThemedText style={[styles.chartLabel, { color: tc.textMuted }]}>{dateLabel}</ThemedText>
             <ThemedText style={[styles.chartValue, { color: positive ? Brand.tactical : Brand.danger }]}>
               {fmtDollar(nw)}
             </ThemedText>
@@ -206,6 +210,7 @@ type Mode = 'tracker' | 'history';
 export default function NetWorthScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const tc = useThemeColors();
   const [mode, setMode] = useState<Mode>('tracker');
 
   const entries = useNetWorthStore((s) => s.entries);
@@ -255,7 +260,7 @@ export default function NetWorthScreen() {
       <ThemedView style={{ flex: 1 }}>
         <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
           <Pressable
-            onPress={() => (router.push('/tools'))}
+            onPress={() => (router.back())}
             style={styles.back}>
             <ThemedText style={styles.backChevron}>‹</ThemedText>
           </Pressable>
@@ -265,11 +270,11 @@ export default function NetWorthScreen() {
 
         {/* Mode toggle */}
         <View style={styles.modeRow}>
-          <Pressable onPress={() => setMode('tracker')} style={[styles.modeBtn, mode === 'tracker' && styles.modeBtnActive]}>
-            <ThemedText style={[styles.modeBtnText, mode === 'tracker' && styles.modeBtnTextActive]}>TRACKER</ThemedText>
+          <Pressable onPress={() => setMode('tracker')} style={[styles.modeBtn, { borderColor: tc.borderColor }, mode === 'tracker' && styles.modeBtnActive]}>
+            <ThemedText style={[styles.modeBtnText, { color: tc.textMuted }, mode === 'tracker' && styles.modeBtnTextActive]}>TRACKER</ThemedText>
           </Pressable>
-          <Pressable onPress={() => setMode('history')} style={[styles.modeBtn, mode === 'history' && styles.modeBtnActive]}>
-            <ThemedText style={[styles.modeBtnText, mode === 'history' && styles.modeBtnTextActive]}>
+          <Pressable onPress={() => setMode('history')} style={[styles.modeBtn, { borderColor: tc.borderColor }, mode === 'history' && styles.modeBtnActive]}>
+            <ThemedText style={[styles.modeBtnText, { color: tc.textMuted }, mode === 'history' && styles.modeBtnTextActive]}>
               HISTORY {snapshots.length > 0 ? `(${snapshots.length})` : ''}
             </ThemedText>
           </Pressable>
@@ -277,7 +282,7 @@ export default function NetWorthScreen() {
 
         {/* Summary */}
         <ThemedView type="backgroundElement" style={styles.summaryCard}>
-          <ThemedText style={styles.summaryEyebrow}>YOUR NET WORTH</ThemedText>
+          <ThemedText style={[styles.summaryEyebrow, { color: tc.textHint }]}>YOUR NET WORTH</ThemedText>
           <ThemedText style={[styles.summaryTotal, { color: isPositive ? Brand.tactical : Brand.danger }]}>
             {isPositive ? '' : '-'}{fmtFull(Math.abs(netWorth))}
           </ThemedText>
@@ -291,12 +296,12 @@ export default function NetWorthScreen() {
           <View style={styles.legendRow}>
             <View style={styles.legendItem}>
               <View style={[styles.legendDot, { backgroundColor: Brand.tactical }]} />
-              <ThemedText style={styles.legendLabel}>Assets</ThemedText>
+              <ThemedText style={[styles.legendLabel, { color: tc.textHint }]}>Assets</ThemedText>
               <ThemedText style={[styles.legendValue, { color: Brand.tactical }]}>{fmtDollar(totalAssets)}</ThemedText>
             </View>
             <View style={styles.legendItem}>
               <View style={[styles.legendDot, { backgroundColor: Brand.danger }]} />
-              <ThemedText style={styles.legendLabel}>Liabilities</ThemedText>
+              <ThemedText style={[styles.legendLabel, { color: tc.textHint }]}>Liabilities</ThemedText>
               <ThemedText style={[styles.legendValue, { color: Brand.danger }]}>{fmtDollar(totalLiabilities)}</ThemedText>
             </View>
           </View>
@@ -308,12 +313,12 @@ export default function NetWorthScreen() {
 
           {mode === 'tracker' && (
             <>
-              <ThemedText style={styles.hint}>Tap an amount to edit.</ThemedText>
+              <ThemedText style={[styles.hint, { color: tc.textMuted }]}>Tap an amount to edit.</ThemedText>
 
               <View style={styles.sectionLabelRow}>
-                <View style={styles.sectionLine} />
-                <ThemedText style={styles.sectionLabel}>ASSETS</ThemedText>
-                <View style={styles.sectionLine} />
+                <View style={[styles.sectionLine, { backgroundColor: tc.borderColor }]} />
+                <ThemedText style={[styles.sectionLabel, { color: tc.textMuted }]}>ASSETS</ThemedText>
+                <View style={[styles.sectionLine, { backgroundColor: tc.borderColor }]} />
               </View>
               {assets.map((e) => (
                 <EntryRow key={e.id} entry={e} isDefault={DEFAULT_ASSET_IDS.has(e.id)} />
@@ -321,9 +326,9 @@ export default function NetWorthScreen() {
               <AddRow category="asset" onAdd={(label) => addEntry(label, 'asset')} />
 
               <View style={[styles.sectionLabelRow, { marginTop: Spacing.two }]}>
-                <View style={styles.sectionLine} />
-                <ThemedText style={styles.sectionLabel}>LIABILITIES</ThemedText>
-                <View style={styles.sectionLine} />
+                <View style={[styles.sectionLine, { backgroundColor: tc.borderColor }]} />
+                <ThemedText style={[styles.sectionLabel, { color: tc.textMuted }]}>LIABILITIES</ThemedText>
+                <View style={[styles.sectionLine, { backgroundColor: tc.borderColor }]} />
               </View>
               {liabilities.map((e) => (
                 <EntryRow key={e.id} entry={e} isDefault={DEFAULT_LIABILITY_IDS.has(e.id)} />
@@ -333,7 +338,7 @@ export default function NetWorthScreen() {
               <Pressable onPress={handleSaveSnapshot} style={styles.snapshotBtn}>
                 <ThemedText style={styles.snapshotBtnText}>📸 Save Monthly Snapshot</ThemedText>
               </Pressable>
-              <ThemedText style={styles.snapshotHint}>
+              <ThemedText style={[styles.snapshotHint, { color: tc.textMuted }]}>
                 Save once a month to build your trend history.
               </ThemedText>
             </>
@@ -344,7 +349,7 @@ export default function NetWorthScreen() {
               {snapshots.length === 0 ? (
                 <ThemedView type="backgroundElement" style={styles.emptyBox}>
                   <ThemedText style={styles.emptyTitle}>No history yet</ThemedText>
-                  <ThemedText style={styles.emptyBody}>
+                  <ThemedText style={[styles.emptyBody, { color: tc.textHint }]}>
                     Switch to TRACKER and tap &quot;Save Monthly Snapshot&quot; after updating your balances each month.
                   </ThemedText>
                 </ThemedView>
@@ -352,7 +357,7 @@ export default function NetWorthScreen() {
                 <>
                   {totalChange !== null && (
                     <ThemedView type="backgroundElement" style={styles.changeCard}>
-                      <ThemedText style={styles.cardLabel}>CHANGE SINCE {new Date(firstSnap.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', year: 'numeric' }).toUpperCase()}</ThemedText>
+                      <ThemedText style={[styles.cardLabel, { color: tc.textHint }]}>CHANGE SINCE {new Date(firstSnap.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', year: 'numeric' }).toUpperCase()}</ThemedText>
                       <ThemedText style={[styles.changeValue, { color: totalChange >= 0 ? Brand.tactical : Brand.danger }]}>
                         {totalChange >= 0 ? '+' : ''}{fmtFull(totalChange)}
                       </ThemedText>
@@ -360,26 +365,26 @@ export default function NetWorthScreen() {
                   )}
 
                   <ThemedView type="backgroundElement" style={styles.chartCard}>
-                    <ThemedText style={styles.cardLabel}>NET WORTH TREND</ThemedText>
+                    <ThemedText style={[styles.cardLabel, { color: tc.textHint }]}>NET WORTH TREND</ThemedText>
                     <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                       <HistoryChart snapshots={snapshots} />
                     </ScrollView>
                   </ThemedView>
 
                   <ThemedView type="backgroundElement" style={styles.tableCard}>
-                    <ThemedText style={styles.cardLabel}>SNAPSHOT HISTORY</ThemedText>
+                    <ThemedText style={[styles.cardLabel, { color: tc.textHint }]}>SNAPSHOT HISTORY</ThemedText>
                     {[...snapshots].reverse().map((snap) => {
                       const dateLabel = new Date(snap.date + 'T00:00:00').toLocaleDateString('en-US', {
                         month: 'short', day: 'numeric', year: 'numeric',
                       });
                       return (
-                        <View key={snap.date} style={styles.snapRow}>
-                          <ThemedText style={styles.snapDate}>{dateLabel}</ThemedText>
+                        <View key={snap.date} style={[styles.snapRow, { borderBottomColor: tc.borderColor }]}>
+                          <ThemedText style={[styles.snapDate, { color: tc.textHint }]}>{dateLabel}</ThemedText>
                           <View style={styles.snapRight}>
                             <ThemedText style={[styles.snapNw, { color: snap.netWorth >= 0 ? Brand.tactical : Brand.danger }]}>
                               {fmtDollar(snap.netWorth)}
                             </ThemedText>
-                            <ThemedText style={styles.snapSub}>
+                            <ThemedText style={[styles.snapSub, { color: tc.textMuted }]}>
                               A: {fmtDollar(snap.assets)} · L: {fmtDollar(snap.liabilities)}
                             </ThemedText>
                           </View>

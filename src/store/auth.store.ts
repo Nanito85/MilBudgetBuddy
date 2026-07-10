@@ -1,5 +1,6 @@
 import {
   createUserWithEmailAndPassword,
+  deleteUser,
   onAuthStateChanged,
   signInWithEmailAndPassword,
   signOut,
@@ -14,10 +15,11 @@ interface AuthState {
   loading: boolean;
   error: string | null;
   initialized: boolean;
-  init: () => () => void;          // returns unsubscribe
+  init: () => () => void;
   signUp: (email: string, password: string) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
+  deleteAccount: () => Promise<void>;
   clearError: () => void;
 }
 
@@ -58,6 +60,13 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   signOut: async () => {
     await signOut(auth);
+    set({ user: null });
+  },
+
+  deleteAccount: async () => {
+    const current = auth.currentUser;
+    if (!current) return;
+    await deleteUser(current);
     set({ user: null });
   },
 

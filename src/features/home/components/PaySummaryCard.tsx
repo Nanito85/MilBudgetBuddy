@@ -19,6 +19,7 @@ import { Brand, Fonts, Spacing } from '@/constants/theme';
 import { LESBreakdown, fmtPay } from '@/features/home/utils/lesCalc';
 import { LESLineItem, LESOverrides } from '@/types/user.types';
 import { useUserStore } from '@/store/user.store';
+import { useThemeColors } from '@/hooks/use-theme';
 
 // ── Row helper ────────────────────────────────────────────────────────────────
 
@@ -33,13 +34,20 @@ interface RowProps {
 }
 
 function Row({ label, value, positive, negative, bold, indent, overridden }: RowProps) {
-  const valueColor = positive ? Brand.tactical : negative ? Brand.danger : '#C8D8E8';
+  const tc = useThemeColors();
+  const valueColor = positive ? Brand.tactical : negative ? Brand.danger : tc.textPrimary;
   return (
     <View style={[rowStyles.row, indent && rowStyles.indent]}>
-      <ThemedText style={[rowStyles.label, bold && rowStyles.labelBold, indent && rowStyles.labelDim]}>
+      <ThemedText
+        style={[
+          rowStyles.label,
+          { color: tc.textSecondary },
+          bold && [rowStyles.labelBold, { color: tc.textPrimary }],
+          indent && rowStyles.labelDim,
+        ]}>
         {label}{overridden ? ' ✎' : ''}
       </ThemedText>
-      <View style={rowStyles.dotLine} />
+      <View style={[rowStyles.dotLine, { backgroundColor: tc.borderColor }]} />
       <ThemedText style={[rowStyles.value, bold && rowStyles.valueBold, { color: valueColor }]}>
         {value}
       </ThemedText>
@@ -50,10 +58,10 @@ function Row({ label, value, positive, negative, bold, indent, overridden }: Row
 const rowStyles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', paddingVertical: 3, gap: 4 },
   indent: { paddingLeft: Spacing.two },
-  label: { fontSize: 11, fontWeight: '600', letterSpacing: 0.5, color: '#7A9AB5', minWidth: 120 },
-  labelBold: { color: '#C8D8E8', fontWeight: '700', fontSize: 12 },
+  label: { fontSize: 11, fontWeight: '600', letterSpacing: 0.5, minWidth: 120 },
+  labelBold: { fontWeight: '700', fontSize: 12 },
   labelDim: { opacity: 0.7 },
-  dotLine: { flex: 1, height: StyleSheet.hairlineWidth, backgroundColor: 'rgba(26,58,92,0.6)', marginBottom: 1 },
+  dotLine: { flex: 1, height: StyleSheet.hairlineWidth, marginBottom: 1 },
   value: { fontSize: 13, fontWeight: '700', fontFamily: Fonts.data, letterSpacing: 0.5 },
   valueBold: { fontSize: 14 },
 });
@@ -73,6 +81,7 @@ function OverrideModal({
   onSave: (o: LESOverrides) => void;
   onClose: () => void;
 }) {
+  const tc = useThemeColors();
   // Pre-fill with current resolved values so user can see & edit what's showing
   const [bahInput, setBahInput] = useState(
     overrides.bahOverride != null ? String(overrides.bahOverride) : String(Math.round(breakdown.bah)),
@@ -145,14 +154,14 @@ function OverrideModal({
 
   return (
     <Modal visible={visible} animationType="slide" presentationStyle="pageSheet">
-      <KeyboardAvoidingView style={{ flex: 1, backgroundColor: '#04080F' }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+      <KeyboardAvoidingView style={{ flex: 1, backgroundColor: tc.background }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <SafeAreaView style={{ flex: 1 }}>
           {/* Header */}
-          <View style={mStyles.header}>
+          <View style={[mStyles.header, { borderBottomColor: tc.borderColor }]}>
             <Pressable onPress={() => { Keyboard.dismiss(); onClose(); }}>
-              <ThemedText style={mStyles.cancel}>CANCEL</ThemedText>
+              <ThemedText style={[mStyles.cancel, { color: tc.textMuted }]}>CANCEL</ThemedText>
             </Pressable>
-            <ThemedText style={mStyles.title}>// EDIT YOUR LES</ThemedText>
+            <ThemedText style={[mStyles.title, { color: tc.textPrimary }]}>// EDIT YOUR LES</ThemedText>
             <Pressable onPress={save}>
               <ThemedText style={mStyles.saveBtn}>SAVE</ThemedText>
             </Pressable>
@@ -166,65 +175,65 @@ function OverrideModal({
             {/* LES annotation tip */}
             <View style={mStyles.lesTip}>
               <ThemedText style={mStyles.lesTipTitle}>📋 HOW TO USE YOUR LES</ThemedText>
-              <ThemedText style={mStyles.lesTipBody}>
+              <ThemedText style={[mStyles.lesTipBody, { color: tc.textHint }]}>
                 Open your LES at <ThemedText style={mStyles.lesTipLink}>MyPay.DFAS.mil</ThemedText> and compare each section below. Values are pre-filled from the app's estimate — update any that differ from your actual LES.
               </ThemedText>
             </View>
 
             {/* ── Entitlement Overrides ── */}
             <ThemedText style={mStyles.sectionLabel}>ENTITLEMENTS (from LES block 3–7)</ThemedText>
-            <ThemedText style={mStyles.hint}>Pre-filled from app estimate. Tap ✕ to reset to calculated value.</ThemedText>
+            <ThemedText style={[mStyles.hint, { color: tc.textMuted }]}>Pre-filled from app estimate. Tap ✕ to reset to calculated value.</ThemedText>
 
-            <ThemedText style={mStyles.fieldLabel}>BASE PAY (monthly)</ThemedText>
-            <View style={mStyles.inputRow}>
-              <ThemedText style={mStyles.dollar}>$</ThemedText>
+            <ThemedText style={[mStyles.fieldLabel, { color: tc.textHint }]}>BASE PAY (monthly)</ThemedText>
+            <View style={[mStyles.inputRow, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
+              <ThemedText style={[mStyles.dollar, { color: tc.textHint }]}>$</ThemedText>
               <TextInput
-                style={mStyles.input}
+                style={[mStyles.input, { color: tc.textPrimary }]}
                 value={bpInput}
                 onChangeText={setBpInput}
                 placeholder="0"
-                placeholderTextColor="#2A4A60"
+                placeholderTextColor={tc.textMuted}
                 keyboardType="decimal-pad"
               />
-              {bpInput ? <Pressable onPress={() => setBpInput('')}><ThemedText style={mStyles.clearX}>✕</ThemedText></Pressable> : null}
+              {bpInput ? <Pressable onPress={() => setBpInput('')}><ThemedText style={[mStyles.clearX, { color: tc.textMuted }]}>✕</ThemedText></Pressable> : null}
             </View>
 
-            <ThemedText style={mStyles.fieldLabel}>BAH (monthly)</ThemedText>
-            <View style={mStyles.inputRow}>
-              <ThemedText style={mStyles.dollar}>$</ThemedText>
+            <ThemedText style={[mStyles.fieldLabel, { color: tc.textHint }]}>BAH (monthly)</ThemedText>
+            <View style={[mStyles.inputRow, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
+              <ThemedText style={[mStyles.dollar, { color: tc.textHint }]}>$</ThemedText>
               <TextInput
-                style={mStyles.input}
+                style={[mStyles.input, { color: tc.textPrimary }]}
                 value={bahInput}
                 onChangeText={setBahInput}
                 placeholder="0"
-                placeholderTextColor="#2A4A60"
+                placeholderTextColor={tc.textMuted}
                 keyboardType="decimal-pad"
               />
-              {bahInput ? <Pressable onPress={() => setBahInput('')}><ThemedText style={mStyles.clearX}>✕</ThemedText></Pressable> : null}
+              {bahInput ? <Pressable onPress={() => setBahInput('')}><ThemedText style={[mStyles.clearX, { color: tc.textMuted }]}>✕</ThemedText></Pressable> : null}
             </View>
 
-            <ThemedText style={mStyles.fieldLabel}>BAS (monthly)</ThemedText>
-            <View style={mStyles.inputRow}>
-              <ThemedText style={mStyles.dollar}>$</ThemedText>
+            <ThemedText style={[mStyles.fieldLabel, { color: tc.textHint }]}>BAS (monthly)</ThemedText>
+            <View style={[mStyles.inputRow, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
+              <ThemedText style={[mStyles.dollar, { color: tc.textHint }]}>$</ThemedText>
               <TextInput
-                style={mStyles.input}
+                style={[mStyles.input, { color: tc.textPrimary }]}
                 value={basInput}
                 onChangeText={setBasInput}
                 placeholder="0"
-                placeholderTextColor="#2A4A60"
+                placeholderTextColor={tc.textMuted}
                 keyboardType="decimal-pad"
               />
-              {basInput ? <Pressable onPress={() => setBasInput('')}><ThemedText style={mStyles.clearX}>✕</ThemedText></Pressable> : null}
+              {basInput ? <Pressable onPress={() => setBasInput('')}><ThemedText style={[mStyles.clearX, { color: tc.textMuted }]}>✕</ThemedText></Pressable> : null}
             </View>
 
             {/* ── Extra Income ── */}
             <ThemedText style={mStyles.sectionLabel}>ADDITIONAL INCOME (LES block 3–18)</ThemedText>
-            <ThemedText style={mStyles.hint}>Add entitlements from your LES not listed above: OHA, Clothing Allowance, COLA, FSA, Hardship Duty Pay, Family Sep, etc.</ThemedText>
+            <ThemedText style={[mStyles.hint, { color: tc.textMuted }]}>Add entitlements from your LES not listed above: OHA, Clothing Allowance, COLA, FSA, Hardship Duty Pay, Family Sep, etc.</ThemedText>
 
             {extraIncome.map(item => (
-              <View key={item.id} style={mStyles.lineItem}>
+              <View key={item.id} style={[mStyles.lineItem, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
                 <View style={{ flex: 1 }}>
-                  <ThemedText style={mStyles.lineItemLabel}>{item.label}</ThemedText>
+                  <ThemedText style={[mStyles.lineItemLabel, { color: tc.textPrimary }]}>{item.label}</ThemedText>
                   <ThemedText style={[mStyles.lineItemAmt, { color: Brand.tactical }]}>${item.amount.toFixed(2)}/mo</ThemedText>
                 </View>
                 <Pressable onPress={() => removeIncome(item.id)} style={mStyles.removeBtn}>
@@ -235,21 +244,21 @@ function OverrideModal({
 
             <View style={mStyles.addBlock}>
               <TextInput
-                style={mStyles.addLabelInput}
+                style={[mStyles.addLabelInput, { backgroundColor: tc.surface, borderColor: tc.borderColor, color: tc.textPrimary }]}
                 value={newIncomeLabel}
                 onChangeText={setNewIncomeLabel}
                 placeholder="Label (e.g. OHA, COLA)"
-                placeholderTextColor="#2A4A60"
+                placeholderTextColor={tc.textMuted}
                 autoCapitalize="words"
               />
               <View style={mStyles.addAmtRow}>
-                <ThemedText style={mStyles.dollar}>$</ThemedText>
+                <ThemedText style={[mStyles.dollar, { color: tc.textHint }]}>$</ThemedText>
                 <TextInput
-                  style={[mStyles.input, { flex: 1 }]}
+                  style={[mStyles.input, { flex: 1, color: tc.textPrimary }]}
                   value={newIncomeAmt}
                   onChangeText={setNewIncomeAmt}
                   placeholder="Monthly amount"
-                  placeholderTextColor="#2A4A60"
+                  placeholderTextColor={tc.textMuted}
                   keyboardType="decimal-pad"
                 />
                 <Pressable
@@ -262,51 +271,51 @@ function OverrideModal({
 
             {/* ── Calculated Deductions Reference ── */}
             <ThemedText style={mStyles.sectionLabel}>DEDUCTIONS REFERENCE (LES block 19–24)</ThemedText>
-            <ThemedText style={mStyles.hint}>
+            <ThemedText style={[mStyles.hint, { color: tc.textMuted }]}>
               App estimates shown below. Cross-reference with your LES "DEDUCTIONS" column. To set TSP %, go to Profile → Edit Pay.
             </ThemedText>
-            <View style={mStyles.refTable}>
-              <View style={mStyles.refRow}>
-                <ThemedText style={mStyles.refLabel}>FICA (Soc Security + Medicare)</ThemedText>
+            <View style={[mStyles.refTable, { backgroundColor: tc.background, borderColor: tc.borderColor }]}>
+              <View style={[mStyles.refRow, { borderBottomColor: tc.borderColor }]}>
+                <ThemedText style={[mStyles.refLabel, { color: tc.textHint }]}>FICA (Soc Security + Medicare)</ThemedText>
                 <ThemedText style={[mStyles.refValue, { color: Brand.danger }]}>-{fmtPay(breakdown.fica)}/mo</ThemedText>
               </View>
-              <View style={mStyles.refRow}>
-                <ThemedText style={mStyles.refLabel}>Federal Income Tax (est.)</ThemedText>
+              <View style={[mStyles.refRow, { borderBottomColor: tc.borderColor }]}>
+                <ThemedText style={[mStyles.refLabel, { color: tc.textHint }]}>Federal Income Tax (est.)</ThemedText>
                 <ThemedText style={[mStyles.refValue, { color: Brand.danger }]}>-{fmtPay(breakdown.fedTax)}/mo</ThemedText>
               </View>
               {breakdown.stateTax > 0 && (
-                <View style={mStyles.refRow}>
-                  <ThemedText style={mStyles.refLabel}>State Income Tax (est.)</ThemedText>
+                <View style={[mStyles.refRow, { borderBottomColor: tc.borderColor }]}>
+                  <ThemedText style={[mStyles.refLabel, { color: tc.textHint }]}>State Income Tax (est.)</ThemedText>
                   <ThemedText style={[mStyles.refValue, { color: Brand.danger }]}>-{fmtPay(breakdown.stateTax)}/mo</ThemedText>
                 </View>
               )}
               {breakdown.traditionalTsp > 0 && (
-                <View style={mStyles.refRow}>
-                  <ThemedText style={mStyles.refLabel}>Traditional TSP</ThemedText>
+                <View style={[mStyles.refRow, { borderBottomColor: tc.borderColor }]}>
+                  <ThemedText style={[mStyles.refLabel, { color: tc.textHint }]}>Traditional TSP</ThemedText>
                   <ThemedText style={[mStyles.refValue, { color: Brand.danger }]}>-{fmtPay(breakdown.traditionalTsp)}/mo</ThemedText>
                 </View>
               )}
               {breakdown.rothTsp > 0 && (
-                <View style={mStyles.refRow}>
-                  <ThemedText style={mStyles.refLabel}>Roth TSP</ThemedText>
+                <View style={[mStyles.refRow, { borderBottomColor: tc.borderColor }]}>
+                  <ThemedText style={[mStyles.refLabel, { color: tc.textHint }]}>Roth TSP</ThemedText>
                   <ThemedText style={[mStyles.refValue, { color: Brand.danger }]}>-{fmtPay(breakdown.rothTsp)}/mo</ThemedText>
                 </View>
               )}
               {breakdown.tsp === 0 && (
-                <View style={mStyles.refRow}>
-                  <ThemedText style={mStyles.refLabel}>TSP (set in Profile)</ThemedText>
-                  <ThemedText style={[mStyles.refValue, { color: '#3D6080' }]}>$0/mo</ThemedText>
+                <View style={[mStyles.refRow, { borderBottomColor: tc.borderColor }]}>
+                  <ThemedText style={[mStyles.refLabel, { color: tc.textHint }]}>TSP (set in Profile)</ThemedText>
+                  <ThemedText style={[mStyles.refValue, { color: tc.textMuted }]}>$0/mo</ThemedText>
                 </View>
               )}
               {breakdown.sgli > 0 && (
-                <View style={mStyles.refRow}>
-                  <ThemedText style={mStyles.refLabel}>SGLI Premium ($500k)</ThemedText>
+                <View style={[mStyles.refRow, { borderBottomColor: tc.borderColor }]}>
+                  <ThemedText style={[mStyles.refLabel, { color: tc.textHint }]}>SGLI Premium ($500k)</ThemedText>
                   <ThemedText style={[mStyles.refValue, { color: Brand.danger }]}>-{fmtPay(breakdown.sgli)}/mo</ThemedText>
                 </View>
               )}
               {breakdown.dental > 0 && (
-                <View style={mStyles.refRow}>
-                  <ThemedText style={mStyles.refLabel}>Dental (TDP Family)</ThemedText>
+                <View style={[mStyles.refRow, { borderBottomColor: tc.borderColor }]}>
+                  <ThemedText style={[mStyles.refLabel, { color: tc.textHint }]}>Dental (TDP Family)</ThemedText>
                   <ThemedText style={[mStyles.refValue, { color: Brand.danger }]}>-{fmtPay(breakdown.dental)}/mo</ThemedText>
                 </View>
               )}
@@ -314,12 +323,12 @@ function OverrideModal({
 
             {/* ── Extra Deductions ── */}
             <ThemedText style={mStyles.sectionLabel}>ADDITIONAL DEDUCTIONS (LES block 19+)</ThemedText>
-            <ThemedText style={mStyles.hint}>Add deductions from your LES that aren't listed above: BOP, allotments, AAFES debt, vision plan, mid-month pay, etc.</ThemedText>
+            <ThemedText style={[mStyles.hint, { color: tc.textMuted }]}>Add deductions from your LES that aren't listed above: BOP, allotments, AAFES debt, vision plan, mid-month pay, etc.</ThemedText>
 
             {extraDeductions.map(item => (
-              <View key={item.id} style={mStyles.lineItem}>
+              <View key={item.id} style={[mStyles.lineItem, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
                 <View style={{ flex: 1 }}>
-                  <ThemedText style={mStyles.lineItemLabel}>{item.label}</ThemedText>
+                  <ThemedText style={[mStyles.lineItemLabel, { color: tc.textPrimary }]}>{item.label}</ThemedText>
                   <ThemedText style={[mStyles.lineItemAmt, { color: Brand.danger }]}>-${item.amount.toFixed(2)}/mo</ThemedText>
                 </View>
                 <Pressable onPress={() => removeDeduction(item.id)} style={mStyles.removeBtn}>
@@ -330,21 +339,21 @@ function OverrideModal({
 
             <View style={mStyles.addBlock}>
               <TextInput
-                style={mStyles.addLabelInput}
+                style={[mStyles.addLabelInput, { backgroundColor: tc.surface, borderColor: tc.borderColor, color: tc.textPrimary }]}
                 value={newDeductLabel}
                 onChangeText={setNewDeductLabel}
                 placeholder="Label (e.g. BOP, Allotment)"
-                placeholderTextColor="#2A4A60"
+                placeholderTextColor={tc.textMuted}
                 autoCapitalize="words"
               />
               <View style={mStyles.addAmtRow}>
-                <ThemedText style={mStyles.dollar}>$</ThemedText>
+                <ThemedText style={[mStyles.dollar, { color: tc.textHint }]}>$</ThemedText>
                 <TextInput
-                  style={[mStyles.input, { flex: 1 }]}
+                  style={[mStyles.input, { flex: 1, color: tc.textPrimary }]}
                   value={newDeductAmt}
                   onChangeText={setNewDeductAmt}
                   placeholder="Monthly amount"
-                  placeholderTextColor="#2A4A60"
+                  placeholderTextColor={tc.textMuted}
                   keyboardType="decimal-pad"
                 />
                 <Pressable
@@ -369,10 +378,10 @@ const mStyles = StyleSheet.create({
   header: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
     paddingHorizontal: Spacing.three, paddingVertical: Spacing.two + 4,
-    borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: Brand.border,
+    borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  title: { fontSize: 13, fontWeight: '800', color: '#C8D8E8', letterSpacing: 1 },
-  cancel: { fontSize: 12, fontWeight: '700', color: '#3D6080', letterSpacing: 0.5 },
+  title: { fontSize: 13, fontWeight: '800', letterSpacing: 1 },
+  cancel: { fontSize: 12, fontWeight: '700', letterSpacing: 0.5 },
   saveBtn: { fontSize: 13, fontWeight: '800', color: Brand.tactical, letterSpacing: 0.5 },
 
   scroll: { padding: Spacing.three, gap: Spacing.two, paddingBottom: 60 },
@@ -382,26 +391,26 @@ const mStyles = StyleSheet.create({
     fontSize: 10, fontWeight: '800', color: Brand.tactical,
     letterSpacing: 1.5, marginTop: Spacing.two,
   },
-  hint: { fontSize: 11, color: '#3D6080', lineHeight: 16, marginTop: -Spacing.one },
+  hint: { fontSize: 11, lineHeight: 16, marginTop: -Spacing.one },
 
-  fieldLabel: { fontSize: 10, fontWeight: '700', color: '#4D7A9A', letterSpacing: 0.5 },
+  fieldLabel: { fontSize: 10, fontWeight: '700', letterSpacing: 0.5 },
 
   inputRow: {
     flexDirection: 'row', alignItems: 'center', gap: Spacing.one,
-    backgroundColor: '#080E1C', borderWidth: 1, borderColor: Brand.border,
+    borderWidth: 1,
     borderRadius: 4, paddingHorizontal: Spacing.two, paddingVertical: 6,
   },
-  dollar: { fontSize: 16, fontWeight: '700', color: '#4D7A9A' },
-  input: { flex: 1, fontSize: 16, fontWeight: '600', color: '#C8D8E8', padding: 0 },
-  clearX: { fontSize: 14, color: '#3D6080', paddingHorizontal: 4 },
+  dollar: { fontSize: 16, fontWeight: '700' },
+  input: { flex: 1, fontSize: 16, fontWeight: '600', padding: 0 },
+  clearX: { fontSize: 14, paddingHorizontal: 4 },
 
   lineItem: {
     flexDirection: 'row', alignItems: 'center',
-    backgroundColor: '#080E1C', borderRadius: 4,
-    borderWidth: 1, borderColor: Brand.border,
+    borderRadius: 4,
+    borderWidth: 1,
     padding: Spacing.two,
   },
-  lineItemLabel: { fontSize: 13, fontWeight: '600', color: '#C8D8E8' },
+  lineItemLabel: { fontSize: 13, fontWeight: '600' },
   lineItemAmt: { fontSize: 11, fontWeight: '700', fontFamily: Fonts.data, marginTop: 2 },
   removeBtn: {
     width: 28, height: 28, borderRadius: 14,
@@ -412,9 +421,9 @@ const mStyles = StyleSheet.create({
 
   addBlock: { gap: Spacing.one + 2 },
   addLabelInput: {
-    backgroundColor: '#080E1C', borderWidth: 1, borderColor: Brand.border,
+    borderWidth: 1,
     borderRadius: 4, paddingHorizontal: Spacing.two, paddingVertical: 8,
-    fontSize: 14, color: '#C8D8E8',
+    fontSize: 14,
   },
   addAmtRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.one },
   addBtn: { paddingHorizontal: Spacing.two + 4, paddingVertical: 8, borderRadius: 4 },
@@ -429,19 +438,19 @@ const mStyles = StyleSheet.create({
     borderRadius: 6, padding: Spacing.two + 2, gap: 4,
   },
   lesTipTitle: { fontSize: 10, fontWeight: '800', color: Brand.tactical, letterSpacing: 1 },
-  lesTipBody:  { fontSize: 11, color: '#4D7A9A', lineHeight: 16 },
+  lesTipBody:  { fontSize: 11, lineHeight: 16 },
   lesTipLink:  { color: Brand.accent, fontWeight: '700' },
 
   refTable: {
-    backgroundColor: '#04080F', borderWidth: 1, borderColor: Brand.border,
+    borderWidth: 1,
     borderRadius: 6, overflow: 'hidden',
   },
   refRow: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
     paddingHorizontal: Spacing.two, paddingVertical: Spacing.one + 2,
-    borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: Brand.border,
+    borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  refLabel: { fontSize: 11, color: '#4D7A9A', flex: 1 },
+  refLabel: { fontSize: 11, flex: 1 },
   refValue:  { fontSize: 11, fontWeight: '700', fontFamily: 'monospace' },
 });
 
@@ -452,6 +461,7 @@ interface Props {
 }
 
 export function PaySummaryCard({ breakdown }: Props) {
+  const tc = useThemeColors();
   const [expanded,   setExpanded]   = useState(false);
   const [spouseOpen, setSpouseOpen] = useState(false);
   const [showEdit,   setShowEdit]   = useState(false);
@@ -487,37 +497,37 @@ export function PaySummaryCard({ breakdown }: Props) {
   return (
     <TacticalCard accentColor={Brand.accent} cornerSize={14} style={styles.card}>
       {/* Header bar */}
-      <View style={styles.headerBar}>
+      <View style={[styles.headerBar, { backgroundColor: tc.surface, borderBottomColor: tc.borderColor }]}>
         <View style={styles.headerLeft}>
           <View style={styles.headerDot} />
-          <ThemedText type="label" style={styles.headerLabel}>PAY STATEMENT // EST.</ThemedText>
+          <ThemedText type="label" style={[styles.headerLabel, { color: tc.textHint }]}>PAY STATEMENT // EST.</ThemedText>
           {hasOverrides && (
             <View style={styles.overrideBadge}>
               <ThemedText style={styles.overrideBadgeTxt}>ADJUSTED</ThemedText>
             </View>
           )}
         </View>
-        <ThemedText type="label" style={styles.headerLabel}>FY2026</ThemedText>
+        <ThemedText type="label" style={[styles.headerLabel, { color: tc.textHint }]}>FY2026</ThemedText>
       </View>
 
       {/* Net pay hero */}
       <View style={styles.hero}>
         <View>
-          <ThemedText type="label" style={styles.netLabel}>EST. NET / PAYCHECK</ThemedText>
+          <ThemedText type="label" style={[styles.netLabel, { color: tc.textHint }]}>EST. NET / PAYCHECK</ThemedText>
           <ThemedText style={styles.netAmount}>{fmtPay(perPaycheck)}</ThemedText>
-          <ThemedText style={styles.netMonthly}>
-            {fmtPay(breakdown.netPay)}<ThemedText style={styles.netMonthlyUnit}> / month</ThemedText>
+          <ThemedText style={[styles.netMonthly, { color: tc.textHint }]}>
+            {fmtPay(breakdown.netPay)}<ThemedText style={[styles.netMonthlyUnit, { color: tc.textMuted }]}> / month</ThemedText>
           </ThemedText>
         </View>
         <View style={styles.heroRight}>
           <Pressable onPress={() => setExpanded((v) => !v)} style={styles.expandBtn} hitSlop={12}>
-            <ThemedText style={styles.expandIcon}>{expanded ? '▲' : '▼'}</ThemedText>
-            <ThemedText type="label" style={styles.expandLabel}>{expanded ? 'HIDE' : 'DETAIL'}</ThemedText>
+            <ThemedText style={[styles.expandIcon, { color: tc.textMuted }]}>{expanded ? '▲' : '▼'}</ThemedText>
+            <ThemedText type="label" style={[styles.expandLabel, { color: tc.textMuted }]}>{expanded ? 'HIDE' : 'DETAIL'}</ThemedText>
           </Pressable>
           <Pressable
             onPress={() => setShowEdit(true)}
-            style={[styles.editLesBtn, hasOverrides && styles.editLesBtnActive]}>
-            <ThemedText style={[styles.editLesTxt, hasOverrides && { color: Brand.accent }]}>
+            style={[styles.editLesBtn, { borderColor: tc.borderColor }, hasOverrides && styles.editLesBtnActive]}>
+            <ThemedText style={[styles.editLesTxt, { color: tc.textHint }, hasOverrides && { color: Brand.accent }]}>
               ✎ EDIT
             </ThemedText>
           </Pressable>
@@ -528,17 +538,17 @@ export function PaySummaryCard({ breakdown }: Props) {
       {hasSpouseIncome && !expanded && (
         <View style={styles.householdBar}>
           <View style={styles.householdItem}>
-            <ThemedText style={styles.householdLabel}>YOUR CHECK</ThemedText>
+            <ThemedText style={[styles.householdLabel, { color: tc.textMuted }]}>YOUR CHECK</ThemedText>
             <ThemedText style={[styles.householdValue, { color: Brand.accent }]}>{fmtPay(perPaycheck)}</ThemedText>
           </View>
-          <ThemedText style={styles.householdPlus}>+</ThemedText>
+          <ThemedText style={[styles.householdPlus, { color: tc.textMuted }]}>+</ThemedText>
           <View style={styles.householdItem}>
-            <ThemedText style={styles.householdLabel}>SPOUSE CHECK</ThemedText>
+            <ThemedText style={[styles.householdLabel, { color: tc.textMuted }]}>SPOUSE CHECK</ThemedText>
             <ThemedText style={[styles.householdValue, { color: '#208AEF' }]}>{fmtPay(spousePerPaycheck)}</ThemedText>
           </View>
-          <ThemedText style={styles.householdPlus}>=</ThemedText>
+          <ThemedText style={[styles.householdPlus, { color: tc.textMuted }]}>=</ThemedText>
           <View style={styles.householdItem}>
-            <ThemedText style={styles.householdLabel}>HOUSEHOLD</ThemedText>
+            <ThemedText style={[styles.householdLabel, { color: tc.textMuted }]}>HOUSEHOLD</ThemedText>
             <ThemedText style={[styles.householdValue, { color: Brand.success }]}>{fmtPay(householdPerCheck)}</ThemedText>
           </View>
         </View>
@@ -546,19 +556,19 @@ export function PaySummaryCard({ breakdown }: Props) {
 
       {/* Quick bar */}
       {!expanded && (
-        <View style={styles.quickBar}>
+        <View style={[styles.quickBar, { borderTopColor: tc.borderColor }]}>
           <View style={styles.quickItem}>
-            <ThemedText type="label" style={styles.quickLabel}>GROSS</ThemedText>
+            <ThemedText type="label" style={[styles.quickLabel, { color: tc.textMuted }]}>GROSS</ThemedText>
             <ThemedText style={[styles.quickValue, { color: Brand.tactical }]}>{fmtPay(breakdown.grossPay / 2)}</ThemedText>
           </View>
-          <View style={styles.quickSep} />
+          <View style={[styles.quickSep, { backgroundColor: tc.borderColor }]} />
           <View style={styles.quickItem}>
-            <ThemedText type="label" style={styles.quickLabel}>DEDUCTIONS</ThemedText>
+            <ThemedText type="label" style={[styles.quickLabel, { color: tc.textMuted }]}>DEDUCTIONS</ThemedText>
             <ThemedText style={[styles.quickValue, { color: Brand.danger }]}>-{fmtPay(breakdown.totalDeductions / 2)}</ThemedText>
           </View>
-          <View style={styles.quickSep} />
+          <View style={[styles.quickSep, { backgroundColor: tc.borderColor }]} />
           <View style={styles.quickItem}>
-            <ThemedText type="label" style={styles.quickLabel}>TSP</ThemedText>
+            <ThemedText type="label" style={[styles.quickLabel, { color: tc.textMuted }]}>TSP</ThemedText>
             <ThemedText style={[styles.quickValue, { color: Brand.accent }]}>{fmtPay(breakdown.tsp / 2)}</ThemedText>
           </View>
         </View>
@@ -567,7 +577,7 @@ export function PaySummaryCard({ breakdown }: Props) {
       {/* Expanded detail */}
       {expanded && (
         <View style={styles.detail}>
-          <View style={styles.divider} />
+          <View style={[styles.divider, { backgroundColor: tc.borderColor }]} />
 
           <ThemedText type="label" style={styles.sectionHead}>// ENTITLEMENTS (MONTHLY)</ThemedText>
           <Row label="BASE PAY"     value={fmtPay(breakdown.basePay)}    indent positive overridden={breakdown.basePayOverridden} />
@@ -581,7 +591,7 @@ export function PaySummaryCard({ breakdown }: Props) {
           ))}
           <Row label="GROSS PAY"    value={fmtPay(breakdown.grossPay)}   bold positive />
 
-          <View style={styles.divider} />
+          <View style={[styles.divider, { backgroundColor: tc.borderColor }]} />
 
           <ThemedText type="label" style={styles.sectionHead}>// DEDUCTIONS (MONTHLY)</ThemedText>
           <Row label="FICA (SS + MED)"  value={`-${fmtPay(breakdown.fica)}`}     indent negative />
@@ -599,14 +609,14 @@ export function PaySummaryCard({ breakdown }: Props) {
           ))}
           <Row label="TOTAL DEDUCTIONS" value={`-${fmtPay(breakdown.totalDeductions)}`} bold negative />
 
-          <View style={styles.divider} />
+          <View style={[styles.divider, { backgroundColor: tc.borderColor }]} />
 
           <Row label="MONTHLY NET"      value={fmtPay(breakdown.netPay)}   bold />
           <Row label="PER PAYCHECK (÷2)" value={fmtPay(perPaycheck)}        bold />
 
           {hasSpouseIncome && (
             <>
-              <View style={styles.divider} />
+              <View style={[styles.divider, { backgroundColor: tc.borderColor }]} />
               <ThemedText type="label" style={styles.sectionHead}>// HOUSEHOLD COMBINED</ThemedText>
               <Row label="YOUR NET/MO"        value={fmtPay(breakdown.netPay)}   indent positive />
               <Row label="SPOUSE INCOME/MO"   value={fmtPay(spouseMonthlyIncome)} indent positive />
@@ -615,7 +625,7 @@ export function PaySummaryCard({ breakdown }: Props) {
             </>
           )}
 
-          <ThemedText type="label" style={styles.disclaimer}>
+          <ThemedText type="label" style={[styles.disclaimer, { color: tc.textMuted }]}>
             * ESTIMATE ONLY — VERIFY AT MYPAY.DFAS.MIL{'\n'}
             {hasOverrides ? '✎ SOME VALUES MANUALLY ADJUSTED FROM LES' : 'SET HOME STATE IN PROFILE FOR STATE TAX ESTIMATE'}
           </ThemedText>
@@ -623,27 +633,27 @@ export function PaySummaryCard({ breakdown }: Props) {
       )}
 
       {/* Spouse income entry */}
-      <Pressable onPress={() => setSpouseOpen((v) => !v)} style={styles.spouseToggle}>
+      <Pressable onPress={() => setSpouseOpen((v) => !v)} style={[styles.spouseToggle, { borderTopColor: tc.borderColor }]}>
         <ThemedText style={styles.spouseToggleIcon}>{hasSpouseIncome ? '👫' : '+'}</ThemedText>
-        <ThemedText style={styles.spouseToggleLabel}>
+        <ThemedText style={[styles.spouseToggleLabel, { color: tc.textHint }]}>
           {hasSpouseIncome ? `SPOUSE INCOME: ${fmtPay(spouseMonthlyIncome)}/mo` : 'ADD SPOUSE INCOME'}
         </ThemedText>
-        <ThemedText style={styles.spouseToggleChevron}>{spouseOpen ? '▲' : '▼'}</ThemedText>
+        <ThemedText style={[styles.spouseToggleChevron, { color: tc.textMuted }]}>{spouseOpen ? '▲' : '▼'}</ThemedText>
       </Pressable>
 
       {spouseOpen && (
-        <View style={styles.spousePanel}>
+        <View style={[styles.spousePanel, { borderTopColor: tc.borderColor }]}>
           <ThemedText style={styles.spousePanelLabel}>SPOUSE MONTHLY TAKE-HOME</ThemedText>
-          <View style={styles.spouseInputRow}>
+          <View style={[styles.spouseInputRow, { backgroundColor: tc.background, borderColor: tc.borderColor }]}>
             <ThemedText style={styles.spouseDollar}>$</ThemedText>
             <TextInput
-              style={styles.spouseInput}
+              style={[styles.spouseInput, { color: tc.textPrimary }]}
               value={spouseInput}
               onChangeText={setSpouseInput}
               onBlur={commitSpouseIncome}
               keyboardType="numeric"
               placeholder="0"
-              placeholderTextColor="#3D6080"
+              placeholderTextColor={tc.textMuted}
               returnKeyType="done"
               onSubmitEditing={commitSpouseIncome}
             />
@@ -656,7 +666,7 @@ export function PaySummaryCard({ breakdown }: Props) {
               </Pressable>
             )}
           </View>
-          <ThemedText style={styles.spousePanelNote}>
+          <ThemedText style={[styles.spousePanelNote, { color: tc.textMuted }]}>
             Enter after-tax monthly income. Used for household take-home display only.
           </ThemedText>
         </View>
@@ -677,13 +687,12 @@ const styles = StyleSheet.create({
   card: { borderRadius: 4 },
   headerBar: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    backgroundColor: 'rgba(26,58,92,0.4)',
     paddingHorizontal: Spacing.three, paddingVertical: Spacing.one + 2,
-    borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: Brand.border,
+    borderBottomWidth: StyleSheet.hairlineWidth,
   },
   headerLeft: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   headerDot: { width: 6, height: 6, backgroundColor: Brand.accent, borderRadius: 1 },
-  headerLabel: { color: '#4D7A9A' },
+  headerLabel: {},
   overrideBadge: {
     backgroundColor: Brand.accent + '20', borderRadius: 2,
     paddingHorizontal: 5, paddingVertical: 1,
@@ -694,21 +703,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
     paddingHorizontal: Spacing.three, paddingTop: Spacing.three, paddingBottom: Spacing.two,
   },
-  netLabel: { color: '#4D7A9A', marginBottom: 4 },
+  netLabel: { marginBottom: 4 },
   netAmount: { fontSize: 26, fontWeight: '900', letterSpacing: -0.5, color: Brand.accent, fontFamily: Fonts.data },
-  netMonthly: { fontSize: 12, fontWeight: '600', color: '#4D7A9A', fontFamily: Fonts.data, marginTop: 2 },
-  netMonthlyUnit: { fontSize: 10, fontWeight: '400', color: '#3D6080' },
+  netMonthly: { fontSize: 12, fontWeight: '600', fontFamily: Fonts.data, marginTop: 2 },
+  netMonthlyUnit: { fontSize: 10, fontWeight: '400' },
 
   heroRight: { alignItems: 'flex-end', gap: Spacing.one + 2 },
   expandBtn: { alignItems: 'center', gap: 2 },
-  expandIcon: { fontSize: 14, color: '#3D6080', lineHeight: 18 },
-  expandLabel: { color: '#3D6080', fontSize: 8 },
+  expandIcon: { fontSize: 14, lineHeight: 18 },
+  expandLabel: { fontSize: 8 },
   editLesBtn: {
-    borderWidth: 1, borderColor: Brand.border, borderRadius: 3,
+    borderWidth: 1, borderRadius: 3,
     paddingHorizontal: 8, paddingVertical: 4,
   },
   editLesBtnActive: { borderColor: Brand.accent + '60' },
-  editLesTxt: { fontSize: 9, fontWeight: '800', color: '#4D7A9A', letterSpacing: 0.5 },
+  editLesTxt: { fontSize: 9, fontWeight: '800', letterSpacing: 0.5 },
 
   householdBar: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
@@ -717,49 +726,49 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.three, paddingVertical: Spacing.two, gap: 4,
   },
   householdItem: { flex: 1, alignItems: 'center', gap: 2 },
-  householdLabel: { fontSize: 7, fontWeight: '800', color: '#3D6080', letterSpacing: 0.8 },
+  householdLabel: { fontSize: 7, fontWeight: '800', letterSpacing: 0.8 },
   householdValue: { fontSize: 13, fontWeight: '900', fontFamily: Fonts.data },
-  householdPlus: { fontSize: 16, color: '#3D6080', fontWeight: '300' },
+  householdPlus: { fontSize: 16, fontWeight: '300' },
 
   quickBar: {
     flexDirection: 'row', borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: Brand.border, paddingVertical: Spacing.two,
+    paddingVertical: Spacing.two,
   },
   quickItem: { flex: 1, alignItems: 'center', gap: 3 },
-  quickSep: { width: StyleSheet.hairlineWidth, backgroundColor: Brand.border },
-  quickLabel: { color: '#3D6080', fontSize: 8 },
+  quickSep: { width: StyleSheet.hairlineWidth },
+  quickLabel: { fontSize: 8 },
   quickValue: { fontSize: 14, fontWeight: '700', fontFamily: Fonts.data },
 
   detail: { paddingHorizontal: Spacing.three, paddingBottom: Spacing.three, gap: 0 },
-  divider: { height: StyleSheet.hairlineWidth, backgroundColor: Brand.border, marginVertical: Spacing.two },
+  divider: { height: StyleSheet.hairlineWidth, marginVertical: Spacing.two },
   sectionHead: { color: Brand.tactical, marginBottom: Spacing.one, fontSize: 9 },
-  disclaimer: { color: '#2A4A60', fontSize: 8, lineHeight: 12, marginTop: Spacing.two, letterSpacing: 0.8 },
+  disclaimer: { fontSize: 8, lineHeight: 12, marginTop: Spacing.two, letterSpacing: 0.8 },
 
   spouseToggle: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
-    borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: Brand.border,
+    borderTopWidth: StyleSheet.hairlineWidth,
     paddingHorizontal: Spacing.three, paddingVertical: Spacing.two,
   },
   spouseToggleIcon: { fontSize: 14, lineHeight: 18 },
-  spouseToggleLabel: { flex: 1, fontSize: 10, fontWeight: '700', color: '#4D7A9A', letterSpacing: 0.5 },
-  spouseToggleChevron: { fontSize: 10, color: '#3D6080' },
+  spouseToggleLabel: { flex: 1, fontSize: 10, fontWeight: '700', letterSpacing: 0.5 },
+  spouseToggleChevron: { fontSize: 10 },
 
   spousePanel: {
     paddingHorizontal: Spacing.three, paddingBottom: Spacing.three, gap: Spacing.two,
-    borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: Brand.border,
+    borderTopWidth: StyleSheet.hairlineWidth,
     backgroundColor: 'rgba(32,138,239,0.04)',
   },
   spousePanelLabel: { fontSize: 8, fontWeight: '800', letterSpacing: 1.2, color: '#208AEF', marginTop: Spacing.two },
   spouseInputRow: {
     flexDirection: 'row', alignItems: 'center', gap: Spacing.two,
-    backgroundColor: '#04080F', borderWidth: 1, borderColor: Brand.border,
+    borderWidth: 1,
     borderRadius: 3, paddingHorizontal: Spacing.two, paddingVertical: 6,
   },
   spouseDollar: { fontSize: 16, color: '#208AEF', fontWeight: '700' },
-  spouseInput: { flex: 1, fontSize: 18, fontWeight: '700', color: '#C8D8E8', fontFamily: Fonts.data, padding: 0 },
+  spouseInput: { flex: 1, fontSize: 18, fontWeight: '700', fontFamily: Fonts.data, padding: 0 },
   spouseSaveBtn: { backgroundColor: '#208AEF', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 3 },
   spouseSaveBtnText: { fontSize: 10, fontWeight: '800', color: '#fff', letterSpacing: 0.5 },
   spouseClearBtn: { borderWidth: 1, borderColor: Brand.danger, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 3 },
   spouseClearBtnText: { fontSize: 10, fontWeight: '800', color: Brand.danger, letterSpacing: 0.5 },
-  spousePanelNote: { fontSize: 9, color: '#3D6080', lineHeight: 13 },
+  spousePanelNote: { fontSize: 9, lineHeight: 13 },
 });

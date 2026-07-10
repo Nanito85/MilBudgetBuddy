@@ -1,4 +1,4 @@
-import { useRouter } from 'expo-router';
+﻿import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Brand, Spacing } from '@/constants/theme';
+import { useThemeColors } from '@/hooks/use-theme';
 
 interface Step {
   id: string;
@@ -87,9 +88,10 @@ function StepCard({ step, checked, onToggle }: {
   onToggle: () => void;
 }) {
   const [expanded, setExpanded] = useState(false);
+  const tc = useThemeColors();
 
   return (
-    <View style={[styles.stepCard, checked && styles.stepCardDone]}>
+    <View style={[styles.stepCard, { backgroundColor: tc.surface, borderColor: tc.borderColor }, checked && styles.stepCardDone]}>
       {/* Step number bar */}
       <View style={[styles.stepBar, { backgroundColor: step.color }]} />
 
@@ -103,14 +105,14 @@ function StepCard({ step, checked, onToggle }: {
           </View>
           <ThemedText style={styles.stepIcon}>{step.icon}</ThemedText>
           <View style={styles.stepMeta}>
-            <ThemedText style={[styles.stepTitle, checked && styles.stepTitleDone]}>
+            <ThemedText style={[styles.stepTitle, { color: tc.textPrimary }, checked && [styles.stepTitleDone, { color: tc.textMuted }]]}>
               {step.title.toUpperCase()}
             </ThemedText>
-            <ThemedText style={styles.stepTarget}>{step.target}</ThemedText>
+            <ThemedText style={[styles.stepTarget, { color: tc.textHint }]}>{step.target}</ThemedText>
           </View>
           <Pressable
             onPress={onToggle}
-            style={[styles.checkBox, checked && { backgroundColor: step.color, borderColor: step.color }]}>
+            style={[styles.checkBox, { borderColor: tc.borderColor }, checked && { backgroundColor: step.color, borderColor: step.color }]}>
             {checked && <ThemedText style={styles.checkMark}>✓</ThemedText>}
           </Pressable>
         </Pressable>
@@ -118,14 +120,14 @@ function StepCard({ step, checked, onToggle }: {
         {/* Expanded detail */}
         {expanded && (
           <View style={styles.stepDetail}>
-            <View style={styles.detailDivider} />
+            <View style={[styles.detailDivider, { backgroundColor: tc.borderColor }]} />
             <View style={styles.detailBlock}>
               <ThemedText style={[styles.detailLabel, { color: step.color }]}>WHY THIS MATTERS</ThemedText>
-              <ThemedText style={styles.detailText}>{step.why}</ThemedText>
+              <ThemedText style={[styles.detailText, { color: tc.textSecondary }]}>{step.why}</ThemedText>
             </View>
             <View style={styles.detailBlock}>
               <ThemedText style={[styles.detailLabel, { color: step.color }]}>HOW TO DO IT</ThemedText>
-              <ThemedText style={styles.detailText}>{step.how}</ThemedText>
+              <ThemedText style={[styles.detailText, { color: tc.textSecondary }]}>{step.how}</ThemedText>
             </View>
           </View>
         )}
@@ -137,6 +139,7 @@ function StepCard({ step, checked, onToggle }: {
 export default function MoneyFlowchartScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const tc = useThemeColors();
   const [checked, setChecked] = useState<Record<string, boolean>>({});
 
   const completedCount = Object.values(checked).filter(Boolean).length;
@@ -150,7 +153,7 @@ export default function MoneyFlowchartScreen() {
     <ThemedView style={{ flex: 1 }}>
       <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
         <Pressable
-          onPress={() => (router.push('/tools'))}
+          onPress={() => (router.back())}
           style={styles.back}>
           <ThemedText style={styles.backChevron}>‹</ThemedText>
         </Pressable>
@@ -165,8 +168,8 @@ export default function MoneyFlowchartScreen() {
         {/* Hero */}
         <ThemedView type="backgroundElement" style={styles.heroBanner}>
           <ThemedText style={styles.heroEyebrow}>SINGLE SERVICE MEMBER</ThemedText>
-          <ThemedText style={styles.heroTitle}>The Military Money Order</ThemedText>
-          <ThemedText style={styles.heroBody}>
+          <ThemedText style={[styles.heroTitle, { color: tc.textPrimary }]}>The Military Money Order</ThemedText>
+          <ThemedText style={[styles.heroBody, { color: tc.textHint }]}>
             Six steps in priority order. Do Step 1 before Step 2. Check each off as you complete it.
           </ThemedText>
         </ThemedView>
@@ -175,9 +178,9 @@ export default function MoneyFlowchartScreen() {
         <ThemedView type="backgroundElement" style={styles.progressCard}>
           <View style={styles.progressHeader}>
             <ThemedText style={styles.progressLabel}>MISSION STATUS</ThemedText>
-            <ThemedText style={styles.progressCount}>{completedCount}/{STEPS.length} STEPS</ThemedText>
+            <ThemedText style={[styles.progressCount, { color: tc.textPrimary }]}>{completedCount}/{STEPS.length} STEPS</ThemedText>
           </View>
-          <View style={styles.progressTrack}>
+          <View style={[styles.progressTrack, { backgroundColor: tc.surfaceInner }]}>
             <View style={[styles.progressFill, { width: `${progressPct}%` as any }]} />
           </View>
           {completedCount === STEPS.length && (
@@ -200,7 +203,7 @@ export default function MoneyFlowchartScreen() {
         {/* Note */}
         <ThemedView type="backgroundElement" style={styles.disclaimer}>
           <ThemedText style={styles.disclaimerTitle}>⚠ Deployment Exception</ThemedText>
-          <ThemedText style={styles.disclaimerText}>
+          <ThemedText style={[styles.disclaimerText, { color: tc.textHint }]}>
             If you are deployed to a Combat Zone (CZTE), skip to Step 5 first. Your income is tax-exempt and TSP contributions jump to $70K/yr. Attack it.
           </ThemedText>
         </ThemedView>

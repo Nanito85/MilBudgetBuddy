@@ -5,6 +5,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
+import { useThemeColors } from '@/hooks/use-theme';
 import { useChatStore } from '@/store/chat.store';
 import { useTipsStore } from '@/store/tips.store';
 import { Tip } from '@/types/tip.types';
@@ -17,6 +18,7 @@ interface SavedTipRowProps {
 
 export function SavedTipRow({ tip }: SavedTipRowProps) {
   const router = useRouter();
+  const tc = useThemeColors();
   const { toggleSave } = useTipsStore();
   const { setContextTip } = useChatStore();
 
@@ -35,7 +37,7 @@ export function SavedTipRow({ tip }: SavedTipRowProps) {
       </View>
       <View style={styles.actions}>
         <Pressable onPress={() => toggleSave(tip.id)} hitSlop={8} style={styles.iconBtn}>
-          <ThemedText type="small" style={styles.removeText}>Remove</ThemedText>
+          <ThemedText type="small" style={[styles.removeText, { color: tc.textMuted }]}>Remove</ThemedText>
         </Pressable>
         <Pressable onPress={handleAskAI} hitSlop={8} style={styles.iconBtn}>
           <ThemedText type="small" style={styles.askText}>Ask AI →</ThemedText>
@@ -69,9 +71,7 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.one,
     paddingHorizontal: Spacing.one,
   },
-  removeText: {
-    color: '#94A3B8',
-  },
+  removeText: {},
   askText: {
     color: '#2E5FA3',
     fontWeight: '600',

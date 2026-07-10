@@ -1,4 +1,3 @@
-import { useRouter } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
 import {
   Alert,
@@ -17,11 +16,11 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Brand, Spacing } from '@/constants/theme';
 import { calcLES, fmtPay } from '@/features/home/utils/lesCalc';
-import { useEntitlement } from '@/hooks/use-entitlement';
+import { useThemeColors } from '@/hooks/use-theme';
 import {
   BudgetCategory,
   CUSTOM_PREFIX,
-  MAX_CUSTOM_CATEGORIES,
+  MAX_TOTAL_CATEGORIES,
   useBudgetStore,
 } from '@/store/budget.store';
 import { currentMonthKey, Expense, useExpensesStore } from '@/store/expenses.store';
@@ -104,6 +103,7 @@ const CUSTOM_EMOJIS = ['📦', '🎯', '🛍️', '🔧', '🏋️', '🐾', '�
 // ── Budget allocation row ──────────────────────────────────────────────────────
 
 function CategoryRow({ cat, netPay }: { cat: BudgetCategory; netPay: number }) {
+  const tc = useThemeColors();
   const [editingAmount, setEditingAmount] = useState(false);
   const [editingName, setEditingName] = useState(false);
   const [amountVal, setAmountVal] = useState(cat.monthlyBudget > 0 ? String(cat.monthlyBudget) : '');
@@ -129,54 +129,39 @@ function CategoryRow({ cat, netPay }: { cat: BudgetCategory; netPay: number }) {
     setEditingName(false);
   };
 
-  const handleLongPress = () => {
+  const handleOptions = () => {
     if (!isCustom) return;
-    Alert.alert('Remove Category', `Remove "${cat.name}"?`, [
+    Alert.alert(cat.name, 'What would you like to do?', [
+      { text: 'Rename', onPress: () => { setNameVal(cat.name); setEditingName(true); } },
+      { text: 'Delete', style: 'destructive', onPress: () => removeCategory(cat.id) },
       { text: 'Cancel', style: 'cancel' },
-      { text: 'Remove', style: 'destructive', onPress: () => removeCategory(cat.id) },
     ]);
   };
 
   return (
-    <Pressable onLongPress={handleLongPress}>
-      <ThemedView type="backgroundElement" style={styles.catRow}>
-        <ThemedText style={styles.catEmoji}>{cat.emoji}</ThemedText>
-        <View style={styles.catInfo}>
-          {isCustom && editingName ? (
-            <TextInput
-              value={nameVal}
-              onChangeText={setNameVal}
-              onBlur={commitName}
-              onSubmitEditing={commitName}
-              autoFocus
-              style={styles.nameInput}
-              placeholder="Category name"
-              returnKeyType="done"
-            />
-          ) : (
-            <Pressable
-              onPress={
-                isCustom
-                  ? () => {
-                      setNameVal(cat.name);
-                      setEditingName(true);
-                    }
-                  : undefined
-              }>
-              <ThemedText style={styles.catName}>{cat.name}</ThemedText>
-            </Pressable>
-          )}
-          {pct !== null && !editingName && (
-            <ThemedText type="small" themeColor="textSecondary">
-              {pct}% of net pay
-            </ThemedText>
-          )}
-          {isCustom && !editingName && (
-            <ThemedText type="small" themeColor="textSecondary" style={styles.tapToRename}>
-              Tap name to rename · Long-press to delete
-            </ThemedText>
-          )}
-        </View>
+    <ThemedView type="backgroundElement" style={styles.catRow}>
+      <ThemedText style={styles.catEmoji}>{cat.emoji}</ThemedText>
+      <View style={styles.catInfo}>
+        {isCustom && editingName ? (
+          <TextInput
+            value={nameVal}
+            onChangeText={setNameVal}
+            onBlur={commitName}
+            onSubmitEditing={commitName}
+            autoFocus
+            style={styles.nameInput}
+            placeholder="Category name"
+            returnKeyType="done"
+          />
+        ) : (
+          <ThemedText style={styles.catName}>{cat.name}</ThemedText>
+        )}
+        {pct !== null && !editingName && (
+          <ThemedText type="small" themeColor="textSecondary">
+            {pct}% of net pay
+          </ThemedText>
+        )}
+      </View>
         {editingAmount ? (
           <TextInput
             value={amountVal}
@@ -199,12 +184,17 @@ function CategoryRow({ cat, netPay }: { cat: BudgetCategory; netPay: number }) {
             </ThemedText>
           </Pressable>
         )}
+        {isCustom && (
+          <Pressable onPress={handleOptions} hitSlop={8} style={styles.catOptions}>
+            <ThemedText style={[styles.catOptionsDots, { color: tc.textMuted }]}>···</ThemedText>
+          </Pressable>
+        )}
       </ThemedView>
-    </Pressable>
   );
 }
 
 function AddCustomRow({ onAdd }: { onAdd: (name: string) => void }) {
+  const tc = useThemeColors();
   const [name, setName] = useState('');
 
   const submit = () => {
@@ -221,7 +211,7 @@ function AddCustomRow({ onAdd }: { onAdd: (name: string) => void }) {
         value={name}
         onChangeText={setName}
         placeholder="Add custom category..."
-        placeholderTextColor="rgba(128,128,128,0.5)"
+        placeholderTextColor={tc.textHint}
         style={styles.addInput}
         returnKeyType="done"
         onSubmitEditing={submit}
@@ -350,6 +340,7 @@ function AddExpensePanel({
   catEmoji: string;
   onClose: () => void;
 }) {
+  const tc = useThemeColors();
   const [amount, setAmount] = useState('');
   const [note, setNote] = useState('');
   const addExpense = useExpensesStore((s) => s.addExpense);
@@ -371,14 +362,14 @@ function AddExpensePanel({
           {catEmoji} Log Expense — {catName}
         </ThemedText>
         <Pressable onPress={onClose}>
-          <ThemedText style={styles.panelClose}>✕</ThemedText>
+          <ThemedText style={[styles.panelClose, { color: tc.textHint }]}>✕</ThemedText>
         </Pressable>
       </View>
       <TextInput
         value={amount}
         onChangeText={setAmount}
         placeholder="Amount ($)"
-        placeholderTextColor="rgba(128,128,128,0.5)"
+        placeholderTextColor={tc.textHint}
         keyboardType="decimal-pad"
         autoFocus
         style={styles.panelInput}
@@ -387,7 +378,7 @@ function AddExpensePanel({
         value={note}
         onChangeText={setNote}
         placeholder="Note (optional)"
-        placeholderTextColor="rgba(128,128,128,0.5)"
+        placeholderTextColor={tc.textHint}
         style={styles.panelInput}
         returnKeyType="done"
         onSubmitEditing={submit}
@@ -402,6 +393,7 @@ function AddExpensePanel({
 // ── Savings tip card ───────────────────────────────────────────────────────────
 
 function TipRotator() {
+  const tc = useThemeColors();
   const [idx, setIdx] = useState(() => Math.floor(Math.random() * MIL_TIPS.length));
   const tip = MIL_TIPS[idx];
 
@@ -409,14 +401,14 @@ function TipRotator() {
   const prev = () => setIdx((i) => (i - 1 + MIL_TIPS.length) % MIL_TIPS.length);
 
   return (
-    <View style={styles.tipCard}>
+    <View style={[styles.tipCard, { backgroundColor: tc.surfaceInner }]}>
       <View style={styles.tipHeader}>
         <ThemedText style={styles.tipLabel}>// FIN-OPS INTEL</ThemedText>
         <View style={styles.tipNav}>
           <Pressable onPress={prev} hitSlop={8} style={styles.tipNavBtn}>
             <ThemedText style={styles.tipNavText}>‹</ThemedText>
           </Pressable>
-          <ThemedText style={styles.tipCounter}>
+          <ThemedText style={[styles.tipCounter, { color: tc.textMuted }]}>
             {idx + 1}/{MIL_TIPS.length}
           </ThemedText>
           <Pressable onPress={next} hitSlop={8} style={styles.tipNavBtn}>
@@ -427,8 +419,8 @@ function TipRotator() {
       <View style={styles.tipBody}>
         <ThemedText style={styles.tipIcon}>{tip.icon}</ThemedText>
         <View style={{ flex: 1 }}>
-          <ThemedText style={styles.tipTitle}>{tip.title}</ThemedText>
-          <ThemedText style={styles.tipText}>{tip.body}</ThemedText>
+          <ThemedText style={[styles.tipTitle, { color: tc.textPrimary }]}>{tip.title}</ThemedText>
+          <ThemedText style={[styles.tipText, { color: tc.textSecondary }]}>{tip.body}</ThemedText>
         </View>
       </View>
     </View>
@@ -448,6 +440,7 @@ function GoalCard({
   onWithdraw: () => void;
   onDelete: () => void;
 }) {
+  const tc = useThemeColors();
   const pct = goal.targetAmount > 0 ? Math.min(1, goal.currentAmount / goal.targetAmount) : 0;
   const done = pct >= 1;
 
@@ -460,13 +453,15 @@ function GoalCard({
 
   return (
     <Pressable onLongPress={handleLongPress}>
-      <ThemedView type="backgroundElement" style={[styles.goalCard, done && styles.goalCardDone]}>
+      <ThemedView
+        type="backgroundElement"
+        style={[styles.goalCard, { backgroundColor: tc.surface }, done && styles.goalCardDone]}>
         <View style={[styles.goalAccent, { backgroundColor: goal.color }]} />
         <View style={styles.goalContent}>
           <View style={styles.goalTop}>
             <ThemedText style={styles.goalEmoji}>{goal.emoji}</ThemedText>
             <View style={styles.goalInfo}>
-              <ThemedText style={styles.goalName}>{goal.name.toUpperCase()}</ThemedText>
+              <ThemedText style={[styles.goalName, { color: tc.textPrimary }]}>{goal.name.toUpperCase()}</ThemedText>
               <ThemedText type="small" themeColor="textSecondary">
                 {fmtPay(goal.currentAmount)} of {fmtPay(goal.targetAmount)}
                 {done ? '  ✓ COMPLETE' : ''}
@@ -490,8 +485,8 @@ function GoalCard({
             </Pressable>
             <Pressable
               onPress={onWithdraw}
-              style={[styles.goalBtn, { borderColor: Brand.border }]}>
-              <ThemedText style={[styles.goalBtnText, { color: '#6B92B0' }]}>− Withdraw</ThemedText>
+              style={[styles.goalBtn, { borderColor: tc.borderColor }]}>
+              <ThemedText style={[styles.goalBtnText, { color: tc.textSecondary }]}>− Withdraw</ThemedText>
             </Pressable>
           </View>
         </View>
@@ -515,6 +510,7 @@ function AmountModal({
   submitLabel: string;
   submitColor: string;
 }) {
+  const tc = useThemeColors();
   const [val, setVal] = useState('');
 
   const handleSubmit = () => {
@@ -531,20 +527,20 @@ function AmountModal({
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <Pressable style={styles.modalOverlay} onPress={onClose}>
-        <Pressable style={styles.modalCard}>
-          <ThemedText style={styles.modalTitle}>{title}</ThemedText>
+        <Pressable style={[styles.modalCard, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
+          <ThemedText style={[styles.modalTitle, { color: tc.textPrimary }]}>{title}</ThemedText>
           <TextInput
             value={val}
             onChangeText={setVal}
             placeholder="Amount ($)"
-            placeholderTextColor="rgba(128,128,128,0.5)"
+            placeholderTextColor={tc.textHint}
             keyboardType="decimal-pad"
             autoFocus
-            style={styles.modalInput}
+            style={[styles.modalInput, { color: tc.textPrimary, borderBottomColor: tc.borderColor }]}
           />
           <View style={styles.modalBtns}>
-            <Pressable onPress={onClose} style={styles.modalCancelBtn}>
-              <ThemedText style={styles.modalCancelText}>Cancel</ThemedText>
+            <Pressable onPress={onClose} style={[styles.modalCancelBtn, { borderColor: tc.borderColor }]}>
+              <ThemedText style={[styles.modalCancelText, { color: tc.textHint }]}>Cancel</ThemedText>
             </Pressable>
             <Pressable onPress={handleSubmit} style={[styles.modalSubmitBtn, { backgroundColor: submitColor }]}>
               <ThemedText style={styles.modalSubmitText}>{submitLabel}</ThemedText>
@@ -563,6 +559,7 @@ function AddGoalModal({
   visible: boolean;
   onClose: () => void;
 }) {
+  const tc = useThemeColors();
   const addGoal = useSavingsGoalsStore((s) => s.addGoal);
   const [name, setName] = useState('');
   const [target, setTarget] = useState('');
@@ -592,30 +589,30 @@ function AddGoalModal({
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <Pressable style={styles.modalOverlay} onPress={onClose}>
-        <Pressable style={[styles.modalCard, { maxHeight: '85%' }]}>
-          <ThemedText style={styles.modalTitle}>New Savings Goal</ThemedText>
+        <Pressable style={[styles.modalCard, { maxHeight: '85%', backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
+          <ThemedText style={[styles.modalTitle, { color: tc.textPrimary }]}>New Savings Goal</ThemedText>
 
-          <ThemedText style={styles.fieldLabel}>GOAL NAME</ThemedText>
+          <ThemedText style={[styles.fieldLabel, { color: tc.textMuted }]}>GOAL NAME</ThemedText>
           <TextInput
             value={name}
             onChangeText={setName}
             placeholder="e.g. Emergency Fund"
-            placeholderTextColor="rgba(128,128,128,0.5)"
-            style={styles.modalInput}
+            placeholderTextColor={tc.textHint}
+            style={[styles.modalInput, { color: tc.textPrimary, borderBottomColor: tc.borderColor }]}
             returnKeyType="next"
           />
 
-          <ThemedText style={[styles.fieldLabel, { marginTop: Spacing.two }]}>TARGET AMOUNT</ThemedText>
+          <ThemedText style={[styles.fieldLabel, { color: tc.textMuted, marginTop: Spacing.two }]}>TARGET AMOUNT</ThemedText>
           <TextInput
             value={target}
             onChangeText={setTarget}
             placeholder="$0"
-            placeholderTextColor="rgba(128,128,128,0.5)"
+            placeholderTextColor={tc.textHint}
             keyboardType="decimal-pad"
-            style={styles.modalInput}
+            style={[styles.modalInput, { color: tc.textPrimary, borderBottomColor: tc.borderColor }]}
           />
 
-          <ThemedText style={[styles.fieldLabel, { marginTop: Spacing.two }]}>CATEGORY</ThemedText>
+          <ThemedText style={[styles.fieldLabel, { color: tc.textMuted, marginTop: Spacing.two }]}>CATEGORY</ThemedText>
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -627,11 +624,16 @@ function AddGoalModal({
                 onPress={() => setCategory(key)}
                 style={[
                   styles.catChip,
+                  { backgroundColor: tc.surfaceInner, borderColor: tc.borderColor },
                   category === key && { backgroundColor: meta.color + '30', borderColor: meta.color },
                 ]}>
                 <ThemedText style={styles.catChipEmoji}>{meta.emoji}</ThemedText>
                 <ThemedText
-                  style={[styles.catChipText, category === key && { color: meta.color }]}>
+                  style={[
+                    styles.catChipText,
+                    { color: tc.textHint },
+                    category === key && { color: meta.color },
+                  ]}>
                   {meta.label}
                 </ThemedText>
               </Pressable>
@@ -639,8 +641,8 @@ function AddGoalModal({
           </ScrollView>
 
           <View style={styles.modalBtns}>
-            <Pressable onPress={onClose} style={styles.modalCancelBtn}>
-              <ThemedText style={styles.modalCancelText}>Cancel</ThemedText>
+            <Pressable onPress={onClose} style={[styles.modalCancelBtn, { borderColor: tc.borderColor }]}>
+              <ThemedText style={[styles.modalCancelText, { color: tc.textHint }]}>Cancel</ThemedText>
             </Pressable>
             <Pressable
               onPress={submit}
@@ -743,11 +745,10 @@ function GoalsMode() {
 type Mode = 'budget' | 'spending' | 'goals';
 
 export default function BudgetScreen() {
+  const tc = useThemeColors();
   const insets = useSafeAreaInsets();
-  const router = useRouter();
   const [mode, setMode] = useState<Mode>('budget');
   const [addingFor, setAddingFor] = useState<{ id: string; name: string; emoji: string } | null>(null);
-  const { isPro, budgetCategoryLimit } = useEntitlement();
 
   const categories = useBudgetStore((s) => s.categories);
   const totalBudgeted = useBudgetStore((s) => s.totalBudgeted)();
@@ -793,8 +794,28 @@ export default function BudgetScreen() {
   const remaining = netPay - totalBudgeted;
   const overBudget = remaining < 0;
 
+  // ── Budget Health Score ──────────────────────────────────────────────────────
+  const budgetHealthScore = React.useMemo(() => {
+    if (!netPay) return null;
+    let score = 0;
+    const setCats = categories.filter((c) => c.monthlyBudget > 0).length;
+    if (setCats >= 3)                           score += 25; // budget configured
+    if (totalBudgeted > 0 && !overBudget)       score += 25; // balanced
+    if (totalBudgeted > 0 && totalSpent <= totalBudgeted) score += 25; // spending discipline
+    const savingsCat = categories.find((c) =>
+      c.name.toLowerCase().includes('sav') || c.id === 'savings_goal');
+    if (savingsCat && savingsCat.monthlyBudget > 0) score += 25; // savings allocated
+    return score;
+  }, [categories, netPay, totalBudgeted, overBudget, totalSpent]);
+
+  const healthLabel = budgetHealthScore === null ? null
+    : budgetHealthScore >= 75 ? { text: 'EXCELLENT', color: '#00B27A' }
+    : budgetHealthScore >= 50 ? { text: 'GOOD',      color: Brand.tactical }
+    : budgetHealthScore >= 25 ? { text: 'FAIR',      color: Brand.accent }
+    :                           { text: 'NEEDS WORK', color: Brand.danger };
+
   const customCategories = categories.filter((c) => c.id.startsWith(CUSTOM_PREFIX));
-  const canAddMore = customCategories.length < MAX_CUSTOM_CATEGORIES;
+  const canAddMore = categories.length < MAX_TOTAL_CATEGORIES;
 
   const handleAddCustom = (name: string) => {
     const index = customCategories.length;
@@ -816,12 +837,13 @@ export default function BudgetScreen() {
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+
       <ThemedView style={{ flex: 1 }}>
         {/* Header */}
         <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
           <ThemedText style={styles.headerEyebrow}>// FINANCE OPS</ThemedText>
-          <ThemedText style={styles.title}>BUDGET HQ</ThemedText>
+          <ThemedText style={[styles.title, { color: tc.textPrimary }]}>BUDGET HQ</ThemedText>
         </View>
 
         {/* Mode toggle — 3 tabs */}
@@ -830,8 +852,13 @@ export default function BudgetScreen() {
             <Pressable
               key={m}
               onPress={() => setMode(m)}
-              style={[styles.modeBtn, mode === m && styles.modeBtnActive]}>
-              <ThemedText style={[styles.modeBtnText, mode === m && styles.modeBtnTextActive]}>
+              style={[styles.modeBtn, { borderColor: tc.borderColor }, mode === m && styles.modeBtnActive]}>
+              <ThemedText
+                style={[
+                  styles.modeBtnText,
+                  { color: tc.textSecondary },
+                  mode === m && styles.modeBtnTextActive,
+                ]}>
                 {m === 'budget' ? 'BUDGET' : m === 'spending' ? 'SPENDING' : 'GOALS'}
               </ThemedText>
             </Pressable>
@@ -890,38 +917,61 @@ export default function BudgetScreen() {
         )}
 
         <ScrollView
-          contentContainerStyle={[styles.list, { paddingBottom: insets.bottom + 100 }]}
+          contentContainerStyle={[styles.list, { paddingBottom: insets.bottom + 140 }]}
           keyboardShouldPersistTaps="handled"
-          keyboardDismissMode="on-drag">
+          keyboardDismissMode="on-drag"
+          automaticallyAdjustKeyboardInsets>
 
           {/* ── BUDGET MODE ── */}
           {mode === 'budget' && (
             <>
+              {/* Budget Health Score */}
+              {budgetHealthScore !== null && healthLabel && (
+                <View style={[styles.healthCard, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
+                  <View style={styles.healthLeft}>
+                    <ThemedText style={[styles.healthEyebrow, { color: tc.textMuted }]}>// BUDGET HEALTH</ThemedText>
+                    <View style={styles.healthScoreRow}>
+                      <ThemedText style={[styles.healthScore, { color: healthLabel.color }]}>
+                        {budgetHealthScore}
+                      </ThemedText>
+                      <ThemedText style={[styles.healthScoreMax, { color: tc.textMuted }]}>/100</ThemedText>
+                    </View>
+                    <ThemedText style={[styles.healthLabel, { color: healthLabel.color }]}>
+                      {healthLabel.text}
+                    </ThemedText>
+                  </View>
+                  <View style={styles.healthChecks}>
+                    {[
+                      { label: '3+ categories set',    done: categories.filter(c => c.monthlyBudget > 0).length >= 3 },
+                      { label: 'Budget balanced',       done: !overBudget && totalBudgeted > 0 },
+                      { label: 'Spending on track',     done: totalSpent <= totalBudgeted && totalBudgeted > 0 },
+                      { label: 'Savings allocated',     done: !!(categories.find(c => c.name.toLowerCase().includes('sav') || c.id === 'savings_goal')?.monthlyBudget) },
+                    ].map((item) => (
+                      <View key={item.label} style={styles.healthCheckRow}>
+                        <ThemedText style={[styles.healthCheckIcon, { color: item.done ? Brand.success : tc.textMuted }]}>
+                          {item.done ? '✓' : '○'}
+                        </ThemedText>
+                        <ThemedText style={[styles.healthCheckLabel, { color: item.done ? tc.textSecondary : tc.textMuted }]}>
+                          {item.label}
+                        </ThemedText>
+                      </View>
+                    ))}
+                  </View>
+                </View>
+              )}
+
               <ThemedText type="small" themeColor="textSecondary" style={styles.hint}>
-                Tap an amount to edit.{!isPro ? `  Free plan: ${budgetCategoryLimit} categories.` : ''}
+                Tap an amount to edit.
               </ThemedText>
 
-              {categories.filter((c) => !c.id.startsWith(CUSTOM_PREFIX)).map((cat, idx) => {
-                const isLocked = !isPro && idx >= budgetCategoryLimit;
-                if (isLocked) {
-                  return (
-                    <Pressable key={cat.id} onPress={() => router.push('/upgrade' as any)}
-                      style={styles.lockedCatRow}>
-                      <ThemedText style={styles.lockedCatEmoji}>{cat.emoji}</ThemedText>
-                      <ThemedText style={styles.lockedCatName}>{cat.name}</ThemedText>
-                      <View style={styles.lockTagWrap}>
-                        <ThemedText style={styles.lockTag}>🔒 PRO</ThemedText>
-                      </View>
-                    </Pressable>
-                  );
-                }
-                return <CategoryRow key={cat.id} cat={cat} netPay={netPay} />;
-              })}
+              {categories.filter((c) => !c.id.startsWith(CUSTOM_PREFIX)).map((cat) => (
+                <CategoryRow key={cat.id} cat={cat} netPay={netPay} />
+              ))}
 
-              {isPro && customCategories.length > 0 && (
+              {customCategories.length > 0 && (
                 <>
                   <ThemedText type="small" themeColor="textSecondary" style={styles.sectionDivider}>
-                    CUSTOM ({customCategories.length}/{MAX_CUSTOM_CATEGORIES})
+                    CUSTOM ({categories.length}/{MAX_TOTAL_CATEGORIES})
                   </ThemedText>
                   {customCategories.map((cat) => (
                     <CategoryRow key={cat.id} cat={cat} netPay={netPay} />
@@ -929,17 +979,11 @@ export default function BudgetScreen() {
                 </>
               )}
 
-              {isPro && canAddMore && <AddCustomRow onAdd={handleAddCustom} />}
-              {isPro && !canAddMore && (
+              {canAddMore && <AddCustomRow onAdd={handleAddCustom} />}
+              {!canAddMore && (
                 <ThemedText type="small" themeColor="textSecondary" style={styles.maxNote}>
-                  Maximum of {MAX_CUSTOM_CATEGORIES} custom categories reached.
+                  Maximum of {MAX_TOTAL_CATEGORIES} categories reached.
                 </ThemedText>
-              )}
-              {!isPro && (
-                <Pressable onPress={() => router.push('/upgrade' as any)}
-                  style={styles.upgradeRow}>
-                  <ThemedText style={styles.upgradeRowText}>🔓 Upgrade to Pro — unlock all categories + custom</ThemedText>
-                </Pressable>
               )}
 
               {overBudget && (
@@ -1030,6 +1074,24 @@ export default function BudgetScreen() {
 // ── Styles ─────────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
+  // Budget Health Score
+  healthCard: {
+    flexDirection: 'row', alignItems: 'stretch', gap: Spacing.three,
+    backgroundColor: '#080E1C', borderWidth: StyleSheet.hairlineWidth,
+    borderColor: Brand.border, borderRadius: 8,
+    padding: Spacing.three, marginBottom: Spacing.one,
+  },
+  healthLeft: { gap: 3, justifyContent: 'center', minWidth: 80 },
+  healthEyebrow: { fontSize: 8, fontWeight: '800', color: '#3D6080', letterSpacing: 0.8 },
+  healthScoreRow: { flexDirection: 'row', alignItems: 'baseline', gap: 2 },
+  healthScore: { fontSize: 32, fontWeight: '900', lineHeight: 36 },
+  healthScoreMax: { fontSize: 12, color: '#3D6080', fontWeight: '600' },
+  healthLabel: { fontSize: 9, fontWeight: '800', letterSpacing: 0.5 },
+  healthChecks: { flex: 1, justifyContent: 'center', gap: 5 },
+  healthCheckRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  healthCheckIcon: { fontSize: 12, fontWeight: '800', width: 14 },
+  healthCheckLabel: { fontSize: 10, fontWeight: '600' },
+
   header: {
     paddingHorizontal: Spacing.three,
     paddingBottom: Spacing.two,
@@ -1099,7 +1161,8 @@ const styles = StyleSheet.create({
   catEmoji: { fontSize: 22, width: 30 },
   catInfo: { flex: 1, gap: 1 },
   catName: { fontSize: 15, fontWeight: '600' },
-  tapToRename: { fontSize: 10, opacity: 0.5, marginTop: 1 },
+  catOptions: { paddingLeft: Spacing.two },
+  catOptionsDots: { fontSize: 18, color: '#3D6080', letterSpacing: 2 },
   nameInput: {
     fontSize: 15,
     fontWeight: '600',
@@ -1142,32 +1205,6 @@ const styles = StyleSheet.create({
   addBtnText: { color: '#FFFFFF', fontSize: 13, fontWeight: '700' },
   maxNote: { textAlign: 'center', fontSize: 12, paddingTop: Spacing.one },
 
-  lockedCatRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderRadius: Spacing.two,
-    padding: Spacing.two + 4,
-    gap: Spacing.two,
-    backgroundColor: '#080E1C',
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: Brand.border,
-    opacity: 0.45,
-  },
-  lockedCatEmoji: { fontSize: 22, width: 30 },
-  lockedCatName: { flex: 1, fontSize: 15, fontWeight: '600', color: '#6B92B0' },
-  lockTagWrap: {},
-  lockTag: { fontSize: 11, fontWeight: '800', color: Brand.accent, letterSpacing: 0.5 },
-
-  upgradeRow: {
-    alignItems: 'center',
-    paddingVertical: Spacing.three,
-    borderWidth: 1,
-    borderStyle: 'dashed',
-    borderColor: Brand.accent + '40',
-    borderRadius: 4,
-    marginTop: Spacing.one,
-  },
-  upgradeRowText: { fontSize: 12, color: Brand.accent, fontWeight: '700', letterSpacing: 0.3 },
   warningBox: {
     borderRadius: Spacing.two,
     padding: Spacing.three,

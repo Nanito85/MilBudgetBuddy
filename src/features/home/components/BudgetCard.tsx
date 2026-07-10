@@ -6,6 +6,7 @@ import { TacticalCard } from '@/components/TacticalCard';
 import { ThemedText } from '@/components/themed-text';
 import { Brand, Fonts, Spacing } from '@/constants/theme';
 import { fmtPay } from '@/features/home/utils/lesCalc';
+import { useThemeColors } from '@/hooks/use-theme';
 import { useBudgetStore } from '@/store/budget.store';
 
 interface Props {
@@ -14,6 +15,7 @@ interface Props {
 
 export function BudgetCard({ netPay }: Props) {
   const router = useRouter();
+  const tc = useThemeColors();
   const categories = useBudgetStore((s) => s.categories);
   const totalBudgeted = useBudgetStore((s) => s.totalBudgeted)();
 
@@ -38,30 +40,30 @@ export function BudgetCard({ netPay }: Props) {
           <View style={styles.body}>
             <View style={styles.amountRow}>
               <View>
-                <ThemedText type="label" style={styles.subLabel}>ALLOCATED</ThemedText>
+                <ThemedText type="label" style={[styles.subLabel, { color: tc.textMuted }]}>ALLOCATED</ThemedText>
                 <ThemedText style={[styles.amount, { color: Brand.tactical }]}>{fmtPay(totalBudgeted)}</ThemedText>
               </View>
-              <View style={styles.sep} />
+              <View style={[styles.sep, { backgroundColor: tc.borderColor }]} />
               <View>
-                <ThemedText type="label" style={styles.subLabel}>REMAINING</ThemedText>
-                <ThemedText style={[styles.amount, { color: overBudget ? Brand.danger : '#C8D8E8' }]}>
+                <ThemedText type="label" style={[styles.subLabel, { color: tc.textMuted }]}>REMAINING</ThemedText>
+                <ThemedText style={[styles.amount, { color: overBudget ? Brand.danger : tc.textPrimary }]}>
                   {overBudget ? `-${fmtPay(Math.abs(remaining))}` : fmtPay(remaining)}
                 </ThemedText>
               </View>
-              <View style={styles.sep} />
+              <View style={[styles.sep, { backgroundColor: tc.borderColor }]} />
               <View>
-                <ThemedText type="label" style={styles.subLabel}>OF INCOME</ThemedText>
+                <ThemedText type="label" style={[styles.subLabel, { color: tc.textMuted }]}>OF INCOME</ThemedText>
                 <ThemedText style={[styles.amount, { color: barColor }]}>{Math.round(pct)}%</ThemedText>
               </View>
             </View>
 
-            <View style={styles.barTrack}>
+            <View style={[styles.barTrack, { backgroundColor: tc.borderColor }]}>
               <View style={[styles.barFill, { width: `${pct}%` as any, backgroundColor: barColor }]} />
             </View>
           </View>
         ) : (
           <View style={styles.emptyBody}>
-            <ThemedText type="label" style={styles.emptyText}>AWAITING BUDGET CONFIGURATION →</ThemedText>
+            <ThemedText type="label" style={[styles.emptyText, { color: tc.textMuted }]}>AWAITING BUDGET CONFIGURATION →</ThemedText>
           </View>
         )}
       </TacticalCard>
@@ -88,17 +90,15 @@ const styles = StyleSheet.create({
   chevron: { color: Brand.tactical, fontSize: 14 },
   body: { padding: Spacing.three, gap: Spacing.two },
   amountRow: { flexDirection: 'row', alignItems: 'center', gap: 0 },
-  subLabel: { color: '#3D6080', fontSize: 8, marginBottom: 3 },
+  subLabel: { fontSize: 8, marginBottom: 3 },
   amount: { fontSize: 15, fontWeight: '800', fontFamily: Fonts.data, letterSpacing: 0.5 },
   sep: {
     width: StyleSheet.hairlineWidth,
     height: 32,
-    backgroundColor: Brand.border,
     marginHorizontal: Spacing.three,
   },
   barTrack: {
     height: 4,
-    backgroundColor: 'rgba(26,58,92,0.6)',
     borderRadius: 2,
     overflow: 'hidden',
   },
@@ -107,5 +107,5 @@ const styles = StyleSheet.create({
     padding: Spacing.three,
     alignItems: 'center',
   },
-  emptyText: { color: '#2A4A60' },
+  emptyText: {},
 });

@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Brand, Spacing } from '@/constants/theme';
+import { useThemeColors } from '@/hooks/use-theme';
 import { useAuthStore } from '@/store/auth.store';
 import { useUserStore } from '@/store/user.store';
 
@@ -17,6 +18,7 @@ type Section = 'privacy' | 'terms' | null;
 
 export default function LegalScreen() {
   const router = useRouter();
+  const tc = useThemeColors();
   const [expanded, setExpanded] = useState<Section>(null);
   const { user } = useAuthStore();
   const resetAll = useUserStore((s) => s.resetAll);
@@ -71,26 +73,26 @@ export default function LegalScreen() {
           </Pressable>
 
           <ThemedText style={styles.eyebrow}>// MILBUDGETBUDDY</ThemedText>
-          <ThemedText style={styles.pageTitle}>LEGAL & PRIVACY</ThemedText>
+          <ThemedText style={[styles.pageTitle, { color: tc.textPrimary }]}>LEGAL & PRIVACY</ThemedText>
 
           {/* Privacy Policy */}
-          <View style={styles.section}>
+          <View style={[styles.section, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
             <Pressable style={styles.sectionHeader} onPress={() => toggle('privacy')}>
-              <ThemedText style={styles.sectionTitle}>Privacy Policy</ThemedText>
+              <ThemedText style={[styles.sectionTitle, { color: tc.textPrimary }]}>Privacy Policy</ThemedText>
               <ThemedText style={styles.chevron}>{expanded === 'privacy' ? '▲' : '▼'}</ThemedText>
             </Pressable>
             {expanded === 'privacy' && (
-              <View style={styles.sectionBody}>
-                <ThemedText style={styles.bodyText}>
+              <View style={[styles.sectionBody, { borderTopColor: tc.borderColor }]}>
+                <ThemedText style={[styles.bodyText, { color: tc.textSecondary }]}>
                   MilBudgetBuddy collects only information you provide directly — pay grade, location (ZIP code), and family
                   size — to calculate military pay entitlements. This data is stored locally on your device and optionally
                   synced to your Firebase account if you sign in.
                 </ThemedText>
-                <ThemedText style={styles.bodyText}>
+                <ThemedText style={[styles.bodyText, { color: tc.textSecondary }]}>
                   We do not sell your data. Anonymous usage analytics (screen views, feature usage counts) may be collected
                   to improve the app. No personally identifiable financial data is sent to our servers.
                 </ThemedText>
-                <ThemedText style={styles.bodyText}>
+                <ThemedText style={[styles.bodyText, { color: tc.textSecondary }]}>
                   Firebase Authentication is used for optional account sign-in. Google's privacy policy applies to that
                   service. In-app purchase receipts are verified server-side through Google Play; we do not store payment
                   details.
@@ -103,28 +105,28 @@ export default function LegalScreen() {
           </View>
 
           {/* Terms of Service */}
-          <View style={styles.section}>
+          <View style={[styles.section, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
             <Pressable style={styles.sectionHeader} onPress={() => toggle('terms')}>
-              <ThemedText style={styles.sectionTitle}>Terms of Service</ThemedText>
+              <ThemedText style={[styles.sectionTitle, { color: tc.textPrimary }]}>Terms of Service</ThemedText>
               <ThemedText style={styles.chevron}>{expanded === 'terms' ? '▲' : '▼'}</ThemedText>
             </Pressable>
             {expanded === 'terms' && (
-              <View style={styles.sectionBody}>
-                <ThemedText style={styles.bodyText}>
+              <View style={[styles.sectionBody, { borderTopColor: tc.borderColor }]}>
+                <ThemedText style={[styles.bodyText, { color: tc.textSecondary }]}>
                   MilBudgetBuddy provides military pay estimates and financial planning tools for informational purposes only.
                   All calculations are based on publicly available DoD pay tables and are not guaranteed to be accurate for
                   your specific situation.
                 </ThemedText>
-                <ThemedText style={styles.bodyText}>
+                <ThemedText style={[styles.bodyText, { color: tc.textSecondary }]}>
                   This app is not affiliated with, endorsed by, or operated by the Department of Defense or any branch of
                   the United States Armed Forces. Always verify your pay and entitlements with your finance office or
                   official myPay account.
                 </ThemedText>
-                <ThemedText style={styles.bodyText}>
+                <ThemedText style={[styles.bodyText, { color: tc.textSecondary }]}>
                   Pro upgrade is a one-time, non-refundable purchase unless required by applicable law. Purchases are
                   processed through Google Play.
                 </ThemedText>
-                <ThemedText style={styles.bodyText}>
+                <ThemedText style={[styles.bodyText, { color: tc.textSecondary }]}>
                   Subscription disclosure: This app offers a one-time lifetime purchase for {'“'}Pro\{'”'} access. There is no
                   auto-renewing subscription. No charges will recur after your single purchase.
                 </ThemedText>
@@ -136,9 +138,9 @@ export default function LegalScreen() {
           </View>
 
           {/* Support */}
-          <View style={styles.section}>
-            <ThemedText style={styles.sectionTitle}>Support</ThemedText>
-            <ThemedText style={styles.supportBody}>
+          <View style={[styles.section, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
+            <ThemedText style={[styles.sectionTitle, { color: tc.textPrimary }]}>Support</ThemedText>
+            <ThemedText style={[styles.supportBody, { color: tc.textSecondary }]}>
               For help, feedback, or questions, contact us at:
             </ThemedText>
             <Pressable onPress={handleContact} style={styles.contactRow}>
@@ -147,9 +149,9 @@ export default function LegalScreen() {
           </View>
 
           {/* Account Deletion */}
-          <View style={styles.section}>
-            <ThemedText style={styles.sectionTitle}>Data & Account Deletion</ThemedText>
-            <ThemedText style={styles.supportBody}>
+          <View style={[styles.section, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
+            <ThemedText style={[styles.sectionTitle, { color: tc.textPrimary }]}>Data & Account Deletion</ThemedText>
+            <ThemedText style={[styles.supportBody, { color: tc.textSecondary }]}>
               You may request deletion of your account and all associated data at any time. We will process deletion
               requests within 30 days.
             </ThemedText>
@@ -158,7 +160,7 @@ export default function LegalScreen() {
             </Pressable>
           </View>
 
-          <ThemedText style={styles.footer}>
+          <ThemedText style={[styles.footer, { color: tc.textMuted }]}>
             MilBudgetBuddy is not affiliated with the DoD. Pay figures are estimates only.{'\n'}
             © 2024–2025 MilBudgetBuddy. All rights reserved.
           </ThemedText>
@@ -177,12 +179,10 @@ const styles = StyleSheet.create({
   backText: { fontSize: 16, fontWeight: '600', color: Brand.tactical, lineHeight: 22 },
 
   eyebrow: { color: Brand.tactical, fontSize: 10, fontWeight: '700', letterSpacing: 1, marginTop: 4 },
-  pageTitle: { fontSize: 24, fontWeight: '900', color: '#C8D8E8', letterSpacing: 1, marginBottom: 4 },
+  pageTitle: { fontSize: 24, fontWeight: '900', letterSpacing: 1, marginBottom: 4 },
 
   section: {
-    backgroundColor: '#080E1C',
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: Brand.border,
     borderRadius: 6,
     overflow: 'hidden',
   },
@@ -192,21 +192,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: Spacing.three,
   },
-  sectionTitle: { fontSize: 13, fontWeight: '800', color: '#C8D8E8', letterSpacing: 0.5, padding: Spacing.three },
+  sectionTitle: { fontSize: 13, fontWeight: '800', letterSpacing: 0.5, padding: Spacing.three },
   chevron: { fontSize: 12, color: Brand.tactical, paddingRight: Spacing.three },
 
   sectionBody: {
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: Brand.border,
     padding: Spacing.three,
     gap: Spacing.two,
   },
-  bodyText: { fontSize: 12, lineHeight: 18, color: '#8AABCC' },
+  bodyText: { fontSize: 12, lineHeight: 18 },
 
   linkBtn: { alignSelf: 'flex-start', paddingTop: 4 },
   linkText: { fontSize: 12, color: Brand.accent, fontWeight: '700' },
 
-  supportBody: { fontSize: 12, lineHeight: 18, color: '#8AABCC', paddingHorizontal: Spacing.three, paddingBottom: Spacing.two },
+  supportBody: { fontSize: 12, lineHeight: 18, paddingHorizontal: Spacing.three, paddingBottom: Spacing.two },
   contactRow: { paddingHorizontal: Spacing.three, paddingBottom: Spacing.three },
   contactEmail: { fontSize: 13, fontWeight: '700', color: Brand.accent },
 
@@ -223,7 +222,6 @@ const styles = StyleSheet.create({
 
   footer: {
     fontSize: 10,
-    color: '#3D5870',
     textAlign: 'center',
     lineHeight: 15,
     paddingHorizontal: Spacing.two,

@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { Brand, Spacing } from '@/constants/theme';
+import { useThemeColors } from '@/hooks/use-theme';
 
 interface FeatureCardProps {
   icon: string;
@@ -14,6 +15,7 @@ interface FeatureCardProps {
 }
 
 export function FeatureCard({ icon, title, description, onPress, available = true, badge }: FeatureCardProps) {
+  const tc = useThemeColors();
   return (
     <Pressable
       onPress={onPress}
@@ -23,28 +25,28 @@ export function FeatureCard({ icon, title, description, onPress, available = tru
         !available && styles.wrapperDisabled,
         pressed && available && styles.pressed,
       ]}>
-      <View style={[styles.card, available && styles.cardActive]}>
+      <View style={[styles.card, { backgroundColor: tc.surface, borderColor: tc.borderColor }, available && [styles.cardActive, { borderColor: tc.borderStrong }]]}>
         {/* Left accent bar */}
-        <View style={[styles.accentBar, { backgroundColor: available ? Brand.accent : '#1A3A5C' }]} />
+        <View style={[styles.accentBar, { backgroundColor: available ? Brand.accent : tc.borderColor }]} />
 
-        <View style={[styles.iconWrap, { backgroundColor: available ? Brand.accent + '18' : 'rgba(26,58,92,0.3)' }]}>
+        <View style={[styles.iconWrap, { backgroundColor: available ? Brand.accent + '18' : tc.borderColor + '4D' }]}>
           <ThemedText style={styles.icon}>{icon}</ThemedText>
         </View>
 
         <View style={styles.textBlock}>
           <View style={styles.titleRow}>
-            <ThemedText style={[styles.title, !available && styles.titleMuted]}>
+            <ThemedText style={[styles.title, { color: tc.textPrimary }, !available && [styles.titleMuted, { color: tc.textMuted }]]}>
               {title.toUpperCase()}
             </ThemedText>
             {badge && (
-              <View style={[styles.badge, available ? styles.badgeNew : styles.badgeSoon]}>
-                <ThemedText type="label" style={[styles.badgeText, { color: available ? '#00080F' : '#3D6080' }]}>
+              <View style={[styles.badge, available ? styles.badgeNew : [styles.badgeSoon, { backgroundColor: tc.borderColor + '80', borderColor: tc.borderColor }]]}>
+                <ThemedText type="label" style={[styles.badgeText, { color: available ? '#00080F' : tc.textMuted }]}>
                   {badge}
                 </ThemedText>
               </View>
             )}
           </View>
-          <ThemedText type="small" style={styles.description}>{description}</ThemedText>
+          <ThemedText type="small" style={[styles.description, { color: tc.textHint }]}>{description}</ThemedText>
         </View>
 
         {available && (
@@ -60,18 +62,14 @@ const styles = StyleSheet.create({
   wrapperDisabled: { opacity: 0.4 },
   pressed: { opacity: 0.7 },
   card: {
-    backgroundColor: '#080E1C',
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: Brand.border,
     borderRadius: 4,
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.two + 4,
     overflow: 'hidden',
   },
-  cardActive: {
-    borderColor: 'rgba(26,58,92,0.8)',
-  },
+  cardActive: {},
   accentBar: {
     width: 3,
     alignSelf: 'stretch',
@@ -97,17 +95,16 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '800',
     letterSpacing: 0.8,
-    color: '#C8D8E8',
   },
-  titleMuted: { color: '#3D6080' },
-  description: { fontSize: 11, lineHeight: 16, color: '#4D7A9A' },
+  titleMuted: {},
+  description: { fontSize: 11, lineHeight: 16 },
   badge: {
     borderRadius: 2,
     paddingVertical: 2,
     paddingHorizontal: Spacing.one + 2,
   },
   badgeNew: { backgroundColor: Brand.accent },
-  badgeSoon: { backgroundColor: 'rgba(26,58,92,0.5)', borderWidth: StyleSheet.hairlineWidth, borderColor: Brand.border },
+  badgeSoon: { borderWidth: StyleSheet.hairlineWidth },
   badgeText: { fontSize: 8, fontWeight: '800', letterSpacing: 1 },
   chevron: { fontSize: 18, color: Brand.accent, paddingRight: Spacing.two + 4, fontWeight: '300' },
 });
