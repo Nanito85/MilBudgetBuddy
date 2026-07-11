@@ -1,13 +1,12 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 
-import { getFlags } from '@/constants/features';
 import { auth } from '@/services/firebase';
 
 const STORAGE_KEY = 'mbb_entitlement_v2';
 const API_BASE    = process.env.EXPO_PUBLIC_API_BASE_URL ?? 'http://localhost:3000';
 
-export type EntitlementStatus = 'trial' | 'pro' | 'free';
+export type EntitlementStatus = 'pro' | 'free';
 export type SubscriptionPlan  = 'monthly' | 'annual' | null;
 
 interface EntitlementData {
@@ -24,15 +23,16 @@ interface EntitlementState extends EntitlementData {
   checkServerEntitlement: () => Promise<void>;
   completePurchase:      (plan: SubscriptionPlan) => void;
   redeemCodeGrant:       (until: string) => void;
-  daysLeftInTrial:       () => number;
 }
 
+// Trial periods are handled natively by Google Play / App Store subscription
+// offers now — the app only ever reflects a real purchase (or an active
+// discount-code grant) as 'pro'. Everyone else is 'free'.
 function computeStatus(data: EntitlementData): EntitlementStatus {
   if (data.status === 'pro') return 'pro';
   // Active discount-code grant counts as pro
   if (data.proGrantedUntil && new Date(data.proGrantedUntil).getTime() > Date.now()) return 'pro';
-  const msElapsed = Date.now() - new Date(data.installedAt).getTime();
-  return msElapsed / 86_400_000 < getFlags().promoDays ? 'trial' : 'free';
+  return 'free';
 }
 
 function persist(data: EntitlementData) {
@@ -51,7 +51,7 @@ function snapshot(s: EntitlementState): EntitlementData {
 
 export const useEntitlementStore = create<EntitlementState>((set, get) => ({
   installedAt:      new Date().toISOString(),
-  status:           'trial',
+  status:           'free',
   foundingMember:   false,
   proGrantedUntil:  null,
   subscriptionPlan: null,
@@ -65,7 +65,7 @@ export const useEntitlementStore = create<EntitlementState>((set, get) => ({
         const old = JSON.parse(v1) as { installedAt: string; status: string; foundingMember: boolean };
         const migrated: EntitlementData = {
           installedAt:      old.installedAt,
-          status:           old.status === 'pro' ? 'pro' : 'trial',
+          status:           old.status === 'pro' ? 'pro' : 'free',
           foundingMember:   old.foundingMember ?? false,
           proGrantedUntil:  null,
           subscriptionPlan: null,
@@ -82,7 +82,7 @@ export const useEntitlementStore = create<EntitlementState>((set, get) => ({
         if (status !== data.status) persist({ ...data, status });
       } else {
         const installedAt = new Date().toISOString();
-        const fresh: EntitlementData = { installedAt, status: 'trial', foundingMember: false, proGrantedUntil: null, subscriptionPlan: null };
+        const fresh: EntitlementData = { installedAt, status: 'free', foundingMember: false, proGrantedUntil: null, subscriptionPlan: null };
         persist(fresh);
         set({ ...fresh, hydrated: true });
       }
@@ -127,13 +127,5 @@ export const useEntitlementStore = create<EntitlementState>((set, get) => ({
     const next: EntitlementData = { ...snapshot(get()), status: 'pro', proGrantedUntil: until };
     persist(next);
     set({ status: 'pro', proGrantedUntil: until });
-  },
-
-  daysLeftInTrial: () => {
-    const { installedAt, status } = get();
-    if (status === 'pro') return 0;
-    if (status === 'free') return 0;
-    const expiresAt = new Date(installedAt).getTime() + getFlags().promoDays * 86_400_000;
-    return Math.max(0, Math.ceil((expiresAt - Date.now()) / 86_400_000));
   },
 }));

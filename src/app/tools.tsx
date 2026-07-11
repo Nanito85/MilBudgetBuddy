@@ -190,7 +190,7 @@ function CategorySection({
 export default function ToolsScreen() {
   const router = useRouter();
   const tc = useThemeColors();
-  const { canUseTool, isPro, isPromo, daysLeft } = useEntitlement();
+  const { canUseTool, isPro } = useEntitlement();
   const [searchQuery, setSearchQuery] = useState('');
   const [recentIds, setRecentIds] = useState<string[]>([]);
 

@@ -17,7 +17,6 @@ const DEFAULTS = {
   freeToolIds: ['pay_chart', 'bah_guide', 'les', 'pcs'],
   freeBudgetCategoryLimit: 3,
   freeKidsLimit: 1,
-  promoDays: 30,   // 30-day free trial
 };
 
 export function getFlags() {
@@ -28,11 +27,9 @@ export function getFlags() {
     freeToolIds: new Set<string>(rc.freeToolIds ?? DEFAULTS.freeToolIds),
     freeBudgetCategoryLimit: rc.freeBudgetCategoryLimit ?? DEFAULTS.freeBudgetCategoryLimit,
     freeKidsLimit: rc.freeKidsLimit ?? DEFAULTS.freeKidsLimit,
-    promoDays: rc.promoDays ?? DEFAULTS.promoDays,
   };
 }
 
 export const FREE_TOOL_IDS             = new Set(DEFAULTS.freeToolIds);
 export const FREE_BUDGET_CATEGORY_LIMIT = DEFAULTS.freeBudgetCategoryLimit;
 export const FREE_KIDS_LIMIT           = DEFAULTS.freeKidsLimit;
-export const PROMO_DAYS                = DEFAULTS.promoDays;

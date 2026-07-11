@@ -187,7 +187,7 @@ export default function SettingsScreen() {
   const [showTutorial, setShowTutorial] = useState(false);
   const { isAdmin, resolving: adminResolving } = useIsAdmin();
 
-  const { isPro, isPromo, status, daysLeft } = useEntitlement();
+  const { status } = useEntitlement();
   const { user, signOut: signOutUser, deleteAccount } = useAuthStore();
 
   const bg     = tc.background;
@@ -254,21 +254,6 @@ export default function SettingsScreen() {
               <ThemedText style={[settingsProStyles.proTitle, { color: Brand.success }]}>PRO — ALL FEATURES UNLOCKED</ThemedText>
               <ThemedText style={[settingsProStyles.proSub, { color: textDim }]}>Thank you for supporting MilBudgetBuddy.</ThemedText>
             </View>
-          </View>
-        )}
-
-        {isPromo && (
-          <View style={[settingsProStyles.statusCard, { backgroundColor: card, borderColor: Brand.accent + '40' }]}>
-            <ThemedText style={settingsProStyles.proIcon}>⏳</ThemedText>
-            <View style={{ flex: 1 }}>
-              <ThemedText style={[settingsProStyles.proTitle, { color: Brand.accent }]}>
-                EARLY ACCESS — {daysLeft} day{daysLeft !== 1 ? 's' : ''} left
-              </ThemedText>
-              <ThemedText style={[settingsProStyles.proSub, { color: textDim }]}>Full access while your free trial lasts.</ThemedText>
-            </View>
-            <Pressable onPress={() => router.push('/upgrade' as any)} style={settingsProStyles.upgradeBtn}>
-              <ThemedText style={settingsProStyles.upgradeBtnText}>LOCK IT IN</ThemedText>
-            </Pressable>
           </View>
         )}
 

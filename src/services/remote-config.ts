@@ -13,7 +13,6 @@ export interface RemoteConfig {
   featureFlags: {
     freeBudgetCategoryLimit: number;
     freeKidsLimit: number;
-    promoDays: number;
     iapEnabled: boolean;
     lesDecoderEnabled: boolean;
     travelEnabled: boolean;
@@ -37,7 +36,6 @@ const FALLBACK_CONFIG: RemoteConfig = {
   featureFlags: {
     freeBudgetCategoryLimit: 3,
     freeKidsLimit: 1,
-    promoDays: 90,
     iapEnabled: false,
     lesDecoderEnabled: true,
     travelEnabled: true,
@@ -93,7 +91,6 @@ function sanitizeConfig(raw: unknown): RemoteConfig {
     featureFlags: {
       freeBudgetCategoryLimit: typeof flags.freeBudgetCategoryLimit === 'number' ? flags.freeBudgetCategoryLimit : FALLBACK_CONFIG.featureFlags.freeBudgetCategoryLimit,
       freeKidsLimit:           typeof flags.freeKidsLimit === 'number'           ? flags.freeKidsLimit           : FALLBACK_CONFIG.featureFlags.freeKidsLimit,
-      promoDays:               typeof flags.promoDays === 'number'               ? flags.promoDays               : FALLBACK_CONFIG.featureFlags.promoDays,
       iapEnabled:              typeof flags.iapEnabled === 'boolean'             ? flags.iapEnabled              : FALLBACK_CONFIG.featureFlags.iapEnabled,
       lesDecoderEnabled:       typeof flags.lesDecoderEnabled === 'boolean'      ? flags.lesDecoderEnabled       : FALLBACK_CONFIG.featureFlags.lesDecoderEnabled,
       travelEnabled:           typeof flags.travelEnabled === 'boolean'          ? flags.travelEnabled           : FALLBACK_CONFIG.featureFlags.travelEnabled,

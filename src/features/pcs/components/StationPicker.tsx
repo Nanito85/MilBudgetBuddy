@@ -13,7 +13,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Brand, Colors, Spacing } from '@/constants/theme';
-import { Installation, searchInstallations } from '@/data/installations';
+import { getApproxInstallationForZip, Installation, searchInstallations } from '@/data/installations';
 
 interface Props {
   label: string;
@@ -25,6 +25,8 @@ interface Props {
 export function StationPicker({ label, selected, onSelect, conusOnly = false }: Props) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
+  const [zipMode, setZipMode] = useState(false);
+  const [zipQuery, setZipQuery] = useState('');
   const insets = useSafeAreaInsets();
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
@@ -33,10 +35,14 @@ export function StationPicker({ label, selected, onSelect, conusOnly = false }: 
     ? searchInstallations(query).filter((i) => !i.oconus && !!i.mhaZip)
     : searchInstallations(query);
 
+  const zipMatch = /^\d{5}$/.test(zipQuery) ? getApproxInstallationForZip(zipQuery) : null;
+
   const handleSelect = (inst: Installation) => {
     onSelect(inst);
     setOpen(false);
     setQuery('');
+    setZipMode(false);
+    setZipQuery('');
   };
 
   return (
@@ -69,50 +75,106 @@ export function StationPicker({ label, selected, onSelect, conusOnly = false }: 
             </Pressable>
           </View>
 
-          <View style={[styles.searchWrap, { backgroundColor: colors.backgroundElement }]}>
-            <ThemedText style={styles.searchIcon}>🔍</ThemedText>
-            <TextInput
-              value={query}
-              onChangeText={setQuery}
-              placeholder="Search installation or city..."
-              placeholderTextColor={colors.textSecondary}
-              style={[styles.searchInput, { color: colors.text }]}
-              autoFocus
-              clearButtonMode="while-editing"
-            />
-          </View>
+          {!zipMode && (
+            <View style={[styles.searchWrap, { backgroundColor: colors.backgroundElement }]}>
+              <ThemedText style={styles.searchIcon}>🔍</ThemedText>
+              <TextInput
+                value={query}
+                onChangeText={setQuery}
+                placeholder="Search installation or city..."
+                placeholderTextColor={colors.textSecondary}
+                style={[styles.searchInput, { color: colors.text }]}
+                autoFocus
+                clearButtonMode="while-editing"
+              />
+            </View>
+          )}
 
-          <FlatList
-            data={results}
-            keyExtractor={(item) => item.id}
-            keyboardShouldPersistTaps="handled"
-            renderItem={({ item, index }) => (
-              <>
-                {index > 0 && <View style={[styles.divider, { backgroundColor: colors.backgroundElement }]} />}
+          {!zipMode && (
+            <Pressable onPress={() => setZipMode(true)} style={styles.zipToggle}>
+              <ThemedText style={[styles.zipToggleText, { color: Brand.tactical }]}>
+                Can't find your duty station? Enter your ZIP code
+              </ThemedText>
+            </Pressable>
+          )}
+
+          {zipMode && (
+            <View style={styles.zipSection}>
+              <View style={[styles.searchWrap, { backgroundColor: colors.backgroundElement }]}>
+                <ThemedText style={styles.searchIcon}>📍</ThemedText>
+                <TextInput
+                  value={zipQuery}
+                  onChangeText={(t) => setZipQuery(t.replace(/[^0-9]/g, '').slice(0, 5))}
+                  placeholder="5-digit ZIP code"
+                  placeholderTextColor={colors.textSecondary}
+                  style={[styles.searchInput, { color: colors.text }]}
+                  keyboardType="number-pad"
+                  autoFocus
+                  maxLength={5}
+                />
+              </View>
+              <ThemedText type="small" themeColor="textSecondary" style={styles.zipHint}>
+                For recruiting duty, reserve centers, or any spot not listed by name — this gives an
+                approximate BAH based on the nearest covered rate area, not your exact ZIP.
+              </ThemedText>
+              {zipMatch && (
                 <Pressable
-                  onPress={() => handleSelect(item)}
-                  style={({ pressed }) => [styles.row, pressed && { opacity: 0.6 }]}>
+                  onPress={() => handleSelect(zipMatch)}
+                  style={({ pressed }) => [styles.row, styles.zipResultRow, pressed && { opacity: 0.6 }]}>
                   <View style={styles.rowMain}>
-                    <ThemedText style={styles.rowName}>{item.name}</ThemedText>
+                    <ThemedText style={styles.rowName}>{zipMatch.name}</ThemedText>
                     <ThemedText type="small" themeColor="textSecondary">
-                      {item.city}, {item.state} · {item.branch}
-                      {item.oconus ? ' · OCONUS' : ''}
+                      {zipMatch.city}, {zipMatch.state} · Approximate
                     </ThemedText>
                   </View>
-                  {item.oconus && (
-                    <View style={styles.oconusBadge}>
-                      <ThemedText style={styles.oconusBadgeText}>OCONUS</ThemedText>
-                    </View>
-                  )}
                 </Pressable>
-              </>
-            )}
-            ListEmptyComponent={
-              <ThemedText themeColor="textSecondary" style={styles.empty}>
-                No installations found
-              </ThemedText>
-            }
-          />
+              )}
+              {zipQuery.length === 5 && !zipMatch && (
+                <ThemedText themeColor="textSecondary" style={styles.empty}>
+                  Couldn't match that ZIP to a state — try searching by installation or city instead.
+                </ThemedText>
+              )}
+              <Pressable onPress={() => { setZipMode(false); setZipQuery(''); }} style={styles.zipBack}>
+                <ThemedText style={[styles.zipToggleText, { color: colors.textSecondary }]}>
+                  ‹ Back to search
+                </ThemedText>
+              </Pressable>
+            </View>
+          )}
+
+          {!zipMode && (
+            <FlatList
+              data={results}
+              keyExtractor={(item) => item.id}
+              keyboardShouldPersistTaps="handled"
+              renderItem={({ item, index }) => (
+                <>
+                  {index > 0 && <View style={[styles.divider, { backgroundColor: colors.backgroundElement }]} />}
+                  <Pressable
+                    onPress={() => handleSelect(item)}
+                    style={({ pressed }) => [styles.row, pressed && { opacity: 0.6 }]}>
+                    <View style={styles.rowMain}>
+                      <ThemedText style={styles.rowName}>{item.name}</ThemedText>
+                      <ThemedText type="small" themeColor="textSecondary">
+                        {item.city}, {item.state} · {item.branch}
+                        {item.oconus ? ' · OCONUS' : ''}
+                      </ThemedText>
+                    </View>
+                    {item.oconus && (
+                      <View style={styles.oconusBadge}>
+                        <ThemedText style={styles.oconusBadgeText}>OCONUS</ThemedText>
+                      </View>
+                    )}
+                  </Pressable>
+                </>
+              )}
+              ListEmptyComponent={
+                <ThemedText themeColor="textSecondary" style={styles.empty}>
+                  No installations found
+                </ThemedText>
+              }
+            />
+          )}
         </View>
       </Modal>
     </>
@@ -121,6 +183,21 @@ export function StationPicker({ label, selected, onSelect, conusOnly = false }: 
 
 const styles = StyleSheet.create({
   pressed: { opacity: 0.7 },
+  zipToggle: {
+    marginHorizontal: Spacing.three,
+    marginBottom: Spacing.two,
+    paddingVertical: Spacing.one,
+  },
+  zipToggleText: { fontSize: 13, fontWeight: '600', textDecorationLine: 'underline' },
+  zipSection: { paddingHorizontal: 0 },
+  zipHint: {
+    fontSize: 11,
+    lineHeight: 16,
+    marginHorizontal: Spacing.three,
+    marginBottom: Spacing.two,
+  },
+  zipResultRow: { marginHorizontal: Spacing.three, borderRadius: Spacing.two },
+  zipBack: { marginHorizontal: Spacing.three, marginTop: Spacing.two, paddingVertical: Spacing.one },
   trigger: {
     borderRadius: Spacing.three,
     padding: Spacing.three,

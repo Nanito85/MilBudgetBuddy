@@ -18,7 +18,6 @@ import {
   IAP_PRICE_MONTHLY,
   IAP_PRICE_ANNUAL,
   IAP_PRICE_ANNUAL_MONTHLY,
-  PROMO_DAYS,
 } from '@/constants/features';
 import { useEntitlement } from '@/hooks/use-entitlement';
 import { useEntitlementStore } from '@/store/entitlement.store';
@@ -164,7 +163,7 @@ function PromoCodeField() {
 export default function UpgradeScreen() {
   const router = useRouter();
   const tc = useThemeColors();
-  const { isPro, isTrial, isCodeGrant, status, daysLeft, subscriptionPlan } = useEntitlement();
+  const { isPro, isCodeGrant, subscriptionPlan } = useEntitlement();
   const proGrantedUntil = useEntitlementStore((s) => s.proGrantedUntil);
   const [selectedPlan, setSelectedPlan] = useState<Plan>('annual');
   const [purchasing,   setPurchasing]   = useState(false);
@@ -186,7 +185,7 @@ export default function UpgradeScreen() {
     setRestoring(false);
   };
 
-  const showPurchaseUI = !isPro || isTrial;
+  const showPurchaseUI = !isPro;
 
   return (
     <ThemedView style={s.container}>
@@ -207,20 +206,6 @@ export default function UpgradeScreen() {
           </View>
 
           {/* Status banners */}
-          {isTrial && daysLeft > 0 && (
-            <View style={s.banner}>
-              <ThemedText style={s.bannerIcon}>⏳</ThemedText>
-              <View style={{ flex: 1 }}>
-                <ThemedText style={s.bannerTitle}>
-                  FREE TRIAL — {daysLeft} day{daysLeft !== 1 ? 's' : ''} remaining
-                </ThemedText>
-                <ThemedText style={[s.bannerBody, { color: tc.textSecondary }]}>
-                  You're in your {PROMO_DAYS}-day free trial. Subscribe before it ends to keep full access.
-                </ThemedText>
-              </View>
-            </View>
-          )}
-
           {isPro && isCodeGrant && proGrantedUntil && (
             <View style={[s.banner, { borderColor: Brand.tactical + '40', backgroundColor: Brand.tactical + '10' }]}>
               <ThemedText style={s.bannerIcon}>🎟️</ThemedText>

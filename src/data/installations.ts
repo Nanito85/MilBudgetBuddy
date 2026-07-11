@@ -1,3 +1,5 @@
+import { zipToState } from '@/data/zip-state-ranges';
+
 export interface Installation {
   id: string;
   name: string;
@@ -193,6 +195,25 @@ export const INSTALLATIONS: Installation[] = [
   { id: 'cg_juneau',           name: 'USCG Sector Juneau',             city: 'Juneau',         state: 'AK', mhaZip: '99801', oconus: false, branch: 'Coast Guard' },
   { id: 'cg_sitka',            name: 'USCG Air Station Sitka',         city: 'Sitka',          state: 'AK', mhaZip: '99835', oconus: false, branch: 'Coast Guard' },
 
+  // ── RESERVE & RECRUITING COMMAND HEADQUARTERS ───────────────────────────────
+  // These share their MHA/BAH rate with the covered installation they're
+  // co-located at (same city/MHA) — listed separately so members whose duty
+  // station IS the recruiting or reserve command itself (not a line unit) can
+  // find themselves by name.
+  { id: 'usarec_knox',        name: 'US Army Recruiting Command (Fort Knox)',        city: 'Radcliff',          state: 'KY', mhaZip: '40121', oconus: false, branch: 'Army' },
+  { id: 'navy_recruit_cmd',   name: 'Navy Recruiting Command (NSA Mid-South)',       city: 'Millington',        state: 'TN', mhaZip: '38053', oconus: false, branch: 'Navy' },
+  { id: 'mcrc_quantico',      name: 'Marine Corps Recruiting Command (Quantico)',    city: 'Triangle',          state: 'VA', mhaZip: '22134', oconus: false, branch: 'Marines' },
+  { id: 'afrs_jbsa',          name: 'Air Force Recruiting Service (JBSA-Randolph)',  city: 'San Antonio',       state: 'TX', mhaZip: '78234', oconus: false, branch: 'Air Force' },
+  { id: 'ssr_peterson',       name: 'Space Force Recruiting Service (Peterson SFB)', city: 'Colorado Springs',  state: 'CO', mhaZip: '80913', oconus: false, branch: 'Space Force' },
+  { id: 'cg_recruit_cmd',     name: 'Coast Guard Recruiting Command (Arlington)',    city: 'Arlington',         state: 'VA', mhaZip: '22211', oconus: false, branch: 'Coast Guard' },
+  { id: 'usarc_liberty',      name: 'US Army Reserve Command (Fort Liberty)',        city: 'Fayetteville',      state: 'NC', mhaZip: '28301', oconus: false, branch: 'Army' },
+  { id: 'marforres_no',       name: 'Marine Forces Reserve (New Orleans)',           city: 'New Orleans',       state: 'LA', mhaZip: '70129', oconus: false, branch: 'Marines' },
+  { id: 'afrc_robins',        name: 'Air Force Reserve Command (Robins AFB)',        city: 'Warner Robins',     state: 'GA', mhaZip: '31098', oconus: false, branch: 'Air Force' },
+  { id: 'navres_norfolk',     name: 'Navy Reserve Forces Command (Norfolk)',         city: 'Norfolk',           state: 'VA', mhaZip: '23511', oconus: false, branch: 'Navy' },
+  { id: 'cg_reserve_mcnair',  name: 'Coast Guard Reserve (Washington, DC)',          city: 'Washington',        state: 'DC', mhaZip: '20319', oconus: false, branch: 'Coast Guard' },
+  { id: 'ang_readiness_andrews', name: 'Air National Guard Readiness Center (Andrews)', city: 'Camp Springs',  state: 'MD', mhaZip: '20762', oconus: false, branch: 'Air Force' },
+  { id: 'arng_belvoir',       name: 'Army National Guard Readiness Center (Fort Belvoir)', city: 'Fort Belvoir', state: 'VA', mhaZip: '22060', oconus: false, branch: 'Army' },
+
   // ── OCONUS — KOREA ───────────────────────────────────────────────────────────
   { id: 'camp_humphreys',      name: 'Camp Humphreys (USAG Humphreys)', city: 'Pyeongtaek',   state: 'South Korea', mhaZip: '', oconus: true, branch: 'Army' },
   { id: 'osan',                name: 'Osan AB',                    city: 'Pyeongtaek',         state: 'South Korea', mhaZip: '', oconus: true, branch: 'Air Force' },
@@ -302,4 +323,53 @@ export function getOconusInstallations(): Installation[] {
 export function getInstallationByZip(zip: string | undefined | null): Installation | null {
   if (!zip) return null;
   return INSTALLATIONS.find(i => i.mhaZip === zip) ?? null;
+}
+
+// ── ZIP fallback ─────────────────────────────────────────────────────────────
+// BAH rates only exist for the installations listed above. A member stationed
+// somewhere not on that list (a recruiting sub-station, a reserve center, an
+// IMA billet in a random city) still needs *a* usable number, so we point them
+// at the nearest covered installation's rate by state and say so plainly —
+// this is a labeled approximation, never a fabricated rate for their exact ZIP.
+
+// States/territories with no covered installation of their own — mapped to
+// the nearest state that does have one.
+const NEIGHBOR_STATE: Record<string, string> = {
+  IA: 'NE', // Omaha (Offutt AFB) sits on the Iowa border
+  IN: 'OH', // Wright-Patterson AFB (Dayton) is just across the Indiana border
+  ME: 'NH', // Portsmouth (Pease) is the nearest covered New England MHA
+  MN: 'IL', // Naval Station Great Lakes is the nearest covered Upper-Midwest MHA
+  VT: 'NH', // Portsmouth (Pease) is the nearest covered New England MHA
+  WI: 'IL', // Naval Station Great Lakes is directly across the state line
+  WV: 'VA', // Fort Belvoir/DC area is the nearest covered MHA for most of WV
+  WY: 'CO', // Colorado Springs is the nearest covered Mountain-West MHA
+};
+
+/** Returns a real covered installation to use as a same-state (or nearest-neighbor) BAH stand-in. */
+export function getStateFallbackAnchor(state: string, seen: Set<string> = new Set()): Installation | null {
+  if (seen.has(state)) return null; // guard against a cyclical NEIGHBOR_STATE entry
+  seen.add(state);
+  const inState = INSTALLATIONS.find((i) => !i.oconus && !!i.mhaZip && i.state === state);
+  if (inState) return inState;
+  const neighbor = NEIGHBOR_STATE[state];
+  return neighbor ? getStateFallbackAnchor(neighbor, seen) : null;
+}
+
+/**
+ * Resolves an arbitrary CONUS ZIP code (recruiting sub-station, reserve
+ * center, random-city assignment) to an approximate BAH stand-in. The
+ * returned installation is real and its rate is real — it just isn't
+ * necessarily the member's literal duty city, which is why the name is
+ * annotated so that's visible everywhere it's displayed downstream.
+ */
+export function getApproxInstallationForZip(zip: string): Installation | null {
+  const state = zipToState(zip);
+  if (!state) return null;
+  const anchor = getStateFallbackAnchor(state);
+  if (!anchor) return null;
+  return {
+    ...anchor,
+    id: `zip_${zip}`,
+    name: `Near ZIP ${zip} (≈ ${anchor.city}, ${anchor.state} rates)`,
+  };
 }
