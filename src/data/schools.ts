@@ -230,7 +230,7 @@ export const SCHOOL_DATA: InstallationSchoolInfo[] = [
     districtUrl: 'www.groton.k12.ct.us',
   },
   {
-    installationId: 'nb_guam',
+    installationId: 'guam_navy',
     hasDoDEA: true,
     dodea: [
       { name: 'Andersen Elementary School', grades: 'K–5',  type: 'Elementary' },

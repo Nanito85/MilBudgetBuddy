@@ -763,6 +763,7 @@ export default function BudgetScreen() {
   const yos = useUserStore((s) => s.yos);
   const mhaZip = useUserStore((s) => s.mhaZip);
   const hasSpouse = useUserStore((s) => s.hasSpouse);
+  const housingStatus = useUserStore((s) => s.housingStatus);
   const specialPays = useUserStore((s) => s.specialPays);
   const tspContribPct = useUserStore((s) => s.tspContribPct);
   const rothTspPct    = useUserStore((s) => s.rothTspPct);
@@ -783,13 +784,14 @@ export default function BudgetScreen() {
       yos,
       mhaZip,
       hasSpouse,
+      housingStatus,
       specialPaysTotal,
       tspContribPct,
       rothTspPct,
       hasDentalFamily,
       sglOptOut,
     }).netPay;
-  }, [payGrade, yos, mhaZip, hasSpouse, specialPays, tspContribPct, rothTspPct, hasDentalFamily, sglOptOut]);
+  }, [payGrade, yos, mhaZip, hasSpouse, housingStatus, specialPays, tspContribPct, rothTspPct, hasDentalFamily, sglOptOut]);
 
   const remaining = netPay - totalBudgeted;
   const overBudget = remaining < 0;

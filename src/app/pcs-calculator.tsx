@@ -12,11 +12,12 @@ import { ComparisonTable } from '@/features/pcs/components/ComparisonTable';
 import { GradePicker } from '@/features/pcs/components/GradePicker';
 import { OHACard } from '@/features/pcs/components/OHACard';
 import { StationPicker } from '@/features/pcs/components/StationPicker';
-import { calcPCS } from '@/features/pcs/utils/pcsCalc';
+import { calcPCS, getStationPerDiem } from '@/features/pcs/utils/pcsCalc';
 import { BottomTabInset, Brand, Fonts, Spacing } from '@/constants/theme';
-import { getBahRate } from '@/data/bah-rates';
 import { useThemeColors } from '@/hooks/use-theme';
 import { useUserStore } from '@/store/user.store';
+import { FamilyComposer } from '@/features/tle/components/FamilyComposer';
+import { calcTLE, familyLabel, TLA_MAX_DAYS, TLE_DAILY_CAP, TLE_MAX_DAYS } from '@/features/tle/utils/tleCalc';
 
 // ── DLA Tables (FY2026, effective Jan 1 2026, per JTR Table 5-A) ──────────────
 const DLA: Record<string, { noDep: number; withDep: number }> = {
@@ -98,6 +99,11 @@ export default function PCSCalculatorScreen() {
   const [vehicles,        setVehicles]         = useState<1 | 2>(1);
   const [tleDepartDays,   setTleDepartDays]    = useState(5);
   const [tleGainDays,     setTleGainDays]      = useState(5);
+  const [tleHasSpouse,    setTleHasSpouse]     = useState(withDep);
+  const [tleChildAges,    setTleChildAges]     = useState<number[]>([]);
+
+  // Keep the TLE family composer's spouse default in sync with the dependent toggle
+  useEffect(() => { setTleHasSpouse(withDep); }, [withDep]);
 
   const result = calcPCS(currentStation, gainingStation, grade, withDep);
   const showComparison = currentStation != null && gainingStation != null;
@@ -117,25 +123,46 @@ export default function PCSCalculatorScreen() {
   const miles = parseFloat(milesInput) || 0;
   const malt = miles * MALT_RATE * vehicles;
 
-  // TLE — use BAH / 30 as daily rate proxy; split 70% lodging / 30% M&IE
-  const currentBAH  = (currentStation && !currentStation.oconus)
-    ? (getBahRate(currentStation.mhaZip, grade, withDep) ?? 0)
-    : 0;
-  const gainingBAH  = (gainingStation && !gainingStation.oconus)
-    ? (getBahRate(gainingStation.mhaZip, grade, withDep) ?? 0)
-    : 0;
+  // TLE/TLA — same engine as the dedicated TLE/TLA calculator (tleCalc.ts):
+  // real locality per diem, real JTR family-percentage table, real $290/day
+  // cap and 21-day CONUS pool / 60-day OCONUS allowance. Each leg uses TLE
+  // rules if that station is CONUS, TLA rules if it's OCONUS.
+  const currentPD = currentStation ? getStationPerDiem(currentStation) : null;
+  const gainingPD = gainingStation ? getStationPerDiem(gainingStation) : null;
 
-  const tleDepartDaily  = currentBAH  > 0 ? currentBAH  / 30 : 150;
-  const tleGainDaily    = gainingBAH  > 0 ? gainingBAH  / 30 : 150;
+  const bothConus = !!currentStation && !!gainingStation && !currentPD?.oconus && !gainingPD?.oconus;
+  const departMaxDays = currentPD?.oconus ? TLA_MAX_DAYS : TLE_MAX_DAYS;
+  const gainMaxDays   = gainingPD?.oconus ? TLA_MAX_DAYS : TLE_MAX_DAYS;
 
-  const tleDepartLodging = tleDepartDaily * 0.70 * tleDepartDays;
-  const tleDepartMie     = tleDepartDaily * 0.30 * tleDepartDays;
-  const tleDepartTotal   = tleDepartLodging + tleDepartMie;
+  // Both legs draw from the SAME 21-day TLE pool when both stations are CONUS
+  // (calcTLE only caps each call at its own mode's max — it has no visibility
+  // into the other leg — so the shared-pool constraint must be enforced here).
+  const effectiveDepartDays = Math.min(tleDepartDays, departMaxDays);
+  const effectiveGainDays = bothConus
+    ? Math.min(tleGainDays, gainMaxDays, TLE_MAX_DAYS - effectiveDepartDays)
+    : Math.min(tleGainDays, gainMaxDays);
 
-  const tleGainLodging  = tleGainDaily * 0.70 * tleGainDays;
-  const tleGainMie      = tleGainDaily * 0.30 * tleGainDays;
-  const tleGainTotal    = tleGainLodging + tleGainMie;
+  const tleDepart = currentPD
+    ? calcTLE({
+        mode: currentPD.oconus ? 'tla' : 'tle',
+        perDiem: currentPD.total,
+        hasSpouse: tleHasSpouse,
+        childAges: tleChildAges,
+        days: effectiveDepartDays,
+      })
+    : null;
+  const tleGain = gainingPD
+    ? calcTLE({
+        mode: gainingPD.oconus ? 'tla' : 'tle',
+        perDiem: gainingPD.total,
+        hasSpouse: tleHasSpouse,
+        childAges: tleChildAges,
+        days: effectiveGainDays,
+      })
+    : null;
 
+  const tleDepartTotal = tleDepart?.totalEntitlement ?? 0;
+  const tleGainTotal   = tleGain?.totalEntitlement ?? 0;
   const tleTotal = tleDepartTotal + tleGainTotal;
 
   const totalOneTime = dla + malt + tleTotal;
@@ -276,24 +303,48 @@ export default function PCSCalculatorScreen() {
 
             <View style={styles.divider} />
 
-            {/* TLE days */}
+            {/* TLE/TLA days */}
             <View style={styles.cardPadded}>
               <ThemedText type="small" themeColor="textSecondary" style={styles.fieldLabel}>
-                TLE Days (up to 10 per end)
+                {bothConus
+                  ? `TLE Days (${TLE_MAX_DAYS}-day pool, split between stations)`
+                  : 'TLE/TLA Days (per leg)'}
               </ThemedText>
               <Stepper
-                label="Departure TLE days"
+                label={`Departure ${currentPD?.oconus ? 'TLA' : 'TLE'} days`}
                 value={tleDepartDays}
                 min={0}
-                max={10}
+                max={bothConus ? Math.min(departMaxDays, TLE_MAX_DAYS - tleGainDays) : departMaxDays}
                 onChange={setTleDepartDays}
               />
               <Stepper
-                label="Gaining TLE days"
+                label={`Gaining ${gainingPD?.oconus ? 'TLA' : 'TLE'} days`}
                 value={tleGainDays}
                 min={0}
-                max={10}
+                max={bothConus ? Math.min(gainMaxDays, TLE_MAX_DAYS - tleDepartDays) : gainMaxDays}
                 onChange={setTleGainDays}
+              />
+              {!bothConus && (currentPD?.oconus || gainingPD?.oconus) && (
+                <ThemedText type="small" themeColor="textSecondary" style={styles.hint}>
+                  An OCONUS leg uses TLA rules (up to {TLA_MAX_DAYS} days, no daily cap) instead of
+                  the {TLE_MAX_DAYS}-day CONUS TLE pool. If you're departing CONUS for an OCONUS
+                  station, your CONUS-side TLE is typically capped at 7 days — verify with finance.
+                </ThemedText>
+              )}
+            </View>
+
+            <View style={styles.divider} />
+
+            {/* Family composition for TLE/TLA */}
+            <View style={styles.cardPadded}>
+              <ThemedText type="small" themeColor="textSecondary" style={styles.fieldLabel}>
+                Family (for TLE/TLA rate — {familyLabel(tleHasSpouse, tleChildAges)})
+              </ThemedText>
+              <FamilyComposer
+                hasSpouse={tleHasSpouse}
+                childAges={tleChildAges}
+                onSpouseChange={setTleHasSpouse}
+                onChildAgesChange={setTleChildAges}
               />
             </View>
           </ThemedView>
@@ -374,28 +425,33 @@ export default function PCSCalculatorScreen() {
 
             <View style={styles.divider} />
 
-            {/* TLE Departure */}
+            {/* TLE/TLA Departure */}
             <View style={styles.cardPadded}>
               <ThemedText type="small" themeColor="textSecondary" style={[styles.fieldLabel, { marginBottom: Spacing.one }]}>
-                TLE — DEPARTURE ({tleDepartDays} DAYS)
+                {currentPD?.oconus ? 'TLA' : 'TLE'} — DEPARTURE ({tleDepart?.days ?? 0} DAYS)
               </ThemedText>
-              {tleDepartDays > 0 ? (
+              {effectiveDepartDays > 0 && tleDepart ? (
                 <>
                   <View style={styles.tleDetailRow}>
-                    <ThemedText style={[styles.tleDetailLabel, { color: tc.textSecondary }]}>Lodging (70%)</ThemedText>
-                    <ThemedText style={[styles.tleDetailAmt, { color: tc.textPrimary }]}>{fmt(tleDepartLodging)}</ThemedText>
-                  </View>
-                  <View style={styles.tleDetailRow}>
-                    <ThemedText style={[styles.tleDetailLabel, { color: tc.textSecondary }]}>M&IE (30%)</ThemedText>
-                    <ThemedText style={[styles.tleDetailAmt, { color: tc.textPrimary }]}>{fmt(tleDepartMie)}</ThemedText>
+                    <ThemedText style={[styles.tleDetailLabel, { color: tc.textSecondary }]}>
+                      {(tleDepart.familyPct * 100).toFixed(0)}% × ${currentPD?.total}/day{tleDepart.capped ? ` (capped $${TLE_DAILY_CAP})` : ''}
+                    </ThemedText>
+                    <ThemedText style={[styles.tleDetailAmt, { color: tc.textPrimary }]}>{fmt(tleDepart.dailyTotal)}/day</ThemedText>
                   </View>
                   <View style={[styles.tleDetailRow, { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: 'rgba(128,128,128,0.2)', marginTop: 4, paddingTop: 4 }]}>
-                    <ThemedText style={[styles.tleDetailLabel, { fontWeight: '700', color: tc.textSecondary }]}>Total departure TLE</ThemedText>
+                    <ThemedText style={[styles.tleDetailLabel, { fontWeight: '700', color: tc.textSecondary }]}>Total departure {currentPD?.oconus ? 'TLA' : 'TLE'}</ThemedText>
                     <ThemedText style={[styles.entitlementAmt, { color: Brand.primary }]}>{fmt(tleDepartTotal)}</ThemedText>
                   </View>
-                  {currentStation && currentBAH === 0 && (
+                  {bothConus && tleDepartDays > effectiveDepartDays && (
                     <ThemedText type="small" themeColor="textSecondary" style={styles.hint}>
-                      OCONUS station — TLE estimate uses $150/day default. Verify with finance.
+                      Capped to {effectiveDepartDays} days — your {tleGainDays}-day gaining request uses
+                      the rest of the shared {TLE_MAX_DAYS}-day TLE pool.
+                    </ThemedText>
+                  )}
+                  {currentPD && !currentPD.matched && (
+                    <ThemedText type="small" themeColor="textSecondary" style={styles.hint}>
+                      No locality rate found for this installation — showing a placeholder rate.
+                      Use the TLE/TLA calculator to look up an accurate locality rate.
                     </ThemedText>
                   )}
                 </>
@@ -406,28 +462,33 @@ export default function PCSCalculatorScreen() {
 
             <View style={styles.divider} />
 
-            {/* TLE Gaining */}
+            {/* TLE/TLA Gaining */}
             <View style={styles.cardPadded}>
               <ThemedText type="small" themeColor="textSecondary" style={[styles.fieldLabel, { marginBottom: Spacing.one }]}>
-                TLE — GAINING ({tleGainDays} DAYS)
+                {gainingPD?.oconus ? 'TLA' : 'TLE'} — GAINING ({tleGain?.days ?? 0} DAYS)
               </ThemedText>
-              {tleGainDays > 0 ? (
+              {effectiveGainDays > 0 && tleGain ? (
                 <>
                   <View style={styles.tleDetailRow}>
-                    <ThemedText style={[styles.tleDetailLabel, { color: tc.textSecondary }]}>Lodging (70%)</ThemedText>
-                    <ThemedText style={[styles.tleDetailAmt, { color: tc.textPrimary }]}>{fmt(tleGainLodging)}</ThemedText>
-                  </View>
-                  <View style={styles.tleDetailRow}>
-                    <ThemedText style={[styles.tleDetailLabel, { color: tc.textSecondary }]}>M&IE (30%)</ThemedText>
-                    <ThemedText style={[styles.tleDetailAmt, { color: tc.textPrimary }]}>{fmt(tleGainMie)}</ThemedText>
+                    <ThemedText style={[styles.tleDetailLabel, { color: tc.textSecondary }]}>
+                      {(tleGain.familyPct * 100).toFixed(0)}% × ${gainingPD?.total}/day{tleGain.capped ? ` (capped $${TLE_DAILY_CAP})` : ''}
+                    </ThemedText>
+                    <ThemedText style={[styles.tleDetailAmt, { color: tc.textPrimary }]}>{fmt(tleGain.dailyTotal)}/day</ThemedText>
                   </View>
                   <View style={[styles.tleDetailRow, { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: 'rgba(128,128,128,0.2)', marginTop: 4, paddingTop: 4 }]}>
-                    <ThemedText style={[styles.tleDetailLabel, { fontWeight: '700', color: tc.textSecondary }]}>Total gaining TLE</ThemedText>
+                    <ThemedText style={[styles.tleDetailLabel, { fontWeight: '700', color: tc.textSecondary }]}>Total gaining {gainingPD?.oconus ? 'TLA' : 'TLE'}</ThemedText>
                     <ThemedText style={[styles.entitlementAmt, { color: Brand.primary }]}>{fmt(tleGainTotal)}</ThemedText>
                   </View>
-                  {gainingStation && gainingBAH === 0 && (
+                  {bothConus && tleGainDays > effectiveGainDays && (
                     <ThemedText type="small" themeColor="textSecondary" style={styles.hint}>
-                      OCONUS station — TLE estimate uses $150/day default. Verify with finance.
+                      Capped to {effectiveGainDays} days — the shared {TLE_MAX_DAYS}-day TLE pool is
+                      used up by your departure days.
+                    </ThemedText>
+                  )}
+                  {gainingPD && !gainingPD.matched && (
+                    <ThemedText type="small" themeColor="textSecondary" style={styles.hint}>
+                      No locality rate found for this installation — showing a placeholder rate.
+                      Use the TLE/TLA calculator to look up an accurate locality rate.
                     </ThemedText>
                   )}
                 </>
@@ -509,7 +570,7 @@ export default function PCSCalculatorScreen() {
 
         {/* Disclaimer */}
         <ThemedText type="small" themeColor="textSecondary" style={styles.disclaimer}>
-          BAH rates: {BAH_DATA_YEAR}. OHA rates: Q2 2026 (approx.). DLA: FY2026 (JTR). MALT: ${MALT_RATE.toFixed(2)}/mile FY2026. OHA rates are approximate — verify current rates at DTMO before signing a lease. Verify all entitlements with your installation finance office.
+          BAH rates: {BAH_DATA_YEAR}. OHA rates: Q2 2026 (approx.). DLA: FY2026 (JTR). MALT: ${MALT_RATE.toFixed(2)}/mile FY2026. TLE/TLA uses the same JTR family-percentage table, $290/day CONUS cap, and 21-day/60-day allowances as the dedicated TLE/TLA calculator. OHA and unmatched OCONUS TLA rates are approximate — verify current rates at DTMO before signing a lease. Verify all entitlements with your installation finance office.
         </ThemedText>
       </ScrollView>
     </ThemedView>

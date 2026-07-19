@@ -44,6 +44,9 @@ import { KidGender, KidProfile, PendingCompletion } from '@/types/kids.types';
 import { Installation } from '@/data/installations';
 import {
   BRANCH_LABELS,
+  HOUSING_STATUS_DESCRIPTIONS,
+  HOUSING_STATUS_LABELS,
+  HousingStatus,
   MilitaryBranch,
   RankVariant,
   SPECIAL_PAY_LABELS,
@@ -51,6 +54,8 @@ import {
   SpecialPayType,
   getRankAbbrev,
 } from '@/types/user.types';
+
+const HOUSING_STATUS_ORDER: HousingStatus[] = ['off_base', 'barracks', 'on_base_family_housing'];
 import { PayGrade } from '@/data/bah-rates';
 import { getDualVariants } from '@/data/rank-insignia';
 
@@ -327,6 +332,7 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
   const installName    = useUserStore((s) => s.installationName);
   const hasSpouse      = useUserStore((s) => s.hasSpouse);
   const numChildren    = useUserStore((s) => s.numChildren);
+  const housingStatus  = useUserStore((s) => s.housingStatus);
   const stateResidence = useUserStore((s) => s.stateResidence);
   const dateOfEnlist   = useUserStore((s) => s.dateOfEnlistment);
   const dateOfRank     = useUserStore((s) => s.dateOfRank);
@@ -348,6 +354,7 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
   const [station, setStation]     = useState<Installation | null>(null);
   const [spouse, setSpouse]       = useState(hasSpouse);
   const [children, setChildren]   = useState(numChildren);
+  const [housing, setHousing]     = useState<HousingStatus>(housingStatus ?? 'off_base');
   const [state, setState]         = useState(stateResidence ?? '');
   const [enlistDate, setEnlistDate] = useState(dateOfEnlist ?? '');
   const [rankDate, setRankDate]   = useState(dateOfRank ?? '');
@@ -390,6 +397,7 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
       installationName: station?.name ?? installName ?? '',
       hasSpouse: spouse,
       numChildren: children,
+      housingStatus: housing,
       stateResidence: state,
       dateOfEnlistment: enlistDate,
       dateOfRank: rankDate,
@@ -561,6 +569,37 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
               <Switch value={spouse} onValueChange={setSpouse} trackColor={{ true: Brand.accent }} thumbColor="#FFF" />
             </View>
             <NumberStepper label="Dependent Children" value={children} min={0} max={8} onChange={setChildren} />
+
+            {/* Housing status */}
+            <ThemedText style={[editStyles.fieldLabel, { color: tc.textHint }]}>CURRENT HOUSING</ThemedText>
+            <ThemedText style={[editStyles.fieldHint, { color: tc.textHint, marginTop: -Spacing.two }]}>
+              This determines your actual BAH entitlement.
+            </ThemedText>
+            <View style={{ gap: Spacing.one }}>
+              {HOUSING_STATUS_ORDER.map((hs) => (
+                <Pressable
+                  key={hs}
+                  onPress={() => setHousing(hs)}
+                  style={[
+                    editStyles.inputWrap,
+                    { backgroundColor: inputBg, borderColor: housing === hs ? Brand.accent : tc.borderColor, paddingVertical: Spacing.two },
+                  ]}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: Spacing.two }}>
+                    <ThemedText style={{ fontSize: 16, color: housing === hs ? Brand.accent : tc.textHint }}>
+                      {housing === hs ? '●' : '○'}
+                    </ThemedText>
+                    <View style={{ flex: 1 }}>
+                      <ThemedText style={[editStyles.toggleLabel, { color: tc.textPrimary, fontSize: 14 }]}>
+                        {HOUSING_STATUS_LABELS[hs]}
+                      </ThemedText>
+                      <ThemedText style={[editStyles.fieldHint, { color: tc.textHint, marginTop: 2 }]}>
+                        {HOUSING_STATUS_DESCRIPTIONS[hs]}
+                      </ThemedText>
+                    </View>
+                  </View>
+                </Pressable>
+              ))}
+            </View>
 
           </ScrollView>
         </SafeAreaView>

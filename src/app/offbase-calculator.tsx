@@ -6,7 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Brand, Spacing } from '@/constants/theme';
-import { getBahRate, hasBahData, PAY_GRADES, PayGrade } from '@/data/bah-rates';
+import { BAH_PARTIAL, getBahRate, hasBahData, PAY_GRADES, PayGrade } from '@/data/bah-rates';
 import { Installation, getInstallationByZip, searchInstallations } from '@/data/installations';
 import { useThemeColors } from '@/hooks/use-theme';
 import { useUserStore } from '@/store/user.store';
@@ -77,7 +77,9 @@ export default function OffbaseCalculatorScreen() {
 
   const offbaseMonthlyCost = rent + utils + commute;
   const offbaseNet = bah - offbaseMonthlyCost;
-  const barracksSavings = bah; // living free = full BAH pocketed (if eligible for BAH OHA)
+  // Barracks residents (no dependents, government single-type quarters) receive
+  // Partial BAH only — a flat $50.10/mo, not the full off-base rate — per JTR.
+  const barracksBah = BAH_PARTIAL;
   const breakEvenMonths = offbaseNet > 0 ? Math.ceil(setup / offbaseNet) : null;
 
   const isRequired = BARRACKS_REQUIRED.includes(grade);
@@ -269,23 +271,24 @@ export default function OffbaseCalculatorScreen() {
               <ThemedText style={[styles.resultBoxSub, { color: tc.textMuted }]}>BAH minus your costs</ThemedText>
             </View>
             <View style={[styles.resultBox, { backgroundColor: tc.background, borderColor: Brand.accent }]}>
-              <ThemedText style={[styles.resultBoxLabel, { color: tc.textHint }]}>BARRACKS SAVES</ThemedText>
-              <ThemedText style={[styles.resultBoxValue, { color: Brand.accent }]}>{fmt(bah)}</ThemedText>
+              <ThemedText style={[styles.resultBoxLabel, { color: tc.textHint }]}>BARRACKS BAH</ThemedText>
+              <ThemedText style={[styles.resultBoxValue, { color: Brand.accent }]}>{fmt(barracksBah)}</ThemedText>
               <ThemedText style={[styles.resultBoxSub, { color: tc.textMuted }]}>
-                {isRequired ? 'Full BAH stays in pocket' : 'No BAH if living on-base'}
+                Partial BAH only — flat rate, no rent to pay
               </ThemedText>
             </View>
           </View>
 
           <View style={[styles.divider, { backgroundColor: tc.borderColor }]} />
           <Row label="Monthly rent + utils + commute" value={fmt(offbaseMonthlyCost)} />
-          <Row label="BAH entitlement" value={fmt(bah)} />
+          <Row label="Off-base BAH (full, no dependents)" value={fmt(bah)} />
           <Row
             label="Monthly net (BAH − costs)"
             value={`${offbaseNet >= 0 ? '+' : ''}${fmt(offbaseNet)}`}
             bold
             color={offbaseNet >= 0 ? Brand.success : Brand.danger}
           />
+          <Row label="Barracks BAH (Partial, flat rate)" value={fmt(barracksBah)} />
           <Row
             label="Break-even on setup costs"
             value={breakEvenMonths !== null ? `${breakEvenMonths} months` : 'N/A (costs exceed BAH)'}
@@ -311,7 +314,7 @@ export default function OffbaseCalculatorScreen() {
         <ThemedView type="backgroundElement" style={styles.card}>
           <ThemedText style={styles.cardLabel}>HOUSING TIPS FOR SINGLE SMs</ThemedText>
           {[
-            'E1–E3: You likely cannot get BAH while in barracks unless you have dependents or a medical condition.',
+            `E1–E3 in the barracks receive Partial BAH only ($${BAH_PARTIAL.toFixed(2)}/mo flat) — not full BAH — unless you have dependents.`,
             'E4: Request a BAH waiver from your unit commander if housing is unavailable on-post.',
             'E5+: You are entitled to BAH without dependents. Move off-base to start building housing equity.',
             'Roommate strategy: Split a 2BR apartment with another SM — each gets full BAH, costs cut in half.',

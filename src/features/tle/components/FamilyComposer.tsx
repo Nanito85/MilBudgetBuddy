@@ -14,7 +14,7 @@ interface Props {
 }
 
 function childLabel(age: number): string {
-  return age < 12 ? `Age ${age} · under 12 (5.42%)` : `Age ${age} · 12+ (8.125%)`;
+  return age < 12 ? `Age ${age} · under 12` : `Age ${age} · 12 or older`;
 }
 
 export function FamilyComposer({ hasSpouse, childAges, onSpouseChange, onChildAgesChange }: Props) {
@@ -59,7 +59,7 @@ export function FamilyComposer({ hasSpouse, childAges, onSpouseChange, onChildAg
             Dependent Children ({childAges.length})
           </ThemedText>
           <ThemedText style={[styles.ageNote, { color: tc.textHint }]}>
-            Age affects JTR per diem factor (under 12 = 5.42%, 12+ = 8.125%)
+            Age affects the JTR per diem percentage — see the rate factor breakdown below.
           </ThemedText>
         </View>
         {childAges.length < 8 && (

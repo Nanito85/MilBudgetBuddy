@@ -15,7 +15,7 @@ import { BranchRegNote } from '@/components/BranchRegNote';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Brand, Spacing } from '@/constants/theme';
-import { getBahRate, hasBahData, PAY_GRADES, PayGrade } from '@/data/bah-rates';
+import { BAH_PARTIAL, getBahRate, hasBahData, PAY_GRADES, PayGrade } from '@/data/bah-rates';
 import { Installation, getInstallationByZip, searchInstallations } from '@/data/installations';
 import { OhaLocation, searchOhaLocations } from '@/data/oha-locations';
 import { getOhaRate, getOhaTotalCeiling, isOhaDataStale, OHA_DATA_QUARTER } from '@/data/oha-rates';
@@ -50,8 +50,8 @@ function getEligibility(grade: PayGrade, depStatus: DepStatus): EligibilityResul
       details: [
         'Any rank with dependents (spouse, children under 23 in school, disabled dependents) receives BAH.',
         'BAH is based on your duty station ZIP code — not where your family lives.',
-        'If you live in government quarters (on-post housing), BAH may be offset against rent charged.',
-        'You keep any difference between your BAH rate and your actual rent.',
+        'If you live in government-owned/leased family housing on-post, you receive no BAH — housing is provided in place of the allowance.',
+        'If you live off-post, you receive full BAH and keep any difference between your BAH rate and your actual rent.',
       ],
       color: Brand.success,
     };
@@ -60,11 +60,11 @@ function getEligibility(grade: PayGrade, depStatus: DepStatus): EligibilityResul
     return {
       eligible: false,
       status:   'required_barracks',
-      summary:  'NOT ELIGIBLE — E1–E3 without dependents must live in the barracks.',
+      summary:  `NOT ELIGIBLE FOR FULL BAH — E1–E3 without dependents must live in the barracks (Partial BAH only, $${BAH_PARTIAL.toFixed(2)}/mo).`,
       details: [
         'Grades E1, E2, and E3 without dependents are required to live in barracks when adequate quarters are available.',
-        'No BAH is paid if the barracks meet DoD standards at your installation.',
-        'Exception: If the barracks are full or not up to standard, you may receive BAH — ask your housing office.',
+        `You receive Partial BAH instead of full BAH — a flat $${BAH_PARTIAL.toFixed(2)}/month, the same for every grade and location. It is not meant to cover rent; it offsets incidental costs.`,
+        'Exception: If the barracks are full or not up to standard, you may receive full BAH — ask your housing office.',
         'Once you have dependents (spouse or child), you are entitled to full BAH regardless of rank.',
       ],
       color: Brand.danger,
@@ -612,7 +612,7 @@ export default function BahGuideScreen() {
 
               <ThemedView type="backgroundElement" style={styles.disclaimer}>
                 <ThemedText style={[styles.disclaimerText, { color: tc.textMuted }]}>
-                  Rates are FY2026 DoD BAH tables (effective Jan 1, 2026). Actual entitlement is determined by official orders and your installation housing office. O7–O10 rates are capped at O6 per DoD policy. Verify at militarypay.defense.gov.
+                  Rates are FY2026 DoD BAH tables (effective Jan 1, 2026), sourced from the official DoD BAH data file. Actual entitlement is determined by official orders and your installation housing office. O8–O10 rates are capped at the O7 rate per DoD policy. Verify at militarypay.defense.gov.
                 </ThemedText>
               </ThemedView>
             </>

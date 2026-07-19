@@ -74,6 +74,7 @@ export default function SavingsRateScreen() {
   const yos       = useUserStore((s) => s.yos);
   const mhaZip    = useUserStore((s) => s.mhaZip);
   const hasSpouse = useUserStore((s) => s.hasSpouse);
+  const housingStatus = useUserStore((s) => s.housingStatus);
   const tspContribPct = useUserStore((s) => s.tspContribPct);
   const rothTspPct    = useUserStore((s) => s.rothTspPct);
   const hasDentalFamily = useUserStore((s) => s.hasDentalFamily);
@@ -89,8 +90,8 @@ export default function SavingsRateScreen() {
 
   const breakdown = useMemo(() => {
     if (!payGrade) return null;
-    return calcLES({ payGrade, yos, mhaZip, hasSpouse, specialPaysTotal, tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence });
-  }, [payGrade, yos, mhaZip, hasSpouse, specialPaysTotal, tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence]);
+    return calcLES({ payGrade, yos, mhaZip, hasSpouse, housingStatus, specialPaysTotal, tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence });
+  }, [payGrade, yos, mhaZip, hasSpouse, housingStatus, specialPaysTotal, tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence]);
 
   const netPayFromStore = breakdown?.netPay ?? 0;
   const budgetTotal = useMemo(

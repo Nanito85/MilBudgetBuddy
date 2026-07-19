@@ -1,6 +1,6 @@
 ﻿import { useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BranchRegNote } from '@/components/BranchRegNote';
@@ -11,32 +11,50 @@ import { estimateDrivingMiles } from '@/data/installation-coords';
 import { Installation } from '@/data/installations';
 import { PPM_DATA_YEAR } from '@/data/weight-allowances';
 import { WeightBar } from '@/features/dity/components/WeightBar';
-import { calcDITY, fmtLbs, fmtMoney, MoveType, TAX_BRACKETS, TaxBracket } from '@/features/dity/utils/dityCalc';
+import { calcDITY, fmtLbs, fmtMoney, fmtMoneySigned, MoveType, TAX_BRACKETS, TaxBracket } from '@/features/dity/utils/dityCalc';
 import { GradePicker } from '@/features/pcs/components/GradePicker';
 import { StationPicker } from '@/features/pcs/components/StationPicker';
 import { NumberStepper } from '@/features/retirement/components/NumberStepper';
 import { BottomTabInset, Brand, Spacing } from '@/constants/theme';
+import { useThemeColors } from '@/hooks/use-theme';
 
 export default function DITYCalculatorScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const tc = useThemeColors();
 
   const [grade, setGrade] = useState<PayGrade>('E5');
   const [withDep, setWithDep] = useState(true);
+  const [hasSpouse, setHasSpouse] = useState(true);
   const [moveType, setMoveType] = useState<MoveType>('full');
   const [taxBracket, setTaxBracket] = useState<TaxBracket>(22);
   const [fromStation, setFromStation] = useState<Installation | null>(null);
   const [toStation, setToStation] = useState<Installation | null>(null);
+  const [proGearWeight, setProGearWeight] = useState(0);
+  const [spouseProGearWeight, setSpouseProGearWeight] = useState(0);
+  const [expensesText, setExpensesText] = useState('');
+  const allowableExpenses = parseFloat(expensesText) || 0;
 
   // Always start at the authorized weight for this grade/dep combo
-  const baseResult = calcDITY({ grade, withDep, actualWeight: 0, distanceMiles: 500, moveType, taxBracket });
-  const [actualWeight, setActualWeight] = useState(baseResult.authorizedWeight);
+  const baseResult = calcDITY({
+    grade, withDep, hasSpouse, actualWeight: 0, proGearWeight: 0, spouseProGearWeight: 0,
+    distanceMiles: 500, moveType, allowableExpenses: 0, taxBracket,
+  });
+  const [actualWeight, setActualWeight] = useState(baseResult.hhgAllowance);
   const [distanceMiles, setDistanceMiles] = useState(500);
   const [distanceFromStations, setDistanceFromStations] = useState(false);
 
+  // Spouse pro-gear only applies when the member has dependents
+  useEffect(() => {
+    if (!withDep) setHasSpouse(false);
+  }, [withDep]);
+
   // When grade or dep status changes, reset weight to the new max allowance
   useEffect(() => {
-    const auth = calcDITY({ grade, withDep, actualWeight: 0, distanceMiles, moveType, taxBracket }).authorizedWeight;
+    const auth = calcDITY({
+      grade, withDep, hasSpouse, actualWeight: 0, proGearWeight: 0, spouseProGearWeight: 0,
+      distanceMiles, moveType, allowableExpenses: 0, taxBracket,
+    }).hhgAllowance;
     setActualWeight(auth);
   }, [grade, withDep]);
 
@@ -55,7 +73,10 @@ export default function DITYCalculatorScreen() {
     }
   }, [fromStation, toStation]);
 
-  const result = calcDITY({ grade, withDep, actualWeight, distanceMiles, moveType, taxBracket });
+  const result = calcDITY({
+    grade, withDep, hasSpouse, actualWeight, proGearWeight, spouseProGearWeight,
+    distanceMiles, moveType, allowableExpenses, taxBracket,
+  });
 
   return (
     <ThemedView style={styles.container}>
@@ -119,6 +140,19 @@ export default function DITYCalculatorScreen() {
                   </Pressable>
                 ))}
               </View>
+              {withDep && (
+                <View style={{ marginTop: Spacing.two }}>
+                  <View style={styles.toggleRow}>
+                    <Pressable
+                      onPress={() => setHasSpouse(!hasSpouse)}
+                      style={[styles.toggleBtn, hasSpouse && styles.toggleBtnActive]}>
+                      <ThemedText style={[styles.toggleText, hasSpouse && styles.toggleTextActive]}>
+                        {hasSpouse ? 'Spouse accompanying (500 lb pro-gear)' : 'No spouse pro-gear'}
+                      </ThemedText>
+                    </Pressable>
+                  </View>
+                </View>
+              )}
             </View>
 
             <View style={styles.divider} />
@@ -200,14 +234,14 @@ export default function DITYCalculatorScreen() {
               WEIGHT
             </ThemedText>
             <ThemedText type="small" themeColor="textSecondary">
-              Authorized max: {fmtLbs(result.authorizedWeight)}
+              HHG max: {fmtLbs(result.hhgAllowance)}
             </ThemedText>
           </View>
 
           <ThemedView type="backgroundElement" style={styles.card}>
             <View style={[styles.cardPadded, { gap: Spacing.three }]}>
               <NumberStepper
-                label="Weight to ship (defaults to your max allowance)"
+                label="Household goods (HHG) to ship"
                 value={actualWeight}
                 min={100}
                 max={20_000}
@@ -215,12 +249,37 @@ export default function DITYCalculatorScreen() {
                 unit="lbs"
                 onChange={setActualWeight}
               />
+              <NumberStepper
+                label={`Your pro-gear (books, papers, equipment — up to ${fmtLbs(2000)})`}
+                value={proGearWeight}
+                min={0}
+                max={2_000}
+                step={50}
+                unit="lbs"
+                onChange={setProGearWeight}
+              />
+              {hasSpouse && (
+                <NumberStepper
+                  label={`Spouse pro-gear (up to ${fmtLbs(500)})`}
+                  value={spouseProGearWeight}
+                  min={0}
+                  max={500}
+                  step={25}
+                  unit="lbs"
+                  onChange={setSpouseProGearWeight}
+                />
+              )}
+              <ThemedText type="small" themeColor="textSecondary" style={{ lineHeight: 18 }}>
+                Pro-gear doesn't count against your HHG allowance, but it must be declared and
+                weighed separately — or the carrier folds it into your HHG weight and you lose the
+                extra allowance. Total authorized: {fmtLbs(result.totalAuthorizedWeight)}.
+              </ThemedText>
             </View>
           </ThemedView>
 
           <WeightBar
-            authorizedWeight={result.authorizedWeight}
-            actualWeight={actualWeight}
+            authorizedWeight={result.totalAuthorizedWeight}
+            actualWeight={result.totalRequestedWeight}
             effectiveWeight={result.effectiveWeight}
             overAllowance={result.overAllowance}
           />
@@ -252,6 +311,32 @@ export default function DITYCalculatorScreen() {
           </ThemedView>
         </View>
 
+        {/* EXPENSES */}
+        <View style={styles.section}>
+          <ThemedText type="smallBold" themeColor="textSecondary" style={styles.sectionLabel}>
+            SUBSTANTIATED MOVING EXPENSES
+          </ThemedText>
+          <ThemedView type="backgroundElement" style={styles.card}>
+            <View style={styles.cardPadded}>
+              <ThemedText type="small" themeColor="textSecondary" style={styles.fieldLabel}>
+                Rental truck, packing materials, fuel/tolls, hired labor, weighing fees, SIT ($)
+              </ThemedText>
+              <TextInput
+                value={expensesText}
+                onChangeText={setExpensesText}
+                placeholder="e.g. 1200"
+                keyboardType="numeric"
+                placeholderTextColor={tc.textSecondary}
+                style={[styles.expensesInput, { color: tc.textPrimary, borderColor: tc.borderColor }]}
+              />
+              <ThemedText type="small" themeColor="textSecondary" style={{ lineHeight: 18 }}>
+                These deduct from your taxable incentive on Form 3903 when you file. See the
+                deductible-vs-not list below the estimate.
+              </ThemedText>
+            </View>
+          </ThemedView>
+        </View>
+
         {/* TAX BRACKET */}
         <View style={styles.section}>
           <ThemedText type="smallBold" themeColor="textSecondary" style={styles.sectionLabel}>
@@ -272,7 +357,9 @@ export default function DITYCalculatorScreen() {
                 ))}
               </View>
               <ThemedText type="small" themeColor="textSecondary" style={styles.taxNote}>
-                PPM incentive is taxable income. Select your estimated federal marginal bracket.
+                PPM incentive is taxable income (reported on your W-2). Select your estimated
+                federal marginal bracket — this is used to estimate your true liability once you
+                file, separate from what DFAS withholds at settlement.
               </ThemedText>
             </View>
           </ThemedView>
@@ -289,7 +376,7 @@ export default function DITYCalculatorScreen() {
             <View style={styles.bigResultRow}>
               <View>
                 <ThemedText type="small" themeColor="textSecondary" style={styles.fieldLabel}>
-                  PPM INCENTIVE
+                  PPM INCENTIVE (100% GCC)
                 </ThemedText>
                 <ThemedText style={[styles.bigValue, { color: Brand.primary }]}>
                   {fmtMoney(result.incentive)}
@@ -297,24 +384,78 @@ export default function DITYCalculatorScreen() {
               </View>
               <View style={styles.afterTaxBlock}>
                 <ThemedText type="small" themeColor="textSecondary" style={styles.fieldLabel}>
-                  AFTER TAX ({taxBracket}%)
+                  CASH AT SETTLEMENT
                 </ThemedText>
-                <ThemedText style={[styles.bigValue, { color: Brand.success }]}>
-                  {fmtMoney(result.afterTax)}
+                <ThemedText style={[styles.bigValue, { color: Brand.accent }]}>
+                  {fmtMoney(result.cashAtSettlement)}
                 </ThemedText>
               </View>
             </View>
 
             <View style={styles.divider} />
 
-            {/* Breakdown */}
+            {/* Weight / GCC breakdown */}
             <View style={styles.breakdownSection}>
-              <ResultRow label="Weight used" value={fmtLbs(result.effectiveWeight)} />
-              <ResultRow label={`Gov't rate per lb (${distanceMiles} mi)`} value={`$${result.ratePerLb.toFixed(2)}/lb`} />
-              <ResultRow label="Government constructed cost" value={fmtMoney(result.governmentCost)} />
-              <ResultRow label={`Tax withheld (${taxBracket}%)`} value={`–${fmtMoney(result.taxAmount)}`} negative />
+              <ThemedText style={styles.groupHeading}>WEIGHT & GCC</ThemedText>
+              <ResultRow label="HHG weight" value={fmtLbs(result.actualWeight)} />
+              {result.proGearWeight > 0 && (
+                <ResultRow label="+ Your pro-gear" value={fmtLbs(result.proGearWeight)} />
+              )}
+              {result.spouseProGearWeight > 0 && (
+                <ResultRow label="+ Spouse pro-gear" value={fmtLbs(result.spouseProGearWeight)} />
+              )}
+              <ResultRow label="Total weight paid on" value={fmtLbs(result.effectiveWeight)} bold />
+              <ResultRow label={`Est. gov't rate (${distanceMiles} mi)`} value={`$${result.ratePerLb.toFixed(2)}/lb`} />
+              <ResultRow label="Government constructed cost (GCC)" value={fmtMoney(result.governmentCost)} bold />
+            </View>
+
+            <View style={styles.totalDivider} />
+
+            {/* Settlement / withholding */}
+            <View style={styles.breakdownSection}>
+              <ThemedText style={styles.groupHeading}>AT SETTLEMENT (WHAT DFAS PAYS YOU)</ThemedText>
+              <ResultRow label="PPM incentive (taxable, on your W-2)" value={fmtMoney(result.incentive)} />
+              <ResultRow label="Federal withholding (flat 22%)" value={`–${fmtMoney(result.federalWithholdingAtSettlement)}`} negative />
+              <ResultRow label="Cash deposited to you" value={fmtMoney(result.cashAtSettlement)} bold accent />
+            </View>
+
+            <View style={styles.totalDivider} />
+
+            {/* Tax filing true-up */}
+            <View style={styles.breakdownSection}>
+              <ThemedText style={styles.groupHeading}>AT TAX FILING (FORM 3903)</ThemedText>
+              <ResultRow label="Substantiated moving expenses" value={`–${fmtMoney(result.allowableExpenses)}`} />
+              <ResultRow label="Taxable income after deduction" value={fmtMoney(result.taxableAfterExpenses)} />
+              <ResultRow label={`Est. true tax liability (${taxBracket}% bracket)`} value={fmtMoney(result.estimatedTrueTaxLiability)} />
+              <ResultRow
+                label={result.refundOrOwedAtFiling >= 0 ? 'Est. refund at filing' : 'Est. amount you owe at filing'}
+                value={fmtMoneySigned(result.refundOrOwedAtFiling)}
+                accent={result.refundOrOwedAtFiling >= 0}
+                negative={result.refundOrOwedAtFiling < 0}
+              />
               <View style={styles.totalDivider} />
-              <ResultRow label="Take-home (est.)" value={fmtMoney(result.afterTax)} bold accent />
+              <ResultRow label="Final net profit (all-in)" value={fmtMoney(result.finalNetProfit)} bold accent />
+            </View>
+
+            {/* Deductible expenses reference */}
+            <View style={[styles.tipsBox, { backgroundColor: `${Brand.success}10` }]}>
+              <ThemedText type="small" style={[styles.tipTitle, { color: Brand.success }]}>
+                ✓ Deductible PPM expenses (Form 3903)
+              </ThemedText>
+              <ThemedText type="small" style={styles.tipItem}>
+                Rental truck/trailer/POD, hired moving labor (with receipt), packing materials,
+                weighing fees, fuel & tolls for the rental vehicle, parking fees, storage-in-transit
+                up to 90 days (with TMO approval).
+              </ThemedText>
+            </View>
+            <View style={[styles.tipsBox, { backgroundColor: `${Brand.danger}10` }]}>
+              <ThemedText type="small" style={[styles.tipTitle, { color: Brand.danger }]}>
+                ✕ NOT deductible
+              </ThemedText>
+              <ThemedText type="small" style={styles.tipItem}>
+                Moving/cargo insurance, auto transport, sales tax, meals, lodging, and POV gas —
+                POV mileage is already reimbursed separately through MALT.
+              </ThemedText>
             </View>
 
             {/* Tips */}
@@ -323,7 +464,10 @@ export default function DITYCalculatorScreen() {
                 Tips to maximize your incentive
               </ThemedText>
               <ThemedText type="small" style={styles.tipItem}>
-                • Get official weight tickets at a certified scale — before and after loading
+                • Get official weight tickets at a certified scale — empty (before) and full (after)
+              </ThemedText>
+              <ThemedText type="small" style={styles.tipItem}>
+                • Declare and weigh pro-gear separately, or it gets folded into your HHG weight
               </ThemedText>
               <ThemedText type="small" style={styles.tipItem}>
                 • Ship as close to your authorized weight as possible
@@ -332,7 +476,7 @@ export default function DITYCalculatorScreen() {
                 • Coordinate with your TMO/PPPO before moving anything
               </ThemedText>
               <ThemedText type="small" style={styles.tipItem}>
-                • Keep all receipts for truck rental, fuel, packing materials
+                • Keep every receipt — rental truck, packing materials, tolls, hired labor
               </ThemedText>
             </View>
           </ThemedView>
@@ -340,11 +484,15 @@ export default function DITYCalculatorScreen() {
 
         {/* Disclaimer */}
         <ThemedText type="small" themeColor="textSecondary" style={styles.disclaimer}>
-          Rates are approximate {PPM_DATA_YEAR} DTMO baseline values for planning purposes only.
-          Driving distance estimates use straight-line × 1.25 factor — verify with your actual route.
-          Actual PPM incentive is calculated by your Transportation Office using verified weight tickets
-          and current DTMO rates. Weight allowances from JTR Table 5-A — verify with your TMO/PPPO
-          before your move.
+          The gov't rate per lb above is a rough planning estimate — DoD does not publish a public
+          per-pound GCC table; your actual Government Constructed Cost is computed per-move in DPS
+          using the current move-management contractor's tariff. Get your authoritative GCC estimate
+          from the official PPM estimator in DPS/move.mil, or your TMO/PPPO, before making financial
+          decisions. Driving distance estimates use straight-line × 1.25 factor — verify your actual
+          route. Weight allowances are from JTR Table 5-37 ({PPM_DATA_YEAR}); pro-gear (2,000 lb
+          member / 500 lb spouse) is separate from and does not count against your HHG allowance.
+          PPM incentive is 100% of GCC per 37 U.S.C.; this is not tax advice — consult a tax
+          professional or your legal assistance office about your specific filing.
         </ThemedText>
         <BranchRegNote />
       </ScrollView>
@@ -444,6 +592,15 @@ const styles = StyleSheet.create({
   bigValue: { fontSize: 26, fontWeight: '800', lineHeight: 30 },
   afterTaxBlock: { alignItems: 'flex-end' },
   breakdownSection: { gap: Spacing.two },
+  groupHeading: { fontSize: 10, fontWeight: '800', letterSpacing: 0.8, opacity: 0.6, marginBottom: 2 },
+  expensesInput: {
+    fontSize: 18,
+    fontWeight: '700',
+    borderWidth: 1,
+    borderRadius: Spacing.two,
+    paddingHorizontal: Spacing.two + 2,
+    paddingVertical: Spacing.two,
+  },
   totalDivider: { height: StyleSheet.hairlineWidth, backgroundColor: 'rgba(128,128,128,0.2)' },
   tipsBox: { borderRadius: Spacing.two, padding: Spacing.two, gap: Spacing.one + 2 },
   tipTitle: { fontWeight: '700', marginBottom: 2 },

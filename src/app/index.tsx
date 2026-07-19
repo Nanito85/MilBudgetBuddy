@@ -125,6 +125,7 @@ export default function DashboardScreen() {
   const yos = useUserStore((s) => s.yos);
   const mhaZip = useUserStore((s) => s.mhaZip);
   const hasSpouse = useUserStore((s) => s.hasSpouse);
+  const housingStatus = useUserStore((s) => s.housingStatus);
   const tspContribPct = useUserStore((s) => s.tspContribPct);
   const rothTspPct    = useUserStore((s) => s.rothTspPct);
   const hasDentalFamily = useUserStore((s) => s.hasDentalFamily);
@@ -176,11 +177,11 @@ export default function DashboardScreen() {
   const breakdown = useMemo(() => {
     if (!payGrade) return null;
     return calcLES({
-      payGrade, yos, mhaZip, hasSpouse, specialPaysTotal,
+      payGrade, yos, mhaZip, hasSpouse, housingStatus, specialPaysTotal,
       tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence,
       overrides: lesOverrides,
     });
-  }, [payGrade, yos, mhaZip, hasSpouse, specialPaysTotal, tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence, lesOverrides]);
+  }, [payGrade, yos, mhaZip, hasSpouse, housingStatus, specialPaysTotal, tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence, lesOverrides]);
 
   // ── Mission Readiness Score (0-100) ─────────────────────────────────────────
   const readinessChecks = useMemo(() => {

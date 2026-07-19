@@ -1,120 +1,89 @@
 // JTR Chapter 5, Part D (TLE) and Part H (TLA)
-// TLE: CONUS — up to 10 days, member pays for lodging/meals above entitlement
-// TLA: OCONUS — up to 60 days in two phases
+// TLE: CONUS — up to 21 days (increased from 14, effective 27 Nov 2024 per PDTATAC MAP 66-24).
+//      Days split between losing station (before departure) and gaining station (after arrival).
+//      Combined daily reimbursement (lodging + M&IE) is capped at $290/day regardless of family size.
+// TLA: OCONUS — up to 60 days on arrival at the new PDS (installation commander may authorize a
+//      different amount; departure TLA is a separate allotment, typically up to 10 days — verify
+//      locally). No declining-percentage phase — the same flat family percentage applies every day.
 
 export type MoveMode = 'tle' | 'tla';
 
-// Per JTR: daily rate factors applied to the locality per diem
-export const MEMBER_FACTOR = 0.65;
-export const SPOUSE_FACTOR = 0.1625;
+// JTR family-size percentage table (JTR Ch. 5, applies to both TLE and TLA):
+//   Member alone, no dependents:                 65%
+//   Member + first dependent (any age/type):     100% flat (also applies to 2 dependents alone)
+//   Each ADDITIONAL dependent age 12 or older:    +35%
+//   Each ADDITIONAL dependent under age 12:       +25%
+// The percentage applies to both the locality lodging ceiling and the locality M&IE rate.
+export const MEMBER_ALONE_PCT = 0.65;
+export const FIRST_DEPENDENT_PCT = 1.0;
+export const ADDITIONAL_DEPENDENT_12PLUS_PCT = 0.35;
+export const ADDITIONAL_DEPENDENT_UNDER12_PCT = 0.25;
 
-// JTR age-based child factors:
-// Children age 12+ are entitled to a lodging share (separate room may be needed)
-// Children under 12 share parent lodging — M&IE portion only (~5.42%)
-export const CHILD_FACTOR_12PLUS = 0.08125;
-export const CHILD_FACTOR_UNDER12 = 0.0542;
+export const TLE_MAX_DAYS = 21;
+export const TLE_DAILY_CAP = 290; // combined lodging + M&IE, per JTR par. 0506
 
-// Legacy export kept for backward compatibility (used in display labels)
-export const CHILD_FACTOR = CHILD_FACTOR_12PLUS;
-
-// TLE: max 10 days (split: 5 old station + 5 new, or all 10 at new)
-export const TLE_MAX_DAYS = 10;
-
-// TLA phases
-export const TLA_PHASE1_DAYS = 30;   // days 1-30: 90% of per diem
-export const TLA_PHASE2_DAYS = 30;   // days 31-60: 65% of per diem
-export const TLA_MAX_DAYS    = 60;
-export const TLA_PHASE1_PCT  = 0.90;
-export const TLA_PHASE2_PCT  = 0.65;
+export const TLA_MAX_DAYS = 60;
 
 export interface TLEInputs {
   mode: MoveMode;
-  perDiem: number;       // full locality per diem $/day
+  perDiem: number; // full locality per diem $/day (lodging + M&IE)
   hasSpouse: boolean;
-  childAges: number[];   // each child's age in years
+  childAges: number[]; // each child's age in years
   days: number;
 }
 
-export interface DailyBreakdown {
-  member: number;
-  spouse: number;
-  children: number;      // combined total for all children
-  total: number;
-}
-
 export interface TLEResult {
-  dailyPhase1: DailyBreakdown;
-  dailyPhase2: DailyBreakdown | null;   // only for TLA
+  familyPct: number; // total % of locality per diem this family is authorized
+  dailyRaw: number; // perDiem * familyPct, before the TLE $290 cap
+  dailyTotal: number; // daily amount actually paid (after cap, if any)
+  capped: boolean; // true if the $290/day cap reduced the amount
   totalEntitlement: number;
-  phase1Days: number;
-  phase2Days: number;
+  days: number; // days actually paid (capped to maxDays)
   maxDays: number;
-  childFactorSum: number;   // sum of per-child factors (for display)
   childrenUnder12: number;
   children12Plus: number;
 }
 
-function childFactorSum(ages: number[]): number {
-  return ages.reduce(
-    (sum, age) => sum + (age < 12 ? CHILD_FACTOR_UNDER12 : CHILD_FACTOR_12PLUS),
+// The first dependent (spouse if present, otherwise the first child) is absorbed into the
+// flat 100% baseline and does not add its own percentage. Every dependent after that adds
+// its own age-based increment. This matches the "member + 1 dependent = 100%" JTR rule.
+export function familyPercentage(hasSpouse: boolean, childAges: number[]): number {
+  const dependents: Array<'adult' | '12plus' | 'under12'> = [];
+  if (hasSpouse) dependents.push('adult');
+  for (const age of childAges) dependents.push(age >= 12 ? '12plus' : 'under12');
+
+  if (dependents.length === 0) return MEMBER_ALONE_PCT;
+
+  const additional = dependents.slice(1);
+  const extra = additional.reduce(
+    (sum, d) => sum + (d === 'under12' ? ADDITIONAL_DEPENDENT_UNDER12_PCT : ADDITIONAL_DEPENDENT_12PLUS_PCT),
     0,
   );
-}
-
-function buildDaily(
-  perDiem: number,
-  phasePct: number,
-  hasSpouse: boolean,
-  childAges: number[],
-): DailyBreakdown {
-  const base     = perDiem * phasePct;
-  const member   = base * MEMBER_FACTOR;
-  const spouse   = hasSpouse ? base * SPOUSE_FACTOR : 0;
-  const children = base * childFactorSum(childAges);
-  return { member, spouse, children, total: member + spouse + children };
+  return FIRST_DEPENDENT_PCT + extra;
 }
 
 export function calcTLE(inputs: TLEInputs): TLEResult {
   const { mode, perDiem, hasSpouse, childAges, days } = inputs;
 
-  const under12  = childAges.filter((a) => a < 12).length;
-  const plus12   = childAges.filter((a) => a >= 12).length;
-  const cfSum    = childFactorSum(childAges);
+  const under12 = childAges.filter((a) => a < 12).length;
+  const plus12 = childAges.filter((a) => a >= 12).length;
+  const familyPct = familyPercentage(hasSpouse, childAges);
 
-  if (mode === 'tle') {
-    const capped = Math.min(days, TLE_MAX_DAYS);
-    const daily  = buildDaily(perDiem, 1.0, hasSpouse, childAges);
-    return {
-      dailyPhase1: daily,
-      dailyPhase2: null,
-      totalEntitlement: daily.total * capped,
-      phase1Days: capped,
-      phase2Days: 0,
-      maxDays: TLE_MAX_DAYS,
-      childFactorSum: cfSum,
-      childrenUnder12: under12,
-      children12Plus: plus12,
-    };
-  }
+  const maxDays = mode === 'tle' ? TLE_MAX_DAYS : TLA_MAX_DAYS;
+  const cappedDays = Math.min(days, maxDays);
 
-  // TLA — two phases
-  const cappedDays = Math.min(days, TLA_MAX_DAYS);
-  const phase1Days = Math.min(cappedDays, TLA_PHASE1_DAYS);
-  const phase2Days = Math.max(0, cappedDays - TLA_PHASE1_DAYS);
-
-  const daily1 = buildDaily(perDiem, TLA_PHASE1_PCT, hasSpouse, childAges);
-  const daily2 = buildDaily(perDiem, TLA_PHASE2_PCT, hasSpouse, childAges);
-
-  const total = daily1.total * phase1Days + daily2.total * phase2Days;
+  const dailyRaw = perDiem * familyPct;
+  const capped = mode === 'tle' && dailyRaw > TLE_DAILY_CAP;
+  const dailyTotal = capped ? TLE_DAILY_CAP : dailyRaw;
 
   return {
-    dailyPhase1: daily1,
-    dailyPhase2: phase2Days > 0 ? daily2 : null,
-    totalEntitlement: total,
-    phase1Days,
-    phase2Days,
-    maxDays: TLA_MAX_DAYS,
-    childFactorSum: cfSum,
+    familyPct,
+    dailyRaw,
+    dailyTotal,
+    capped,
+    totalEntitlement: dailyTotal * cappedDays,
+    days: cappedDays,
+    maxDays,
     childrenUnder12: under12,
     children12Plus: plus12,
   };

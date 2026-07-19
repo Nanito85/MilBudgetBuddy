@@ -35,9 +35,14 @@ import {
   FINANCIAL_GOAL_ICONS,
   FINANCIAL_GOAL_LABELS,
   FinancialGoal,
+  HOUSING_STATUS_DESCRIPTIONS,
+  HOUSING_STATUS_LABELS,
+  HousingStatus,
   MilitaryBranch,
   ServiceStatus,
 } from '@/types/user.types';
+
+const HOUSING_STATUS_ORDER: HousingStatus[] = ['off_base', 'barracks', 'on_base_family_housing'];
 import { RankVariant, getDualVariants } from '@/data/rank-insignia';
 import { getDefaultQuickAccessIds } from '@/data/quick-actions';
 import { Installation } from '@/data/installations';
@@ -583,11 +588,12 @@ function CivilianServiceInfoStep({
 function LocationFamilyStep({
   onNext,
 }: {
-  onNext: (mhaZip: string, installName: string, hasSpouse: boolean, numChildren: number, stateCode: string) => void;
+  onNext: (mhaZip: string, installName: string, hasSpouse: boolean, numChildren: number, stateCode: string, housingStatus: HousingStatus) => void;
 }) {
   const [station, setStation]         = useState<Installation | null>(null);
   const [hasSpouse, setHasSpouse]     = useState(false);
   const [numChildren, setNumChildren] = useState(0);
+  const [housingStatus, setHousingStatus] = useState<HousingStatus>('off_base');
   const [stateCode, setStateCode]     = useState('');
   const [stateQuery, setStateQuery]   = useState('');
   const [showStateList, setShowStateList] = useState(false);
@@ -680,13 +686,40 @@ function LocationFamilyStep({
         <NumberStepper label="Dependent children" value={numChildren} min={0} max={8} onChange={setNumChildren} />
       </View>
 
+      <View style={styles.fieldBlock}>
+        <ThemedText type="smallBold" themeColor="textSecondary" style={styles.fieldLabel}>CURRENT HOUSING</ThemedText>
+        <ThemedText type="small" themeColor="textSecondary" style={{ lineHeight: 18 }}>
+          This determines your actual BAH entitlement — full BAH, Partial BAH, or none.
+        </ThemedText>
+        <View style={{ gap: Spacing.one }}>
+          {HOUSING_STATUS_ORDER.map((hs) => (
+            <Pressable
+              key={hs}
+              onPress={() => setHousingStatus(hs)}
+              style={[styles.housingOption, housingStatus === hs && styles.housingOptionActive]}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: Spacing.two }}>
+                <ThemedText style={{ fontSize: 16, color: housingStatus === hs ? Brand.primary : tc.textSecondary }}>
+                  {housingStatus === hs ? '●' : '○'}
+                </ThemedText>
+                <View style={{ flex: 1 }}>
+                  <ThemedText style={styles.housingLabel}>{HOUSING_STATUS_LABELS[hs]}</ThemedText>
+                  <ThemedText type="small" themeColor="textSecondary" style={{ lineHeight: 16 }}>
+                    {HOUSING_STATUS_DESCRIPTIONS[hs]}
+                  </ThemedText>
+                </View>
+              </View>
+            </Pressable>
+          ))}
+        </View>
+      </View>
+
       <View style={styles.btnGroup}>
         <Pressable
-          onPress={() => onNext(station?.mhaZip ?? '', station?.name ?? '', hasSpouse, numChildren, stateCode)}
+          onPress={() => onNext(station?.mhaZip ?? '', station?.name ?? '', hasSpouse, numChildren, stateCode, housingStatus)}
           style={({ pressed }) => [styles.primaryBtn, pressed && styles.btnPressed]}>
           <ThemedText style={styles.primaryBtnText}>Continue  →</ThemedText>
         </Pressable>
-        <Pressable onPress={() => onNext('', '', false, 0, '')} hitSlop={8} style={styles.skipBtn}>
+        <Pressable onPress={() => onNext('', '', false, 0, '', 'off_base')} hitSlop={8} style={styles.skipBtn}>
           <ThemedText type="small" themeColor="textSecondary">Skip for now</ThemedText>
         </Pressable>
       </View>
@@ -867,8 +900,9 @@ export function OnboardingFlow() {
     hasSpouse: boolean,
     numChildren: number,
     stateCode: string,
+    housingStatus: HousingStatus,
   ) => {
-    setLocationFamily(mhaZip, hasSpouse, numChildren);
+    setLocationFamily(mhaZip, hasSpouse, numChildren, housingStatus);
     if (installName) useUserStore.setState((s) => ({ ...s, installationName: installName }));
     if (stateCode) setStateResidence(stateCode);
     setStep(6);
@@ -975,6 +1009,16 @@ const styles = StyleSheet.create({
   },
   dateValue: { fontSize: 15, fontWeight: '600' },
   datePlaceholder: { color: 'rgba(128,128,128,0.45)', fontWeight: '500' },
+
+  housingOption: {
+    borderRadius: Spacing.two,
+    borderWidth: 1,
+    borderColor: 'rgba(128,128,128,0.2)',
+    backgroundColor: 'rgba(128,128,128,0.06)',
+    padding: Spacing.two,
+  },
+  housingOptionActive: { borderColor: Brand.primary, backgroundColor: `${Brand.primary}12` },
+  housingLabel: { fontSize: 14, fontWeight: '600' },
   dateIcon: { fontSize: 18 },
   dateHint: { color: Brand.tactical, fontSize: 11, marginTop: -Spacing.one },
 

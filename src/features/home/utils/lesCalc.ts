@@ -1,8 +1,8 @@
-import { getBahRate } from '@/data/bah-rates';
+import { BAH_PARTIAL, getBahRate } from '@/data/bah-rates';
 import { getBAS } from '@/data/bas-rates';
 import { getBasicPay } from '@/data/basic-pay-rates';
 import { getStateTaxRate } from '@/data/state-tax';
-import { LESOverrides } from '@/types/user.types';
+import { HousingStatus, LESOverrides } from '@/types/user.types';
 
 // SGLI: $0.065/month per $1,000 × $500,000 coverage = $32.50 + $1.00 TSGLI = $33.50
 // Source: DFAS SGLI rates — dfas.mil/MilitaryMembers/payentitlements/SGLI
@@ -80,6 +80,7 @@ export interface LESInputs {
   yos: number;
   mhaZip: string | undefined;
   hasSpouse: boolean;
+  housingStatus?: HousingStatus; // defaults to 'off_base' (full BAH) if omitted
   specialPaysTotal: number;
   tspContribPct: number;   // Traditional TSP %
   rothTspPct?: number;     // Roth TSP % (optional, defaults to 0)
@@ -89,11 +90,20 @@ export interface LESInputs {
   overrides?: LESOverrides;
 }
 
+// Full BAH only applies off base. Barracks residents (no dependents, government
+// single-type quarters) get flat Partial BAH; on-base family housing residents
+// get no BAH — housing is provided in-kind. Per JTR Ch. 10.
+function resolveBah(mhaZip: string | undefined, payGrade: string, hasSpouse: boolean, housingStatus: HousingStatus): number {
+  if (housingStatus === 'on_base_family_housing') return 0;
+  if (housingStatus === 'barracks') return BAH_PARTIAL;
+  return mhaZip ? (getBahRate(mhaZip, payGrade as any, hasSpouse) ?? 0) : 0;
+}
+
 export function calcLES(inputs: LESInputs): LESBreakdown {
-  const { payGrade, yos, mhaZip, hasSpouse, specialPaysTotal, tspContribPct, rothTspPct = 0, hasDentalFamily, sglOptOut, stateResidence, overrides } = inputs;
+  const { payGrade, yos, mhaZip, hasSpouse, housingStatus = 'off_base', specialPaysTotal, tspContribPct, rothTspPct = 0, hasDentalFamily, sglOptOut, stateResidence, overrides } = inputs;
 
   const calcBasePay = getBasicPay(payGrade as any, yos);
-  const calcBah = mhaZip ? (getBahRate(mhaZip, payGrade as any, hasSpouse) ?? 0) : 0;
+  const calcBah = resolveBah(mhaZip, payGrade, hasSpouse, housingStatus);
   const calcBas = getBAS(payGrade);
 
   const basePay = overrides?.basePayOverride ?? calcBasePay;

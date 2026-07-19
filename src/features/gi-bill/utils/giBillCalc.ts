@@ -1,16 +1,16 @@
 /**
  * Post-9/11 GI Bill (Chapter 33) calculator.
- * Rates: AY2025–2026. Source: benefits.va.gov/gibill.
- * Tuition cap: $28,937.09/year (private/foreign schools, AY2025-26).
- * Online BAH rate: $1,043/mo (AY2025-26).
- * Book stipend: up to $1,000/year (pro-rated by enrollment).
- * BAH = E5-w/dependent rate for school's location.
+ * Rates: AY2026–2027 (effective August 1, 2026 – July 31, 2027). Source: va.gov/education/benefit-rates.
+ * Tuition cap: $30,908.34/year (private/foreign schools, AY2026-27) — up 3.3% from AY2025-26's $29,920.95.
+ * Online BAH rate: $1,261.00/mo (AY2026-27, all-online enrollment).
+ * Book stipend: up to $1,000/year (pro-rated by enrollment) — stable, non-indexed.
+ * BAH = E5-w/dependent rate for school's location (in-person/hybrid enrollment).
  */
 
-export const GI_BILL_TUITION_CAP_PRIVATE = 28_937.09;   // per academic year
-export const GI_BILL_BAH_ONLINE = 1_043;                 // per month, all online
+export const GI_BILL_TUITION_CAP_PRIVATE = 30_908.34;    // per academic year
+export const GI_BILL_BAH_ONLINE = 1_261;                 // per month, all online
 export const GI_BILL_BOOK_ANNUAL = 1_000;                // max per academic year
-export const GI_BILL_DATA_YEAR = '2025–2026';
+export const GI_BILL_DATA_YEAR = '2026–2027';
 export const GI_BILL_TOTAL_MONTHS = 36;
 
 // Eligibility tier based on qualifying active duty service

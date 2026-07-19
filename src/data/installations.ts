@@ -71,7 +71,6 @@ export const INSTALLATIONS: Installation[] = [
   { id: 'nas_corpus_christi',  name: 'NAS Corpus Christi',        city: 'Corpus Christi',     state: 'TX', mhaZip: '78419', oconus: false, branch: 'Navy' },
   { id: 'subase_new_london',   name: 'Sub Base New London',       city: 'Groton',             state: 'CT', mhaZip: '06340', oconus: false, branch: 'Navy' },
   { id: 'subase_kings_bay',    name: 'Sub Base Kings Bay',        city: 'Kings Bay',          state: 'GA', mhaZip: '31547', oconus: false, branch: 'Navy' },
-  { id: 'nb_guam',             name: 'Naval Base Guam',           city: 'Apra Harbor',        state: 'GU', mhaZip: '96910', oconus: false, branch: 'Navy' },
   { id: 'usna',                name: 'US Naval Academy',          city: 'Annapolis',          state: 'MD', mhaZip: '21402', oconus: false, branch: 'Navy' },
   { id: 'nas_joint_reserve',   name: 'JRB Fort Worth (NAS)',      city: 'Fort Worth',         state: 'TX', mhaZip: '76127', oconus: false, branch: 'Navy' },
   { id: 'nws_earle',           name: 'Naval Weapons Station Earle', city: 'Colts Neck',       state: 'NJ', mhaZip: '07722', oconus: false, branch: 'Navy' },

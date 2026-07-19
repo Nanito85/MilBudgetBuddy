@@ -17,9 +17,15 @@ import { TacticalCard } from '@/components/TacticalCard';
 import { ThemedText } from '@/components/themed-text';
 import { Brand, Fonts, Spacing } from '@/constants/theme';
 import { LESBreakdown, fmtPay } from '@/features/home/utils/lesCalc';
-import { LESLineItem, LESOverrides } from '@/types/user.types';
+import { LESLineItem, LESOverrides, SPECIAL_PAY_LABELS, SPECIAL_PAY_RANGES, SpecialPay, SpecialPayType } from '@/types/user.types';
 import { useUserStore } from '@/store/user.store';
 import { useThemeColors } from '@/hooks/use-theme';
+
+const SPECIAL_PAY_TYPES = Object.keys(SPECIAL_PAY_LABELS) as SpecialPayType[];
+
+function makeId() {
+  return `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
 
 // ── Row helper ────────────────────────────────────────────────────────────────
 
@@ -69,15 +75,19 @@ const rowStyles = StyleSheet.create({
 // ── LES Override Modal ────────────────────────────────────────────────────────
 
 function OverrideModal({
-  visible,
   overrides,
   breakdown,
+  specialPays,
+  onAddSpecialPay,
+  onRemoveSpecialPay,
   onSave,
   onClose,
 }: {
-  visible: boolean;
   overrides: LESOverrides;
   breakdown: LESBreakdown;
+  specialPays: SpecialPay[];
+  onAddSpecialPay: (type: SpecialPayType, amount: number) => void;
+  onRemoveSpecialPay: (id: string) => void;
   onSave: (o: LESOverrides) => void;
   onClose: () => void;
 }) {
@@ -101,6 +111,13 @@ function OverrideModal({
   const [newDeductLabel,  setNewDeductLabel]  = useState('');
   const [newDeductAmt,    setNewDeductAmt]    = useState('');
 
+  const [selectedPayType, setSelectedPayType] = useState<SpecialPayType>('language');
+  const [newPayAmt,       setNewPayAmt]       = useState('');
+
+  function parseAmount(raw: string): number {
+    return parseFloat(raw.replace(',', '.').trim());
+  }
+
   function save() {
     const bah = parseFloat(bahInput);
     const bas = parseFloat(basInput);
@@ -120,17 +137,17 @@ function OverrideModal({
   }
 
   function addIncome() {
-    const amt = parseFloat(newIncomeAmt);
+    const amt = parseAmount(newIncomeAmt);
     if (!newIncomeLabel.trim() || isNaN(amt) || amt <= 0) return;
-    setExtraIncome([...extraIncome, { id: `${Date.now()}`, label: newIncomeLabel.trim(), amount: amt }]);
+    setExtraIncome([...extraIncome, { id: makeId(), label: newIncomeLabel.trim(), amount: amt }]);
     setNewIncomeLabel(''); setNewIncomeAmt('');
     Keyboard.dismiss();
   }
 
   function addDeduction() {
-    const amt = parseFloat(newDeductAmt);
+    const amt = parseAmount(newDeductAmt);
     if (!newDeductLabel.trim() || isNaN(amt) || amt <= 0) return;
-    setExtraDeductions([...extraDeductions, { id: `${Date.now()}`, label: newDeductLabel.trim(), amount: amt }]);
+    setExtraDeductions([...extraDeductions, { id: makeId(), label: newDeductLabel.trim(), amount: amt }]);
     setNewDeductLabel(''); setNewDeductAmt('');
     Keyboard.dismiss();
   }
@@ -140,6 +157,14 @@ function OverrideModal({
   }
   function removeDeduction(id: string) {
     setExtraDeductions(extraDeductions.filter(i => i.id !== id));
+  }
+
+  function addSpecialPay() {
+    const amt = parseAmount(newPayAmt);
+    if (isNaN(amt) || amt <= 0) return;
+    onAddSpecialPay(selectedPayType, amt);
+    setNewPayAmt('');
+    Keyboard.dismiss();
   }
 
   function clearAll() {
@@ -153,7 +178,7 @@ function OverrideModal({
   }
 
   return (
-    <Modal visible={visible} animationType="slide" presentationStyle="pageSheet">
+    <Modal visible animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
       <KeyboardAvoidingView style={{ flex: 1, backgroundColor: tc.background }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <SafeAreaView style={{ flex: 1 }}>
           {/* Header */}
@@ -224,6 +249,61 @@ function OverrideModal({
                 keyboardType="decimal-pad"
               />
               {basInput ? <Pressable onPress={() => setBasInput('')}><ThemedText style={[mStyles.clearX, { color: tc.textMuted }]}>✕</ThemedText></Pressable> : null}
+            </View>
+
+            {/* ── Special Pay ── */}
+            <ThemedText style={mStyles.sectionLabel}>SPECIAL PAY</ThemedText>
+            <ThemedText style={[mStyles.hint, { color: tc.textMuted }]}>
+              Language pay, flight pay, jump pay, hazard duty, sea pay, hostile fire, and more. These
+              show up in your Profile too — either screen edits the same list.
+            </ThemedText>
+
+            {specialPays.map(pay => (
+              <View key={pay.id} style={[mStyles.lineItem, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
+                <View style={{ flex: 1 }}>
+                  <ThemedText style={[mStyles.lineItemLabel, { color: tc.textPrimary }]}>
+                    {pay.customLabel ?? SPECIAL_PAY_LABELS[pay.type]}
+                  </ThemedText>
+                  <ThemedText style={[mStyles.lineItemAmt, { color: Brand.tactical }]}>${pay.monthlyAmount.toFixed(2)}/mo</ThemedText>
+                </View>
+                <Pressable onPress={() => onRemoveSpecialPay(pay.id)} style={mStyles.removeBtn}>
+                  <ThemedText style={mStyles.removeTxt}>✕</ThemedText>
+                </Pressable>
+              </View>
+            ))}
+
+            <View style={mStyles.addBlock}>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={mStyles.payTypeRow}>
+                {SPECIAL_PAY_TYPES.map(type => (
+                  <Pressable
+                    key={type}
+                    onPress={() => setSelectedPayType(type)}
+                    style={[mStyles.payTypeChip, { borderColor: tc.borderColor }, selectedPayType === type && mStyles.payTypeChipActive]}>
+                    <ThemedText style={[mStyles.payTypeChipTxt, { color: tc.textHint }, selectedPayType === type && mStyles.payTypeChipTxtActive]}>
+                      {SPECIAL_PAY_LABELS[type]}
+                    </ThemedText>
+                  </Pressable>
+                ))}
+              </ScrollView>
+              <ThemedText style={[mStyles.hint, { color: tc.textMuted, marginTop: 0 }]}>
+                Typical: {SPECIAL_PAY_RANGES[selectedPayType]}
+              </ThemedText>
+              <View style={mStyles.addAmtRow}>
+                <ThemedText style={[mStyles.dollar, { color: tc.textHint }]}>$</ThemedText>
+                <TextInput
+                  style={[mStyles.input, { flex: 1, color: tc.textPrimary }]}
+                  value={newPayAmt}
+                  onChangeText={setNewPayAmt}
+                  placeholder="Monthly amount"
+                  placeholderTextColor={tc.textMuted}
+                  keyboardType="decimal-pad"
+                />
+                <Pressable
+                  onPress={addSpecialPay}
+                  style={[mStyles.addBtn, { backgroundColor: Brand.tactical }]}>
+                  <ThemedText style={mStyles.addBtnTxt}>ADD</ThemedText>
+                </Pressable>
+              </View>
             </View>
 
             {/* ── Extra Income ── */}
@@ -419,6 +499,14 @@ const mStyles = StyleSheet.create({
   },
   removeTxt: { color: Brand.classified, fontSize: 13, fontWeight: '700' },
 
+  payTypeRow: { gap: Spacing.one, paddingBottom: 2 },
+  payTypeChip: {
+    paddingHorizontal: Spacing.two, paddingVertical: 6, borderRadius: 4, borderWidth: 1,
+  },
+  payTypeChipActive: { backgroundColor: Brand.tactical + '20', borderColor: Brand.tactical },
+  payTypeChipTxt: { fontSize: 11, fontWeight: '700' },
+  payTypeChipTxtActive: { color: Brand.tactical },
+
   addBlock: { gap: Spacing.one + 2 },
   addLabelInput: {
     borderWidth: 1,
@@ -470,6 +558,18 @@ export function PaySummaryCard({ breakdown }: Props) {
   const setLesOverrides     = useUserStore((s) => s.setLesOverrides);
   const spouseMonthlyIncome = useUserStore((s) => s.spouseMonthlyIncome);
   const setSpouseMonthlyIncome = useUserStore((s) => s.setSpouseMonthlyIncome);
+  const housingStatus       = useUserStore((s) => s.housingStatus);
+  const specialPays         = useUserStore((s) => s.specialPays);
+  const addSpecialPay       = useUserStore((s) => s.addSpecialPay);
+  const removeSpecialPay    = useUserStore((s) => s.removeSpecialPay);
+
+  const bahLabel = breakdown.bahOverridden
+    ? 'BAH'
+    : housingStatus === 'barracks'
+      ? 'BAH (PARTIAL — BARRACKS)'
+      : housingStatus === 'on_base_family_housing'
+        ? 'BAH (ON-BASE HOUSING)'
+        : 'BAH';
 
   const [spouseInput, setSpouseInput] = useState(
     spouseMonthlyIncome > 0 ? String(spouseMonthlyIncome) : '',
@@ -581,7 +681,7 @@ export function PaySummaryCard({ breakdown }: Props) {
 
           <ThemedText type="label" style={styles.sectionHead}>// ENTITLEMENTS (MONTHLY)</ThemedText>
           <Row label="BASE PAY"     value={fmtPay(breakdown.basePay)}    indent positive overridden={breakdown.basePayOverridden} />
-          <Row label="BAH"          value={fmtPay(breakdown.bah)}         indent positive overridden={breakdown.bahOverridden} />
+          <Row label={bahLabel}     value={fmtPay(breakdown.bah)}         indent positive overridden={breakdown.bahOverridden} />
           <Row label="BAS"          value={fmtPay(breakdown.bas)}         indent positive overridden={breakdown.basOverridden} />
           {breakdown.specialPays > 0 && (
             <Row label="SPECIAL PAYS" value={fmtPay(breakdown.specialPays)} indent positive />
@@ -672,13 +772,15 @@ export function PaySummaryCard({ breakdown }: Props) {
         </View>
       )}
 
-      <OverrideModal
-        visible={showEdit}
+      {showEdit && <OverrideModal
         overrides={lesOverrides}
         breakdown={breakdown}
+        specialPays={specialPays}
+        onAddSpecialPay={addSpecialPay}
+        onRemoveSpecialPay={removeSpecialPay}
         onSave={setLesOverrides}
         onClose={() => setShowEdit(false)}
-      />
+      />}
     </TacticalCard>
   );
 }

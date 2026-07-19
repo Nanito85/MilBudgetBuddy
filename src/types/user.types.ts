@@ -80,6 +80,25 @@ export type { RankVariant };
 
 export type ServiceStatus = 'active' | 'reserve' | 'retired' | 'civilian';
 
+// Where the member currently lives — determines their actual BAH entitlement.
+// 'off_base'              → full BAH (with or without dependents) based on rank/MHA
+// 'barracks'               → Partial BAH only (flat $50.10/mo); government single-type
+//                            quarters, no dependents
+// 'on_base_family_housing' → no BAH; housing is provided in-kind
+export type HousingStatus = 'off_base' | 'barracks' | 'on_base_family_housing';
+
+export const HOUSING_STATUS_LABELS: Record<HousingStatus, string> = {
+  off_base: 'Off base (renting or own home)',
+  barracks: 'Barracks / single government quarters',
+  on_base_family_housing: 'On-base family housing (government quarters)',
+};
+
+export const HOUSING_STATUS_DESCRIPTIONS: Record<HousingStatus, string> = {
+  off_base: 'You receive full BAH based on your rank, dependency status, and duty station.',
+  barracks: 'You receive Partial BAH only — a flat $50.10/month, regardless of rank or location.',
+  on_base_family_housing: 'You receive no BAH — housing is provided in place of the allowance.',
+};
+
 export type FinancialGoal =
   | 'save_money'
   | 'pay_debt'
@@ -128,6 +147,7 @@ export interface UserPreferences {
   installationName?: string;
   hasSpouse: boolean;
   numChildren: number;
+  housingStatus: HousingStatus;
   // Service dates
   dateOfEnlistment?: string; // YYYY-MM-DD
   dateOfRank?: string;       // YYYY-MM-DD

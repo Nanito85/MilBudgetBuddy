@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 
 import { PayGrade } from '@/data/bah-rates';
-import { FinancialGoal, LESOverrides, MilitaryBranch, RankVariant, ServiceStatus, SpecialPay, SpecialPayType, UserPreferences } from '@/types/user.types';
+import { FinancialGoal, HousingStatus, LESOverrides, MilitaryBranch, RankVariant, ServiceStatus, SpecialPay, SpecialPayType, UserPreferences } from '@/types/user.types';
 
 const STORAGE_KEY = 'mbb_user_prefs';
 
@@ -27,6 +27,7 @@ const DEFAULTS: UserPreferences = {
   installationName: undefined,
   hasSpouse: false,
   numChildren: 0,
+  housingStatus: 'off_base',
   dateOfEnlistment: undefined,
   dateOfRank: undefined,
   gsGrade: undefined,
@@ -57,9 +58,9 @@ interface UserState extends UserPreferences {
   setHasSeenTutorial: () => void;
   setServiceInfo: (payGrade: PayGrade, lastName: string, nickname: string, yos: number, dateOfEnlistment?: string, dateOfRank?: string) => void;
   setGSInfo: (gsGrade: number, gsStep: number, lastName: string, nickname: string, dateOfEnlistment?: string) => void;
-  setLocationFamily: (mhaZip: string, hasSpouse: boolean, numChildren: number) => void;
+  setLocationFamily: (mhaZip: string, hasSpouse: boolean, numChildren: number, housingStatus: HousingStatus) => void;
   setPaySetup: (tspContribPct: number, rothTspPct: number, hasDentalFamily: boolean, sglOptOut: boolean) => void;
-  setPersonalDetails: (params: { payGrade: PayGrade; lastName: string; nickname: string; yos: number; mhaZip: string; installationName: string; hasSpouse: boolean; numChildren: number; stateResidence: string; dateOfEnlistment: string; dateOfRank: string; rankVariant: RankVariant }) => void;
+  setPersonalDetails: (params: { payGrade: PayGrade; lastName: string; nickname: string; yos: number; mhaZip: string; installationName: string; hasSpouse: boolean; numChildren: number; housingStatus: HousingStatus; stateResidence: string; dateOfEnlistment: string; dateOfRank: string; rankVariant: RankVariant }) => void;
   setPayDetails: (params: { tspContribPct: number; rothTspPct: number; hasDentalFamily: boolean; sglOptOut: boolean; spouseMonthlyIncome: number; bahOverride?: number; basOverride?: number; basePayOverride?: number }) => void;
   setStateResidence: (stateCode: string) => void;
   addSpecialPay: (type: SpecialPayType, monthlyAmount: number, customLabel?: string) => void;
@@ -99,6 +100,7 @@ function snapshot(get: () => UserState): UserPreferences {
     installationName: s.installationName,
     hasSpouse: s.hasSpouse,
     numChildren: s.numChildren,
+    housingStatus: s.housingStatus,
     dateOfEnlistment: s.dateOfEnlistment,
     dateOfRank: s.dateOfRank,
     tspContribPct: s.tspContribPct,
@@ -186,9 +188,9 @@ export const useUserStore = create<UserState>((set, get) => ({
     save({ ...snapshot(get), gsGrade, gsStep, lastName, nickname, dateOfEnlistment });
   },
 
-  setLocationFamily: (mhaZip, hasSpouse, numChildren) => {
-    set({ mhaZip, hasSpouse, numChildren });
-    save({ ...snapshot(get), mhaZip, hasSpouse, numChildren });
+  setLocationFamily: (mhaZip, hasSpouse, numChildren, housingStatus) => {
+    set({ mhaZip, hasSpouse, numChildren, housingStatus });
+    save({ ...snapshot(get), mhaZip, hasSpouse, numChildren, housingStatus });
   },
 
   setPaySetup: (tspContribPct, rothTspPct, hasDentalFamily, sglOptOut) => {
@@ -249,8 +251,8 @@ export const useUserStore = create<UserState>((set, get) => ({
     save({ ...snapshot(get), lesOverrides });
   },
 
-  setPersonalDetails: ({ payGrade, lastName, nickname, yos, mhaZip, installationName, hasSpouse, numChildren, stateResidence, dateOfEnlistment, dateOfRank, rankVariant }) => {
-    const update = { payGrade, lastName, nickname, yos, mhaZip, installationName, hasSpouse, numChildren, stateResidence, dateOfEnlistment, dateOfRank, rankVariant };
+  setPersonalDetails: ({ payGrade, lastName, nickname, yos, mhaZip, installationName, hasSpouse, numChildren, housingStatus, stateResidence, dateOfEnlistment, dateOfRank, rankVariant }) => {
+    const update = { payGrade, lastName, nickname, yos, mhaZip, installationName, hasSpouse, numChildren, housingStatus, stateResidence, dateOfEnlistment, dateOfRank, rankVariant };
     set(update);
     save({ ...snapshot(get), ...update });
   },
