@@ -369,7 +369,7 @@ export default function KidsScreen() {
           </View>
         ) : (
           <View style={styles.emptyState}>
-            <Image source={require('../../assets/images/icon.png')} style={styles.emptyIcon} />
+            <Image source={require('../../../assets/images/icon.png')} style={styles.emptyIcon} />
             <ThemedText style={[styles.emptyTitle, { color: tc.textSecondary }]}>NO CADETS ENROLLED</ThemedText>
             <ThemedText type="label" style={[styles.emptyBody, { color: tc.textSecondary }]}>
               Add a child profile to give them their own goals, chores, and savings missions.

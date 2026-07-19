@@ -1,9 +1,6 @@
-import { Ionicons } from '@expo/vector-icons';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { Tabs, useRouter } from 'expo-router';
+import { Stack } from 'expo-router';
 import React, { useEffect } from 'react';
-import { Platform } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { AnimatedSplashOverlay } from '@/components/animated-icon';
@@ -12,7 +9,7 @@ import { KidModeScreen } from '@/components/KidModeScreen';
 import { OfflineBanner } from '@/components/OfflineBanner';
 import { OnboardingFlow } from '@/features/profile/components/OnboardingFlow';
 import { Brand } from '@/constants/theme';
-import { useAppTheme, useThemeColors } from '@/hooks/use-theme';
+import { useAppTheme } from '@/hooks/use-theme';
 import { useAuthStore } from '@/store/auth.store';
 import { useEntitlementStore } from '@/store/entitlement.store';
 import { useKidModeStore } from '@/store/kid-mode.store';
@@ -29,21 +26,12 @@ import { startAnalytics, stopAnalytics, trackEvent } from '@/services/analytics'
 // Init Sentry at module load time — before any component renders
 initSentry();
 
-export default function TabLayout() {
-  const router = useRouter();
-  const insets = useSafeAreaInsets();
+export default function RootLayout() {
   const appTheme = useAppTheme();
-  const tc = useThemeColors();
   const hydrated = useUserStore((s) => s.hydrated);
   const onboarded = useUserStore((s) => s.onboarded);
   const kidModeActive = useKidModeStore((s) => s.active);
   const { user, initialized, init: initAuth } = useAuthStore();
-
-  // Setting an explicit tabBarStyle.height disables React Navigation's automatic
-  // safe-area padding, so it must be added back by hand. This matters most on
-  // Android with 3-button navigation (vs. gesture nav), whose system bar
-  // otherwise overlaps the tab bar and makes its buttons untappable.
-  const tabBarHeight = 64 + insets.bottom;
 
   // Hydrate local stores on mount + initialize Firebase auth listener
   useEffect(() => {
@@ -108,125 +96,62 @@ export default function TabLayout() {
     <ThemeProvider value={appTheme === 'light' ? DefaultTheme : DarkTheme}>
       <AnimatedSplashOverlay />
       <DisclaimerModal />
-      <Tabs
-        screenOptions={{
-          tabBarActiveTintColor: Brand.accent,
-          tabBarInactiveTintColor: tc.textMuted,
-          tabBarStyle: {
-            backgroundColor: tc.surface,
-            borderTopColor: tc.borderColor,
-            borderTopWidth: 1,
-            height: tabBarHeight,
-            paddingBottom: 8 + insets.bottom,
-            paddingTop: 6,
-          },
-          tabBarLabelStyle: {
-            fontFamily: 'monospace',
-            fontSize: 10,
-            fontWeight: '700',
-            letterSpacing: 1,
-          },
-          headerShown: false,
-        }}>
-        {/* ── Tab screens ───────────────────────────── */}
-        <Tabs.Screen
-          name="index"
-          options={{
-            title: 'HOME',
-            tabBarIcon: ({ color, size }) => (
-              <Ionicons name="shield-checkmark-outline" size={size} color={color} />
-            ),
-          }}
-        />
-        <Tabs.Screen
-          name="budget"
-          options={{
-            title: 'BUDGET',
-            tabBarIcon: ({ color, size }) => (
-              <Ionicons name="wallet-outline" size={size} color={color} />
-            ),
-          }}
-        />
-        <Tabs.Screen
-          name="browse"
-          options={{
-            title: 'KIDS',
-            tabBarIcon: ({ color, size }) => (
-              <Ionicons name="people-outline" size={size} color={color} />
-            ),
-          }}
-        />
-        <Tabs.Screen
-          name="tools"
-          options={{
-            title: 'TOOLS',
-            tabBarIcon: ({ color, size }) => (
-              <Ionicons name="apps-outline" size={size} color={color} />
-            ),
-          }}
-        />
-        <Tabs.Screen
-          name="settings"
-          options={{
-            title: 'SETTINGS',
-            tabBarIcon: ({ color, size }) => (
-              <Ionicons name="settings-outline" size={size} color={color} />
-            ),
-          }}
-        />
-        {/* ── Non-tab screens (hidden from tab bar) ──── */}
-        <Tabs.Screen name="auth/sign-in"           options={{ href: null }} />
-        <Tabs.Screen name="auth/sign-up"           options={{ href: null }} />
-        <Tabs.Screen name="chat"                   options={{ href: null }} />
-        <Tabs.Screen name="category/[slug]"        options={{ href: null }} />
-        <Tabs.Screen name="kids/[id]"              options={{ href: null }} />
-        <Tabs.Screen name="tip/[id]"               options={{ href: null }} />
-        <Tabs.Screen name="credit-score"           options={{ href: null }} />
-        <Tabs.Screen name="dity-calculator"        options={{ href: null }} />
-        <Tabs.Screen name="explore"                options={{ href: null }} />
-        <Tabs.Screen name="invest-101"             options={{ href: null }} />
-        <Tabs.Screen name="pcs-calculator"         options={{ href: null }} />
-        <Tabs.Screen name="profile"                options={{ href: null }} />
-        <Tabs.Screen name="retirement-calculator"  options={{ href: null }} />
-        <Tabs.Screen name="tle-calculator"         options={{ href: null }} />
-        <Tabs.Screen name="va-loan-calculator"     options={{ href: null }} />
-        <Tabs.Screen name="deployment-calculator"  options={{ href: null }} />
-        <Tabs.Screen name="leave-calculator"       options={{ href: null }} />
-        <Tabs.Screen name="schools-finder"         options={{ href: null }} />
-        <Tabs.Screen name="les-decoder"            options={{ href: null }} />
-        <Tabs.Screen name="tricare-estimator"      options={{ href: null }} />
-        <Tabs.Screen name="scra-guide"             options={{ href: null }} />
-        <Tabs.Screen name="net-worth"              options={{ href: null }} />
-        <Tabs.Screen name="ets-checklist"          options={{ href: null }} />
-        <Tabs.Screen name="tsp-calculator"         options={{ href: null }} />
-        <Tabs.Screen name="va-disability"          options={{ href: null }} />
-        <Tabs.Screen name="gi-bill-calculator"     options={{ href: null }} />
-        <Tabs.Screen name="debt-payoff"            options={{ href: null }} />
-        <Tabs.Screen name="pay-chart"              options={{ href: null }} />
-        <Tabs.Screen name="tax-guide"              options={{ href: null }} />
-        <Tabs.Screen name="sbp-calculator"         options={{ href: null }} />
-        <Tabs.Screen name="car-loan"               options={{ href: null }} />
-        <Tabs.Screen name="offbase-calculator"     options={{ href: null }} />
-        <Tabs.Screen name="money-flowchart"        options={{ href: null }} />
-        <Tabs.Screen name="roth-ira"               options={{ href: null }} />
-        <Tabs.Screen name="deployment-savings"     options={{ href: null }} />
-        <Tabs.Screen name="tdy-optimizer"          options={{ href: null }} />
-        <Tabs.Screen name="savings-rate"           options={{ href: null }} />
-        <Tabs.Screen name="bah-guide"              options={{ href: null }} />
-        <Tabs.Screen name="upgrade"                options={{ href: null }} />
-        <Tabs.Screen name="reserves"               options={{ href: null }} />
-        <Tabs.Screen name="life-events"            options={{ href: null }} />
-        <Tabs.Screen name="command-mode"           options={{ href: null }} />
-        <Tabs.Screen name="gs-pay-calculator"      options={{ href: null }} />
-        <Tabs.Screen name="promotion-calculator"   options={{ href: null }} />
-        <Tabs.Screen name="privacy-center"         options={{ href: null }} />
-        <Tabs.Screen name="terms"                  options={{ href: null }} />
-        <Tabs.Screen name="legal"                  options={{ href: null }} />
-        <Tabs.Screen name="admin"                  options={{ href: null }} />
-        <Tabs.Screen name="admin/feedback"         options={{ href: null }} />
-        <Tabs.Screen name="admin/reports"          options={{ href: null }} />
-        <Tabs.Screen name="admin/codes"            options={{ href: null }} />
-      </Tabs>
+      <Stack screenOptions={{ headerShown: false }}>
+        {/* ── Tab group (Home/Budget/Kids/Tools/Settings) — the only screen
+            with a bottom tab bar. Everything below is pushed on top of it,
+            so router.back() returns to whatever screen actually launched it
+            (e.g. Tools), not always Home. ── */}
+        <Stack.Screen name="(tabs)" />
+
+        <Stack.Screen name="auth/sign-in" />
+        <Stack.Screen name="auth/sign-up" />
+        <Stack.Screen name="chat" />
+        <Stack.Screen name="category/[slug]" />
+        <Stack.Screen name="kids/[id]" />
+        <Stack.Screen name="tip/[id]" />
+        <Stack.Screen name="credit-score" />
+        <Stack.Screen name="dity-calculator" />
+        <Stack.Screen name="explore" />
+        <Stack.Screen name="invest-101" />
+        <Stack.Screen name="pcs-calculator" />
+        <Stack.Screen name="profile" />
+        <Stack.Screen name="retirement-calculator" />
+        <Stack.Screen name="tle-calculator" />
+        <Stack.Screen name="va-loan-calculator" />
+        <Stack.Screen name="deployment-calculator" />
+        <Stack.Screen name="leave-calculator" />
+        <Stack.Screen name="schools-finder" />
+        <Stack.Screen name="les-decoder" />
+        <Stack.Screen name="tricare-estimator" />
+        <Stack.Screen name="scra-guide" />
+        <Stack.Screen name="net-worth" />
+        <Stack.Screen name="ets-checklist" />
+        <Stack.Screen name="tsp-calculator" />
+        <Stack.Screen name="va-disability" />
+        <Stack.Screen name="gi-bill-calculator" />
+        <Stack.Screen name="debt-payoff" />
+        <Stack.Screen name="pay-chart" />
+        <Stack.Screen name="tax-guide" />
+        <Stack.Screen name="sbp-calculator" />
+        <Stack.Screen name="car-loan" />
+        <Stack.Screen name="offbase-calculator" />
+        <Stack.Screen name="money-flowchart" />
+        <Stack.Screen name="roth-ira" />
+        <Stack.Screen name="deployment-savings" />
+        <Stack.Screen name="tdy-optimizer" />
+        <Stack.Screen name="savings-rate" />
+        <Stack.Screen name="bah-guide" />
+        <Stack.Screen name="upgrade" />
+        <Stack.Screen name="reserves" />
+        <Stack.Screen name="life-events" />
+        <Stack.Screen name="command-mode" />
+        <Stack.Screen name="gs-pay-calculator" />
+        <Stack.Screen name="promotion-calculator" />
+        <Stack.Screen name="privacy-center" />
+        <Stack.Screen name="terms" />
+        <Stack.Screen name="legal" />
+        <Stack.Screen name="admin" />
+      </Stack>
       <OfflineBanner />
       {kidModeActive && <KidModeScreen />}
     </ThemeProvider>

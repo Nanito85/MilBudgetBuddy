@@ -257,7 +257,7 @@ export default function PayChartScreen() {
 
         <ThemedView type="backgroundElement" style={styles.noteCard}>
           <ThemedText style={[styles.noteText, { color: tc.textMuted }]}>
-            FY{BASIC_PAY_DATA_YEAR} rates effective January 1, {BASIC_PAY_DATA_YEAR} (4.5% raise). Basic pay is subject to federal income tax. BAH, BAS, and most allowances are tax-free. Verify at militarypay.defense.gov.
+            FY{BASIC_PAY_DATA_YEAR} rates effective January 1, {BASIC_PAY_DATA_YEAR} (3.8% raise). Basic pay is subject to federal income tax. BAH, BAS, and most allowances are tax-free. Verify at militarypay.defense.gov.
           </ThemedText>
         </ThemedView>
       </ScrollView>

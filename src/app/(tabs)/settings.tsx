@@ -10,7 +10,6 @@ import { ThemedView } from '@/components/themed-view';
 import { Brand, Spacing } from '@/constants/theme';
 import { ALL_QUICK_ACTIONS } from '@/data/quick-actions';
 import { useThemeColors } from '@/hooks/use-theme';
-import { useEntitlement } from '@/hooks/use-entitlement';
 import { useIsAdmin } from '@/hooks/use-admin';
 import { useAuthStore } from '@/store/auth.store';
 import { useUserStore } from '@/store/user.store';
@@ -187,7 +186,6 @@ export default function SettingsScreen() {
   const [showTutorial, setShowTutorial] = useState(false);
   const { isAdmin, resolving: adminResolving } = useIsAdmin();
 
-  const { status } = useEntitlement();
   const { user, signOut: signOutUser, deleteAccount } = useAuthStore();
 
   const bg     = tc.background;
@@ -240,35 +238,6 @@ export default function SettingsScreen() {
           </View>
           <ThemedText style={[styles.profileNavChevron, { color: Brand.tactical }]}>›</ThemedText>
         </Pressable>
-
-        {/* ── ACCOUNT / PRO STATUS ───────────────────────────────────── */}
-        <View style={styles.section}>
-          <ThemedText type="label" style={styles.eyebrow}>// ACCOUNT</ThemedText>
-          <ThemedText style={[styles.sectionTitle, { color: text }]}>MEMBERSHIP</ThemedText>
-        </View>
-
-        {status === 'pro' && (
-          <View style={[settingsProStyles.statusCard, { backgroundColor: card, borderColor: Brand.success + '40' }]}>
-            <ThemedText style={settingsProStyles.proIcon}>🏅</ThemedText>
-            <View style={{ flex: 1 }}>
-              <ThemedText style={[settingsProStyles.proTitle, { color: Brand.success }]}>PRO — ALL FEATURES UNLOCKED</ThemedText>
-              <ThemedText style={[settingsProStyles.proSub, { color: textDim }]}>Thank you for supporting MilBudgetBuddy.</ThemedText>
-            </View>
-          </View>
-        )}
-
-        {status === 'free' && (
-          <Pressable
-            onPress={() => router.push('/upgrade' as any)}
-            style={({ pressed }) => [settingsProStyles.upgradeCard, { backgroundColor: card, borderColor: Brand.accent + '40' }, pressed && { opacity: 0.7 }]}>
-            <ThemedText style={settingsProStyles.proIcon}>🔓</ThemedText>
-            <View style={{ flex: 1 }}>
-              <ThemedText style={[settingsProStyles.proTitle, { color: Brand.accent }]}>UPGRADE TO PRO</ThemedText>
-              <ThemedText style={[settingsProStyles.proSub, { color: textDim }]}>Unlock all 24+ tools, full budget & more.</ThemedText>
-            </View>
-            <ThemedText style={[settingsProStyles.chevron, { color: Brand.accent }]}>›</ThemedText>
-          </Pressable>
-        )}
 
         {/* ── APPEARANCE ─────────────────────────────────────────────── */}
         <View style={styles.section}>

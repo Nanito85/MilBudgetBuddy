@@ -364,7 +364,7 @@ export default function GSPayCalculatorScreen() {
 
         <ThemedView type="backgroundElement" style={styles.disclaimer}>
           <ThemedText style={[styles.disclaimerText, { color: tc.textMuted }]}>
-            GS pay shown is FY2026 estimate based on OPM 2025 base rates + 2.0% raise. Net pay estimate uses single-filer federal brackets only — state taxes and benefit deductions are not included. Verify exact pay at OPM.gov.
+            GS pay shown is the official 2026 OPM Salary Table (1.0% base raise from 2025; locality rates are frozen at 2025 levels for 2026 — no locality update was issued). Net pay estimate uses single-filer federal brackets only — state taxes and benefit deductions are not included. Verify exact pay at OPM.gov.
           </ThemedText>
         </ThemedView>
 

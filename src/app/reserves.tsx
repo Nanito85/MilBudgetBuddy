@@ -22,10 +22,11 @@ const ENLISTED: PayGrade[] = ['E1','E2','E3','E4','E5','E6','E7','E8','E9'];
 const WARRANT:  PayGrade[] = ['W1','W2','W3','W4','W5'];
 const OFFICER:  PayGrade[] = ['O1','O2','O3','O4','O5','O6','O7','O8','O9','O10'];
 
-// TRICARE Reserve Select FY2026 monthly premiums
+// TRICARE Reserve Select 2026 monthly premiums (effective Jan 1, 2026)
+// Source: tricare.mil 2026 Costs and Fees fact sheet.
 const TRS_PREMIUMS = {
-  member_only: 57.16,
-  member_family: 231.52,
+  member_only: 57.88,
+  member_family: 286.66,
 };
 
 // FY2026 SELRES retirement multiplier: 2.5% per qualifying year at age 60
@@ -265,7 +266,7 @@ export default function ReservesScreen() {
                 { q: 'What is a UTA?', a: 'Unit Training Assembly — one full drill period. A standard drill weekend has 4 UTAs (2 per day × 2 days).' },
                 { q: 'Do I get BAH at drill?', a: 'No BAH for IDT/drill weekend. BAH only applies during active duty orders of 30+ days, or ADOS/AT orders depending on your status.' },
                 { q: 'Do I get BAS at drill?', a: 'BAS is paid for any day of active duty. For short drill periods, it is typically not paid unless serving continuous active duty.' },
-                { q: 'What about SGLI?', a: 'SELRES members get SGLI automatically at the same rates as active duty ($29/mo for $500K coverage).' },
+                { q: 'What about SGLI?', a: 'SELRES members get SGLI automatically at the same rates as active duty ($26/mo for $500K coverage, incl. $1 TSGLI, effective July 2025).' },
               ].map((item, i) => (
                 <View key={i} style={[styles.faqItem, i > 0 && styles.divider, i > 0 && { backgroundColor: tc.borderColor }]}>
                   <ThemedText style={[styles.faqQ, { color: tc.textPrimary }]}>{item.q}</ThemedText>
@@ -393,12 +394,11 @@ export default function ReservesScreen() {
               <ThemedText style={[styles.cardLabel, { color: tc.textHint }]}>COVERAGE DETAILS</ThemedText>
               {[
                 { label: 'Plan Type', value: 'PPO (preferred provider)' },
-                { label: 'Deductible (individual)', value: '$50 E1–E4 / $150 E5+/Officers' },
-                { label: 'Deductible (family)', value: '$100 E1–E4 / $300 E5+/Officers' },
+                { label: 'Deductible (individual)', value: '$66 E4 & below / $198 E5+' },
+                { label: 'Deductible (family)', value: '$132 E4 & below / $397 E5+' },
                 { label: 'Cost share (civilian)', value: '15% after deductible' },
-                { label: 'Out-of-pocket max (individual)', value: '$1,000/yr' },
-                { label: 'Out-of-pocket max (family)', value: '$3,000/yr' },
-                { label: 'Prescriptions (mail order)', value: '$0 generic / $13 brand' },
+                { label: 'Catastrophic cap (annual)', value: '$1,324' },
+                { label: 'Prescriptions (mail order, 90-day)', value: '$14 generic / $44 brand' },
                 { label: 'Emergency care (civilian ER)', value: '$90 copay after deductible' },
               ].map((item, i) => (
                 <View key={i} style={[styles.rowItem, i > 0 && styles.divider, i > 0 && { backgroundColor: tc.borderColor }]}>
@@ -468,11 +468,11 @@ export default function ReservesScreen() {
               {[
                 { item: 'Full basic pay (same as active duty)', value: fmtMoneyWhole(monthlyBasicPay) + '/mo' },
                 { item: 'BAH (with or without dependents)', value: 'Based on duty station ZIP' },
-                { item: 'BAS ($470.96 enlisted / $323.87 officer)', value: 'FY2026' },
+                { item: 'BAS ($476.95 enlisted / $328.48 officer)', value: '2026' },
                 { item: 'TRICARE Prime / Select (no premium)', value: 'You + family' },
                 { item: 'Combat zone tax exclusion', value: 'If deployed to CZ' },
                 { item: 'Hostile Fire / Imminent Danger Pay', value: '+$225/mo in HFP zone' },
-                { item: 'Family Separation Allowance', value: '+$250/mo if separated from family' },
+                { item: 'Family Separation Allowance', value: '+$300/mo if separated from family' },
                 { item: 'TSP matching resumes (BRS members)', value: 'Up to 5% match' },
               ].map((item, i) => (
                 <View key={i} style={[styles.rowItem, i > 0 && styles.divider, i > 0 && { backgroundColor: tc.borderColor }]}>
