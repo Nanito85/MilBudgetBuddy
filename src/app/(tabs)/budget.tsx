@@ -19,7 +19,10 @@ import { calcLES, fmtPay } from '@/features/home/utils/lesCalc';
 import { useThemeColors } from '@/hooks/use-theme';
 import {
   BudgetCategory,
+  BudgetGroup,
   CUSTOM_PREFIX,
+  GROUP_META,
+  GROUP_ORDER,
   MAX_TOTAL_CATEGORIES,
   useBudgetStore,
 } from '@/store/budget.store';
@@ -110,7 +113,7 @@ function CategoryRow({ cat, netPay }: { cat: BudgetCategory; netPay: number }) {
   const [nameVal, setNameVal] = useState(cat.name);
   const updateCategory = useBudgetStore((s) => s.updateCategory);
   const removeCategory = useBudgetStore((s) => s.removeCategory);
-  const isCustom = cat.id.startsWith(CUSTOM_PREFIX);
+  const isCustom = cat.id.startsWith(CUSTOM_PREFIX) || !!cat.removable;
 
   const pct =
     netPay > 0 && cat.monthlyBudget > 0
@@ -222,6 +225,55 @@ function AddCustomRow({ onAdd }: { onAdd: (name: string) => void }) {
         </Pressable>
       )}
     </ThemedView>
+  );
+}
+
+// ── Budget group section ────────────────────────────────────────────────────────
+
+function GroupSection({
+  group,
+  cats,
+  netPay,
+}: {
+  group: BudgetGroup;
+  cats: BudgetCategory[];
+  netPay: number;
+}) {
+  const tc = useThemeColors();
+  const meta = GROUP_META[group];
+  const subtotal = cats.reduce((s, c) => s + c.monthlyBudget, 0);
+  const pctOfNet = netPay > 0 && subtotal > 0 ? Math.round((subtotal / netPay) * 100) : null;
+
+  return (
+    <View style={[styles.groupCard, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
+      <View style={[styles.groupAccent, { backgroundColor: meta.color }]} />
+      <View style={styles.groupBody}>
+        <View style={styles.groupHeader}>
+          <View style={styles.groupHeaderLeft}>
+            <ThemedText style={styles.groupEmoji}>{meta.emoji}</ThemedText>
+            <ThemedText style={[styles.groupLabel, { color: tc.textPrimary }]}>
+              {meta.label.toUpperCase()}
+            </ThemedText>
+          </View>
+          <View style={styles.groupHeaderRight}>
+            <ThemedText style={[styles.groupSubtotal, { color: meta.color }]}>
+              {fmtPay(subtotal)}
+            </ThemedText>
+            {pctOfNet !== null && (
+              <ThemedText type="small" themeColor="textSecondary">
+                {pctOfNet}% of net
+              </ThemedText>
+            )}
+          </View>
+        </View>
+        <View style={styles.groupDivider} />
+        <View style={styles.groupRows}>
+          {cats.map((cat) => (
+            <CategoryRow key={cat.id} cat={cat} netPay={netPay} />
+          ))}
+        </View>
+      </View>
+    </View>
   );
 }
 
@@ -822,8 +874,15 @@ export default function BudgetScreen() {
   const handleAddCustom = (name: string) => {
     const index = customCategories.length;
     const emoji = CUSTOM_EMOJIS[index % CUSTOM_EMOJIS.length];
-    addCategory(name, emoji, CUSTOM_PREFIX);
+    addCategory(name, emoji, CUSTOM_PREFIX, 'other');
   };
+
+  const groupedCategories = React.useMemo(() => {
+    return GROUP_ORDER.map((group) => ({
+      group,
+      cats: categories.filter((c) => c.group === group),
+    })).filter((g) => g.cats.length > 0);
+  }, [categories]);
 
   const catMap = React.useMemo(() => {
     const m: Record<string, BudgetCategory> = {};
@@ -963,30 +1022,19 @@ export default function BudgetScreen() {
               )}
 
               <ThemedText type="small" themeColor="textSecondary" style={styles.hint}>
-                Tap an amount to edit.
+                Tap an amount to edit. Long-press ··· on any card to rename or remove it.
               </ThemedText>
 
-              {categories.filter((c) => !c.id.startsWith(CUSTOM_PREFIX)).map((cat) => (
-                <CategoryRow key={cat.id} cat={cat} netPay={netPay} />
+              {groupedCategories.map(({ group, cats }) => (
+                <GroupSection key={group} group={group} cats={cats} netPay={netPay} />
               ))}
 
-              {customCategories.length > 0 && (
-                <>
-                  <ThemedText type="small" themeColor="textSecondary" style={styles.sectionDivider}>
-                    CUSTOM ({categories.length}/{MAX_TOTAL_CATEGORIES})
-                  </ThemedText>
-                  {customCategories.map((cat) => (
-                    <CategoryRow key={cat.id} cat={cat} netPay={netPay} />
-                  ))}
-                </>
-              )}
-
               {canAddMore && <AddCustomRow onAdd={handleAddCustom} />}
-              {!canAddMore && (
-                <ThemedText type="small" themeColor="textSecondary" style={styles.maxNote}>
-                  Maximum of {MAX_TOTAL_CATEGORIES} categories reached.
-                </ThemedText>
-              )}
+              <ThemedText type="small" themeColor="textSecondary" style={styles.maxNote}>
+                {canAddMore
+                  ? `${categories.length}/${MAX_TOTAL_CATEGORIES} categories used`
+                  : `Maximum of ${MAX_TOTAL_CATEGORIES} categories reached.`}
+              </ThemedText>
 
               {overBudget && (
                 <ThemedView type="backgroundElement" style={styles.warningBox}>
@@ -1018,13 +1066,23 @@ export default function BudgetScreen() {
                 Tap &quot;+ Log&quot; to record an expense. Long-press a transaction to delete.
               </ThemedText>
 
-              {categories.map((cat) => (
-                <SpendingRow
-                  key={cat.id}
-                  cat={cat}
-                  spent={spentByCategory[cat.id] ?? 0}
-                  onAddExpense={(id, name, emoji) => setAddingFor({ id, name, emoji })}
-                />
+              {groupedCategories.map(({ group, cats }) => (
+                <View key={group} style={styles.spendGroupBlock}>
+                  <View style={styles.spendGroupHeader}>
+                    <ThemedText style={styles.spendGroupEmoji}>{GROUP_META[group].emoji}</ThemedText>
+                    <ThemedText style={[styles.spendGroupLabel, { color: GROUP_META[group].color }]}>
+                      {GROUP_META[group].label.toUpperCase()}
+                    </ThemedText>
+                  </View>
+                  {cats.map((cat) => (
+                    <SpendingRow
+                      key={cat.id}
+                      cat={cat}
+                      spent={spentByCategory[cat.id] ?? 0}
+                      onAddExpense={(id, name, emoji) => setAddingFor({ id, name, emoji })}
+                    />
+                  ))}
+                </View>
               ))}
 
               {allExpenses.length > 0 && (
@@ -1152,6 +1210,40 @@ const styles = StyleSheet.create({
     marginTop: Spacing.two,
     marginBottom: Spacing.one,
   },
+
+  // Budget group sections
+  groupCard: {
+    flexDirection: 'row',
+    borderRadius: Spacing.two + 2,
+    borderWidth: StyleSheet.hairlineWidth,
+    overflow: 'hidden',
+  },
+  groupAccent: { width: 4, alignSelf: 'stretch' },
+  groupBody: { flex: 1, paddingVertical: Spacing.two + 2, paddingHorizontal: Spacing.two + 4, gap: Spacing.one },
+  groupHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  groupHeaderLeft: { flexDirection: 'row', alignItems: 'center', gap: Spacing.one + 2 },
+  groupEmoji: { fontSize: 16 },
+  groupLabel: { fontSize: 12, fontWeight: '800', letterSpacing: 0.8 },
+  groupHeaderRight: { alignItems: 'flex-end', gap: 1 },
+  groupSubtotal: { fontSize: 15, fontWeight: '800' },
+  groupDivider: {
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: 'rgba(128,128,128,0.2)',
+    marginVertical: 2,
+  },
+  groupRows: { gap: Spacing.one },
+
+  // Spending mode group headers
+  spendGroupBlock: { gap: Spacing.one },
+  spendGroupHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.one,
+    paddingTop: Spacing.two,
+    paddingHorizontal: Spacing.one,
+  },
+  spendGroupEmoji: { fontSize: 14 },
+  spendGroupLabel: { fontSize: 11, fontWeight: '800', letterSpacing: 0.8 },
 
   catRow: {
     flexDirection: 'row',

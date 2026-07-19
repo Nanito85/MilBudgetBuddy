@@ -84,6 +84,7 @@ export function DisclaimerModal() {
   const tc = useThemeColors();
   const [acknowledged, setAcknowledged] = useState(false);
   const branch = useUserStore((s) => s.branch);
+  const setDisclaimerAcknowledged = useUserStore((s) => s.setDisclaimerAcknowledged);
 
   const quote = useMemo(() => {
     const branchKey = branch ?? 'default';
@@ -145,7 +146,10 @@ export function DisclaimerModal() {
 
           </ScrollView>
           <Pressable
-            onPress={() => setAcknowledged(true)}
+            onPress={() => {
+              setAcknowledged(true);
+              setDisclaimerAcknowledged();
+            }}
             style={({ pressed }) => [styles.btn, pressed && { opacity: 0.75 }]}>
             <ThemedText style={styles.btnText}>I UNDERSTAND — CONTINUE</ThemedText>
           </Pressable>
