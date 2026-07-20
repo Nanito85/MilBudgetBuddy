@@ -184,7 +184,11 @@ export default function ReservesScreen() {
           <Pressable
             key={t.id}
             onPress={() => setActiveTab(t.id)}
-            style={[styles.tabBtn, { borderColor: tc.borderColor }, activeTab === t.id && styles.tabBtnActive]}>
+            style={[
+              styles.tabBtn,
+              { borderColor: tc.borderStrong, backgroundColor: tc.surface },
+              activeTab === t.id && styles.tabBtnActive,
+            ]}>
             <ThemedText style={{ fontSize: 14, lineHeight: 18 }}>{t.icon}</ThemedText>
             <ThemedText style={[styles.tabLabel, { color: tc.textPrimary }, activeTab === t.id && styles.tabLabelActive]}>
               {t.label}
@@ -532,12 +536,12 @@ const styles = StyleSheet.create({
   tabBtn: {
     flexDirection: 'row', alignItems: 'center', gap: Spacing.one + 2,
     paddingHorizontal: Spacing.three, paddingVertical: Spacing.two,
-    borderRadius: 99, borderWidth: 1,
+    borderRadius: 99, borderWidth: 1.5,
     minWidth: 80,
   },
   tabBtnActive: { backgroundColor: Brand.accent + '20', borderColor: Brand.accent },
-  tabLabel: { fontSize: 12, fontWeight: '800', letterSpacing: 0.2 },
-  tabLabelActive: { color: Brand.accent, fontWeight: '800' },
+  tabLabel: { fontSize: 13, fontWeight: '900', letterSpacing: 0.3 },
+  tabLabelActive: { color: Brand.accent, fontWeight: '900' },
 
   scroll: { paddingHorizontal: Spacing.three, paddingTop: Spacing.three, paddingBottom: 80, gap: Spacing.three },
 
@@ -548,7 +552,7 @@ const styles = StyleSheet.create({
 
   card: { borderRadius: 4, padding: Spacing.three, gap: Spacing.two },
   heroCard: {},
-  cardLabel: { fontSize: 10, fontWeight: '800', letterSpacing: 1 },
+  cardLabel: { fontSize: 11, fontWeight: '900', letterSpacing: 0.6 },
   cardHint: { fontSize: 11, lineHeight: 16 },
 
   heroRow: { flexDirection: 'row', alignItems: 'center' },
