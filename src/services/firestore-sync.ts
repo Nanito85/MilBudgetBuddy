@@ -13,7 +13,6 @@ import { useExpensesStore } from '@/store/expenses.store';
 import { useKidsStore } from '@/store/kids.store';
 import { useSavingsGoalsStore } from '@/store/savings-goals.store';
 import { useNetWorthStore } from '@/store/networth.store';
-import { useEntitlementStore } from '@/store/entitlement.store';
 
 // One active set of listeners per session
 const listeners: Unsubscribe[] = [];
@@ -32,7 +31,6 @@ export async function pushToCloud(uid: string) {
     setDoc(userDoc(uid, 'kids'),        { kids: useKidsStore.getState().kids },                          { merge: true }),
     setDoc(userDoc(uid, 'goals'),       { goals: useSavingsGoalsStore.getState().goals },                { merge: true }),
     setDoc(userDoc(uid, 'networth'),    { entries: useNetWorthStore.getState().entries }, { merge: true }),
-    setDoc(userDoc(uid, 'entitlement'),  { installedAt: useEntitlementStore.getState().installedAt, status: useEntitlementStore.getState().status }, { merge: true }),
   ];
   await Promise.all(writes);
 }
@@ -43,14 +41,13 @@ export async function pullFromCloud(uid: string): Promise<boolean> {
   const snap = await getDoc(userDoc(uid, 'profile'));
   if (!snap.exists()) return false; // No cloud data yet — first-ever login
 
-  const [profile, budget, expenses, kids, goals, networth, entitlement] = await Promise.all([
+  const [profile, budget, expenses, kids, goals, networth] = await Promise.all([
     getDoc(userDoc(uid, 'profile')),
     getDoc(userDoc(uid, 'budget')),
     getDoc(userDoc(uid, 'expenses')),
     getDoc(userDoc(uid, 'kids')),
     getDoc(userDoc(uid, 'goals')),
     getDoc(userDoc(uid, 'networth')),
-    getDoc(userDoc(uid, 'entitlement')),
   ]);
 
   if (profile.exists())     applyUser(profile.data());
@@ -59,7 +56,6 @@ export async function pullFromCloud(uid: string): Promise<boolean> {
   if (kids.exists())        useKidsStore.setState({ kids: kids.data()?.kids ?? [] });
   if (goals.exists())       useSavingsGoalsStore.setState({ goals: goals.data()?.goals ?? [] });
   if (networth.exists())    useNetWorthStore.setState({ entries: networth.data()?.entries ?? [] });
-  if (entitlement.exists()) useEntitlementStore.setState({ installedAt: entitlement.data()?.installedAt, status: entitlement.data()?.status ?? 'promo' });
 
   return true;
 }
@@ -76,7 +72,6 @@ export function startSync(uid: string) {
     { key: 'kids',        apply: (d) => useKidsStore.setState({ kids: d.kids ?? [] }) },
     { key: 'goals',       apply: (d) => useSavingsGoalsStore.setState({ goals: d.goals ?? [] }) },
     { key: 'networth',    apply: (d) => useNetWorthStore.setState({ entries: d.entries ?? [] }) },
-    { key: 'entitlement', apply: (d) => useEntitlementStore.setState({ installedAt: d.installedAt, status: d.status ?? 'promo' }) },
   ];
 
   for (const { key, apply } of collections) {
@@ -151,9 +146,6 @@ export function syncCollection(uid: string | null, collection: string) {
       break;
     case 'networth':
       setDoc(userDoc(uid, 'networth'), { entries: useNetWorthStore.getState().entries }, { merge: true }).catch(() => {});
-      break;
-    case 'entitlement':
-      setDoc(userDoc(uid, 'entitlement'), { installedAt: useEntitlementStore.getState().installedAt, status: useEntitlementStore.getState().status }, { merge: true }).catch(() => {});
       break;
   }
 }

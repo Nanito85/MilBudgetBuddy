@@ -526,18 +526,7 @@ export default function SettingsScreen() {
           <ThemedText style={settingsProStyles.proIcon}>📄</ThemedText>
           <View style={{ flex: 1 }}>
             <ThemedText style={[settingsProStyles.proTitle, { color: text }]}>TERMS OF SERVICE</ThemedText>
-            <ThemedText style={[settingsProStyles.proSub, { color: textDim }]}>Subscription terms, disclaimer, and user agreement.</ThemedText>
-          </View>
-          <ThemedText style={[settingsProStyles.chevron, { color: textDim }]}>›</ThemedText>
-        </Pressable>
-
-        <Pressable
-          onPress={() => router.push('/upgrade' as any)}
-          style={({ pressed }) => [settingsProStyles.upgradeCard, { backgroundColor: card, borderColor: tc.borderColor }, pressed && { opacity: 0.7 }]}>
-          <ThemedText style={settingsProStyles.proIcon}>🔄</ThemedText>
-          <View style={{ flex: 1 }}>
-            <ThemedText style={[settingsProStyles.proTitle, { color: text }]}>RESTORE PURCHASES</ThemedText>
-            <ThemedText style={[settingsProStyles.proSub, { color: textDim }]}>Already subscribed? Tap to restore your Pro access.</ThemedText>
+            <ThemedText style={[settingsProStyles.proSub, { color: textDim }]}>Disclaimer and user agreement.</ThemedText>
           </View>
           <ThemedText style={[settingsProStyles.chevron, { color: textDim }]}>›</ThemedText>
         </Pressable>

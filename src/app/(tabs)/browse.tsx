@@ -6,7 +6,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { BottomTabInset, Brand, Spacing } from '@/constants/theme';
-import { useEntitlement } from '@/hooks/use-entitlement';
 import { useThemeColors } from '@/hooks/use-theme';
 import { useKidModeStore } from '@/store/kid-mode.store';
 import { useKidsStore } from '@/store/kids.store';
@@ -293,7 +292,6 @@ export default function KidsScreen() {
   const tc = useThemeColors();
   const [showAdd, setShowAdd] = useState(false);
   const [handOffKid, setHandOffKid] = useState<KidProfile | null>(null);
-  const { isPro, kidsLimit } = useEntitlement();
 
   const kids = useKidsStore((s) => s.kids);
   const addKid = useKidsStore((s) => s.addKid);
@@ -378,19 +376,11 @@ export default function KidsScreen() {
         )}
 
         {/* Add button */}
-        {kids.length < kidsLimit ? (
-          <Pressable
-            onPress={() => setShowAdd(true)}
-            style={({ pressed }) => [styles.addBtn, { backgroundColor: tc.surface }, pressed && { opacity: 0.7 }]}>
-            <ThemedText style={styles.addBtnText}>+ ENROLL NEW CADET</ThemedText>
-          </Pressable>
-        ) : !isPro ? (
-          <Pressable
-            onPress={() => router.push('/upgrade' as any)}
-            style={({ pressed }) => [styles.addBtn, { backgroundColor: tc.surface }, styles.addBtnLocked, pressed && { opacity: 0.7 }]}>
-            <ThemedText style={styles.addBtnLockedText}>🔒 PRO — ENROLL MORE CADETS</ThemedText>
-          </Pressable>
-        ) : null}
+        <Pressable
+          onPress={() => setShowAdd(true)}
+          style={({ pressed }) => [styles.addBtn, { backgroundColor: tc.surface }, pressed && { opacity: 0.7 }]}>
+          <ThemedText style={styles.addBtnText}>+ ENROLL NEW CADET</ThemedText>
+        </Pressable>
 
         {/* Info card */}
         <View style={[styles.infoCard, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
@@ -462,8 +452,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   addBtnText: { color: Brand.tactical, fontSize: 12, fontWeight: '800', letterSpacing: 1.5 },
-  addBtnLocked: { borderColor: Brand.accent + '40', borderStyle: 'dashed' },
-  addBtnLockedText: { color: Brand.accent, fontSize: 12, fontWeight: '800', letterSpacing: 1 },
   infoCard: {
     borderWidth: StyleSheet.hairlineWidth,
     borderRadius: 4,

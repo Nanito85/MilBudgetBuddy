@@ -11,13 +11,11 @@ import { OnboardingFlow } from '@/features/profile/components/OnboardingFlow';
 import { Brand } from '@/constants/theme';
 import { useAppTheme } from '@/hooks/use-theme';
 import { useAuthStore } from '@/store/auth.store';
-import { useEntitlementStore } from '@/store/entitlement.store';
 import { useKidModeStore } from '@/store/kid-mode.store';
 import { useLifeEventsStore } from '@/store/life-events.store';
 import { useTipsStore } from '@/store/tips.store';
 import { useUserStore } from '@/store/user.store';
 import { pullFromCloud, pushToCloud, startSync, stopSync } from '@/services/firestore-sync';
-import { initIAP, destroyIAP } from '@/services/iap';
 import { useKidsStore } from '@/store/kids.store';
 import { initRemoteConfig } from '@/services/remote-config';
 import { initSentry, setUserContext } from '@/services/sentry';
@@ -36,12 +34,10 @@ export default function RootLayout() {
   // Hydrate local stores on mount + initialize Firebase auth listener
   useEffect(() => {
     initRemoteConfig().catch(() => {}); // non-blocking; falls back to cached/default
-    initIAP().catch(() => {});           // non-blocking; IAP unavailable in dev/Expo Go
     startAnalytics();
     trackEvent('app_launch');
     useTipsStore.getState().hydrate();
     useUserStore.getState().hydrate();
-    useEntitlementStore.getState().hydrate();
     useKidModeStore.getState().hydrate();
     useKidsStore.getState().hydrate();
     useLifeEventsStore.getState().hydrate();
@@ -50,7 +46,6 @@ export default function RootLayout() {
       unsubAuth();
       stopSync();
       stopAnalytics();
-      destroyIAP();
     };
   }, []);
 
@@ -60,8 +55,6 @@ export default function RootLayout() {
     if (user) {
       setUserContext(user.uid);
       trackEvent('user_signed_in');
-      // Verify server-side entitlement on every sign-in
-      useEntitlementStore.getState().checkServerEntitlement().catch(() => {});
       // Signed in — pull cloud data (if exists) then start real-time sync
       pullFromCloud(user.uid).then((hadData) => {
         if (!hadData) {
@@ -141,7 +134,6 @@ export default function RootLayout() {
         <Stack.Screen name="tdy-optimizer" />
         <Stack.Screen name="savings-rate" />
         <Stack.Screen name="bah-guide" />
-        <Stack.Screen name="upgrade" />
         <Stack.Screen name="reserves" />
         <Stack.Screen name="life-events" />
         <Stack.Screen name="command-mode" />

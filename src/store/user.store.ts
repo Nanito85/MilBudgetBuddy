@@ -53,7 +53,7 @@ interface UserState extends UserPreferences {
   setRankVariant: (variant: RankVariant) => void;
   setNotifications: (enabled: boolean) => void;
   setNotificationTime: (hour: number, minute: number) => void;
-  setOnboarded: () => void;
+  setOnboarded: () => Promise<void>;
   setDisclaimerAcknowledged: () => void;
   setHasSeenTutorial: () => void;
   setServiceInfo: (payGrade: PayGrade, lastName: string, nickname: string, yos: number, dateOfEnlistment?: string, dateOfRank?: string) => void;
@@ -75,7 +75,7 @@ interface UserState extends UserPreferences {
 }
 
 function save(prefs: UserPreferences) {
-  AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(prefs));
+  return AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(prefs));
 }
 
 function snapshot(get: () => UserState): UserPreferences {
@@ -163,9 +163,12 @@ export const useUserStore = create<UserState>((set, get) => ({
     save({ ...snapshot(get), notificationHour, notificationMinute });
   },
 
-  setOnboarded: () => {
+  setOnboarded: async () => {
     set({ onboarded: true });
-    save({ ...snapshot(get), onboarded: true });
+    // Awaited so the final onboarding write reliably lands before the
+    // caller proceeds — this is the highest-value save in the whole
+    // flow, since losing it forces the user to redo onboarding.
+    await save({ ...snapshot(get), onboarded: true });
   },
 
   setDisclaimerAcknowledged: () => {

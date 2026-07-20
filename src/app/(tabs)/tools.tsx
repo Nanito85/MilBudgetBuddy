@@ -7,7 +7,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { BottomTabInset, Brand, Spacing } from '@/constants/theme';
-import { useEntitlement } from '@/hooks/use-entitlement';
 import { useThemeColors } from '@/hooks/use-theme';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
@@ -120,45 +119,36 @@ const SITUATIONS = [
 
 // ── Components ─────────────────────────────────────────────────────────────────
 
-function MenuCard({ item, locked, onPress }: { item: MenuItem; locked: boolean; onPress: () => void }) {
+function MenuCard({ item, onPress }: { item: MenuItem; onPress: () => void }) {
   const tc = useThemeColors();
-  const dimmed = locked;
   return (
     <Pressable
       onPress={onPress}
-      style={({ pressed }) => [styles.card, { backgroundColor: tc.surface, borderBottomColor: tc.borderColor }, dimmed && styles.cardLocked, pressed && !dimmed && { opacity: 0.7 }]}>
-      <View style={[styles.cardAccent, { backgroundColor: dimmed ? tc.borderColor : item.color }]} />
-      <View style={[styles.iconWrap, { backgroundColor: item.color + (dimmed ? '10' : '20') }]}>
+      style={({ pressed }) => [styles.card, { backgroundColor: tc.surface, borderBottomColor: tc.borderColor }, pressed && { opacity: 0.7 }]}>
+      <View style={[styles.cardAccent, { backgroundColor: item.color }]} />
+      <View style={[styles.iconWrap, { backgroundColor: item.color + '20' }]}>
         <ThemedText style={styles.cardIcon}>{item.icon}</ThemedText>
       </View>
       <View style={styles.cardText}>
-        <ThemedText style={[styles.cardTitle, { color: tc.textPrimary }, dimmed && [styles.cardTitleLocked, { color: tc.textSecondary }]]}>{item.title}</ThemedText>
+        <ThemedText style={[styles.cardTitle, { color: tc.textPrimary }]}>{item.title}</ThemedText>
         <ThemedText type="label" style={[styles.cardDesc, { color: tc.textSecondary }]}>{item.description}</ThemedText>
       </View>
-      {item.badge && !locked && (
+      {item.badge && (
         <View style={[styles.badge, item.badge === 'New' ? styles.badgeNew : { backgroundColor: tc.borderColor }]}>
           <ThemedText type="label" style={[styles.badgeText, item.badge === 'New' ? styles.badgeTextNew : { color: tc.textSecondary }]}>
             {item.badge.toUpperCase()}
           </ThemedText>
         </View>
       )}
-      {locked ? (
-        <View style={styles.lockBadge}>
-          <ThemedText style={styles.lockIcon}>🔒</ThemedText>
-          <ThemedText style={styles.lockLabel}>PRO</ThemedText>
-        </View>
-      ) : (
-        <ThemedText style={styles.chevron}>›</ThemedText>
-      )}
+      <ThemedText style={styles.chevron}>›</ThemedText>
     </Pressable>
   );
 }
 
 function CategorySection({
-  category, canUseTool, onPress,
+  category, onPress,
 }: {
   category: Category;
-  canUseTool: (id: string) => boolean;
   onPress: (item: MenuItem) => void;
 }) {
   const tc = useThemeColors();
@@ -177,7 +167,7 @@ function CategorySection({
       {expanded && (
         <View style={[styles.categoryItems, { borderTopColor: tc.borderColor }]}>
           {category.items.map((item) => (
-            <MenuCard key={item.id} item={item} locked={!canUseTool(item.id)} onPress={() => onPress(item)} />
+            <MenuCard key={item.id} item={item} onPress={() => onPress(item)} />
           ))}
         </View>
       )}
@@ -190,7 +180,6 @@ function CategorySection({
 export default function ToolsScreen() {
   const router = useRouter();
   const tc = useThemeColors();
-  const { canUseTool, isPro } = useEntitlement();
   const [searchQuery, setSearchQuery] = useState('');
   const [recentIds, setRecentIds] = useState<string[]>([]);
 
@@ -220,10 +209,6 @@ export default function ToolsScreen() {
 
   const handlePress = (item: MenuItem) => {
     if (!item.available) return;
-    if (!canUseTool(item.id)) {
-      router.push('/upgrade' as any);
-      return;
-    }
     // Track recently used
     const updated = [item.id, ...recentIds.filter((id) => id !== item.id)].slice(0, MAX_RECENT);
     setRecentIds(updated);
@@ -270,7 +255,7 @@ export default function ToolsScreen() {
               <ThemedText style={[styles.searchEmpty, { color: tc.textMuted }]}>No tools match "{searchQuery}"</ThemedText>
             ) : (
               searchResults.map((item) => (
-                <MenuCard key={item.id} item={item} locked={!canUseTool(item.id)} onPress={() => handlePress(item)} />
+                <MenuCard key={item.id} item={item} onPress={() => handlePress(item)} />
               ))
             )}
           </View>
@@ -308,7 +293,7 @@ export default function ToolsScreen() {
                 </View>
                 <View style={styles.list}>
                   {recentTools.map((item) => (
-                    <MenuCard key={item.id} item={item} locked={!canUseTool(item.id)} onPress={() => handlePress(item)} />
+                    <MenuCard key={item.id} item={item} onPress={() => handlePress(item)} />
                   ))}
                 </View>
               </>
@@ -319,7 +304,6 @@ export default function ToolsScreen() {
               <CategorySection
                 key={cat.id}
                 category={cat}
-                canUseTool={canUseTool}
                 onPress={handlePress}
               />
             ))}
@@ -411,22 +395,17 @@ const styles = StyleSheet.create({
     gap: Spacing.two,
     overflow: 'hidden',
   },
-  cardLocked: { opacity: 0.4 },
   cardAccent: { width: 3, alignSelf: 'stretch' },
   iconWrap: { width: 44, height: 44, borderRadius: 4, alignItems: 'center', justifyContent: 'center', marginVertical: Spacing.two },
   cardIcon: { fontSize: 22 },
   cardText: { flex: 1, gap: 2, paddingVertical: Spacing.two },
   cardTitle: { fontSize: 12, fontWeight: '800', letterSpacing: 0.5 },
-  cardTitleLocked: {},
   cardDesc: { fontSize: 11, lineHeight: 15 },
   badge: { paddingHorizontal: 6, paddingVertical: 2, borderRadius: 2, marginRight: Spacing.one },
   badgeNew: { backgroundColor: Brand.accent + '20' },
   badgeText: { fontSize: 9, fontWeight: '800', letterSpacing: 0.5 },
   badgeTextNew: { color: Brand.accent },
   chevron: { color: Brand.accent, fontSize: 20, paddingRight: Spacing.two },
-  lockBadge: { alignItems: 'center', paddingRight: Spacing.two, gap: 1 },
-  lockIcon: { fontSize: 14, lineHeight: 18 },
-  lockLabel: { fontSize: 8, fontWeight: '800', color: Brand.accent, letterSpacing: 0.5 },
 
   shortcutRow: {
     borderWidth: StyleSheet.hairlineWidth,

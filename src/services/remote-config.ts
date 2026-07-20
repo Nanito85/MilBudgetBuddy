@@ -11,14 +11,10 @@ export interface RemoteConfig {
     perDiem: string;
   };
   featureFlags: {
-    freeBudgetCategoryLimit: number;
-    freeKidsLimit: number;
-    iapEnabled: boolean;
     lesDecoderEnabled: boolean;
     travelEnabled: boolean;
     reservesHubEnabled: boolean;
     claudeAssistantEnabled: boolean;
-    freeToolIds: string[];
   };
   announcements: Array<{
     id: string;
@@ -34,14 +30,10 @@ export interface RemoteConfig {
 const FALLBACK_CONFIG: RemoteConfig = {
   rateVersions: { bah: '2026.1', basicPay: '2026.1', perDiem: '2026.1' },
   featureFlags: {
-    freeBudgetCategoryLimit: 3,
-    freeKidsLimit: 1,
-    iapEnabled: false,
     lesDecoderEnabled: true,
     travelEnabled: true,
     reservesHubEnabled: true,
     claudeAssistantEnabled: true,
-    freeToolIds: ['pay_chart', 'bah_guide', 'les', 'pcs'],
   },
   announcements: [],
   minAppVersion: '1.0.0',
@@ -89,16 +81,10 @@ function sanitizeConfig(raw: unknown): RemoteConfig {
       perDiem:  typeof rates.perDiem === 'string'  ? rates.perDiem  : FALLBACK_CONFIG.rateVersions.perDiem,
     },
     featureFlags: {
-      freeBudgetCategoryLimit: typeof flags.freeBudgetCategoryLimit === 'number' ? flags.freeBudgetCategoryLimit : FALLBACK_CONFIG.featureFlags.freeBudgetCategoryLimit,
-      freeKidsLimit:           typeof flags.freeKidsLimit === 'number'           ? flags.freeKidsLimit           : FALLBACK_CONFIG.featureFlags.freeKidsLimit,
-      iapEnabled:              typeof flags.iapEnabled === 'boolean'             ? flags.iapEnabled              : FALLBACK_CONFIG.featureFlags.iapEnabled,
       lesDecoderEnabled:       typeof flags.lesDecoderEnabled === 'boolean'      ? flags.lesDecoderEnabled       : FALLBACK_CONFIG.featureFlags.lesDecoderEnabled,
       travelEnabled:           typeof flags.travelEnabled === 'boolean'          ? flags.travelEnabled           : FALLBACK_CONFIG.featureFlags.travelEnabled,
       reservesHubEnabled:      typeof flags.reservesHubEnabled === 'boolean'     ? flags.reservesHubEnabled      : FALLBACK_CONFIG.featureFlags.reservesHubEnabled,
       claudeAssistantEnabled:  typeof flags.claudeAssistantEnabled === 'boolean' ? flags.claudeAssistantEnabled  : FALLBACK_CONFIG.featureFlags.claudeAssistantEnabled,
-      freeToolIds:             Array.isArray(flags.freeToolIds) && flags.freeToolIds.every((x) => typeof x === 'string')
-                                 ? flags.freeToolIds as string[]
-                                 : FALLBACK_CONFIG.featureFlags.freeToolIds,
     },
     announcements: Array.isArray(r.announcements)
       ? (r.announcements as any[])

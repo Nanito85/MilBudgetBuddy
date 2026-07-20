@@ -195,7 +195,9 @@ function OverrideModal({
           <ScrollView
             contentContainerStyle={mStyles.scroll}
             keyboardShouldPersistTaps="handled"
-            showsVerticalScrollIndicator={false}>
+            keyboardDismissMode="interactive"
+            showsVerticalScrollIndicator={false}
+            automaticallyAdjustKeyboardInsets>
 
             {/* LES annotation tip */}
             <View style={mStyles.lesTip}>

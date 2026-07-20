@@ -36,7 +36,6 @@ import {
   schedulePayDayReminders,
 } from '@/services/notifications';
 import { useChatStore } from '@/store/chat.store';
-import { useEntitlementStore } from '@/store/entitlement.store';
 import { useKidsStore } from '@/store/kids.store';
 import { useTipsStore } from '@/store/tips.store';
 import { useUserStore } from '@/store/user.store';
@@ -424,7 +423,8 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
             contentContainerStyle={editStyles.content}
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
-            keyboardDismissMode="interactive">
+            keyboardDismissMode="interactive"
+            automaticallyAdjustKeyboardInsets>
 
             {/* Branch */}
             <ThemedText style={[editStyles.fieldLabel, { color: tc.textHint }]}>SERVICE BRANCH</ThemedText>
@@ -709,7 +709,8 @@ function EditPayModal({ visible, onClose }: { visible: boolean; onClose: () => v
             contentContainerStyle={editStyles.content}
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
-            keyboardDismissMode="interactive">
+            keyboardDismissMode="interactive"
+            automaticallyAdjustKeyboardInsets>
 
             {/* LES Overrides */}
             <View style={[editStyles.sectionHead, { borderTopColor: tc.borderColor }]}>
@@ -971,8 +972,6 @@ export default function ProfileScreen() {
   const [showEditPay, setShowEditPay]           = useState(false);
   const [showAddKid, setShowAddKid]             = useState(false);
 
-  const foundingMember = useEntitlementStore((s) => s.foundingMember);
-
   const savedTipIds = useTipsStore((s) => s.savedTipIds);
   const clearSaved  = () => useTipsStore.setState({ savedTipIds: [] }, false);
   const clearChat   = useChatStore((s) => s.clearChat);
@@ -1040,11 +1039,6 @@ export default function ProfileScreen() {
 
         {/* ── Identity Card ─────────────────────────────────────────── */}
         <TacticalCard accentColor={Brand.accent} style={styles.identityCard}>
-          {foundingMember && (
-            <View style={styles.foundingBadge}>
-              <ThemedText style={styles.foundingBadgeText}>🏅 FOUNDING MEMBER</ThemedText>
-            </View>
-          )}
           <View style={styles.identityTop}>
             <View style={styles.identityLeft}>
               <ThemedText type="label" style={styles.identityRank}>{rankAbbrev || '—'}</ThemedText>
@@ -1306,8 +1300,6 @@ const styles = StyleSheet.create({
   sectionLabel: { fontSize: 9 },
 
   identityCard: { gap: Spacing.three },
-  foundingBadge: { flexDirection: 'row', alignSelf: 'flex-start', backgroundColor: '#C8A800' + '20', borderWidth: 1, borderColor: '#C8A800' + '50', borderRadius: 3, paddingHorizontal: 8, paddingVertical: 3, marginBottom: 4 },
-  foundingBadgeText: { color: '#C8A800', fontSize: 10, fontWeight: '800', letterSpacing: 0.5 },
   identityTop: { flexDirection: 'row', alignItems: 'center' },
   identityLeft: { flex: 1, gap: 3 },
   identityRank: { color: Brand.accent, fontSize: 10, letterSpacing: 0.5 },
