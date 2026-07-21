@@ -6,7 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BranchRegNote } from '@/components/BranchRegNote';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Locality, PER_DIEM_DATA_YEAR } from '@/data/per-diem-rates';
+import { Locality, PER_DIEM_DATA_YEAR, STANDARD_LODGING, STANDARD_MEALS, STANDARD_TOTAL } from '@/data/per-diem-rates';
 import { FamilyComposer } from '@/features/tle/components/FamilyComposer';
 import { LocalityPicker } from '@/features/tle/components/LocalityPicker';
 import {
@@ -45,8 +45,18 @@ export default function TLECalculatorScreen() {
     ? parseFloat(customRateText) || null
     : locality?.perDiem ?? null;
 
-  const result = effectivePerDiem != null
-    ? calcTLE({ mode, perDiem: effectivePerDiem, hasSpouse, childAges, days })
+  // A custom flat rate has no real lodging/M&IE split, so approximate it using
+  // the same standard CONUS ratio (~62% lodging / ~38% M&IE) shown as the
+  // fallback elsewhere on this screen — a locality pick always has the real split.
+  const effectiveLodging: number | null = useCustomRate
+    ? (effectivePerDiem != null ? Math.round(effectivePerDiem * (STANDARD_LODGING / STANDARD_TOTAL)) : null)
+    : locality?.lodging ?? null;
+  const effectiveMeals: number | null = useCustomRate
+    ? (effectivePerDiem != null ? Math.round(effectivePerDiem * (STANDARD_MEALS / STANDARD_TOTAL)) : null)
+    : locality?.meals ?? null;
+
+  const result = effectiveLodging != null && effectiveMeals != null
+    ? calcTLE({ mode, lodging: effectiveLodging, meals: effectiveMeals, hasSpouse, childAges, days })
     : null;
 
   const numChildren = childAges.length;
@@ -293,22 +303,36 @@ export default function TLECalculatorScreen() {
 
               <View style={styles.divider} />
 
-              {/* Daily rate breakdown */}
+              {/* Daily rate breakdown — lodging and M&IE calculated separately */}
               <View style={styles.phaseSection}>
                 <ThemedText style={styles.phaseTitle}>
-                  {mode === 'tle' ? 'TLE' : 'TLA'} — {result.days} day{result.days !== 1 ? 's' : ''} @ {(result.familyPct * 100).toFixed(0)}% of locality per diem
+                  {mode === 'tle' ? 'TLE' : 'TLA'} — {result.days} day{result.days !== 1 ? 's' : ''} @ {(result.familyPct * 100).toFixed(0)}% of locality rates
                 </ThemedText>
                 <BreakdownRow
-                  label={`${(result.familyPct * 100).toFixed(0)}% × $${effectivePerDiem}/day`}
+                  label={`Lodging: ${(result.familyPct * 100).toFixed(0)}% × $${effectiveLodging}/night`}
+                  value={fmtMoney(result.lodgingRaw)}
+                  color={Brand.accent}
+                />
+                <BreakdownRow
+                  label={`M&IE: ${(result.familyPct * 100).toFixed(0)}% × $${effectiveMeals}/day`}
+                  value={fmtMoney(result.mieRaw)}
+                  color={Brand.success}
+                />
+                <BreakdownRow
+                  label="Combined daily rate"
                   value={fmtMoney(result.dailyRaw)}
                   color={Brand.primary}
                 />
                 {result.capped && (
-                  <BreakdownRow
-                    label={`Capped at $${TLE_DAILY_CAP}/day`}
-                    value={fmtMoney(result.dailyTotal)}
-                    color={Brand.warning}
-                  />
+                  <>
+                    <BreakdownRow
+                      label={`Capped at $${TLE_DAILY_CAP}/day combined`}
+                      value={fmtMoney(result.dailyTotal)}
+                      color={Brand.warning}
+                    />
+                    <BreakdownRow label="↳ Lodging portion, after cap" value={fmtMoney(result.lodgingPaid)} />
+                    <BreakdownRow label="↳ M&IE portion, after cap" value={fmtMoney(result.miePaid)} />
+                  </>
                 )}
                 <BreakdownRow
                   label={`Subtotal × ${result.days} days`}
@@ -338,14 +362,14 @@ export default function TLECalculatorScreen() {
                 </ThemedText>
               </View>
 
-              {/* Per diem breakdown — lodging cap and M&IE */}
+              {/* Per diem breakdown — the input rates lodging/M&IE above are calculated from */}
               <View style={styles.pdBreakdownCard}>
-                <ThemedText style={[styles.pdBreakdownLabel, { color: tc.textHint }]}>PER DIEM BREAKDOWN</ThemedText>
+                <ThemedText style={[styles.pdBreakdownLabel, { color: tc.textHint }]}>LOCALITY RATES (100% — BEFORE FAMILY %)</ThemedText>
                 <View style={styles.pdBreakdownRow}>
                   <View style={styles.pdBreakdownItem}>
                     <ThemedText style={[styles.pdBreakdownItemLabel, { color: tc.textHint }]}>HOTEL CAP</ThemedText>
                     <ThemedText style={[styles.pdBreakdownValue, { color: Brand.accent }]}>
-                      ${locality?.lodging ?? Math.round(effectivePerDiem * 0.617)}/night
+                      ${effectiveLodging}/night
                     </ThemedText>
                     <ThemedText style={[styles.pdBreakdownNote, { color: tc.textHint }]}>max lodging rate</ThemedText>
                   </View>
@@ -353,7 +377,7 @@ export default function TLECalculatorScreen() {
                   <View style={styles.pdBreakdownItem}>
                     <ThemedText style={[styles.pdBreakdownItemLabel, { color: tc.textHint }]}>M&IE</ThemedText>
                     <ThemedText style={[styles.pdBreakdownValue, { color: Brand.success }]}>
-                      ${locality?.meals ?? Math.round(effectivePerDiem * 0.383)}/day
+                      ${effectiveMeals}/day
                     </ThemedText>
                     <ThemedText style={[styles.pdBreakdownNote, { color: tc.textHint }]}>meals &amp; incidentals</ThemedText>
                   </View>
@@ -382,10 +406,14 @@ export default function TLECalculatorScreen() {
 
         {/* ── Disclaimer ─────────────────────────────────────────────────────── */}
         <ThemedText type="small" themeColor="textSecondary" style={styles.disclaimer}>
-          Per diem rates are {PER_DIEM_DATA_YEAR} estimates for planning purposes. TLE/TLA
-          entitlements are determined by your finance office using your official orders and current
-          JTR rates. CONUS rates from GSA; OCONUS rates from DoD JFTR. Always verify with your
-          gaining unit's finance office before making lodging decisions.
+          Per diem rates are {PER_DIEM_DATA_YEAR} estimates for planning purposes. Lodging and M&IE
+          are each calculated at your family percentage, then combined — for TLE (CONUS) that
+          combined total is capped at ${TLE_DAILY_CAP}/day per JTR par. 050601 (PDTATAC MAP 66-24(R),
+          effective 01 OCT 2025 for FY2026); lodging taxes and mandatory fees count toward this cap.
+          TLA (OCONUS) has no flat-dollar cap. TLE/TLA entitlements are determined by your finance
+          office using your official orders and current JTR rates. CONUS rates from GSA; OCONUS
+          rates from DoD JFTR. Always verify with your gaining unit's finance office before making
+          lodging decisions.
         </ThemedText>
         <BranchRegNote />
       </ScrollView>

@@ -1,10 +1,17 @@
 // JTR Chapter 5, Part D (TLE) and Part H (TLA)
 // TLE: CONUS — up to 21 days (increased from 14, effective 27 Nov 2024 per PDTATAC MAP 66-24).
 //      Days split between losing station (before departure) and gaining station (after arrival).
-//      Combined daily reimbursement (lodging + M&IE) is capped at $290/day regardless of family size.
+//      Lodging (actual cost, up to the locality's max lodging rate) and M&IE (the locality's
+//      meals & incidental expenses rate) are each calculated separately at the family percentage,
+//      then the two are added together — that COMBINED daily total is capped at $290/day
+//      (JTR par. 050601, effective 01 OCT 2025 for FY2026, per PDTATAC MAP 66-24(R)). Lodging
+//      taxes and mandatory fees count toward the $290 cap. This is a flat dollar cap, not a
+//      locality-specific one — verify the current figure at travel.dod.mil before relying on it,
+//      as PDTATAC revisits it periodically.
 // TLA: OCONUS — up to 60 days on arrival at the new PDS (installation commander may authorize a
 //      different amount; departure TLA is a separate allotment, typically up to 10 days — verify
 //      locally). No declining-percentage phase — the same flat family percentage applies every day.
+//      TLA has no equivalent flat-dollar daily cap — it's bounded only by the locality rate.
 
 export type MoveMode = 'tle' | 'tla';
 
@@ -26,7 +33,8 @@ export const TLA_MAX_DAYS = 60;
 
 export interface TLEInputs {
   mode: MoveMode;
-  perDiem: number; // full locality per diem $/day (lodging + M&IE)
+  lodging: number; // locality max lodging rate, $/night
+  meals: number;   // locality M&IE rate, $/day
   hasSpouse: boolean;
   childAges: number[]; // each child's age in years
   days: number;
@@ -34,8 +42,12 @@ export interface TLEInputs {
 
 export interface TLEResult {
   familyPct: number; // total % of locality per diem this family is authorized
-  dailyRaw: number; // perDiem * familyPct, before the TLE $290 cap
-  dailyTotal: number; // daily amount actually paid (after cap, if any)
+  lodgingRaw: number; // lodging * familyPct, before the $290 combined cap
+  mieRaw: number;     // meals * familyPct, before the $290 combined cap
+  dailyRaw: number;   // lodgingRaw + mieRaw, before the TLE $290 cap
+  lodgingPaid: number; // lodging portion of dailyTotal (scaled down proportionally if capped)
+  miePaid: number;     // M&IE portion of dailyTotal (scaled down proportionally if capped)
+  dailyTotal: number; // daily amount actually paid (after cap, if any) — lodgingPaid + miePaid
   capped: boolean; // true if the $290/day cap reduced the amount
   totalEntitlement: number;
   days: number; // days actually paid (capped to maxDays)
@@ -63,7 +75,7 @@ export function familyPercentage(hasSpouse: boolean, childAges: number[]): numbe
 }
 
 export function calcTLE(inputs: TLEInputs): TLEResult {
-  const { mode, perDiem, hasSpouse, childAges, days } = inputs;
+  const { mode, lodging, meals, hasSpouse, childAges, days } = inputs;
 
   const under12 = childAges.filter((a) => a < 12).length;
   const plus12 = childAges.filter((a) => a >= 12).length;
@@ -72,13 +84,27 @@ export function calcTLE(inputs: TLEInputs): TLEResult {
   const maxDays = mode === 'tle' ? TLE_MAX_DAYS : TLA_MAX_DAYS;
   const cappedDays = Math.min(days, maxDays);
 
-  const dailyRaw = perDiem * familyPct;
+  // Lodging and M&IE are each calculated separately at the family percentage,
+  // then combined — only the combined total is subject to the $290 cap.
+  const lodgingRaw = lodging * familyPct;
+  const mieRaw = meals * familyPct;
+  const dailyRaw = lodgingRaw + mieRaw;
   const capped = mode === 'tle' && dailyRaw > TLE_DAILY_CAP;
   const dailyTotal = capped ? TLE_DAILY_CAP : dailyRaw;
 
+  // If the combined cap reduced the total, scale lodging and M&IE down by the
+  // same ratio so the two components still sum to dailyTotal.
+  const scale = capped && dailyRaw > 0 ? dailyTotal / dailyRaw : 1;
+  const lodgingPaid = lodgingRaw * scale;
+  const miePaid = mieRaw * scale;
+
   return {
     familyPct,
+    lodgingRaw,
+    mieRaw,
     dailyRaw,
+    lodgingPaid,
+    miePaid,
     dailyTotal,
     capped,
     totalEntitlement: dailyTotal * cappedDays,

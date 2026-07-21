@@ -1,9 +1,11 @@
 import { getBahRate, PayGrade } from '@/data/bah-rates';
 import { Installation } from '@/data/installations';
-import { lookupPerDiemByZip, OCONUS_LOCATIONS, STANDARD_TOTAL } from '@/data/per-diem-rates';
+import { lookupPerDiemByZip, OCONUS_LOCATIONS, STANDARD_LODGING, STANDARD_MEALS, STANDARD_TOTAL } from '@/data/per-diem-rates';
 
 export interface StationPerDiem {
   total: number;      // lodging + M&IE, $/day
+  lodging: number;    // max lodging rate, $/night
+  meals: number;      // M&IE rate, $/day
   oconus: boolean;
   matched: boolean;   // false when we couldn't find a specific locality and fell back to a placeholder
   label: string;
@@ -20,7 +22,7 @@ export interface StationPerDiem {
 export function getStationPerDiem(inst: Installation): StationPerDiem {
   if (!inst.oconus) {
     const pd = lookupPerDiemByZip(inst.mhaZip);
-    return { total: pd.total, oconus: false, matched: true, label: pd.isStandard ? 'Standard CONUS rate' : `${pd.city}, ${pd.state}` };
+    return { total: pd.total, lodging: pd.lodging, meals: pd.meals, oconus: false, matched: true, label: pd.isStandard ? 'Standard CONUS rate' : `${pd.city}, ${pd.state}` };
   }
 
   const nameWords = inst.name.toLowerCase().replace(/[^a-z0-9\s]/g, ' ').split(/\s+/).filter((w) => w.length > 2);
@@ -32,9 +34,9 @@ export function getStationPerDiem(inst: Installation): StationPerDiem {
   }
 
   if (best) {
-    return { total: best.loc.total, oconus: true, matched: true, label: best.loc.name };
+    return { total: best.loc.total, lodging: best.loc.lodging, meals: best.loc.meals, oconus: true, matched: true, label: best.loc.name };
   }
-  return { total: STANDARD_TOTAL, oconus: true, matched: false, label: 'Unmatched — placeholder rate' };
+  return { total: STANDARD_TOTAL, lodging: STANDARD_LODGING, meals: STANDARD_MEALS, oconus: true, matched: false, label: 'Unmatched — placeholder rate' };
 }
 
 export interface StationRates {

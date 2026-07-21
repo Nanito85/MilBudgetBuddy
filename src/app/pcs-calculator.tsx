@@ -124,9 +124,12 @@ export default function PCSCalculatorScreen() {
   const malt = miles * MALT_RATE * vehicles;
 
   // TLE/TLA — same engine as the dedicated TLE/TLA calculator (tleCalc.ts):
-  // real locality per diem, real JTR family-percentage table, real $290/day
-  // cap and 21-day CONUS pool / 60-day OCONUS allowance. Each leg uses TLE
-  // rules if that station is CONUS, TLA rules if it's OCONUS.
+  // lodging and M&IE are each calculated separately at the family percentage,
+  // then combined — for CONUS (TLE) that combined total is capped at $290/day
+  // per JTR par. 050601 (PDTATAC MAP 66-24(R), effective 01 OCT 2025 for
+  // FY2026); OCONUS (TLA) has no flat-dollar cap. Same 21-day CONUS pool /
+  // 60-day OCONUS allowance. Each leg uses TLE rules if that station is
+  // CONUS, TLA rules if it's OCONUS.
   const currentPD = currentStation ? getStationPerDiem(currentStation) : null;
   const gainingPD = gainingStation ? getStationPerDiem(gainingStation) : null;
 
@@ -145,7 +148,8 @@ export default function PCSCalculatorScreen() {
   const tleDepart = currentPD
     ? calcTLE({
         mode: currentPD.oconus ? 'tla' : 'tle',
-        perDiem: currentPD.total,
+        lodging: currentPD.lodging,
+        meals: currentPD.meals,
         hasSpouse: tleHasSpouse,
         childAges: tleChildAges,
         days: effectiveDepartDays,
@@ -154,7 +158,8 @@ export default function PCSCalculatorScreen() {
   const tleGain = gainingPD
     ? calcTLE({
         mode: gainingPD.oconus ? 'tla' : 'tle',
-        perDiem: gainingPD.total,
+        lodging: gainingPD.lodging,
+        meals: gainingPD.meals,
         hasSpouse: tleHasSpouse,
         childAges: tleChildAges,
         days: effectiveGainDays,
@@ -434,10 +439,21 @@ export default function PCSCalculatorScreen() {
                 <>
                   <View style={styles.tleDetailRow}>
                     <ThemedText style={[styles.tleDetailLabel, { color: tc.textSecondary }]}>
-                      {(tleDepart.familyPct * 100).toFixed(0)}% × ${currentPD?.total}/day{tleDepart.capped ? ` (capped $${TLE_DAILY_CAP})` : ''}
+                      Lodging: {(tleDepart.familyPct * 100).toFixed(0)}% × ${currentPD?.lodging}/night
                     </ThemedText>
-                    <ThemedText style={[styles.tleDetailAmt, { color: tc.textPrimary }]}>{fmt(tleDepart.dailyTotal)}/day</ThemedText>
+                    <ThemedText style={[styles.tleDetailAmt, { color: tc.textPrimary }]}>{fmt(tleDepart.lodgingPaid)}/day</ThemedText>
                   </View>
+                  <View style={styles.tleDetailRow}>
+                    <ThemedText style={[styles.tleDetailLabel, { color: tc.textSecondary }]}>
+                      M&IE: {(tleDepart.familyPct * 100).toFixed(0)}% × ${currentPD?.meals}/day
+                    </ThemedText>
+                    <ThemedText style={[styles.tleDetailAmt, { color: tc.textPrimary }]}>{fmt(tleDepart.miePaid)}/day</ThemedText>
+                  </View>
+                  {tleDepart.capped && (
+                    <ThemedText type="small" themeColor="textSecondary" style={styles.hint}>
+                      Combined rate capped at ${TLE_DAILY_CAP}/day — lodging and M&IE shares above are scaled down proportionally.
+                    </ThemedText>
+                  )}
                   <View style={[styles.tleDetailRow, { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: 'rgba(128,128,128,0.2)', marginTop: 4, paddingTop: 4 }]}>
                     <ThemedText style={[styles.tleDetailLabel, { fontWeight: '700', color: tc.textSecondary }]}>Total departure {currentPD?.oconus ? 'TLA' : 'TLE'}</ThemedText>
                     <ThemedText style={[styles.entitlementAmt, { color: Brand.primary }]}>{fmt(tleDepartTotal)}</ThemedText>
@@ -471,10 +487,21 @@ export default function PCSCalculatorScreen() {
                 <>
                   <View style={styles.tleDetailRow}>
                     <ThemedText style={[styles.tleDetailLabel, { color: tc.textSecondary }]}>
-                      {(tleGain.familyPct * 100).toFixed(0)}% × ${gainingPD?.total}/day{tleGain.capped ? ` (capped $${TLE_DAILY_CAP})` : ''}
+                      Lodging: {(tleGain.familyPct * 100).toFixed(0)}% × ${gainingPD?.lodging}/night
                     </ThemedText>
-                    <ThemedText style={[styles.tleDetailAmt, { color: tc.textPrimary }]}>{fmt(tleGain.dailyTotal)}/day</ThemedText>
+                    <ThemedText style={[styles.tleDetailAmt, { color: tc.textPrimary }]}>{fmt(tleGain.lodgingPaid)}/day</ThemedText>
                   </View>
+                  <View style={styles.tleDetailRow}>
+                    <ThemedText style={[styles.tleDetailLabel, { color: tc.textSecondary }]}>
+                      M&IE: {(tleGain.familyPct * 100).toFixed(0)}% × ${gainingPD?.meals}/day
+                    </ThemedText>
+                    <ThemedText style={[styles.tleDetailAmt, { color: tc.textPrimary }]}>{fmt(tleGain.miePaid)}/day</ThemedText>
+                  </View>
+                  {tleGain.capped && (
+                    <ThemedText type="small" themeColor="textSecondary" style={styles.hint}>
+                      Combined rate capped at ${TLE_DAILY_CAP}/day — lodging and M&IE shares above are scaled down proportionally.
+                    </ThemedText>
+                  )}
                   <View style={[styles.tleDetailRow, { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: 'rgba(128,128,128,0.2)', marginTop: 4, paddingTop: 4 }]}>
                     <ThemedText style={[styles.tleDetailLabel, { fontWeight: '700', color: tc.textSecondary }]}>Total gaining {gainingPD?.oconus ? 'TLA' : 'TLE'}</ThemedText>
                     <ThemedText style={[styles.entitlementAmt, { color: Brand.primary }]}>{fmt(tleGainTotal)}</ThemedText>
@@ -570,7 +597,7 @@ export default function PCSCalculatorScreen() {
 
         {/* Disclaimer */}
         <ThemedText type="small" themeColor="textSecondary" style={styles.disclaimer}>
-          BAH rates: {BAH_DATA_YEAR}. OHA rates: Q2 2026 (approx.). DLA: FY2026 (JTR). MALT: ${MALT_RATE.toFixed(2)}/mile FY2026. TLE/TLA uses the same JTR family-percentage table, $290/day CONUS cap, and 21-day/60-day allowances as the dedicated TLE/TLA calculator. OHA and unmatched OCONUS TLA rates are approximate — verify current rates at DTMO before signing a lease. Verify all entitlements with your installation finance office.
+          BAH rates: {BAH_DATA_YEAR}. OHA rates: Q2 2026 (approx.). DLA: FY2026 (JTR). MALT: ${MALT_RATE.toFixed(2)}/mile FY2026. TLE/TLA uses the same JTR family-percentage table as the dedicated TLE/TLA calculator: lodging and M&IE are each calculated separately, then combined — for TLE (CONUS) that combined total is capped at ${TLE_DAILY_CAP}/day per JTR par. 050601 (PDTATAC MAP 66-24(R), effective 01 OCT 2025 for FY2026); TLA (OCONUS) has no flat-dollar cap. OHA and unmatched OCONUS TLA rates are approximate — verify current rates at DTMO before signing a lease. Verify all entitlements with your installation finance office.
         </ThemedText>
       </ScrollView>
     </ThemedView>
