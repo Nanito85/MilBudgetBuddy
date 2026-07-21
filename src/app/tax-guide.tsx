@@ -179,10 +179,10 @@ const SECTIONS: TaxSection[] = [
       '• The growth and qualified withdrawals are also tax-free.\n' +
       '• Result: truly tax-free money from input to output.\n\n' +
       'FY2026 CONTRIBUTION LIMITS:\n' +
-      '• Under 50: $23,500/year\n' +
-      '• Age 50–59 & 64+: $31,000/year (+$7,500 catch-up)\n' +
-      '• Age 60–63: $34,750/year (+$11,250 super catch-up, SECURE 2.0)',
-    tip: 'If deploying to a combat zone: maximize Roth TSP contributions. It\'s the most tax-advantaged investing opportunity available — potentially $23,500 in permanently tax-free growth per deployment.',
+      '• Under 50: $24,500/year\n' +
+      '• Age 50–59 & 64+: $32,500/year (+$8,000 catch-up)\n' +
+      '• Age 60–63: $35,750/year (+$11,250 super catch-up, SECURE 2.0)',
+    tip: 'If deploying to a combat zone: maximize Roth TSP contributions. It\'s the most tax-advantaged investing opportunity available — potentially $24,500 in permanently tax-free growth per deployment.',
   },
 ];
 

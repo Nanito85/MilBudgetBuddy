@@ -64,10 +64,10 @@ const STEPS: Step[] = [
     id: 'tsp_max',
     order: 5,
     icon: '🚀',
-    title: 'Max TSP ($23,500/year)',
+    title: 'Max TSP ($24,500/year)',
     why: 'Once Roth IRA is maxed, TSP is the next best tax-advantaged account. Traditional TSP gives you a tax deduction now.',
-    how: 'In MyPay, increase TSP contribution to reach the IRS limit ($23,500 for FY2026). Combat zone contributions can go up to $70,000/year.',
-    target: '$23,500/year (or $70K if deployed to CZ)',
+    how: 'In MyPay, increase TSP contribution to reach the IRS limit ($24,500 for FY2026). Combat zone contributions can go up to $72,000/year.',
+    target: '$24,500/year (or $72K if deployed to CZ)',
     color: '#00695C',
   },
   {
@@ -204,7 +204,7 @@ export default function MoneyFlowchartScreen() {
         <ThemedView type="backgroundElement" style={styles.disclaimer}>
           <ThemedText style={styles.disclaimerTitle}>⚠ Deployment Exception</ThemedText>
           <ThemedText style={[styles.disclaimerText, { color: tc.textHint }]}>
-            If you are deployed to a Combat Zone (CZTE), skip to Step 5 first. Your income is tax-exempt and TSP contributions jump to $70K/yr. Attack it.
+            If you are deployed to a Combat Zone (CZTE), skip to Step 5 first. Your income is tax-exempt and TSP contributions jump to $72K/yr. Attack it.
           </ThemedText>
         </ThemedView>
 

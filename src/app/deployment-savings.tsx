@@ -237,7 +237,7 @@ export default function DeploymentSavingsScreen() {
           <ThemedText style={styles.cardLabel}>CZTE MONEY MOVES</ThemedText>
           {[
             'Max your Roth IRA during deployment — CZTE pay does NOT count toward MAGI for Roth eligibility.',
-            'Increase TSP to the combat zone limit ($70K/yr) — all contributions while in CZ are tax-free.',
+            'Increase TSP to the combat zone limit ($72K/yr) — all contributions while in CZ are tax-free.',
             'Pay down high-interest debt aggressively — you have zero expense friction.',
             'Build your 6-month emergency fund if you haven\'t already.',
           ].map((tip, i) => (

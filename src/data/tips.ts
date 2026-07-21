@@ -26,7 +26,7 @@ export const TIPS: Tip[] = [
   {
     id: 'tsp-004',
     title: 'Max Out TSP When Deployed',
-    body: 'The 2025 TSP limit is $23,500 per year. When deployed to a combat zone, your tax-free pay still counts toward that limit — and you can go even higher with additional contributions. Use deployments to accelerate your retirement savings.',
+    body: 'The 2026 TSP limit is $24,500 per year. When deployed to a combat zone, your tax-free pay still counts toward that limit — and you can go even higher with additional contributions. Use deployments to accelerate your retirement savings.',
     category: 'tsp',
     tags: ['contribution limit', 'combat zone', 'max'],
   },

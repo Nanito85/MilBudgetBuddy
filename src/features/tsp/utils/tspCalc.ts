@@ -2,11 +2,11 @@ import { PayGrade } from '@/data/bah-rates';
 import { getBasicPay } from '@/data/basic-pay-rates';
 import { govtMatchRate } from '@/features/retirement/utils/retirementCalc';
 
-// FY2026 annual contribution limits (SECURE 2.0 / IRS Notice 2025-03)
-export const TSP_LIMIT_UNDER50 = 23_500;
-export const TSP_LIMIT_50_59   = 31_000;   // +$7,500 catch-up
-export const TSP_LIMIT_60_63   = 34_750;   // +$11,250 super catch-up (SECURE 2.0)
-export const TSP_LIMIT_64PLUS  = 31_000;   // same as 50–59
+// 2026 annual contribution limits (SECURE 2.0 / IRS Notice 2025-67)
+export const TSP_LIMIT_UNDER50 = 24_500;
+export const TSP_LIMIT_50_59   = 32_500;   // +$8,000 catch-up
+export const TSP_LIMIT_60_63   = 35_750;   // +$11,250 super catch-up (SECURE 2.0)
+export const TSP_LIMIT_64PLUS  = 32_500;   // same as 50–59
 
 export function annualLimit(age: number): number {
   if (age >= 60 && age <= 63) return TSP_LIMIT_60_63;
