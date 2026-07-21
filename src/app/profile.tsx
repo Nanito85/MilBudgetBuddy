@@ -94,12 +94,13 @@ const STATUS_CHOICES: { value: ServiceStatus; label: string; emoji: string }[] =
   { value: 'civilian', label: 'CIVILIAN', emoji: '💼' },
 ];
 
-function SectionLabel({ text }: { text: string }) {
+function SectionLabel({ text, accentColor }: { text: string; accentColor?: string }) {
   const tc = useThemeColors();
+  const color = accentColor ?? tc.textMuted;
   return (
     <View style={styles.sectionLabelRow}>
-      <View style={[styles.sectionLine, { backgroundColor: tc.borderColor }]} />
-      <ThemedText type="label" style={[styles.sectionLabel, { color: tc.textMuted }]}>{text}</ThemedText>
+      <View style={[styles.sectionDot, { backgroundColor: color }]} />
+      <ThemedText type="smallBold" style={[styles.sectionLabel, { color }]}>{text}</ThemedText>
       <View style={[styles.sectionLine, { backgroundColor: tc.borderColor }]} />
     </View>
   );
@@ -1193,6 +1194,9 @@ export default function ProfileScreen() {
         <SafeAreaView>
           <ThemedText type="label" style={styles.eyebrow}>// PERSONNEL FILE</ThemedText>
           <ThemedText style={[styles.heading, { color: tc.textPrimary }]}>PROFILE</ThemedText>
+          <ThemedText type="small" themeColor="textSecondary" style={styles.headingSub}>
+            Your service record, pay setup, and app preferences.
+          </ThemedText>
         </SafeAreaView>
 
         {/* ── Identity Card ─────────────────────────────────────────── */}
@@ -1232,7 +1236,25 @@ export default function ProfileScreen() {
         </TacticalCard>
 
         {/* ── Two Edit Tiles ─────────────────────────────────────────── */}
+        <SectionLabel text="EDIT YOUR INFO" />
         <View style={styles.tilesRow}>
+          {/* PERSONAL tile */}
+          <Pressable
+            onPress={() => setShowEditPersonal(true)}
+            style={({ pressed }) => [styles.editTile, { borderColor: Brand.accent + '60', backgroundColor: Brand.accent + '08' }, pressed && { opacity: 0.7 }]}>
+            <ThemedText style={styles.tileIcon}>🪖</ThemedText>
+            <ThemedText style={[styles.tileTitle, { color: Brand.accent }]}>PERSONAL</ThemedText>
+            <View style={styles.tileSummary}>
+              {payGrade && <ThemedText style={[styles.tileSummaryLine, { color: tc.textSecondary }]}>{payGrade} · {lastName?.toUpperCase() || 'NAME NOT SET'}</ThemedText>}
+              {installName ? <ThemedText style={[styles.tileSummaryLine, { color: tc.textSecondary }]} numberOfLines={1}>{installName}</ThemedText> : mhaZip ? <ThemedText style={[styles.tileSummaryLine, { color: tc.textSecondary }]}>ZIP {mhaZip}</ThemedText> : null}
+              {stateResidence && <ThemedText style={[styles.tileSummaryLine, { color: tc.textSecondary }]}>Residence: {stateResidence}</ThemedText>}
+              {dateOfEnlist && <ThemedText style={[styles.tileSummaryLine, { color: tc.textSecondary }]}>Enl: {dateOfEnlist}</ThemedText>}
+            </View>
+            <View style={[styles.tileEditBtn, { borderTopColor: tc.borderColor }]}>
+              <ThemedText style={[styles.tileEditBtnText, { color: Brand.accent }]}>EDIT PERSONAL ›</ThemedText>
+            </View>
+          </Pressable>
+
           {/* PAY tile */}
           <Pressable
             onPress={() => setShowEditPay(true)}
@@ -1251,33 +1273,16 @@ export default function ProfileScreen() {
                 </ThemedText>
               )}
             </View>
-            <View style={styles.tileEditBtn}>
+            <View style={[styles.tileEditBtn, { borderTopColor: tc.borderColor }]}>
               <ThemedText style={[styles.tileEditBtnText, { color: Brand.tactical }]}>EDIT PAY ›</ThemedText>
-            </View>
-          </Pressable>
-
-          {/* PERSONAL tile */}
-          <Pressable
-            onPress={() => setShowEditPersonal(true)}
-            style={({ pressed }) => [styles.editTile, { borderColor: Brand.accent + '60', backgroundColor: Brand.accent + '08' }, pressed && { opacity: 0.7 }]}>
-            <ThemedText style={styles.tileIcon}>🪖</ThemedText>
-            <ThemedText style={[styles.tileTitle, { color: Brand.accent }]}>PERSONAL</ThemedText>
-            <View style={styles.tileSummary}>
-              {payGrade && <ThemedText style={[styles.tileSummaryLine, { color: tc.textSecondary }]}>{payGrade} · {lastName?.toUpperCase() || 'NAME NOT SET'}</ThemedText>}
-              {installName ? <ThemedText style={[styles.tileSummaryLine, { color: tc.textSecondary }]} numberOfLines={1}>{installName}</ThemedText> : mhaZip ? <ThemedText style={[styles.tileSummaryLine, { color: tc.textSecondary }]}>ZIP {mhaZip}</ThemedText> : null}
-              {stateResidence && <ThemedText style={[styles.tileSummaryLine, { color: tc.textSecondary }]}>Residence: {stateResidence}</ThemedText>}
-              {dateOfEnlist && <ThemedText style={[styles.tileSummaryLine, { color: tc.textSecondary }]}>Enl: {dateOfEnlist}</ThemedText>}
-            </View>
-            <View style={styles.tileEditBtn}>
-              <ThemedText style={[styles.tileEditBtnText, { color: Brand.accent }]}>EDIT PERSONAL ›</ThemedText>
             </View>
           </Pressable>
         </View>
 
         {/* ── Greeting Style ─────────────────────────────────────────── */}
-        <SectionLabel text="HOME SCREEN GREETING" />
-        <TacticalCard accentColor={tc.borderColor} style={styles.sectionCard}>
-          <ThemedText type="label" style={[styles.emptyText, { color: tc.textSecondary }]}>How should we greet you on the home screen?</ThemedText>
+        <SectionLabel text="HOME SCREEN GREETING" accentColor={Brand.primary} />
+        <TacticalCard accentColor={Brand.primary} style={styles.sectionCard}>
+          <ThemedText type="small" themeColor="textSecondary" style={styles.emptyText}>How should we greet you on the home screen?</ThemedText>
           <View style={{ flexDirection: 'row', gap: Spacing.two, marginTop: Spacing.two }}>
             {(['nickname', 'rank'] as const).map((style) => {
               const label = style === 'nickname'
@@ -1300,9 +1305,9 @@ export default function ProfileScreen() {
         {/* ── Commander's Inbox ──────────────────────────────────────── */}
         {allPending.length > 0 && (
           <>
-            <SectionLabel text={`COMMANDER'S INBOX — ${allPending.length} PENDING`} />
+            <SectionLabel text={`COMMANDER'S INBOX — ${allPending.length} PENDING`} accentColor="#FFB300" />
             <TacticalCard accentColor="#FFB300" style={[styles.sectionCard, { borderColor: '#FFB30040' }]}>
-              <ThemedText type="label" style={{ color: '#FFB300', fontSize: 10, marginBottom: Spacing.one }}>
+              <ThemedText type="smallBold" style={{ color: '#FFB300', fontSize: 11, marginBottom: Spacing.one }}>
                 ⏳ MISSIONS AWAITING YOUR APPROVAL
               </ThemedText>
               {allPending.map(({ kid, completion }) => (
@@ -1336,10 +1341,10 @@ export default function ProfileScreen() {
         )}
 
         {/* ── Cadet Profiles ─────────────────────────────────────────── */}
-        <SectionLabel text="CADET PROFILES" />
-        <TacticalCard accentColor={tc.borderColor} style={styles.sectionCard}>
+        <SectionLabel text="CADET PROFILES" accentColor={Brand.tactical} />
+        <TacticalCard accentColor={Brand.tactical} style={styles.sectionCard}>
           {kids.length === 0 && (
-            <ThemedText type="label" style={[styles.emptyText, { color: tc.textSecondary }]}>No cadet profiles. Add a child to give them their own goals and chores app.</ThemedText>
+            <ThemedText type="small" themeColor="textSecondary" style={styles.emptyText}>No cadet profiles. Add a child to give them their own goals and chores app.</ThemedText>
           )}
           {kids.map((kid: KidProfile, index: number) => {
             const pendingCount = (kid.pendingCompletions ?? []).length;
@@ -1359,7 +1364,7 @@ export default function ProfileScreen() {
                         </View>
                       )}
                     </View>
-                    <ThemedText type="label" style={[styles.kidMeta, { color: tc.textMuted }]}>
+                    <ThemedText type="small" themeColor="textMuted" style={styles.kidMeta}>
                       {kid.goals.length} goal{kid.goals.length !== 1 ? 's' : ''} · {kid.chores.length} mission{kid.chores.length !== 1 ? 's' : ''}
                       {pendingCount > 0 ? ` · ${pendingCount} awaiting approval` : ''}
                     </ThemedText>
@@ -1385,12 +1390,12 @@ export default function ProfileScreen() {
         </TacticalCard>
 
         {/* ── Preferences ────────────────────────────────────────────── */}
-        <SectionLabel text="PREFERENCES" />
-        <TacticalCard accentColor={tc.borderColor} style={styles.sectionCard}>
+        <SectionLabel text="PREFERENCES" accentColor={Brand.primary} />
+        <TacticalCard accentColor={Brand.primary} style={styles.sectionCard}>
           <View style={styles.prefRow}>
             <View style={{ flex: 1, gap: 2 }}>
               <ThemedText style={[styles.prefLabel, { color: tc.textPrimary }]}>Daily Tip Reminder</ThemedText>
-              <ThemedText type="label" style={[styles.prefValue, { color: tc.textHint }]}>
+              <ThemedText type="small" themeColor="textHint" style={styles.prefValue}>
                 {notificationsEnabled ? `${formatTime(notificationHour, notificationMinute)} daily` : 'Off'}
               </ThemedText>
             </View>
@@ -1399,14 +1404,14 @@ export default function ProfileScreen() {
         </TacticalCard>
 
         {/* ── Stats ──────────────────────────────────────────────────── */}
-        <SectionLabel text="INTEL STATS" />
+        <SectionLabel text="INTEL STATS" accentColor={Brand.accent} />
         <View style={styles.statsRow}>
           {[
             { val: savedTipIds.length, label: 'SAVED' },
             { val: TIPS.length, label: 'TOTAL TIPS' },
             { val: 6, label: 'CATEGORIES' },
           ].map((s) => (
-            <TacticalCard key={s.label} accentColor={tc.borderColor} style={styles.statCard}>
+            <TacticalCard key={s.label} accentColor={Brand.accent} style={styles.statCard}>
               <ThemedText style={[styles.statVal, { fontFamily: Fonts.data }]}>{s.val}</ThemedText>
               <ThemedText type="label" style={[styles.statLabel, { color: tc.textSecondary }]}>{s.label}</ThemedText>
             </TacticalCard>
@@ -1435,7 +1440,7 @@ export default function ProfileScreen() {
           </Pressable>
         </TacticalCard>
 
-        <ThemedText type="label" style={[styles.disclaimer, { color: tc.textMuted }]}>
+        <ThemedText type="small" themeColor="textMuted" style={styles.disclaimer}>
           MilBudgetBuddy provides financial education for military families. Not a licensed financial advisor. Consult a CFP for major decisions. Pay estimates are approximations — verify at mypay.dfas.mil.
         </ThemedText>
       </ScrollView>
@@ -1449,24 +1454,26 @@ export default function ProfileScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  content: { paddingHorizontal: Spacing.three, gap: Spacing.three },
-  eyebrow: { color: Brand.tactical, fontSize: 10, marginTop: Spacing.three, letterSpacing: 1 },
-  heading: { fontSize: 28, fontWeight: '900', letterSpacing: 1, marginTop: 6, marginBottom: Spacing.one },
+  content: { paddingHorizontal: Spacing.three, gap: Spacing.four },
+  eyebrow: { color: Brand.tactical, fontSize: 11, marginTop: Spacing.three, letterSpacing: 1 },
+  heading: { fontSize: 28, fontWeight: '900', letterSpacing: 1, marginTop: 6, marginBottom: 4 },
+  headingSub: { lineHeight: 19, marginBottom: Spacing.one },
 
   sectionLabelRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
+  sectionDot: { width: 7, height: 7, borderRadius: 4 },
   sectionLine: { flex: 1, height: StyleSheet.hairlineWidth },
-  sectionLabel: { fontSize: 9 },
+  sectionLabel: { fontSize: 12, letterSpacing: 0.8 },
 
   identityCard: { gap: Spacing.three },
   identityTop: { flexDirection: 'row', alignItems: 'center' },
-  identityLeft: { flex: 1, gap: 3 },
-  identityRank: { color: Brand.accent, fontSize: 10, letterSpacing: 0.5 },
+  identityLeft: { flex: 1, gap: 4 },
+  identityRank: { color: Brand.accent, fontSize: 11, letterSpacing: 0.5 },
   identityName: { fontSize: 24, fontWeight: '900', letterSpacing: 0.5 },
-  identityBranch: { fontSize: 10, letterSpacing: 0.3 },
+  identityBranch: { fontSize: 11, letterSpacing: 0.3 },
   identityStats: { flexDirection: 'row', alignItems: 'center', borderRadius: 8, paddingVertical: Spacing.two },
-  identityStat: { flex: 1, alignItems: 'center', gap: 3 },
+  identityStat: { flex: 1, alignItems: 'center', gap: 4 },
   identityStatVal: { fontSize: 17, fontWeight: '800' },
-  identityStatLabel: { fontSize: 9, letterSpacing: 0.3, textAlign: 'center' },
+  identityStatLabel: { fontSize: 10, letterSpacing: 0.3, textAlign: 'center' },
   identityDivider: { width: 1, height: 34 },
 
   // Two edit tiles
@@ -1476,40 +1483,40 @@ const styles = StyleSheet.create({
     padding: Spacing.three, gap: Spacing.two,
   },
   tileIcon: { fontSize: 26, lineHeight: 32 },
-  tileTitle: { fontSize: 13, fontWeight: '900', letterSpacing: 1.5 },
-  tileSummary: { flex: 1, gap: 3, minHeight: 54 },
-  tileSummaryLine: { fontSize: 11, lineHeight: 15 },
+  tileTitle: { fontSize: 14, fontWeight: '900', letterSpacing: 1.2 },
+  tileSummary: { flex: 1, gap: 4, minHeight: 58 },
+  tileSummaryLine: { fontSize: 12, lineHeight: 16 },
   tileEditBtn: {
-    borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: 'rgba(255,255,255,0.1)',
+    borderTopWidth: StyleSheet.hairlineWidth,
     paddingTop: Spacing.one + 2, marginTop: Spacing.one,
   },
-  tileEditBtnText: { fontSize: 11, fontWeight: '800', letterSpacing: 0.5 },
+  tileEditBtnText: { fontSize: 12, fontWeight: '800', letterSpacing: 0.4 },
 
-  greetingBtn: { flex: 1, borderWidth: 1, borderRadius: 6, padding: Spacing.two, gap: 4, alignItems: 'center' },
-  greetingBtnLabel: { fontSize: 9, fontWeight: '800', letterSpacing: 0.5 },
-  greetingBtnValue: { fontSize: 12, fontWeight: '700', textAlign: 'center' },
+  greetingBtn: { flex: 1, borderWidth: 1, borderRadius: 8, padding: Spacing.two + 2, gap: 5, alignItems: 'center' },
+  greetingBtnLabel: { fontSize: 10, fontWeight: '800', letterSpacing: 0.5 },
+  greetingBtnValue: { fontSize: 13, fontWeight: '700', textAlign: 'center' },
 
   sectionCard: { gap: Spacing.two },
   divider: { height: StyleSheet.hairlineWidth },
-  emptyText: { fontSize: 11, lineHeight: 17, textAlign: 'center', paddingVertical: Spacing.two },
+  emptyText: { fontSize: 13, lineHeight: 19, textAlign: 'center', paddingVertical: Spacing.two },
 
   // Pending approval inbox
   pendingRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two, paddingVertical: Spacing.two, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: 'rgba(255,179,0,0.15)' },
-  pendingLeft: { flex: 1, gap: 2 },
-  pendingKid: { fontSize: 10, fontWeight: '900', letterSpacing: 0.5, color: '#FFB300' },
+  pendingLeft: { flex: 1, gap: 3 },
+  pendingKid: { fontSize: 11, fontWeight: '900', letterSpacing: 0.5, color: '#FFB300' },
   pendingChore: { fontSize: 14, fontWeight: '700' },
-  pendingDate: { fontSize: 10 },
+  pendingDate: { fontSize: 11 },
   pendingActions: { flexDirection: 'row', gap: Spacing.one },
   pendingBtn: { borderRadius: 8, paddingHorizontal: Spacing.two, paddingVertical: Spacing.one + 2 },
   pendingBtnApprove: { backgroundColor: '#00B27A20', borderWidth: 1, borderColor: '#00B27A60' },
-  pendingBtnApproveText: { fontSize: 11, fontWeight: '900', color: '#00B27A', letterSpacing: 0.3 },
+  pendingBtnApproveText: { fontSize: 12, fontWeight: '900', color: '#00B27A', letterSpacing: 0.3 },
   pendingBtnReject: { backgroundColor: Brand.classified + '15', borderWidth: 1, borderColor: Brand.classified + '50', width: 32, alignItems: 'center' },
   pendingBtnRejectText: { fontSize: 13, fontWeight: '900', color: Brand.classified },
 
   kidRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
   kidEmoji: { fontSize: 24, width: 36, lineHeight: 32, textAlign: 'center' },
-  kidName: { fontSize: 13, fontWeight: '800', letterSpacing: 0.3 },
-  kidMeta: { fontSize: 9 },
+  kidName: { fontSize: 14, fontWeight: '800', letterSpacing: 0.3 },
+  kidMeta: { fontSize: 11 },
   kidChevron: { fontSize: 20 },
   kidBadge: { backgroundColor: '#FFB300', borderRadius: 8, minWidth: 18, height: 18, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 4 },
   kidBadgeText: { fontSize: 10, fontWeight: '900', color: '#04080F' },
@@ -1518,24 +1525,24 @@ const styles = StyleSheet.create({
 
   prefRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   prefLabel: { fontSize: 15, fontWeight: '600' },
-  prefValue: { fontSize: 9 },
+  prefValue: { fontSize: 12 },
 
   statsRow: { flexDirection: 'row', gap: Spacing.two },
-  statCard: { flex: 1, alignItems: 'center', gap: 4 },
+  statCard: { flex: 1, alignItems: 'center', gap: 5 },
   statVal: { fontSize: 24, fontWeight: '800', color: Brand.accent },
-  statLabel: { fontSize: 10 },
+  statLabel: { fontSize: 11 },
 
   addRowBtn: { paddingVertical: Spacing.two, alignItems: 'center' },
-  addRowBtnText: { color: Brand.tactical, fontSize: 10 },
+  addRowBtnText: { color: Brand.tactical, fontSize: 11 },
 
   aboutRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  aboutLabel: { fontSize: 10 },
+  aboutLabel: { fontSize: 11 },
   aboutVal: { fontSize: 14 },
   dangerRow: { paddingVertical: Spacing.two, alignItems: 'center' },
-  dangerText: { color: Brand.classified, fontSize: 10 },
+  dangerText: { color: Brand.classified, fontSize: 11 },
   aboutLinkRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: Spacing.two, paddingHorizontal: Spacing.one },
-  aboutLinkText: { flex: 1, color: Brand.tactical, fontSize: 10 },
+  aboutLinkText: { flex: 1, color: Brand.tactical, fontSize: 11 },
   aboutChevron: { color: Brand.tactical, fontSize: 16, lineHeight: 22 },
 
-  disclaimer: { fontSize: 8, textAlign: 'center', lineHeight: 14, paddingHorizontal: Spacing.two, paddingVertical: Spacing.two },
+  disclaimer: { textAlign: 'center', lineHeight: 16, paddingHorizontal: Spacing.two, paddingVertical: Spacing.two },
 });
