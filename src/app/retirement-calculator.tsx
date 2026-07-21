@@ -13,18 +13,13 @@ import { BRSCard, High3Card } from '@/features/retirement/components/RetirementS
 import { calcRetirement, formatMoney, govtMatchRate } from '@/features/retirement/utils/retirementCalc';
 import { GradePicker } from '@/features/pcs/components/GradePicker';
 import { BottomTabInset, Brand, Spacing } from '@/constants/theme';
+import { monthlyCompensation } from '@/features/va/utils/vaDisabilityCalc';
 
 type RetirementSystem = 'both' | 'high3' | 'brs';
 
 const CONTRIB_STEPS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 15];
 const RETURN_STEPS  = [4, 5, 6, 7, 8, 9, 10];
 const VA_RATINGS    = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
-
-// FY2026 VA disability monthly compensation (veteran alone, no dependents)
-const VA_MONTHLY: Record<number, number> = {
-  0: 0, 10: 175.51, 20: 346.95, 30: 537.42, 40: 773.80,
-  50: 1102.04, 60: 1395.93, 70: 1759.19, 80: 2044.89, 90: 2297.96, 100: 3831.30,
-};
 
 export default function RetirementCalculatorScreen() {
   const router = useRouter();
@@ -58,8 +53,8 @@ export default function RetirementCalculatorScreen() {
 
   const currentPay = getBasicPay(grade, currentYOS);
 
-  // VA disability
-  const vaMonthly = VA_MONTHLY[vaRating] ?? 0;
+  // VA disability — same canonical rate table as the dedicated VA Disability calculator
+  const vaMonthly = monthlyCompensation(vaRating, false, 0);
   const pensionMonthly = showHigh3 ? result.high3.monthlyPension : result.brs.monthlyPension;
   // CRDP: ≥50% rating = full pension + full VA (concurrent receipt, no offset)
   // <50% rating = retirement pay offset by VA amount; net income same as pension (VA portion is tax-free)
@@ -192,9 +187,11 @@ export default function RetirementCalculatorScreen() {
             ))}
           </View>
           <ThemedText type="small" themeColor="textSecondary" style={styles.systemNote}>
-            Members entering on/after Jan 1, 2018 are automatically in BRS.
-            Members entering before Jan 1, 2006 are in High-3.
-            Members Jan 2006 – Dec 2017 had a one-time election.
+            Members who joined on/after Jan 1, 2018 are automatically in BRS. Members who joined
+            on/before Dec 31, 2017 are grandfathered into legacy High-3 — unless they had under 12
+            years of service as of Dec 31, 2017 (or, for Reserve/Guard, under 4,320 retirement
+            points) and elected to opt into BRS during the one-time enrollment window, Jan 1 – Dec
+            31, 2018. That 2018 window is the only time anyone could choose BRS over High-3.
           </ThemedText>
         </View>
 
