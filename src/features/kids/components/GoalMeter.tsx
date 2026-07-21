@@ -51,7 +51,7 @@ export function GoalMeter({ goal, accentColor }: Props) {
 const styles = StyleSheet.create({
   container: { gap: Spacing.two },
   header: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
-  emoji: { fontSize: 32 },
+  emoji: { fontSize: 32, lineHeight: 38 },
   info: { flex: 1, gap: 2 },
   name: { fontSize: 16, fontWeight: '700' },
   amount: { fontSize: 13, fontWeight: '600' },

@@ -147,6 +147,7 @@ const styles = StyleSheet.create({
   },
   emptyIcon: {
     fontSize: 40,
+    lineHeight: 48,
   },
   emptyTitle: {
     fontSize: 22,

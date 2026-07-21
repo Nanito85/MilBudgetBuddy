@@ -1192,6 +1192,11 @@ export default function ProfileScreen() {
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="on-drag">
         <SafeAreaView>
+          {router.canGoBack() && (
+            <Pressable onPress={() => router.back()} hitSlop={12} style={styles.backBtn}>
+              <ThemedText style={[styles.backText, { color: Brand.tactical }]}>‹ Back</ThemedText>
+            </Pressable>
+          )}
           <ThemedText type="label" style={styles.eyebrow}>// PERSONNEL FILE</ThemedText>
           <ThemedText style={[styles.heading, { color: tc.textPrimary }]}>PROFILE</ThemedText>
           <ThemedText type="small" themeColor="textSecondary" style={styles.headingSub}>
@@ -1461,6 +1466,8 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   content: { paddingHorizontal: Spacing.three, gap: Spacing.four },
+  backBtn: { alignSelf: 'flex-start', paddingVertical: Spacing.one, marginTop: Spacing.two },
+  backText: { fontSize: 15, fontWeight: '600' },
   eyebrow: { color: Brand.tactical, fontSize: 11, marginTop: Spacing.three, letterSpacing: 1 },
   heading: { fontSize: 28, fontWeight: '900', letterSpacing: 1, marginTop: 6, marginBottom: 4 },
   headingSub: { lineHeight: 19, marginBottom: Spacing.one },

@@ -234,7 +234,7 @@ export default function SettingsScreen() {
           <ThemedText style={styles.profileNavIcon}>🪖</ThemedText>
           <View style={{ flex: 1, gap: 2 }}>
             <ThemedText style={[styles.profileNavTitle, { color: text }]}>PERSONNEL FILE</ThemedText>
-            <ThemedText type="label" style={[styles.profileNavSub, { color: textDim }]}>Branch, pay grade, family, special pays</ThemedText>
+            <ThemedText type="small" style={[styles.profileNavSub, { color: textDim }]}>Branch, pay grade, family, special pays</ThemedText>
           </View>
           <ThemedText style={[styles.profileNavChevron, { color: Brand.tactical }]}>›</ThemedText>
         </Pressable>
@@ -243,8 +243,8 @@ export default function SettingsScreen() {
         <View style={styles.section}>
           <ThemedText type="label" style={styles.eyebrow}>// APPEARANCE</ThemedText>
           <ThemedText style={[styles.sectionTitle, { color: text }]}>THEME</ThemedText>
-          <ThemedText type="label" style={[styles.sectionDesc, { color: textDim }]}>
-            CHOOSE HOW THE APP LOOKS.
+          <ThemedText type="small" style={[styles.sectionDesc, { color: textDim }]}>
+            Choose how the app looks.
           </ThemedText>
         </View>
 
@@ -281,8 +281,8 @@ export default function SettingsScreen() {
         <View style={styles.section}>
           <ThemedText type="label" style={styles.eyebrow}>// ACCESSIBILITY</ThemedText>
           <ThemedText style={[styles.sectionTitle, { color: text }]}>TEXT SIZE</ThemedText>
-          <ThemedText type="label" style={[styles.sectionDesc, { color: textDim }]}>
-            INCREASE TEXT SIZE FOR EASIER READING. LAYOUTS ADJUST AUTOMATICALLY.
+          <ThemedText type="small" style={[styles.sectionDesc, { color: textDim }]}>
+            Increase text size for easier reading. Layouts adjust automatically.
           </ThemedText>
         </View>
 
@@ -319,8 +319,8 @@ export default function SettingsScreen() {
         <View style={styles.section}>
           <ThemedText type="label" style={styles.eyebrow}>// HOME SCREEN</ThemedText>
           <ThemedText style={[styles.sectionTitle, { color: text }]}>QUICK ACCESS TILES</ThemedText>
-          <ThemedText type="label" style={[styles.sectionDesc, { color: textDim }]}>
-            SELECT UP TO {MAX_TILES} TOOLS TO SHOW ON YOUR HOME SCREEN.
+          <ThemedText type="small" style={[styles.sectionDesc, { color: textDim }]}>
+            Select up to {MAX_TILES} tools to show on your home screen.
           </ThemedText>
         </View>
 
@@ -634,7 +634,7 @@ const styles = StyleSheet.create({
   section: { gap: Spacing.one },
   eyebrow: { color: Brand.tactical, fontSize: 9 },
   sectionTitle: { fontSize: 20, fontWeight: '900', letterSpacing: 1 },
-  sectionDesc: { fontSize: 9, lineHeight: 14 },
+  sectionDesc: { fontSize: 13, lineHeight: 18 },
 
   profileNavRow: {
     flexDirection: 'row',
@@ -646,7 +646,7 @@ const styles = StyleSheet.create({
   },
   profileNavIcon: { fontSize: 22, lineHeight: 26 },
   profileNavTitle: { fontSize: 13, fontWeight: '800', letterSpacing: 0.5 },
-  profileNavSub: { fontSize: 10 },
+  profileNavSub: { fontSize: 12 },
   profileNavChevron: { fontSize: 22, fontWeight: '300' },
 
   tileCube: {

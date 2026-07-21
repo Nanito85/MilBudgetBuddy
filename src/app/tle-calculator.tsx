@@ -563,7 +563,7 @@ const styles = StyleSheet.create({
   },
 
   emptyState: { borderRadius: Spacing.three, padding: Spacing.five, alignItems: 'center', gap: Spacing.two },
-  emptyIcon: { fontSize: 40 },
+  emptyIcon: { fontSize: 40, lineHeight: 48 },
   emptyTitle: { fontSize: 17, fontWeight: '700' },
   emptyBody: { textAlign: 'center', lineHeight: 20 },
 

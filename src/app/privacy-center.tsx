@@ -131,7 +131,7 @@ const s = StyleSheet.create({
     backgroundColor: Brand.tactical + '10', borderWidth: 1,
     borderColor: Brand.tactical + '30', borderRadius: 12, padding: Spacing.four,
   },
-  heroIcon: { fontSize: 40 },
+  heroIcon: { fontSize: 40, lineHeight: 48 },
   heroTitle: { fontSize: 14, fontWeight: '900', letterSpacing: 0.8, textAlign: 'center' },
   heroSub: { fontSize: 12, textAlign: 'center', lineHeight: 18 },
 

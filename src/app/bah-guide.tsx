@@ -849,7 +849,7 @@ const styles = StyleSheet.create({
 
   // Empty state
   emptyPrompt:     { alignItems: 'center', paddingVertical: Spacing.three, gap: 8 },
-  emptyPromptIcon: { fontSize: 24 },
+  emptyPromptIcon: { fontSize: 24, lineHeight: 30 },
   emptyPromptText: { fontSize: 12, textAlign: 'center', lineHeight: 18 },
 
   // Rate hero
@@ -897,5 +897,5 @@ const styles = StyleSheet.create({
   tierInfo:     { flex: 1, fontSize: 11, lineHeight: 17 },
 
   disclaimer:     { borderRadius: 4, padding: Spacing.two },
-  disclaimerText: { fontSize: 10, lineHeight: 15, textAlign: 'center' },
+  disclaimerText: { fontSize: 12, lineHeight: 17, textAlign: 'center' },
 });

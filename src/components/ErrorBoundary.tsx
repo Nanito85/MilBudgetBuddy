@@ -58,7 +58,7 @@ const s = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
     padding: Spacing.four, gap: Spacing.three,
   },
-  icon: { fontSize: 48 },
+  icon: { fontSize: 48, lineHeight: 58 },
   title: { fontSize: 18, fontWeight: '900', letterSpacing: 1 },
   body: { fontSize: 13, textAlign: 'center', lineHeight: 20 },
   btn: {

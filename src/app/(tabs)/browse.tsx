@@ -369,7 +369,7 @@ export default function KidsScreen() {
           <View style={styles.emptyState}>
             <Image source={require('../../../assets/images/icon.png')} style={styles.emptyIcon} />
             <ThemedText style={[styles.emptyTitle, { color: tc.textSecondary }]}>NO CADETS ENROLLED</ThemedText>
-            <ThemedText type="label" style={[styles.emptyBody, { color: tc.textSecondary }]}>
+            <ThemedText type="small" style={[styles.emptyBody, { color: tc.textSecondary }]}>
               Add a child profile to give them their own goals, chores, and savings missions.
             </ThemedText>
           </View>
@@ -388,7 +388,7 @@ export default function KidsScreen() {
             <ThemedText style={styles.infoEmoji}>🎯</ThemedText>
             <View style={{ flex: 1, gap: 2 }}>
               <ThemedText type="label" style={styles.infoTitle}>HOW IT WORKS</ThemedText>
-              <ThemedText type="label" style={[styles.infoBody, { color: tc.textSecondary }]}>
+              <ThemedText type="small" style={[styles.infoBody, { color: tc.textSecondary }]}>
                 Kids set savings goals like a new bike or game. Parents add chores with dollar values. Every chore completed moves the bar forward — teaching real money skills.
               </ThemedText>
             </View>
@@ -397,7 +397,7 @@ export default function KidsScreen() {
             <ThemedText style={styles.infoEmoji}>💡</ThemedText>
             <View style={{ flex: 1, gap: 2 }}>
               <ThemedText type="label" style={styles.infoTitle}>PARENT TIP</ThemedText>
-              <ThemedText type="label" style={[styles.infoBody, { color: tc.textSecondary }]}>
+              <ThemedText type="small" style={[styles.infoBody, { color: tc.textSecondary }]}>
                 Long-press a cadet card to remove it. Tap to view goals, chores, and daily finance tips written just for kids.
               </ThemedText>
             </View>
@@ -443,7 +443,7 @@ const styles = StyleSheet.create({
   emptyState: { alignItems: 'center', paddingVertical: Spacing.five, gap: Spacing.two },
   emptyIcon: { width: 80, height: 80, borderRadius: 18 },
   emptyTitle: { fontSize: 14, fontWeight: '900', letterSpacing: 2 },
-  emptyBody: { fontSize: 11, textAlign: 'center', lineHeight: 17, paddingHorizontal: Spacing.three },
+  emptyBody: { fontSize: 14, textAlign: 'center', lineHeight: 20, paddingHorizontal: Spacing.three },
   addBtn: {
     borderWidth: 1,
     borderColor: Brand.tactical + '60',
@@ -461,5 +461,5 @@ const styles = StyleSheet.create({
   infoRow: { flexDirection: 'row', gap: Spacing.two, alignItems: 'flex-start' },
   infoEmoji: { fontSize: 18, width: 28, textAlign: 'center' },
   infoTitle: { color: Brand.accent, fontSize: 10, marginBottom: 2 },
-  infoBody: { fontSize: 11, lineHeight: 16 },
+  infoBody: { fontSize: 14, lineHeight: 20 },
 });

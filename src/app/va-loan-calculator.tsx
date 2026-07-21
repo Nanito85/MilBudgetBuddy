@@ -287,9 +287,9 @@ export default function VALoanCalculatorScreen() {
             </TacticalCard>
 
             <TacticalCard style={ss.disclaimer}>
-              <ThemedText type="label" style={[ss.disclaimerText, { color: tc.textMuted }]}>
-                ⚠ ESTIMATE ONLY — RATES, FEES & TAX VARY BY LENDER AND LOCATION.{'\n'}
-                VERIFY ENTITLEMENT AT BENEFITS.VA.GOV — CONSULT A VA-APPROVED LENDER FOR EXACT FIGURES.
+              <ThemedText type="small" style={[ss.disclaimerText, { color: tc.textMuted }]}>
+                ⚠ Estimate only — rates, fees & tax vary by lender and location.{'\n'}
+                Verify entitlement at benefits.va.gov — consult a VA-approved lender for exact figures.
               </ThemedText>
             </TacticalCard>
           </>
@@ -401,5 +401,5 @@ const ss = StyleSheet.create({
   rowValueBold: { fontSize: 13 },
   warningNote: { color: Brand.warning, fontSize: 8, lineHeight: 12, marginTop: Spacing.one },
   disclaimer: { borderRadius: 4, padding: Spacing.two + 4 },
-  disclaimerText: { color: '#2A4A60', fontSize: 8, lineHeight: 13, letterSpacing: 0.5 },
+  disclaimerText: { fontSize: 11, lineHeight: 16 },
 });

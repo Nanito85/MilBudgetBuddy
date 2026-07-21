@@ -392,7 +392,7 @@ export default function LESDecoderScreen() {
 
           {basicPay === 0 && (
             <ThemedView type="backgroundElement" style={[styles.card, styles.cardPadded, styles.emptyState]}>
-              <ThemedText style={{ fontSize: 32 }}>📋</ThemedText>
+              <ThemedText style={{ fontSize: 32, lineHeight: 38 }}>📋</ThemedText>
               <ThemedText style={styles.emptyTitle}>Enter Your BASEPAY</ThemedText>
               <ThemedText type="small" themeColor="textSecondary" style={{ textAlign: 'center', lineHeight: 18 }}>
                 Start by entering your Basic Pay from the LES to enable math verification.

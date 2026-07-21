@@ -685,7 +685,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: Spacing.two,
   },
-  emptyIcon: { fontSize: 40 },
+  emptyIcon: { fontSize: 40, lineHeight: 48 },
   emptyTitle: { fontSize: 17, fontWeight: '700' },
   emptyBody: { textAlign: 'center', lineHeight: 20 },
 

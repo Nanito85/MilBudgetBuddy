@@ -435,7 +435,7 @@ const styles = StyleSheet.create({
   notesLabel: { fontSize: 11, fontWeight: '800', color: Brand.primary, letterSpacing: 0.5 },
 
   noDataCard: { alignItems: 'center', gap: Spacing.two },
-  noDataIcon: { fontSize: 36 },
+  noDataIcon: { fontSize: 36, lineHeight: 44 },
   noDataTitle: { fontSize: 16, fontWeight: '700' },
 
   // Resources

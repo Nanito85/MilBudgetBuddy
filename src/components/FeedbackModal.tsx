@@ -277,7 +277,7 @@ const styles = StyleSheet.create({
 
   // Success
   successBox: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: Spacing.five, gap: Spacing.three },
-  successEmoji: { fontSize: 56 },
+  successEmoji: { fontSize: 56, lineHeight: 66 },
   successTitle: { fontSize: 22, fontWeight: '900', textAlign: 'center' },
   successSub: { fontSize: 14, textAlign: 'center', lineHeight: 21 },
   doneBtn: { backgroundColor: Brand.tactical, borderRadius: 6, paddingHorizontal: Spacing.five, paddingVertical: Spacing.two + 4, marginTop: Spacing.two },

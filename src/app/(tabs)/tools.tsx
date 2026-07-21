@@ -131,7 +131,7 @@ function MenuCard({ item, onPress }: { item: MenuItem; onPress: () => void }) {
       </View>
       <View style={styles.cardText}>
         <ThemedText style={[styles.cardTitle, { color: tc.textPrimary }]}>{item.title}</ThemedText>
-        <ThemedText type="label" style={[styles.cardDesc, { color: tc.textSecondary }]}>{item.description}</ThemedText>
+        <ThemedText type="small" style={[styles.cardDesc, { color: tc.textSecondary }]}>{item.description}</ThemedText>
       </View>
       {item.badge && (
         <View style={[styles.badge, item.badge === 'New' ? styles.badgeNew : { backgroundColor: tc.borderColor }]}>
@@ -277,7 +277,7 @@ export default function ToolsScreen() {
                     <ThemedText style={styles.situationIcon}>{s.icon}</ThemedText>
                   </View>
                   <ThemedText style={[styles.situationTitle, { color: s.color }]}>{s.title.toUpperCase()}</ThemedText>
-                  <ThemedText type="label" style={[styles.situationSub, { color: tc.textSecondary }]}>{s.subtitle}</ThemedText>
+                  <ThemedText type="small" style={[styles.situationSub, { color: tc.textSecondary }]}>{s.subtitle}</ThemedText>
                 </Pressable>
               ))}
             </View>
@@ -320,7 +320,7 @@ export default function ToolsScreen() {
               <ThemedText style={styles.shortcutIcon}>⚙️</ThemedText>
               <View style={styles.shortcutText}>
                 <ThemedText style={[styles.shortcutTitle, { color: tc.textPrimary }]}>SETTINGS</ThemedText>
-                <ThemedText type="label" style={[styles.shortcutDesc, { color: tc.textSecondary }]}>Profile, text size, notifications, quick-access tiles</ThemedText>
+                <ThemedText type="small" style={[styles.shortcutDesc, { color: tc.textSecondary }]}>Profile, text size, notifications, quick-access tiles</ThemedText>
               </View>
               <ThemedText style={styles.chevron}>›</ThemedText>
             </Pressable>
@@ -365,7 +365,7 @@ const styles = StyleSheet.create({
   situationIconWrap: { width: 36, height: 36, borderRadius: 8, alignItems: 'center', justifyContent: 'center', marginBottom: 2 },
   situationIcon: { fontSize: 18 },
   situationTitle: { fontSize: 11, fontWeight: '800', letterSpacing: 0.3 },
-  situationSub: { fontSize: 10, lineHeight: 14 },
+  situationSub: { fontSize: 12, lineHeight: 16 },
 
   // Category section
   categoryBlock: {
@@ -400,7 +400,7 @@ const styles = StyleSheet.create({
   cardIcon: { fontSize: 22 },
   cardText: { flex: 1, gap: 2, paddingVertical: Spacing.two },
   cardTitle: { fontSize: 12, fontWeight: '800', letterSpacing: 0.5 },
-  cardDesc: { fontSize: 11, lineHeight: 15 },
+  cardDesc: { fontSize: 13, lineHeight: 18 },
   badge: { paddingHorizontal: 6, paddingVertical: 2, borderRadius: 2, marginRight: Spacing.one },
   badgeNew: { backgroundColor: Brand.accent + '20' },
   badgeText: { fontSize: 9, fontWeight: '800', letterSpacing: 0.5 },
@@ -412,10 +412,10 @@ const styles = StyleSheet.create({
     borderColor: Brand.tactical + '30', borderRadius: 6,
     flexDirection: 'row', alignItems: 'center', gap: Spacing.two, padding: Spacing.three,
   },
-  shortcutIcon: { fontSize: 24 },
+  shortcutIcon: { fontSize: 24, lineHeight: 30 },
   shortcutText: { flex: 1, gap: 2 },
   shortcutTitle: { fontSize: 13, fontWeight: '800', letterSpacing: 0.5 },
-  shortcutDesc: { fontSize: 11 },
+  shortcutDesc: { fontSize: 12 },
 
   upgradeBanner: {
     flexDirection: 'row', alignItems: 'center', gap: Spacing.two,

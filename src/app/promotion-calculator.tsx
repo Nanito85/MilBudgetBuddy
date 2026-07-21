@@ -199,5 +199,5 @@ const s = StyleSheet.create({
     borderRadius: 6,
     padding: Spacing.two + 2, borderLeftWidth: 3, borderLeftColor: '#C8A800',
   },
-  disclaimerText: { fontSize: 10, lineHeight: 15 },
+  disclaimerText: { fontSize: 12, lineHeight: 17 },
 });

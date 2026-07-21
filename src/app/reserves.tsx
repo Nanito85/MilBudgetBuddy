@@ -594,5 +594,5 @@ const styles = StyleSheet.create({
   faqA: { fontSize: 11, lineHeight: 17 },
 
   disclaimer: { borderRadius: 4, padding: Spacing.three },
-  disclaimerText: { fontSize: 10, lineHeight: 15 },
+  disclaimerText: { fontSize: 12, lineHeight: 17 },
 });

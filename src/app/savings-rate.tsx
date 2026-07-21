@@ -356,5 +356,5 @@ const styles = StyleSheet.create({
   tipText: { flex: 1, fontSize: 12, lineHeight: 18 },
 
   disclaimer: { borderRadius: 4, padding: Spacing.two },
-  disclaimerText: { fontSize: 10, lineHeight: 15, textAlign: 'center' },
+  disclaimerText: { fontSize: 12, lineHeight: 17, textAlign: 'center' },
 });
