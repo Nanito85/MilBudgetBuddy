@@ -113,7 +113,6 @@ function CategoryRow({ cat, netPay }: { cat: BudgetCategory; netPay: number }) {
   const [nameVal, setNameVal] = useState(cat.name);
   const updateCategory = useBudgetStore((s) => s.updateCategory);
   const removeCategory = useBudgetStore((s) => s.removeCategory);
-  const isCustom = cat.id.startsWith(CUSTOM_PREFIX) || !!cat.removable;
 
   const pct =
     netPay > 0 && cat.monthlyBudget > 0
@@ -133,66 +132,70 @@ function CategoryRow({ cat, netPay }: { cat: BudgetCategory; netPay: number }) {
   };
 
   const handleOptions = () => {
-    if (!isCustom) return;
     Alert.alert(cat.name, 'What would you like to do?', [
       { text: 'Rename', onPress: () => { setNameVal(cat.name); setEditingName(true); } },
-      { text: 'Delete', style: 'destructive', onPress: () => removeCategory(cat.id) },
+      { text: 'Delete', style: 'destructive', onPress: () => {
+        Alert.alert('Delete Category', `Remove "${cat.name}" from your budget?`, [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Delete', style: 'destructive', onPress: () => removeCategory(cat.id) },
+        ]);
+      }},
       { text: 'Cancel', style: 'cancel' },
     ]);
   };
 
   return (
-    <ThemedView type="backgroundElement" style={styles.catRow}>
-      <ThemedText style={styles.catEmoji}>{cat.emoji}</ThemedText>
-      <View style={styles.catInfo}>
-        {isCustom && editingName ? (
-          <TextInput
-            value={nameVal}
-            onChangeText={setNameVal}
-            onBlur={commitName}
-            onSubmitEditing={commitName}
-            autoFocus
-            style={styles.nameInput}
-            placeholder="Category name"
-            returnKeyType="done"
-          />
-        ) : (
-          <ThemedText style={styles.catName}>{cat.name}</ThemedText>
-        )}
-        {pct !== null && !editingName && (
-          <ThemedText type="small" themeColor="textSecondary">
-            {pct}% of net pay
-          </ThemedText>
-        )}
-      </View>
-        {editingAmount ? (
-          <TextInput
-            value={amountVal}
-            onChangeText={setAmountVal}
-            onBlur={commitAmount}
-            onSubmitEditing={commitAmount}
-            keyboardType="decimal-pad"
-            autoFocus
-            style={styles.input}
-            placeholder="0"
-          />
-        ) : (
-          <Pressable
-            onPress={() => {
-              setAmountVal(cat.monthlyBudget > 0 ? String(cat.monthlyBudget) : '');
-              setEditingAmount(true);
-            }}>
-            <ThemedText style={[styles.catAmount, cat.monthlyBudget === 0 && styles.unset]}>
-              {cat.monthlyBudget > 0 ? fmtPay(cat.monthlyBudget) : 'Set'}
+    <Pressable onLongPress={handleOptions} delayLongPress={400}>
+      <ThemedView type="backgroundElement" style={styles.catRow}>
+        <ThemedText style={styles.catEmoji}>{cat.emoji}</ThemedText>
+        <View style={styles.catInfo}>
+          {editingName ? (
+            <TextInput
+              value={nameVal}
+              onChangeText={setNameVal}
+              onBlur={commitName}
+              onSubmitEditing={commitName}
+              autoFocus
+              style={styles.nameInput}
+              placeholder="Category name"
+              returnKeyType="done"
+            />
+          ) : (
+            <ThemedText style={styles.catName}>{cat.name}</ThemedText>
+          )}
+          {pct !== null && !editingName && (
+            <ThemedText type="small" themeColor="textSecondary">
+              {pct}% of net pay
             </ThemedText>
-          </Pressable>
-        )}
-        {isCustom && (
+          )}
+        </View>
+          {editingAmount ? (
+            <TextInput
+              value={amountVal}
+              onChangeText={setAmountVal}
+              onBlur={commitAmount}
+              onSubmitEditing={commitAmount}
+              keyboardType="decimal-pad"
+              autoFocus
+              style={styles.input}
+              placeholder="0"
+            />
+          ) : (
+            <Pressable
+              onPress={() => {
+                setAmountVal(cat.monthlyBudget > 0 ? String(cat.monthlyBudget) : '');
+                setEditingAmount(true);
+              }}>
+              <ThemedText style={[styles.catAmount, cat.monthlyBudget === 0 && styles.unset]}>
+                {cat.monthlyBudget > 0 ? fmtPay(cat.monthlyBudget) : 'Set'}
+              </ThemedText>
+            </Pressable>
+          )}
           <Pressable onPress={handleOptions} hitSlop={8} style={styles.catOptions}>
             <ThemedText style={[styles.catOptionsDots, { color: tc.textMuted }]}>···</ThemedText>
           </Pressable>
-        )}
-      </ThemedView>
+        </ThemedView>
+    </Pressable>
   );
 }
 
@@ -1022,7 +1025,7 @@ export default function BudgetScreen() {
               )}
 
               <ThemedText type="small" themeColor="textSecondary" style={styles.hint}>
-                Tap an amount to edit. Long-press ··· on any card to rename or remove it.
+                Tap an amount to edit. Tap ··· or long-press any card to rename or remove it.
               </ThemedText>
 
               {groupedCategories.map(({ group, cats }) => (

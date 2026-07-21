@@ -2,6 +2,11 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 
 const STORAGE_KEY = 'mbb_budget';
+// Tracks default (non-custom) category ids the user has explicitly deleted,
+// so migrateCategories() knows not to backfill them back in on next hydrate —
+// it otherwise can't tell "user deleted this" apart from "this default didn't
+// exist yet when their data was saved" (the latter is what backfill is for).
+const DELETED_DEFAULTS_KEY = 'mbb_budget_deleted_defaults';
 
 export type BudgetGroup =
   | 'household'
@@ -17,7 +22,7 @@ export interface BudgetCategory {
   emoji: string;
   monthlyBudget: number;
   group: BudgetGroup;
-  /** Built-in category the user can rename/delete (unlike the core defaults). */
+  /** True for categories the user added themselves (vs. the built-in defaults). */
   removable?: boolean;
 }
 
@@ -79,22 +84,23 @@ export const CUSTOM_PREFIX = 'custom_';
  * Merges a persisted (possibly older-shaped) category list with the current
  * default set: backfills `group` on legacy rows and appends any new default
  * categories the user's saved data predates, without touching amounts they've
- * already set.
+ * already set. Skips backfilling any default the user has explicitly deleted.
  */
-function migrateCategories(saved: BudgetCategory[]): BudgetCategory[] {
+function migrateCategories(saved: BudgetCategory[], deletedDefaultIds: string[]): BudgetCategory[] {
   const byId = new Map(saved.map((c) => [c.id, c]));
   const migrated = saved.map((c) => ({
     ...c,
     group: c.group ?? LEGACY_GROUP_BY_ID[c.id] ?? 'other',
   }));
   for (const def of DEFAULT_CATEGORIES) {
-    if (!byId.has(def.id)) migrated.push({ ...def });
+    if (!byId.has(def.id) && !deletedDefaultIds.includes(def.id)) migrated.push({ ...def });
   }
   return migrated;
 }
 
 interface BudgetState {
   categories: BudgetCategory[];
+  deletedDefaultIds: string[];
   hydrated: boolean;
   hydrate: () => Promise<void>;
   updateCategory: (id: string, monthlyBudget: number, name?: string) => void;
@@ -112,15 +118,24 @@ function saveCategories(categories: BudgetCategory[]) {
   AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(categories));
 }
 
+function saveDeletedDefaults(ids: string[]) {
+  AsyncStorage.setItem(DELETED_DEFAULTS_KEY, JSON.stringify(ids));
+}
+
 export const useBudgetStore = create<BudgetState>((set, get) => ({
   categories: DEFAULT_CATEGORIES,
+  deletedDefaultIds: [],
   hydrated: false,
 
   hydrate: async () => {
     try {
-      const raw = await AsyncStorage.getItem(STORAGE_KEY);
-      const categories = raw ? migrateCategories(JSON.parse(raw)) : DEFAULT_CATEGORIES;
-      set({ categories, hydrated: true });
+      const [raw, rawDeleted] = await Promise.all([
+        AsyncStorage.getItem(STORAGE_KEY),
+        AsyncStorage.getItem(DELETED_DEFAULTS_KEY),
+      ]);
+      const deletedDefaultIds: string[] = rawDeleted ? JSON.parse(rawDeleted) : [];
+      const categories = raw ? migrateCategories(JSON.parse(raw), deletedDefaultIds) : DEFAULT_CATEGORIES;
+      set({ categories, deletedDefaultIds, hydrated: true });
       if (raw) saveCategories(categories); // persist the backfilled/migrated shape
     } catch {
       set({ hydrated: true });
@@ -148,12 +163,22 @@ export const useBudgetStore = create<BudgetState>((set, get) => ({
     const categories = get().categories.filter((c) => c.id !== id);
     set({ categories });
     saveCategories(categories);
+
+    // If this was one of the built-in defaults, remember that so it doesn't
+    // get silently re-added the next time the store hydrates.
+    const isDefault = DEFAULT_CATEGORIES.some((d) => d.id === id);
+    if (isDefault && !get().deletedDefaultIds.includes(id)) {
+      const deletedDefaultIds = [...get().deletedDefaultIds, id];
+      set({ deletedDefaultIds });
+      saveDeletedDefaults(deletedDefaultIds);
+    }
   },
 
   totalBudgeted: () => get().categories.reduce((sum, c) => sum + c.monthlyBudget, 0),
 
   resetAll: () => {
-    set({ categories: DEFAULT_CATEGORIES });
+    set({ categories: DEFAULT_CATEGORIES, deletedDefaultIds: [] });
     AsyncStorage.removeItem(STORAGE_KEY);
+    AsyncStorage.removeItem(DELETED_DEFAULTS_KEY);
   },
 }));
