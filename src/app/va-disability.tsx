@@ -242,7 +242,7 @@ export default function VaDisabilityScreen() {
 
             <ThemedView type="backgroundElement" style={styles.noteCard}>
               <ThemedText style={[styles.noteText, { color: tc.textMuted }]}>
-                Rates are FY2026 estimates (2.5% COLA). Actual VA compensation depends on official C&P exam findings, VA rating decisions, and individual circumstances. File claims at va.gov or through a VSO. Tax-free for disability compensation.
+                Rates are FY2026 (2.8% COLA, effective Dec 1, 2025). Actual VA compensation depends on official C&P exam findings, VA rating decisions, and individual circumstances. File claims at va.gov or through a VSO. Tax-free for disability compensation.
               </ThemedText>
             </ThemedView>
           </>
@@ -274,8 +274,8 @@ export default function VaDisabilityScreen() {
               <ThemedText style={[styles.cardLabel, { color: tc.textHint }]}>DEPENDENT ADDITIONS (30%+)</ThemedText>
               <ThemedText style={[styles.noteText, { color: tc.textMuted }]}>
                 At 30% or higher, your monthly compensation increases for dependents:{'\n'}
-                {'\n'}• Spouse adds ~$58–$193/mo depending on rating.
-                {'\n'}• Each child adds ~$30–$100/mo.
+                {'\n'}• Spouse adds ~$65–$220/mo depending on rating.
+                {'\n'}• Each child adds ~$32–$109/mo.
                 {'\n'}• Dependent rates increase with each 10% step.
                 {'\n'}{'\n'}Rates shown are for veteran alone. Use the Calculator tab to see your specific amount with dependents.
               </ThemedText>

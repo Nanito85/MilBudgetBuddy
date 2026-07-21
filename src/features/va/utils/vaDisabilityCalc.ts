@@ -1,21 +1,21 @@
 /**
  * VA disability combined rating ("whole person" method).
- * Rates: FY2026 (effective Dec 1, 2025, 2.5% COLA from FY2025 base).
+ * Rates: FY2026 (effective Dec 1, 2025, 2.8% COLA from FY2025 base).
  * Source: 38 CFR §4.25. Verify at va.gov/disability/compensation-rates.
  */
 
 // FY2026 monthly compensation — veteran alone (no dependents)
 export const VA_RATES_ALONE: Record<number, number> = {
-  10:  175.51,
-  20:  346.95,
-  30:  537.42,
-  40:  774.16,
-  50: 1102.04,
-  60: 1395.93,
-  70: 1759.19,
-  80: 2044.89,
-  90: 2297.96,
- 100: 3831.30,
+  10:  180.42,
+  20:  356.66,
+  30:  552.47,
+  40:  795.84,
+  50: 1132.90,
+  60: 1435.02,
+  70: 1808.45,
+  80: 2102.15,
+  90: 2362.30,
+ 100: 3938.58,
 };
 
 // FY2026 additional monthly amounts for dependents (30%+ only)
@@ -28,14 +28,14 @@ export interface DependentAdder {
 }
 
 export const VA_DEP_ADDERS: Record<number, DependentAdder> = {
-  30:  { withSpouse: 58.57,  withSpouseAndChild: 78.68,  noSpouseOneChild: 30.30, perAdditionalChild: 30.30 },
-  40:  { withSpouse: 77.38,  withSpouseAndChild: 103.38, noSpouseOneChild: 40.07, perAdditionalChild: 40.07 },
-  50:  { withSpouse: 96.18,  withSpouseAndChild: 128.22, noSpouseOneChild: 50.68, perAdditionalChild: 50.68 },
-  60:  { withSpouse: 115.70, withSpouseAndChild: 153.95, noSpouseOneChild: 60.32, perAdditionalChild: 60.32 },
-  70:  { withSpouse: 135.10, withSpouseAndChild: 180.12, noSpouseOneChild: 69.82, perAdditionalChild: 69.82 },
-  80:  { withSpouse: 154.51, withSpouseAndChild: 206.28, noSpouseOneChild: 79.37, perAdditionalChild: 79.37 },
-  90:  { withSpouse: 173.89, withSpouseAndChild: 231.99, noSpouseOneChild: 89.88, perAdditionalChild: 89.88 },
- 100:  { withSpouse: 193.47, withSpouseAndChild: 257.10, noSpouseOneChild: 100.19, perAdditionalChild: 100.19 },
+  30:  { withSpouse: 65.00,  withSpouseAndChild: 114.00, noSpouseOneChild: 43.00,  perAdditionalChild: 32.00 },
+  40:  { withSpouse: 87.00,  withSpouseAndChild: 152.00, noSpouseOneChild: 58.00,  perAdditionalChild: 43.00 },
+  50:  { withSpouse: 109.00, withSpouseAndChild: 190.00, noSpouseOneChild: 73.00,  perAdditionalChild: 54.00 },
+  60:  { withSpouse: 131.00, withSpouseAndChild: 228.00, noSpouseOneChild: 88.00,  perAdditionalChild: 65.00 },
+  70:  { withSpouse: 153.00, withSpouseAndChild: 266.00, noSpouseOneChild: 102.00, perAdditionalChild: 76.00 },
+  80:  { withSpouse: 175.00, withSpouseAndChild: 304.00, noSpouseOneChild: 117.00, perAdditionalChild: 87.00 },
+  90:  { withSpouse: 197.00, withSpouseAndChild: 342.00, noSpouseOneChild: 132.00, perAdditionalChild: 98.00 },
+ 100:  { withSpouse: 219.59, withSpouseAndChild: 380.41, noSpouseOneChild: 146.85, perAdditionalChild: 109.11 },
 };
 
 export interface RatingInput {
