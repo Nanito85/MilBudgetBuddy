@@ -355,7 +355,7 @@ const styles = StyleSheet.create({
   backChevron: { fontSize: 28, fontWeight: '300', color: Brand.primary, lineHeight: 34 },
   title: { fontSize: 18, fontWeight: '700' },
   resetBtn: { width: 50, alignItems: 'flex-end' },
-  resetText: { fontSize: 12, color: '#4D7A9A', fontWeight: '600' },
+  resetText: { fontSize: 12, fontWeight: '600' },
 
   progressWrap: {
     paddingHorizontal: Spacing.three,
@@ -400,7 +400,7 @@ const styles = StyleSheet.create({
   },
   sectionAccent: { width: 3, height: 14, borderRadius: 2 },
   sectionTitle: { flex: 1, fontSize: 10, fontWeight: '800', letterSpacing: 1 },
-  sectionCount: { fontSize: 10, color: '#4D7A9A', fontWeight: '700' },
+  sectionCount: { fontSize: 10, fontWeight: '700' },
 
   itemCard: {
     backgroundColor: '#080E1C',
@@ -419,7 +419,6 @@ const styles = StyleSheet.create({
     height: 22,
     borderRadius: 4,
     borderWidth: 1.5,
-    borderColor: '#3D6080',
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 1,
@@ -427,11 +426,11 @@ const styles = StyleSheet.create({
   },
   checkmark: { fontSize: 13, color: '#FFFFFF', fontWeight: '800' },
   itemBody: { flex: 1, gap: 3 },
-  itemLabel: { fontSize: 13, fontWeight: '600', color: '#C8D8E8', lineHeight: 18 },
-  itemLabelDone: { textDecorationLine: 'line-through', color: '#4D7A9A' },
-  itemTimeframe: { fontSize: 9, color: '#3D6080', fontWeight: '700', letterSpacing: 0.5 },
+  itemLabel: { fontSize: 13, fontWeight: '600', lineHeight: 18 },
+  itemLabelDone: { textDecorationLine: 'line-through' },
+  itemTimeframe: { fontSize: 9, fontWeight: '700', letterSpacing: 0.5 },
   itemDetail: { fontSize: 12, color: '#6A8AA8', lineHeight: 18, marginTop: 4 },
-  expandChevron: { fontSize: 12, color: '#3D6080', paddingTop: 2 },
+  expandChevron: { fontSize: 12, paddingTop: 2 },
 
   footer: {
     borderRadius: 4,
@@ -439,6 +438,6 @@ const styles = StyleSheet.create({
     gap: 4,
     marginTop: Spacing.two,
   },
-  footerTitle: { fontSize: 13, fontWeight: '700', color: '#C8D8E8' },
-  footerText: { fontSize: 11, lineHeight: 17, color: '#4D7A9A' },
+  footerTitle: { fontSize: 13, fontWeight: '700' },
+  footerText: { fontSize: 11, lineHeight: 17 },
 });

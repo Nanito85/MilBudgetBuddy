@@ -316,13 +316,13 @@ const ss = StyleSheet.create({
   backChevron: { fontSize: 28, fontWeight: '300', color: Brand.accent, lineHeight: 34 },
   headerCenter: { alignItems: 'center', gap: 2 },
   headerSub: { color: Brand.tactical, fontSize: 9 },
-  headerTitle: { fontSize: 20, fontWeight: '900', letterSpacing: 1.5, color: '#C8D8E8' },
+  headerTitle: { fontSize: 20, fontWeight: '900', letterSpacing: 1.5 },
   content: { paddingHorizontal: Spacing.three, gap: Spacing.three, paddingTop: Spacing.three },
 
   // Section label
   labelRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
   labelLine: { flex: 1, height: StyleSheet.hairlineWidth, backgroundColor: Brand.border },
-  labelText: { color: '#3D6080', fontSize: 9 },
+  labelText: { fontSize: 9 },
 
   // BLUF
   bluf: { borderRadius: 4, flexDirection: 'row', overflow: 'hidden' },
@@ -335,7 +335,7 @@ const ss = StyleSheet.create({
   inputCard: { borderRadius: 4, padding: Spacing.three, gap: Spacing.three },
   inputGrid: { flexDirection: 'row', gap: Spacing.three },
   inputGroup: { flex: 1, gap: Spacing.one },
-  inputLabel: { color: '#3D6080', fontSize: 8 },
+  inputLabel: { fontSize: 8 },
   inputWrap: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -352,7 +352,6 @@ const ss = StyleSheet.create({
     flex: 1,
     fontSize: 14,
     fontWeight: '700',
-    color: '#C8D8E8',
     fontFamily: Fonts.data,
     padding: 0,
   },
@@ -367,9 +366,9 @@ const ss = StyleSheet.create({
     backgroundColor: 'rgba(26,58,92,0.2)',
   },
   chipActive: { backgroundColor: Brand.primary, borderColor: Brand.primaryLight },
-  chipText: { fontSize: 10, fontWeight: '700', letterSpacing: 0.5, color: '#4D7A9A' },
+  chipText: { fontSize: 10, fontWeight: '700', letterSpacing: 0.5 },
   chipTextActive: { color: '#FFFFFF' },
-  exemptNote: { color: '#3D6080', fontSize: 8, lineHeight: 12 },
+  exemptNote: { fontSize: 8, lineHeight: 12 },
 
   // Results
   resultCard: { borderRadius: 4, padding: Spacing.three, gap: 3 },
@@ -380,7 +379,7 @@ const ss = StyleSheet.create({
     marginBottom: Spacing.one,
   },
   resultHeaderDot: { width: 6, height: 6, backgroundColor: Brand.accent, borderRadius: 1 },
-  resultHeaderLabel: { color: '#4D7A9A', fontSize: 8 },
+  resultHeaderLabel: { fontSize: 8 },
   heroRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 6, marginBottom: Spacing.two },
   heroAmount: {
     fontSize: 38,
@@ -390,14 +389,14 @@ const ss = StyleSheet.create({
     fontFamily: Fonts.data,
     letterSpacing: -0.5,
   },
-  heroPer: { color: '#4D7A9A', marginBottom: 8 },
+  heroPer: { marginBottom: 8 },
   divider: { height: StyleSheet.hairlineWidth, backgroundColor: Brand.border, marginVertical: Spacing.one },
   row: { flexDirection: 'row', alignItems: 'center', paddingVertical: 3, gap: 4 },
   rowIndent: { paddingLeft: Spacing.two },
   rowLabel: { fontSize: 10, fontWeight: '600', letterSpacing: 0.5, color: '#5580A0', minWidth: 130 },
-  rowLabelBold: { color: '#C8D8E8', fontWeight: '800', fontSize: 11 },
+  rowLabelBold: { fontWeight: '800', fontSize: 11 },
   dotLine: { flex: 1, height: StyleSheet.hairlineWidth, backgroundColor: 'rgba(26,58,92,0.5)' },
-  rowValue: { fontSize: 12, fontWeight: '700', fontFamily: Fonts.data, color: '#C8D8E8', letterSpacing: 0.3 },
+  rowValue: { fontSize: 12, fontWeight: '700', fontFamily: Fonts.data, letterSpacing: 0.3 },
   rowValueBold: { fontSize: 13 },
   warningNote: { color: Brand.warning, fontSize: 8, lineHeight: 12, marginTop: Spacing.one },
   disclaimer: { borderRadius: 4, padding: Spacing.two + 4 },

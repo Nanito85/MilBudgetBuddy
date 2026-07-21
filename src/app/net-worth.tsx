@@ -429,7 +429,7 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderColor: Brand.border, alignItems: 'center',
   },
   modeBtnActive: { backgroundColor: Brand.accent, borderColor: Brand.accent },
-  modeBtnText: { fontSize: 9, fontWeight: '800', color: '#3D6080', letterSpacing: 0.5 },
+  modeBtnText: { fontSize: 9, fontWeight: '800', letterSpacing: 0.5 },
   modeBtnTextActive: { color: '#000' },
 
   summaryCard: {
@@ -439,7 +439,7 @@ const styles = StyleSheet.create({
     gap: Spacing.one,
     marginBottom: Spacing.two,
   },
-  summaryEyebrow: { fontSize: 8, fontWeight: '800', letterSpacing: 1.5, color: '#4D7A9A' },
+  summaryEyebrow: { fontSize: 8, fontWeight: '800', letterSpacing: 1.5 },
   summaryTotal: { fontSize: 26, fontWeight: '900', lineHeight: 32 },
   barRow: { marginTop: Spacing.two },
   barTrack: { height: 6, backgroundColor: Brand.danger + '40', borderRadius: 3, overflow: 'hidden' },
@@ -447,15 +447,15 @@ const styles = StyleSheet.create({
   legendRow: { flexDirection: 'row', gap: Spacing.three, marginTop: Spacing.one },
   legendItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   legendDot: { width: 8, height: 8, borderRadius: 4 },
-  legendLabel: { fontSize: 11, color: '#4D7A9A', fontWeight: '600' },
+  legendLabel: { fontSize: 11, fontWeight: '600' },
   legendValue: { fontSize: 11, fontWeight: '800' },
 
   list: { paddingHorizontal: Spacing.three, gap: Spacing.two },
-  hint: { fontSize: 11, color: '#3D6080', textAlign: 'center' },
+  hint: { fontSize: 11, textAlign: 'center' },
 
   sectionLabelRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
   sectionLine: { flex: 1, height: 1, backgroundColor: Brand.border },
-  sectionLabel: { fontSize: 9, fontWeight: '800', color: '#3D6080', letterSpacing: 1 },
+  sectionLabel: { fontSize: 9, fontWeight: '800', letterSpacing: 1 },
 
   entryRow: {
     flexDirection: 'row', alignItems: 'center', borderRadius: 4,
@@ -463,8 +463,8 @@ const styles = StyleSheet.create({
   },
   rowAccent: { width: 3, alignSelf: 'stretch' },
   entryInfo: { flex: 1, paddingVertical: Spacing.two, gap: 2 },
-  entryLabel: { fontSize: 13, fontWeight: '600', color: '#C8D8E8' },
-  tapHint: { fontSize: 9, color: '#3D6080' },
+  entryLabel: { fontSize: 13, fontWeight: '600' },
+  tapHint: { fontSize: 9 },
   labelInput: {
     fontSize: 13, fontWeight: '600', color: Brand.primary,
     borderBottomWidth: 1.5, borderBottomColor: Brand.primary, paddingVertical: 2,
@@ -472,7 +472,7 @@ const styles = StyleSheet.create({
   amountBtn: { paddingRight: Spacing.two },
   entryAmount: { fontSize: 15, fontWeight: '700' },
   amountInput: {
-    fontSize: 15, fontWeight: '700', color: '#C8D8E8',
+    fontSize: 15, fontWeight: '700',
     minWidth: 80, textAlign: 'right', borderBottomWidth: 2,
     paddingVertical: 2, marginRight: Spacing.two,
   },
@@ -481,8 +481,8 @@ const styles = StyleSheet.create({
     padding: Spacing.two + 4, gap: Spacing.two, borderWidth: 1.5,
     borderStyle: 'dashed', borderColor: Brand.border,
   },
-  addPlus: { fontSize: 16, color: '#3D6080', width: 24, textAlign: 'center' },
-  addInput: { flex: 1, fontSize: 14, color: '#C8D8E8' },
+  addPlus: { fontSize: 16, width: 24, textAlign: 'center' },
+  addInput: { flex: 1, fontSize: 14 },
   addBtn: { borderRadius: 4, paddingHorizontal: Spacing.two + 2, paddingVertical: Spacing.one + 2 },
   addBtnText: { color: '#FFFFFF', fontSize: 12, fontWeight: '700' },
 
@@ -496,10 +496,10 @@ const styles = StyleSheet.create({
     marginTop: Spacing.two,
   },
   snapshotBtnText: { fontSize: 14, fontWeight: '700', color: Brand.accent },
-  snapshotHint: { fontSize: 10, color: '#3D6080', textAlign: 'center' },
+  snapshotHint: { fontSize: 10, textAlign: 'center' },
 
   // History mode
-  cardLabel: { fontSize: 9, fontWeight: '800', color: '#4D7A9A', letterSpacing: 1 },
+  cardLabel: { fontSize: 9, fontWeight: '800', letterSpacing: 1 },
   changeCard: { borderRadius: 4, padding: Spacing.three, gap: Spacing.one },
   changeValue: { fontSize: 26, fontWeight: '900', lineHeight: 32 },
 
@@ -507,7 +507,7 @@ const styles = StyleSheet.create({
   chartWrap: { flexDirection: 'row', alignItems: 'flex-end', gap: Spacing.two, paddingVertical: Spacing.one },
   chartCol: { alignItems: 'center', minWidth: 44 },
   chartBar: { width: 28, borderRadius: 3 },
-  chartLabel: { fontSize: 9, color: '#3D6080', marginTop: Spacing.one, textAlign: 'center' },
+  chartLabel: { fontSize: 9, marginTop: Spacing.one, textAlign: 'center' },
   chartValue: { fontSize: 9, fontWeight: '700', textAlign: 'center', marginTop: 2 },
 
   tableCard: { borderRadius: 4, padding: Spacing.three, gap: Spacing.one + 2 },
@@ -517,10 +517,10 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: Brand.border,
   },
-  snapDate: { fontSize: 12, color: '#4D7A9A' },
+  snapDate: { fontSize: 12 },
   snapRight: { alignItems: 'flex-end', gap: 2 },
   snapNw: { fontSize: 14, fontWeight: '700' },
-  snapSub: { fontSize: 10, color: '#3D6080' },
+  snapSub: { fontSize: 10 },
 
   clearBtn: {
     alignItems: 'center',
@@ -533,5 +533,5 @@ const styles = StyleSheet.create({
     borderRadius: 4, padding: Spacing.three + 4, alignItems: 'center', gap: Spacing.two,
   },
   emptyTitle: { fontSize: 16, fontWeight: '700' },
-  emptyBody: { fontSize: 13, color: '#4D7A9A', textAlign: 'center', lineHeight: 20 },
+  emptyBody: { fontSize: 13, textAlign: 'center', lineHeight: 20 },
 });
