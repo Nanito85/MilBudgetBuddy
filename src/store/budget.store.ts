@@ -101,6 +101,7 @@ interface BudgetState {
   addCategory: (name: string, emoji: string, idPrefix?: string, group?: BudgetGroup) => void;
   removeCategory: (id: string) => void;
   totalBudgeted: () => number;
+  resetAll: () => void;
 }
 
 function uid() {
@@ -150,4 +151,9 @@ export const useBudgetStore = create<BudgetState>((set, get) => ({
   },
 
   totalBudgeted: () => get().categories.reduce((sum, c) => sum + c.monthlyBudget, 0),
+
+  resetAll: () => {
+    set({ categories: DEFAULT_CATEGORIES });
+    AsyncStorage.removeItem(STORAGE_KEY);
+  },
 }));

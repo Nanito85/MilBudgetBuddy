@@ -19,6 +19,7 @@ interface ExpensesState {
   removeExpense: (id: string) => void;
   spentByCategory: (monthKey: string) => Record<string, number>; // monthKey = "YYYY-MM"
   totalSpent: (monthKey: string) => number;
+  resetAll: () => void;
 }
 
 function uid() {
@@ -82,5 +83,10 @@ export const useExpensesStore = create<ExpensesState>((set, get) => ({
     return get().expenses
       .filter((e) => monthKey(e.date) === mk)
       .reduce((sum, e) => sum + e.amount, 0);
+  },
+
+  resetAll: () => {
+    set({ expenses: [] });
+    AsyncStorage.removeItem(STORAGE_KEY);
   },
 }));

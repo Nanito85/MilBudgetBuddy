@@ -35,8 +35,16 @@ import {
   scheduleDailyTip,
   schedulePayDayReminders,
 } from '@/services/notifications';
+import { useBudgetStore } from '@/store/budget.store';
 import { useChatStore } from '@/store/chat.store';
+import { useDebtStore } from '@/store/debt.store';
+import { useExpensesStore } from '@/store/expenses.store';
+import { useKidModeStore } from '@/store/kid-mode.store';
 import { useKidsStore } from '@/store/kids.store';
+import { useLifeEventsStore } from '@/store/life-events.store';
+import { useNetWorthStore } from '@/store/networth.store';
+import { useNwSnapshotsStore } from '@/store/networth-snapshots.store';
+import { useSavingsGoalsStore } from '@/store/savings-goals.store';
 import { useTipsStore } from '@/store/tips.store';
 import { useUserStore } from '@/store/user.store';
 import { KidGender, KidProfile, PendingCompletion } from '@/types/kids.types';
@@ -1158,6 +1166,15 @@ export default function ProfileScreen() {
           { text: 'Go Back', style: 'cancel' },
           { text: 'Erase All Data', style: 'destructive', onPress: async () => {
             resetAll(); clearSaved(); clearChat();
+            useBudgetStore.getState().resetAll();
+            useDebtStore.getState().resetAll();
+            useNetWorthStore.getState().resetAll();
+            useNwSnapshotsStore.getState().clearHistory();
+            useSavingsGoalsStore.getState().resetAll();
+            useExpensesStore.getState().resetAll();
+            useKidsStore.getState().resetAll();
+            useLifeEventsStore.getState().resetAll();
+            await useKidModeStore.getState().resetAll();
             await AsyncStorage.clear();
             router.replace('/');
           }},

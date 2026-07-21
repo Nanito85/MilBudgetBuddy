@@ -22,6 +22,7 @@ interface KidsState {
   submitChoreForApproval: (kidId: string, choreId: string, goalId?: string) => void;
   approveCompletion: (kidId: string, completionId: string) => void;
   rejectCompletion: (kidId: string, completionId: string) => void;
+  resetAll: () => void;
 }
 
 function uid() {
@@ -253,5 +254,10 @@ export const useKidsStore = create<KidsState>((set, get) => ({
     );
     set({ kids });
     saveKids(kids);
+  },
+
+  resetAll: () => {
+    set({ kids: [] });
+    AsyncStorage.removeItem(STORAGE_KEY);
   },
 }));

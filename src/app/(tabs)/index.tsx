@@ -21,6 +21,8 @@ import { CategoryBadge } from '@/features/daily-tip/components/CategoryBadge';
 import { TipCard } from '@/features/daily-tip/components/TipCard';
 import { useDailyTip } from '@/features/daily-tip/hooks/useDailyTip';
 import { useBudgetStore } from '@/store/budget.store';
+import { useNetWorthStore } from '@/store/networth.store';
+import { calcPayoff, fmtDate as fmtPayoffDate, fmtMonths } from '@/features/debt/utils/debtCalc';
 import { useUserStore } from '@/store/user.store';
 import { useThemeColors } from '@/hooks/use-theme';
 
@@ -142,13 +144,36 @@ export default function DashboardScreen() {
   const tip = useDailyTip(financialGoal);
 
   const debtEntries   = useDebtStore((s) => s.debts);
+  const debtExtraMonthly = useDebtStore((s) => s.extraMonthly);
   const savingsGoals  = useSavingsGoalsStore((s) => s.goals);
+  const nwEntries     = useNetWorthStore((s) => s.entries);
 
   React.useEffect(() => {
     useBudgetStore.getState().hydrate();
     useDebtStore.getState().hydrate();
     useSavingsGoalsStore.getState().hydrate();
+    useNetWorthStore.getState().hydrate();
   }, []);
+
+  const totalDebt = useMemo(
+    () => debtEntries.reduce((s, d) => s + d.balance, 0),
+    [debtEntries],
+  );
+  const debtPayoff = useMemo(
+    () => calcPayoff(debtEntries, debtExtraMonthly, 'avalanche'),
+    [debtEntries, debtExtraMonthly],
+  );
+
+  const totalAssets = useMemo(
+    () => nwEntries.filter((e) => e.category === 'asset').reduce((s, e) => s + e.amount, 0),
+    [nwEntries],
+  );
+  const totalLiabilities = useMemo(
+    () => nwEntries.filter((e) => e.category === 'liability').reduce((s, e) => s + e.amount, 0),
+    [nwEntries],
+  );
+  const netWorthValue = totalAssets - totalLiabilities;
+  const nwHasData = nwEntries.some((e) => e.amount > 0);
 
   // Show tutorial once disclaimer has been acknowledged and tutorial hasn't been seen
   React.useEffect(() => {
@@ -437,6 +462,70 @@ export default function DashboardScreen() {
             )}
           </View>
         )}
+
+        {/* ── DEBT PAYOFF ──────────────────────────────────────────── */}
+        <View style={styles.section}>
+          <SectionHeader
+            label="DEBT PAYOFF"
+            accentColor="#E74C3C"
+            route="/debt-payoff"
+            routeLabel="PLAN"
+          />
+          <Pressable
+            onPress={() => router.push('/debt-payoff' as any)}
+            style={({ pressed }) => [styles.statusPayCard, { backgroundColor: tc.surface, borderColor: tc.borderColor }, pressed && { opacity: 0.85 }]}>
+            {debtEntries.length === 0 ? (
+              <View style={{ flex: 1 }}>
+                <ThemedText type="label" style={[styles.statusPayLabel, { color: tc.textMuted }]}>NO DEBTS TRACKED</ThemedText>
+                <ThemedText type="small" themeColor="textSecondary" style={styles.statusPayNote}>
+                  Tap to add your debts and build a payoff plan.
+                </ThemedText>
+              </View>
+            ) : (
+              <View style={{ flex: 1 }}>
+                <ThemedText type="label" style={[styles.statusPayLabel, { color: tc.textMuted }]}>TOTAL DEBT BALANCE</ThemedText>
+                <ThemedText style={[styles.statusPayValue, { color: '#E74C3C' }]}>${Math.round(totalDebt).toLocaleString()}</ThemedText>
+                {debtPayoff && (
+                  <ThemedText type="small" themeColor="textSecondary" style={styles.statusPayNote}>
+                    Debt-free in {fmtMonths(debtPayoff.totalMonths)} (by {fmtPayoffDate(debtPayoff.payoffDate)}) at ${Math.round(debtPayoff.monthlyCost).toLocaleString()}/mo
+                  </ThemedText>
+                )}
+              </View>
+            )}
+          </Pressable>
+        </View>
+
+        {/* ── NET WORTH ────────────────────────────────────────────── */}
+        <View style={styles.section}>
+          <SectionHeader
+            label="NET WORTH"
+            accentColor={Brand.success}
+            route="/net-worth"
+            routeLabel="TRACK"
+          />
+          <Pressable
+            onPress={() => router.push('/net-worth' as any)}
+            style={({ pressed }) => [styles.statusPayCard, { backgroundColor: tc.surface, borderColor: tc.borderColor }, pressed && { opacity: 0.85 }]}>
+            {!nwHasData ? (
+              <View style={{ flex: 1 }}>
+                <ThemedText type="label" style={[styles.statusPayLabel, { color: tc.textMuted }]}>NOT TRACKED YET</ThemedText>
+                <ThemedText type="small" themeColor="textSecondary" style={styles.statusPayNote}>
+                  Tap to log your assets and debts and see your net worth.
+                </ThemedText>
+              </View>
+            ) : (
+              <View style={{ flex: 1 }}>
+                <ThemedText type="label" style={[styles.statusPayLabel, { color: tc.textMuted }]}>NET WORTH</ThemedText>
+                <ThemedText style={[styles.statusPayValue, { color: netWorthValue >= 0 ? Brand.success : '#E74C3C' }]}>
+                  {netWorthValue < 0 ? '-' : ''}${Math.abs(Math.round(netWorthValue)).toLocaleString()}
+                </ThemedText>
+                <ThemedText type="small" themeColor="textSecondary" style={styles.statusPayNote}>
+                  Assets ${Math.round(totalAssets).toLocaleString()} · Liabilities ${Math.round(totalLiabilities).toLocaleString()}
+                </ThemedText>
+              </View>
+            )}
+          </Pressable>
+        </View>
 
         {/* ── QUICK ACCESS ─────────────────────────────────────────── */}
         <View style={styles.section}>

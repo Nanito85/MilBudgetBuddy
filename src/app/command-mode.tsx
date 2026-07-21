@@ -9,8 +9,11 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { BottomTabInset, Brand, Spacing } from '@/constants/theme';
 import { calcLES } from '@/features/home/utils/lesCalc';
+import { calcPayoff, fmtDate as fmtPayoffDate, fmtMonths } from '@/features/debt/utils/debtCalc';
 import { useThemeColors } from '@/hooks/use-theme';
 import { useBudgetStore } from '@/store/budget.store';
+import { useDebtStore } from '@/store/debt.store';
+import { useNetWorthStore } from '@/store/networth.store';
 import { useUserStore } from '@/store/user.store';
 import { getRankAbbrev, BRANCH_LABELS, SPECIAL_PAY_LABELS } from '@/types/user.types';
 
@@ -136,7 +139,25 @@ export default function CommandModeScreen() {
 
   // Budget
   const budgetCategories = useBudgetStore((s) => s.categories);
-  useEffect(() => { useBudgetStore.getState().hydrate(); }, []);
+  useEffect(() => {
+    useBudgetStore.getState().hydrate();
+    useDebtStore.getState().hydrate();
+    useNetWorthStore.getState().hydrate();
+  }, []);
+
+  // Debt
+  const debts = useDebtStore((s) => s.debts);
+  const debtExtraMonthly = useDebtStore((s) => s.extraMonthly);
+  const totalDebt = useMemo(() => debts.reduce((s, d) => s + d.balance, 0), [debts]);
+  const debtPayoff = useMemo(() => calcPayoff(debts, debtExtraMonthly, 'avalanche'), [debts, debtExtraMonthly]);
+
+  // Net worth
+  const nwEntries = useNetWorthStore((s) => s.entries);
+  const nwAssets = useMemo(() => nwEntries.filter((e) => e.category === 'asset'), [nwEntries]);
+  const nwLiabilities = useMemo(() => nwEntries.filter((e) => e.category === 'liability'), [nwEntries]);
+  const totalAssets = useMemo(() => nwAssets.reduce((s, e) => s + e.amount, 0), [nwAssets]);
+  const totalLiabilities = useMemo(() => nwLiabilities.reduce((s, e) => s + e.amount, 0), [nwLiabilities]);
+  const netWorthValue = totalAssets - totalLiabilities;
 
   const rankAbbrev  = getRankAbbrev(branch, payGrade, rankVariant);
   const displayName = nickname || lastName?.toUpperCase() || 'SERVICEMEMBER';
@@ -245,6 +266,31 @@ export default function CommandModeScreen() {
     <td>NET AFTER ALL EXPENSES</td>
     <td style="text-align:right;font-family:monospace;color:${(netAfterExpenses ?? 0) >= 0 ? '#2E7D32' : '#B71C1C'};">
       ${netAfterExpenses !== null ? ((netAfterExpenses >= 0 ? '+' : '') + fmt(netAfterExpenses)) : '—'}/mo
+    </td>
+  </tr>
+</table>
+
+<table>
+  ${sectionHeader('DEBT PAYOFF PLAN', '#B71C1C')}
+  ${debts.length === 0
+    ? '<tr><td colspan="2" style="padding:4px 8px;color:#999;font-size:11px;">No debts on file.</td></tr>'
+    : debts.map((d) => row(`${d.name} (${d.apr}% APR)`, fmt(d.balance))).join('')}
+  ${row('TOTAL DEBT BALANCE', fmt(totalDebt), true)}
+  ${debtPayoff ? row('Monthly Payoff Payment', fmt(debtPayoff.monthlyCost)) : ''}
+  ${debtPayoff ? row('Debt-Free Date (avalanche)', `${fmtMonths(debtPayoff.totalMonths)} — ${fmtPayoffDate(debtPayoff.payoffDate)}`) : ''}
+  ${debtPayoff ? row('Total Interest Paid (est.)', fmt(debtPayoff.totalInterest)) : ''}
+</table>
+
+<table>
+  ${sectionHeader('NET WORTH', '#1565C0')}
+  ${nwAssets.filter((e) => e.amount > 0).map((e) => row(e.label, fmt(e.amount))).join('')}
+  ${row('TOTAL ASSETS', fmt(totalAssets), true)}
+  ${nwLiabilities.filter((e) => e.amount > 0).map((e) => row(e.label, fmt(e.amount))).join('')}
+  ${row('TOTAL LIABILITIES', fmt(totalLiabilities), true)}
+  <tr class="net-row">
+    <td>NET WORTH</td>
+    <td style="text-align:right;font-family:monospace;color:${netWorthValue >= 0 ? '#2E7D32' : '#B71C1C'};">
+      ${netWorthValue < 0 ? '-' : ''}${fmt(Math.abs(netWorthValue))}
     </td>
   </tr>
 </table>
@@ -501,6 +547,60 @@ export default function CommandModeScreen() {
                     ⚠️ Expenses exceed take-home pay. Review your budget.
                   </ThemedText>
                 </View>
+              )}
+            </View>
+
+            {/* ── DEBT PAYOFF PLAN ── */}
+            <View style={[styles.card, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
+              <SectionHeader label="DEBT PAYOFF PLAN" color="#E74C3C" />
+              {debts.length === 0 ? (
+                <Pressable onPress={() => router.push('/debt-payoff' as any)} style={styles.noBudgetRow}>
+                  <ThemedText style={[styles.noBudgetText, { color: tc.textHint }]}>No debts on file — tap to add your debts →</ThemedText>
+                </Pressable>
+              ) : (
+                <>
+                  {debts.map((d) => (
+                    <Row key={d.id} label={`${d.name} (${d.apr}% APR)`} value={fmt(d.balance)} />
+                  ))}
+                  <Divider />
+                  <Row label="TOTAL DEBT BALANCE" value={fmt(totalDebt)} bold accent="#E74C3C" />
+                  {debtPayoff && (
+                    <>
+                      <Row label="Monthly Payoff Payment" value={fmt(debtPayoff.monthlyCost)} dim />
+                      <Row label="Debt-Free By" value={`${fmtMonths(debtPayoff.totalMonths)} · ${fmtPayoffDate(debtPayoff.payoffDate)}`} dim />
+                      <Row label="Total Interest (est.)" value={fmt(debtPayoff.totalInterest)} dim />
+                    </>
+                  )}
+                </>
+              )}
+            </View>
+
+            {/* ── NET WORTH ── */}
+            <View style={[styles.card, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
+              <SectionHeader label="NET WORTH" color="#1565C0" />
+              {totalAssets === 0 && totalLiabilities === 0 ? (
+                <Pressable onPress={() => router.push('/net-worth' as any)} style={styles.noBudgetRow}>
+                  <ThemedText style={[styles.noBudgetText, { color: tc.textHint }]}>Not tracked yet — tap to log assets & debts →</ThemedText>
+                </Pressable>
+              ) : (
+                <>
+                  {nwAssets.filter((e) => e.amount > 0).map((e) => (
+                    <Row key={e.id} label={e.label} value={fmt(e.amount)} indent dim />
+                  ))}
+                  <Row label="TOTAL ASSETS" value={fmt(totalAssets)} bold accent={Brand.success} />
+                  <Divider />
+                  {nwLiabilities.filter((e) => e.amount > 0).map((e) => (
+                    <Row key={e.id} label={e.label} value={fmt(e.amount)} indent dim />
+                  ))}
+                  <Row label="TOTAL LIABILITIES" value={fmt(totalLiabilities)} bold accent="#E74C3C" />
+                  <Divider />
+                  <Row
+                    label="NET WORTH"
+                    value={`${netWorthValue < 0 ? '-' : ''}${fmt(Math.abs(netWorthValue))}`}
+                    bold
+                    accent={netWorthValue >= 0 ? Brand.success : '#E74C3C'}
+                  />
+                </>
               )}
             </View>
 

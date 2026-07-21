@@ -44,6 +44,7 @@ interface NetWorthState {
   totalAssets: () => number;
   totalLiabilities: () => number;
   netWorth: () => number;
+  resetAll: () => void;
 }
 
 function uid() {
@@ -102,4 +103,9 @@ export const useNetWorthStore = create<NetWorthState>((set, get) => ({
       .reduce((s, e) => s + e.amount, 0),
 
   netWorth: () => get().totalAssets() - get().totalLiabilities(),
+
+  resetAll: () => {
+    set({ entries: [...DEFAULT_ASSETS, ...DEFAULT_LIABILITIES] });
+    AsyncStorage.removeItem(STORAGE_KEY);
+  },
 }));

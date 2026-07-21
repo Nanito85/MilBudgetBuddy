@@ -15,6 +15,7 @@ interface KidModeState {
   deactivate: () => void;
   setPin: (pin: string) => Promise<void>;
   clearPin: () => Promise<void>;
+  resetAll: () => Promise<void>;
 }
 
 function persistState(active: boolean, kidId: string | null) {
@@ -90,5 +91,11 @@ export const useKidModeStore = create<KidModeState>((set, get) => ({
     const { active, kidId } = get();
     persistState(active, kidId);
     set({ pin: null });
+  },
+
+  resetAll: async () => {
+    await deletePin();
+    AsyncStorage.removeItem(STATE_KEY);
+    set({ pin: null, active: false, kidId: null });
   },
 }));

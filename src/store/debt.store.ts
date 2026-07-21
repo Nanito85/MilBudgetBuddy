@@ -20,6 +20,7 @@ interface DebtState {
   updateDebt: (id: string, partial: Partial<Omit<Debt, 'id'>>) => void;
   removeDebt: (id: string) => void;
   setExtraMonthly: (amount: number) => void;
+  resetAll: () => void;
 }
 
 function uid() {
@@ -76,5 +77,10 @@ export const useDebtStore = create<DebtState>((set, get) => ({
   setExtraMonthly: (extraMonthly) => {
     set({ extraMonthly });
     save({ debts: get().debts, extraMonthly });
+  },
+
+  resetAll: () => {
+    set({ debts: [], extraMonthly: 0 });
+    AsyncStorage.removeItem(STORAGE_KEY);
   },
 }));

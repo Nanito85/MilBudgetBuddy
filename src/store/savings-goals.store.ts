@@ -41,6 +41,7 @@ interface GoalsState {
   deposit: (goalId: string, amount: number) => void;
   withdraw: (goalId: string, amount: number) => void;
   removeGoal: (goalId: string) => void;
+  resetAll: () => void;
 }
 
 const STORAGE_KEY = 'mbb_savings_goals_v1';
@@ -105,5 +106,10 @@ export const useSavingsGoalsStore = create<GoalsState>((set, get) => ({
     const goals = get().goals.filter((g) => g.id !== goalId);
     set({ goals });
     save(goals);
+  },
+
+  resetAll: () => {
+    set({ goals: [] });
+    AsyncStorage.removeItem(STORAGE_KEY);
   },
 }));
