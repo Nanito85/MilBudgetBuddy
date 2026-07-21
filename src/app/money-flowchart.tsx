@@ -287,7 +287,7 @@ const styles = StyleSheet.create({
   detailDivider: { height: StyleSheet.hairlineWidth, backgroundColor: Brand.border },
   detailBlock: { gap: 4 },
   detailLabel: { fontSize: 8, fontWeight: '800', letterSpacing: 1.2 },
-  detailText: { fontSize: 12, lineHeight: 18, color: '#8AA8C0' },
+  detailText: { fontSize: 12, lineHeight: 18 },
 
   disclaimer: {
     borderRadius: 4,

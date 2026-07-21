@@ -329,7 +329,7 @@ const ss = StyleSheet.create({
   blufBar: { width: 3, backgroundColor: Brand.accent },
   blufText: { flex: 1, padding: Spacing.three, gap: Spacing.one },
   blufLabel: { color: Brand.accent, fontSize: 9 },
-  blufBody: { fontSize: 12, lineHeight: 18, color: '#5580A0' },
+  blufBody: { fontSize: 12, lineHeight: 18 },
 
   // Inputs
   inputCard: { borderRadius: 4, padding: Spacing.three, gap: Spacing.three },
@@ -393,7 +393,7 @@ const ss = StyleSheet.create({
   divider: { height: StyleSheet.hairlineWidth, backgroundColor: Brand.border, marginVertical: Spacing.one },
   row: { flexDirection: 'row', alignItems: 'center', paddingVertical: 3, gap: 4 },
   rowIndent: { paddingLeft: Spacing.two },
-  rowLabel: { fontSize: 10, fontWeight: '600', letterSpacing: 0.5, color: '#5580A0', minWidth: 130 },
+  rowLabel: { fontSize: 10, fontWeight: '600', letterSpacing: 0.5, minWidth: 130 },
   rowLabelBold: { fontWeight: '800', fontSize: 11 },
   dotLine: { flex: 1, height: StyleSheet.hairlineWidth, backgroundColor: 'rgba(26,58,92,0.5)' },
   rowValue: { fontSize: 12, fontWeight: '700', fontFamily: Fonts.data, letterSpacing: 0.3 },

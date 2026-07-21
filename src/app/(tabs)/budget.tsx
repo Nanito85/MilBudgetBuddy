@@ -1183,7 +1183,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modeBtnActive: { backgroundColor: Brand.accent, borderColor: Brand.accent },
-  modeBtnText: { fontSize: 10, fontWeight: '800', color: '#6B92B0', letterSpacing: 0.5 },
+  modeBtnText: { fontSize: 10, fontWeight: '800', letterSpacing: 0.5 },
   modeBtnTextActive: { color: '#000' },
 
   summaryBar: {
@@ -1408,7 +1408,7 @@ const styles = StyleSheet.create({
   tipBody: { flexDirection: 'row', gap: Spacing.two, alignItems: 'flex-start' },
   tipIcon: { fontSize: 24, lineHeight: 30 },
   tipTitle: { fontSize: 13, fontWeight: '700', marginBottom: 4 },
-  tipText: { fontSize: 12, lineHeight: 18, color: '#6B92B0' },
+  tipText: { fontSize: 12, lineHeight: 18 },
 
   // Goals mode
   goalsSummary: {

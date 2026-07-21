@@ -429,7 +429,7 @@ const styles = StyleSheet.create({
   itemLabel: { fontSize: 13, fontWeight: '600', lineHeight: 18 },
   itemLabelDone: { textDecorationLine: 'line-through' },
   itemTimeframe: { fontSize: 9, fontWeight: '700', letterSpacing: 0.5 },
-  itemDetail: { fontSize: 12, color: '#6A8AA8', lineHeight: 18, marginTop: 4 },
+  itemDetail: { fontSize: 12, lineHeight: 18, marginTop: 4 },
   expandChevron: { fontSize: 12, paddingTop: 2 },
 
   footer: {
