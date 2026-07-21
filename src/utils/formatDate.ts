@@ -17,3 +17,7 @@ export function dayOfYear(): number {
   const diff = now.getTime() - start.getTime();
   return Math.floor(diff / (1000 * 60 * 60 * 24));
 }
+
+export function weekOfYear(): number {
+  return Math.floor(dayOfYear() / 7);
+}

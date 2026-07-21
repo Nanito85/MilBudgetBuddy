@@ -34,20 +34,24 @@ async function cancelByIdentifier(id: string): Promise<void> {
   } catch {}
 }
 
-// ── Daily tip ─────────────────────────────────────────────────────────────────
+// ── Weekly tip ────────────────────────────────────────────────────────────────
+// Fires every Monday — matches the weekly tip rotation in useWeeklyTip(), so
+// the reminder always points to genuinely new content, not a repeat of
+// what fired yesterday.
 
-export async function scheduleDailyTip(hour = 8, minute = 0): Promise<void> {
+export async function scheduleWeeklyTip(hour = 8, minute = 0): Promise<void> {
   if (Platform.OS === 'web') return;
   try {
     await cancelByIdentifier(CHANNEL_TIP);
     await Notifications.scheduleNotificationAsync({
       identifier: CHANNEL_TIP,
       content: {
-        title: '💰 Daily Finance Tip',
-        body: 'Your military finance tip for today is ready. Tap to read.',
+        title: '💰 This Week\'s Finance Tip',
+        body: 'Your new military finance tip for the week is ready. Tap to read.',
       },
       trigger: {
-        type: Notifications.SchedulableTriggerInputTypes.DAILY,
+        type: Notifications.SchedulableTriggerInputTypes.WEEKLY,
+        weekday: 2, // Monday (1 = Sunday)
         hour,
         minute,
       },
@@ -55,7 +59,7 @@ export async function scheduleDailyTip(hour = 8, minute = 0): Promise<void> {
   } catch {}
 }
 
-export async function cancelDailyTip(): Promise<void> {
+export async function cancelWeeklyTip(): Promise<void> {
   if (Platform.OS === 'web') return;
   await cancelByIdentifier(CHANNEL_TIP);
 }

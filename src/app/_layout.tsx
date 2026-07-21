@@ -102,6 +102,7 @@ export default function RootLayout() {
         <Stack.Screen name="category/[slug]" />
         <Stack.Screen name="kids/[id]" />
         <Stack.Screen name="tip/[id]" />
+        <Stack.Screen name="tip-library" />
         <Stack.Screen name="credit-score" />
         <Stack.Screen name="dity-calculator" />
         <Stack.Screen name="explore" />

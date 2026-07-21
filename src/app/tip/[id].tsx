@@ -25,7 +25,7 @@ export default function TipDetailScreen() {
 
   const handleBack = () => {
     if (router.canGoBack()) router.back();
-    else router.push('/browse');
+    else router.push('/tip-library' as any);
   };
 
   const handleAskAI = () => {

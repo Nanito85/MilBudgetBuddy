@@ -29,10 +29,10 @@ import { BranchSelector } from '@/features/profile/components/BranchSelector';
 import { StationPicker } from '@/features/pcs/components/StationPicker';
 import { useThemeColors } from '@/hooks/use-theme';
 import {
-  cancelDailyTip,
   cancelPayDayReminders,
+  cancelWeeklyTip,
   requestNotificationPermissions,
-  scheduleDailyTip,
+  scheduleWeeklyTip,
   schedulePayDayReminders,
 } from '@/services/notifications';
 import { useBudgetStore } from '@/store/budget.store';
@@ -1150,11 +1150,11 @@ export default function ProfileScreen() {
       const granted = await requestNotificationPermissions();
       if (!granted) { Alert.alert('Permission Required', 'Enable notifications in device settings.'); return; }
       setNotifications(true);
-      scheduleDailyTip(notificationHour, notificationMinute);
+      scheduleWeeklyTip(notificationHour, notificationMinute);
       schedulePayDayReminders();
     } else {
       setNotifications(false);
-      cancelDailyTip();
+      cancelWeeklyTip();
       cancelPayDayReminders();
     }
   };
@@ -1394,9 +1394,9 @@ export default function ProfileScreen() {
         <TacticalCard accentColor={Brand.primary} style={styles.sectionCard}>
           <View style={styles.prefRow}>
             <View style={{ flex: 1, gap: 2 }}>
-              <ThemedText style={[styles.prefLabel, { color: tc.textPrimary }]}>Daily Tip Reminder</ThemedText>
+              <ThemedText style={[styles.prefLabel, { color: tc.textPrimary }]}>Weekly Tip Reminder</ThemedText>
               <ThemedText type="small" themeColor="textHint" style={styles.prefValue}>
-                {notificationsEnabled ? `${formatTime(notificationHour, notificationMinute)} daily` : 'Off'}
+                {notificationsEnabled ? `Mondays at ${formatTime(notificationHour, notificationMinute)}` : 'Off'}
               </ThemedText>
             </View>
             <Switch value={notificationsEnabled} onValueChange={handleNotificationToggle} trackColor={{ true: Brand.accent }} thumbColor="#FFF" />
@@ -1405,18 +1405,24 @@ export default function ProfileScreen() {
 
         {/* ── Stats ──────────────────────────────────────────────────── */}
         <SectionLabel text="INTEL STATS" accentColor={Brand.accent} />
-        <View style={styles.statsRow}>
-          {[
-            { val: savedTipIds.length, label: 'SAVED' },
-            { val: TIPS.length, label: 'TOTAL TIPS' },
-            { val: 6, label: 'CATEGORIES' },
-          ].map((s) => (
-            <TacticalCard key={s.label} accentColor={Brand.accent} style={styles.statCard}>
-              <ThemedText style={[styles.statVal, { fontFamily: Fonts.data }]}>{s.val}</ThemedText>
-              <ThemedText type="label" style={[styles.statLabel, { color: tc.textSecondary }]}>{s.label}</ThemedText>
-            </TacticalCard>
-          ))}
-        </View>
+        <ThemedText type="small" themeColor="textSecondary" style={styles.intelStatsCaption}>
+          Your Home screen tip rotates weekly — 58 tips means about a year before any repeat. Tap below to browse the full library, filter by topic, or read your saved tips.
+        </ThemedText>
+        <Pressable onPress={() => router.push('/tip-library' as any)} style={({ pressed }) => pressed && { opacity: 0.8 }}>
+          <View style={styles.statsRow}>
+            {[
+              { val: savedTipIds.length, label: 'SAVED' },
+              { val: TIPS.length, label: 'TOTAL TIPS' },
+              { val: 6, label: 'CATEGORIES' },
+            ].map((s) => (
+              <TacticalCard key={s.label} accentColor={Brand.accent} style={styles.statCard}>
+                <ThemedText style={[styles.statVal, { fontFamily: Fonts.data }]}>{s.val}</ThemedText>
+                <ThemedText type="label" style={[styles.statLabel, { color: tc.textSecondary }]}>{s.label}</ThemedText>
+              </TacticalCard>
+            ))}
+          </View>
+          <ThemedText style={[styles.intelViewAll, { color: Brand.accent }]}>VIEW TIP LIBRARY ›</ThemedText>
+        </Pressable>
 
         {/* ── About ──────────────────────────────────────────────────── */}
         <SectionLabel text="ABOUT" />
@@ -1527,10 +1533,12 @@ const styles = StyleSheet.create({
   prefLabel: { fontSize: 15, fontWeight: '600' },
   prefValue: { fontSize: 12 },
 
+  intelStatsCaption: { lineHeight: 19 },
   statsRow: { flexDirection: 'row', gap: Spacing.two },
   statCard: { flex: 1, alignItems: 'center', gap: 5 },
   statVal: { fontSize: 24, fontWeight: '800', color: Brand.accent },
   statLabel: { fontSize: 11 },
+  intelViewAll: { fontSize: 12, fontWeight: '800', letterSpacing: 0.5, textAlign: 'center', marginTop: Spacing.two },
 
   addRowBtn: { paddingVertical: Spacing.two, alignItems: 'center' },
   addRowBtnText: { color: Brand.tactical, fontSize: 11 },

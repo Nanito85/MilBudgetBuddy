@@ -23,10 +23,10 @@ import { GradePicker } from '@/features/pcs/components/GradePicker';
 import { StationPicker } from '@/features/pcs/components/StationPicker';
 import { NumberStepper } from '@/features/retirement/components/NumberStepper';
 import {
-  cancelDailyTip,
   cancelPayDayReminders,
+  cancelWeeklyTip,
   requestNotificationPermissions,
-  scheduleDailyTip,
+  scheduleWeeklyTip,
   schedulePayDayReminders,
 } from '@/services/notifications';
 import { useAuthStore } from '@/store/auth.store';
@@ -973,14 +973,14 @@ function NotificationsStep({ onFinish }: { onFinish: () => void }) {
       const granted = await requestNotificationPermissions();
       if (granted) {
         setNotifications(true);
-        scheduleDailyTip(notificationHour, notificationMinute);
+        scheduleWeeklyTip(notificationHour, notificationMinute);
         schedulePayDayReminders();
       } else {
         setEnabled(false);
       }
     } else {
       setNotifications(false);
-      cancelDailyTip();
+      cancelWeeklyTip();
       cancelPayDayReminders();
     }
   };
@@ -995,8 +995,8 @@ function NotificationsStep({ onFinish }: { onFinish: () => void }) {
         </ThemedText>
         <ThemedView type="backgroundElement" style={styles.toggleRow}>
           <View>
-            <ThemedText style={styles.toggleLabel}>Daily tip reminder</ThemedText>
-            <ThemedText type="small" themeColor="textSecondary">8:00 AM each morning</ThemedText>
+            <ThemedText style={styles.toggleLabel}>Weekly tip reminder</ThemedText>
+            <ThemedText type="small" themeColor="textSecondary">Mondays at 8:00 AM</ThemedText>
           </View>
           <Switch
             value={enabled}

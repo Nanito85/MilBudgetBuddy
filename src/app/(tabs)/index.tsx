@@ -19,7 +19,7 @@ import { calcLES, fmtPay, getDrillPay } from '@/features/home/utils/lesCalc';
 import { monthlyCompensation } from '@/features/va/utils/vaDisabilityCalc';
 import { CategoryBadge } from '@/features/daily-tip/components/CategoryBadge';
 import { TipCard } from '@/features/daily-tip/components/TipCard';
-import { useDailyTip } from '@/features/daily-tip/hooks/useDailyTip';
+import { useWeeklyTip } from '@/features/daily-tip/hooks/useWeeklyTip';
 import { useBudgetStore } from '@/store/budget.store';
 import { useNetWorthStore } from '@/store/networth.store';
 import { calcPayoff, fmtDate as fmtPayoffDate, fmtMonths } from '@/features/debt/utils/debtCalc';
@@ -141,7 +141,7 @@ export default function DashboardScreen() {
   const drillsPerMonth   = useUserStore((s) => s.drillsPerMonth);
   const vaDisabilityPercent = useUserStore((s) => s.vaDisabilityPercent);
   const financialGoal = useUserStore((s) => s.financialGoal);
-  const tip = useDailyTip(financialGoal);
+  const tip = useWeeklyTip(financialGoal);
 
   const debtEntries   = useDebtStore((s) => s.debts);
   const debtExtraMonthly = useDebtStore((s) => s.extraMonthly);
@@ -540,8 +540,18 @@ export default function DashboardScreen() {
 
         {/* ── INTEL BRIEF ──────────────────────────────────────────── */}
         <View style={styles.section}>
-          <SectionHeader label="INTEL BRIEF" accentColor={Brand.success} />
-          <TipCard tip={tip} />
+          <SectionHeader
+            label="INTEL BRIEF"
+            accentColor={Brand.success}
+            route="/tip-library"
+            routeLabel="ALL TIPS"
+          />
+          <ThemedText type="small" themeColor="textMuted" style={styles.intelCaption}>
+            A new tip every week — tap to read more or browse the full library.
+          </ThemedText>
+          <Pressable onPress={() => router.push(`/tip/${tip.id}` as any)}>
+            <TipCard tip={tip} />
+          </Pressable>
         </View>
 
       </ScrollView>
@@ -561,6 +571,8 @@ const styles = StyleSheet.create({
   section: {
     gap: Spacing.two,
   },
+
+  intelCaption: { lineHeight: 17, marginTop: -4 },
 
   statusPayCard: {
     flexDirection: 'row',
