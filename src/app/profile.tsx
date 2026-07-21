@@ -40,7 +40,7 @@ import { useKidsStore } from '@/store/kids.store';
 import { useTipsStore } from '@/store/tips.store';
 import { useUserStore } from '@/store/user.store';
 import { KidGender, KidProfile, PendingCompletion } from '@/types/kids.types';
-import { Installation } from '@/data/installations';
+import { Installation, getInstallationByZip } from '@/data/installations';
 import {
   BRANCH_LABELS,
   HOUSING_STATUS_DESCRIPTIONS,
@@ -48,11 +48,14 @@ import {
   HousingStatus,
   MilitaryBranch,
   RankVariant,
+  ServiceStatus,
   SPECIAL_PAY_LABELS,
   SPECIAL_PAY_RANGES,
   SpecialPayType,
   getRankAbbrev,
 } from '@/types/user.types';
+import { VALID_RATINGS, monthlyCompensation } from '@/features/va/utils/vaDisabilityCalc';
+import { getDrillPay, fmtPay } from '@/features/home/utils/lesCalc';
 
 const HOUSING_STATUS_ORDER: HousingStatus[] = ['off_base', 'barracks', 'on_base_family_housing'];
 import { PayGrade } from '@/data/bah-rates';
@@ -73,6 +76,15 @@ function yearsFromDate(iso: string | undefined): number | null {
   const ms = Date.now() - new Date(iso).getTime();
   return Math.floor(ms / (365.25 * 24 * 3600 * 1000));
 }
+
+const VA_PICKER_OPTIONS = [0, ...VALID_RATINGS];
+
+const STATUS_CHOICES: { value: ServiceStatus; label: string; emoji: string }[] = [
+  { value: 'active',   label: 'ACTIVE',   emoji: '🪖' },
+  { value: 'reserve',  label: 'RESERVE',  emoji: '🎖️' },
+  { value: 'retired',  label: 'RETIRED',  emoji: '⭐' },
+  { value: 'civilian', label: 'CIVILIAN', emoji: '💼' },
+];
 
 function SectionLabel({ text }: { text: string }) {
   const tc = useThemeColors();
@@ -337,12 +349,27 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
   const dateOfRank     = useUserStore((s) => s.dateOfRank);
   const storedGsGrade  = useUserStore((s) => s.gsGrade);
   const storedGsStep   = useUserStore((s) => s.gsStep);
+  const serviceStatus  = useUserStore((s) => s.serviceStatus);
+  const storedDrills   = useUserStore((s) => s.drillsPerMonth);
+  const storedRetDate  = useUserStore((s) => s.retirementDate);
+  const storedVaPct    = useUserStore((s) => s.vaDisabilityPercent);
   const setPersonalDetails = useUserStore((s) => s.setPersonalDetails);
   const setGSInfo      = useUserStore((s) => s.setGSInfo);
   const setBranch      = useUserStore((s) => s.setBranch);
+  const setServiceStatus = useUserStore((s) => s.setServiceStatus);
+  const setReserveInfo = useUserStore((s) => s.setReserveInfo);
+  const setRetiredInfo = useUserStore((s) => s.setRetiredInfo);
   const branch         = useUserStore((s) => s.branch);
 
-  const isCivilian = branch === 'other';
+  const [status, setStatus] = useState<ServiceStatus | undefined>(serviceStatus);
+  const [drillsPerMonth, setDrillsPerMonth] = useState(storedDrills ?? 4);
+  const [retirementDate, setRetDate] = useState(storedRetDate ?? '');
+  const [vaPercent, setVaPercent]    = useState(storedVaPct ?? 0);
+  const [showRetDatePicker, setShowRetDatePicker] = useState(false);
+
+  const isCivilian = branch === 'other' || status === 'civilian';
+  const isReserve  = status === 'reserve';
+  const isRetired  = status === 'retired';
 
   const [grade, setGrade]         = useState<PayGrade>(payGrade ?? 'E5');
   const [rankVariant, setRankVariant] = useState<RankVariant>(storedVariant ?? 'default');
@@ -350,7 +377,7 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
   const [nn, setNn]               = useState(nickname ?? '');
   const [y, setY]                 = useState(yos);
   const [yManual, setYManual]     = useState(false);
-  const [station, setStation]     = useState<Installation | null>(null);
+  const [station, setStation]     = useState<Installation | null>(() => getInstallationByZip(mhaZip));
   const [spouse, setSpouse]       = useState(hasSpouse);
   const [children, setChildren]   = useState(numChildren);
   const [housing, setHousing]     = useState<HousingStatus>(housingStatus ?? 'off_base');
@@ -372,6 +399,33 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
   const [showEnlistPicker, setShowEnlistPicker] = useState(false);
   const [showRankPicker, setShowRankPicker]     = useState(false);
 
+  // Re-sync every local field from the store each time the modal opens.
+  // Without this, fields only ever reflect what the store held at the moment
+  // this component first mounted (ProfileScreen mounts it once and just toggles
+  // `visible`), so data saved later — e.g. during onboarding — would never show.
+  useEffect(() => {
+    if (!visible) return;
+    setStatus(serviceStatus);
+    setDrillsPerMonth(storedDrills ?? 4);
+    setRetDate(storedRetDate ?? '');
+    setVaPercent(storedVaPct ?? 0);
+    setGrade(payGrade ?? 'E5');
+    setRankVariant(storedVariant ?? 'default');
+    setLn(lastName ?? '');
+    setNn(nickname ?? '');
+    setY(yos);
+    setYManual(false);
+    setStation(getInstallationByZip(mhaZip));
+    setSpouse(hasSpouse);
+    setChildren(numChildren);
+    setHousing(housingStatus ?? 'off_base');
+    setState(stateResidence ?? '');
+    setEnlistDate(dateOfEnlist ?? '');
+    setRankDate(dateOfRank ?? '');
+    setGsGrade(storedGsGrade ?? 7);
+    setGsStep(storedGsStep ?? 1);
+  }, [visible]);
+
   // Reset variant to default when branch or grade changes and current variant no longer applies
   useEffect(() => {
     if (!branch) return;
@@ -384,8 +438,15 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
   const save = () => {
     Keyboard.dismiss();
     if (branch) setBranch(branch);
+    if (status) setServiceStatus(status);
     if (isCivilian) {
       setGSInfo(gsGrade, gsStep, ln, nn, enlistDate || undefined);
+    }
+    if (isReserve) {
+      setReserveInfo(drillsPerMonth);
+    }
+    if (isRetired) {
+      setRetiredInfo(retirementDate || undefined, vaPercent);
     }
     setPersonalDetails({
       payGrade: grade,
@@ -425,6 +486,25 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
             keyboardShouldPersistTaps="handled"
             keyboardDismissMode="interactive"
             automaticallyAdjustKeyboardInsets>
+
+            {/* Service Status */}
+            <ThemedText style={[editStyles.fieldLabel, { color: tc.textHint }]}>SERVICE STATUS</ThemedText>
+            <View style={editStyles.gsRow}>
+              {STATUS_CHOICES.map((opt) => {
+                const active = status === opt.value;
+                return (
+                  <Pressable
+                    key={opt.value}
+                    onPress={() => setStatus(opt.value)}
+                    style={[editStyles.statusChip, { borderColor: tc.borderColor, backgroundColor: tc.surface }, active && editStyles.statusChipActive]}>
+                    <ThemedText style={editStyles.statusChipEmoji}>{opt.emoji}</ThemedText>
+                    <ThemedText style={[editStyles.statusChipText, { color: tc.textHint }, active && { color: Brand.accent }]}>
+                      {opt.label}
+                    </ThemedText>
+                  </Pressable>
+                );
+              })}
+            </View>
 
             {/* Branch */}
             <ThemedText style={[editStyles.fieldLabel, { color: tc.textHint }]}>SERVICE BRANCH</ThemedText>
@@ -545,6 +625,52 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
               unit="yrs"
             />
 
+            {/* Reserve/Guard — drills per month (drives drill pay) */}
+            {isReserve && (
+              <>
+                <ThemedText style={[editStyles.fieldLabel, { color: tc.textHint }]}>DRILLS PER MONTH</ThemedText>
+                <ThemedText style={[editStyles.fieldHint, { color: tc.textHint, marginTop: -Spacing.two }]}>
+                  One battle assembly weekend = 4 drills. Used to estimate your monthly drill pay.
+                </ThemedText>
+                <NumberStepper label="Drills" value={drillsPerMonth} min={0} max={20} onChange={setDrillsPerMonth} unit="drills" />
+                <ThemedText style={editStyles.dateHint}>
+                  ↳ Est. drill pay: {fmtPay(getDrillPay(grade, y, drillsPerMonth))}/mo
+                </ThemedText>
+              </>
+            )}
+
+            {/* Retired — retirement date + VA disability rating */}
+            {isRetired && (
+              <>
+                <ThemedText style={[editStyles.fieldLabel, { color: tc.textHint }]}>MONTH & YEAR YOU RETIRED</ThemedText>
+                <Pressable
+                  onPress={() => setShowRetDatePicker(true)}
+                  style={[editStyles.inputWrap, { backgroundColor: inputBg, borderColor: tc.borderColor, flexDirection: 'row', alignItems: 'center' }]}>
+                  <ThemedText style={[editStyles.input, { color: retirementDate ? tc.textPrimary : placeholder, flex: 1, paddingVertical: Spacing.two + 4 }]}>
+                    {retirementDate ? retirementDate : 'Tap to select date'}
+                  </ThemedText>
+                  <ThemedText style={{ fontSize: 18, paddingRight: 4 }}>📅</ThemedText>
+                </Pressable>
+
+                <ThemedText style={[editStyles.fieldLabel, { color: tc.textHint }]}>VA DISABILITY RATING</ThemedText>
+                <View style={editStyles.gsRow}>
+                  {VA_PICKER_OPTIONS.map((p) => (
+                    <Pressable
+                      key={p}
+                      onPress={() => setVaPercent(p)}
+                      style={[editStyles.gsChip, { width: 52, borderColor: tc.borderColor, backgroundColor: tc.surface }, vaPercent === p && editStyles.gsChipActive]}>
+                      <ThemedText style={[editStyles.gsChipText, { color: tc.textHint }, vaPercent === p && { color: Brand.accent }]}>
+                        {p}%
+                      </ThemedText>
+                    </Pressable>
+                  ))}
+                </View>
+                <ThemedText style={editStyles.dateHint}>
+                  ↳ Est. VA compensation: {fmtPay(monthlyCompensation(vaPercent, spouse, children))}/mo
+                </ThemedText>
+              </>
+            )}
+
             {/* Duty Station */}
             <ThemedText style={[editStyles.fieldLabel, { color: tc.textHint }]}>DUTY STATION</ThemedText>
             <StationPicker label="Duty Station" selected={station} onSelect={setStation} conusOnly />
@@ -624,6 +750,13 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
         title="Date of Current Rank"
         onConfirm={(d) => { setRankDate(d); setShowRankPicker(false); }}
         onCancel={() => setShowRankPicker(false)}
+      />
+      <DatePickerModal
+        visible={showRetDatePicker}
+        value={retirementDate}
+        title="Month & Year You Retired"
+        onConfirm={(d) => { setRetDate(d); setShowRetDatePicker(false); }}
+        onCancel={() => setShowRetDatePicker(false)}
       />
     </Modal>
   );
@@ -933,6 +1066,14 @@ const editStyles = StyleSheet.create({
   },
   gsChipActive: { borderColor: Brand.accent, backgroundColor: Brand.accent + '15' },
   gsChipText: { fontSize: 13, fontWeight: '700' },
+
+  statusChip: {
+    flexBasis: '48%', flex: 1, flexDirection: 'row', alignItems: 'center', gap: 6,
+    borderWidth: 1, borderRadius: 8, paddingVertical: Spacing.two, paddingHorizontal: Spacing.two,
+  },
+  statusChipActive: { borderColor: Brand.accent, backgroundColor: Brand.accent + '15' },
+  statusChipEmoji: { fontSize: 16 },
+  statusChipText: { fontSize: 12, fontWeight: '700', letterSpacing: 0.3 },
 });
 
 // ── Main Screen ────────────────────────────────────────────────────────────────

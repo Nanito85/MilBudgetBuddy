@@ -15,7 +15,8 @@ import { DashboardHeader } from '@/features/home/components/DashboardHeader';
 import { PayDayCountdown } from '@/features/home/components/PayDayCountdown';
 import { PaySummaryCard } from '@/features/home/components/PaySummaryCard';
 import { QuickActionsGrid } from '@/features/home/components/QuickActionsGrid';
-import { calcLES } from '@/features/home/utils/lesCalc';
+import { calcLES, fmtPay, getDrillPay } from '@/features/home/utils/lesCalc';
+import { monthlyCompensation } from '@/features/va/utils/vaDisabilityCalc';
 import { CategoryBadge } from '@/features/daily-tip/components/CategoryBadge';
 import { TipCard } from '@/features/daily-tip/components/TipCard';
 import { useDailyTip } from '@/features/daily-tip/hooks/useDailyTip';
@@ -135,6 +136,8 @@ export default function DashboardScreen() {
   const installationName = useUserStore((s) => s.installationName);
   const serviceStatus    = useUserStore((s) => s.serviceStatus);
   const numChildren      = useUserStore((s) => s.numChildren);
+  const drillsPerMonth   = useUserStore((s) => s.drillsPerMonth);
+  const vaDisabilityPercent = useUserStore((s) => s.vaDisabilityPercent);
   const financialGoal = useUserStore((s) => s.financialGoal);
   const tip = useDailyTip(financialGoal);
 
@@ -212,6 +215,16 @@ export default function DashboardScreen() {
     :                        { text: 'NOT READY',         color: Brand.danger };
 
   const rankAbbrev = getRankAbbrev(branch, payGrade, rankVariant);
+
+  const drillPay = useMemo(() => {
+    if (serviceStatus !== 'reserve' || !payGrade) return null;
+    return getDrillPay(payGrade, yos, drillsPerMonth ?? 4);
+  }, [serviceStatus, payGrade, yos, drillsPerMonth]);
+
+  const vaMonthly = useMemo(() => {
+    if (serviceStatus !== 'retired' || !vaDisabilityPercent) return null;
+    return monthlyCompensation(vaDisabilityPercent, hasSpouse, numChildren);
+  }, [serviceStatus, vaDisabilityPercent, hasSpouse, numChildren]);
 
   return (
     <ThemedView style={styles.container}>
@@ -318,6 +331,42 @@ export default function DashboardScreen() {
           )}
         </View>
 
+        {/* ── DRILL PAY (RESERVE/GUARD) ────────────────────────────── */}
+        {drillPay !== null && (
+          <View style={styles.section}>
+            <SectionHeader label="DRILL PAY" accentColor={Brand.tactical} />
+            <View style={[styles.statusPayCard, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
+              <View style={{ flex: 1 }}>
+                <ThemedText type="label" style={[styles.statusPayLabel, { color: tc.textMuted }]}>
+                  EST. MONTHLY DRILL PAY
+                </ThemedText>
+                <ThemedText style={[styles.statusPayValue, { color: Brand.tactical }]}>{fmtPay(drillPay)}</ThemedText>
+                <ThemedText type="small" themeColor="textSecondary" style={styles.statusPayNote}>
+                  Based on {drillsPerMonth ?? 4} drills/mo at your pay grade & YOS. Set in Profile → Edit Personal.
+                </ThemedText>
+              </View>
+            </View>
+          </View>
+        )}
+
+        {/* ── VA DISABILITY (RETIRED) ──────────────────────────────── */}
+        {vaMonthly !== null && (
+          <View style={styles.section}>
+            <SectionHeader label="VA DISABILITY" accentColor={Brand.tactical} />
+            <View style={[styles.statusPayCard, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
+              <View style={{ flex: 1 }}>
+                <ThemedText type="label" style={[styles.statusPayLabel, { color: tc.textMuted }]}>
+                  EST. MONTHLY VA COMPENSATION ({vaDisabilityPercent}%)
+                </ThemedText>
+                <ThemedText style={[styles.statusPayValue, { color: Brand.tactical }]}>{fmtPay(vaMonthly)}</ThemedText>
+                <ThemedText type="small" themeColor="textSecondary" style={styles.statusPayNote}>
+                  Estimate only — verify current rates at va.gov. See the Retirement Calculator for your full retired pay estimate.
+                </ThemedText>
+              </View>
+            </View>
+          </View>
+        )}
+
         {/* ── MISSION READINESS SCORE ──────────────────────────────── */}
         {readinessScore !== null && readinessLabel && (
           <View style={[styles.readinessCard, { backgroundColor: tc.surface, borderColor: readinessLabel.color + '40' }]}>
@@ -423,6 +472,16 @@ const styles = StyleSheet.create({
   section: {
     gap: Spacing.two,
   },
+
+  statusPayCard: {
+    flexDirection: 'row',
+    borderWidth: StyleSheet.hairlineWidth,
+    borderRadius: 10,
+    padding: Spacing.three,
+  },
+  statusPayLabel: { fontSize: 10, letterSpacing: 0.8, marginBottom: 4 },
+  statusPayValue: { fontSize: 24, fontWeight: '900', letterSpacing: -0.3, fontFamily: 'Courier New', marginBottom: 4 },
+  statusPayNote: { lineHeight: 16 },
 
   setupPrompt: {
     borderWidth: StyleSheet.hairlineWidth,

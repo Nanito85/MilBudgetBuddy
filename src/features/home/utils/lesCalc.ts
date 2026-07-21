@@ -147,3 +147,15 @@ export function calcLES(inputs: LESInputs): LESBreakdown {
 export function fmtPay(n: number): string {
   return `$${Math.round(n).toLocaleString()}`;
 }
+
+/**
+ * Estimated monthly drill pay for Reserve/Guard members.
+ * Each drill period (UTA/IDT) = 1/30 of monthly basic pay — matching the
+ * canonical calculation used in the Reserves screen (app/reserves.tsx).
+ * A standard battle assembly weekend = 4 drill periods.
+ */
+export function getDrillPay(payGrade: string, yos: number, drillsPerMonth: number): number {
+  const monthlyBasicPay = getBasicPay(payGrade as any, yos);
+  const perDrill = monthlyBasicPay / 30;
+  return perDrill * drillsPerMonth;
+}

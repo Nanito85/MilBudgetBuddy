@@ -44,6 +44,7 @@ import {
 
 const HOUSING_STATUS_ORDER: HousingStatus[] = ['off_base', 'barracks', 'on_base_family_housing'];
 import { RankVariant, getDualVariants } from '@/data/rank-insignia';
+import { VALID_RATINGS } from '@/features/va/utils/vaDisabilityCalc';
 import { getDefaultQuickAccessIds } from '@/data/quick-actions';
 import { Installation } from '@/data/installations';
 
@@ -64,6 +65,13 @@ function fmtDate(iso: string) {
 
 function yearsAgo(iso: string): number {
   return Math.floor((Date.now() - new Date(iso).getTime()) / (365.25 * 864e5));
+}
+
+function fmtMonthYear(iso: string) {
+  if (!iso || iso.length < 7) return '';
+  const [y, m] = iso.split('-');
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return `${months[parseInt(m, 10) - 1]} ${y}`;
 }
 
 // ── Step Header (dots + back button) ──────────────────────────────────────────
@@ -258,9 +266,12 @@ function ServiceInfoStep({
 }: {
   branch?: MilitaryBranch;
   status?: ServiceStatus;
-  onNext: (grade: PayGrade | undefined, lastName: string, nickname: string, yos: number, variant: RankVariant, enlistDate: string, rankDate: string) => void;
+  onNext: (grade: PayGrade | undefined, lastName: string, nickname: string, yos: number, variant: RankVariant, enlistDate: string, rankDate: string, drillsPerMonth: number) => void;
 }) {
-  const [grade, setGrade]           = useState<PayGrade | undefined>();
+  // Defaults to a real grade (not undefined) so what's visually shown as
+  // selected in GradePicker always matches what actually gets saved — a user
+  // who taps "Continue" without touching the picker still gets a value saved.
+  const [grade, setGrade]           = useState<PayGrade>('E5');
   const [rankVariant, setRankVariant] = useState<RankVariant>('default');
   const [lastName, setLastName]     = useState('');
   const [nickname, setNickname]     = useState('');
@@ -268,6 +279,7 @@ function ServiceInfoStep({
   const [yosManual, setYosManual]   = useState(false); // true if user overrode auto-calc
   const [enlistDate, setEnlistDate] = useState('');
   const [rankDate, setRankDate]     = useState('');
+  const [drillsPerMonth, setDrillsPerMonth] = useState(4);
   const [showEnlistPicker, setShowEnlistPicker] = useState(false);
   const [showRankPicker, setShowRankPicker]     = useState(false);
 
@@ -308,7 +320,7 @@ function ServiceInfoStep({
         <ThemedText type="smallBold" themeColor="textSecondary" style={styles.fieldLabel}>
           {isReserve ? 'RESERVE PAY GRADE' : 'PAY GRADE'}
         </ThemedText>
-        <GradePicker selected={grade ?? 'E5'} onSelect={handleGradeChange} />
+        <GradePicker selected={grade} onSelect={handleGradeChange} />
       </View>
 
       {/* Rank Variant */}
@@ -408,14 +420,27 @@ function ServiceInfoStep({
       />
       </View>
 
+      {/* Drills per month — Reserve/Guard only, determines drill pay */}
+      {isReserve && (
+        <View style={styles.fieldBlock}>
+          <ThemedText type="smallBold" themeColor="textSecondary" style={styles.fieldLabel}>
+            DRILLS PER MONTH
+          </ThemedText>
+          <ThemedText type="small" themeColor="textSecondary" style={{ lineHeight: 18 }}>
+            One battle assembly weekend = 4 drills. Used to estimate your monthly drill pay.
+          </ThemedText>
+          <NumberStepper label="Drills" value={drillsPerMonth} min={0} max={20} onChange={setDrillsPerMonth} unit="drills" />
+        </View>
+      )}
+
       <View style={styles.btnGroup}>
         <Pressable
-          onPress={() => onNext(grade, lastName, nickname, yos, rankVariant, enlistDate, rankDate)}
+          onPress={() => onNext(grade, lastName, nickname, yos, rankVariant, enlistDate, rankDate, drillsPerMonth)}
           style={({ pressed }) => [styles.primaryBtn, pressed && styles.btnPressed]}>
           <ThemedText style={styles.primaryBtnText}>Continue  →</ThemedText>
         </Pressable>
         <Pressable
-          onPress={() => onNext(undefined, '', '', yos, 'default', '', '')}
+          onPress={() => onNext(undefined, '', '', yos, 'default', '', '', drillsPerMonth)}
           hitSlop={8}
           style={styles.skipBtn}>
           <ThemedText type="small" themeColor="textSecondary">Skip for now</ThemedText>
@@ -577,6 +602,166 @@ function CivilianServiceInfoStep({
       value={startDate}
       title="Date Federal Service Began"
       onConfirm={(d) => { setStartDate(d); setShowDatePicker(false); }}
+      onCancel={() => setShowDatePicker(false)}
+    />
+    </>
+  );
+}
+
+// ── Step 4c: Retired Service Info ──────────────────────────────────────────────
+
+const VA_PERCENT_OPTIONS = [0, ...VALID_RATINGS];
+
+function RetiredServiceInfoStep({
+  branch,
+  onNext,
+}: {
+  branch?: MilitaryBranch;
+  onNext: (grade: PayGrade | undefined, lastName: string, nickname: string, retirementDate: string, vaDisabilityPercent: number) => void;
+}) {
+  const [grade, setGrade]         = useState<PayGrade>('E7');
+  const [rankVariant, setRankVariant] = useState<RankVariant>('default');
+  const [lastName, setLastName]   = useState('');
+  const [nickname, setNickname]   = useState('');
+  const [retirementDate, setRetirementDate] = useState('');
+  const [vaPercent, setVaPercent] = useState(0);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const tc = useThemeColors();
+
+  const variants = branch && grade ? getDualVariants(branch, grade) : null;
+
+  const handleGradeChange = (g: PayGrade) => {
+    setGrade(g);
+    setRankVariant('default');
+  };
+
+  return (
+    <>
+    <ScrollView
+      style={{ flex: 1 }}
+      contentContainerStyle={styles.scrollStep}
+      showsVerticalScrollIndicator={false}
+      keyboardShouldPersistTaps="handled">
+
+      <ThemedText style={styles.stepTitle}>Your retirement info</ThemedText>
+      <ThemedText type="small" themeColor="textSecondary" style={styles.stepSub}>
+        Used to show your retired rank and estimate your VA disability compensation.
+      </ThemedText>
+
+      {/* Retired Rank */}
+      <View style={styles.fieldBlock}>
+        <ThemedText type="smallBold" themeColor="textSecondary" style={styles.fieldLabel}>
+          RANK YOU RETIRED AS
+        </ThemedText>
+        <GradePicker selected={grade} onSelect={handleGradeChange} />
+      </View>
+
+      {/* Rank Variant */}
+      {variants && variants.length > 1 && (
+        <View style={styles.fieldBlock}>
+          <ThemedText type="smallBold" themeColor="textSecondary" style={styles.fieldLabel}>RANK TITLE</ThemedText>
+          <View style={styles.toggle}>
+            {variants.map((v) => (
+              <Pressable
+                key={v.variant}
+                onPress={() => setRankVariant(v.variant)}
+                style={[styles.toggleBtn, rankVariant === v.variant && styles.toggleBtnActive]}>
+                <ThemedText style={[styles.toggleText, rankVariant === v.variant && styles.toggleTextActive]}>
+                  {v.abbrev}
+                </ThemedText>
+              </Pressable>
+            ))}
+          </View>
+        </View>
+      )}
+
+      {/* Last Name */}
+      <View style={styles.fieldBlock}>
+        <ThemedText type="smallBold" themeColor="textSecondary" style={styles.fieldLabel}>LAST NAME</ThemedText>
+        <ThemedView type="backgroundElement" style={styles.inputWrap}>
+          <TextInput
+            value={lastName}
+            onChangeText={setLastName}
+            placeholder="e.g. SMITH"
+            placeholderTextColor="rgba(128,128,128,0.5)"
+            style={[styles.textInput, { color: tc.textPrimary }]}
+            autoCapitalize="characters"
+          />
+        </ThemedView>
+      </View>
+
+      {/* Nickname */}
+      <View style={styles.fieldBlock}>
+        <ThemedText type="smallBold" themeColor="textSecondary" style={styles.fieldLabel}>
+          NICKNAME <ThemedText type="small" themeColor="textSecondary">(optional)</ThemedText>
+        </ThemedText>
+        <ThemedView type="backgroundElement" style={styles.inputWrap}>
+          <TextInput
+            value={nickname}
+            onChangeText={setNickname}
+            placeholder="e.g. Maverick"
+            placeholderTextColor="rgba(128,128,128,0.5)"
+            style={[styles.textInput, { color: tc.textPrimary }]}
+          />
+        </ThemedView>
+      </View>
+
+      {/* Month/Year of Retirement */}
+      <View style={styles.fieldBlock}>
+        <ThemedText type="smallBold" themeColor="textSecondary" style={styles.fieldLabel}>
+          MONTH & YEAR YOU RETIRED
+        </ThemedText>
+        <Pressable onPress={() => setShowDatePicker(true)} style={styles.dateTrigger}>
+          <ThemedText style={[styles.dateValue, !retirementDate && styles.datePlaceholder]}>
+            {retirementDate ? fmtMonthYear(retirementDate) : 'Tap to select date'}
+          </ThemedText>
+          <ThemedText style={styles.dateIcon}>📅</ThemedText>
+        </Pressable>
+      </View>
+
+      {/* VA Disability Percentage */}
+      <View style={styles.fieldBlock}>
+        <ThemedText type="smallBold" themeColor="textSecondary" style={styles.fieldLabel}>
+          VA DISABILITY RATING
+        </ThemedText>
+        <ThemedText type="small" themeColor="textSecondary" style={{ lineHeight: 18 }}>
+          We'll estimate your monthly VA disability compensation based on this rating and your dependents.
+        </ThemedText>
+        <View style={styles.chipGrid}>
+          {VA_PERCENT_OPTIONS.map((p) => (
+            <Pressable
+              key={p}
+              onPress={() => setVaPercent(p)}
+              style={[styles.gradeChip, vaPercent === p && styles.gradeChipActive]}>
+              <ThemedText style={[styles.gradeChipText, vaPercent === p && styles.gradeChipTextActive]}>
+                {p}%
+              </ThemedText>
+            </Pressable>
+          ))}
+        </View>
+      </View>
+
+      <View style={styles.btnGroup}>
+        <Pressable
+          onPress={() => onNext(grade, lastName, nickname, retirementDate, vaPercent)}
+          style={({ pressed }) => [styles.primaryBtn, pressed && styles.btnPressed]}>
+          <ThemedText style={styles.primaryBtnText}>Continue  →</ThemedText>
+        </Pressable>
+        <Pressable
+          onPress={() => onNext(undefined, '', '', '', 0)}
+          hitSlop={8}
+          style={styles.skipBtn}>
+          <ThemedText type="small" themeColor="textSecondary">Skip for now</ThemedText>
+        </Pressable>
+      </View>
+
+    </ScrollView>
+
+    <DatePickerModal
+      visible={showDatePicker}
+      value={retirementDate}
+      title="Month & Year You Retired"
+      onConfirm={(d) => { setRetirementDate(d); setShowDatePicker(false); }}
       onCancel={() => setShowDatePicker(false)}
     />
     </>
@@ -846,6 +1031,8 @@ export function OnboardingFlow() {
   const setOnboarded      = useUserStore((s) => s.setOnboarded);
   const setServiceInfo    = useUserStore((s) => s.setServiceInfo);
   const setGSInfo         = useUserStore((s) => s.setGSInfo);
+  const setReserveInfo    = useUserStore((s) => s.setReserveInfo);
+  const setRetiredInfo    = useUserStore((s) => s.setRetiredInfo);
   const setLocationFamily = useUserStore((s) => s.setLocationFamily);
   const setStateResidence = useUserStore((s) => s.setStateResidence);
   const setQuickAccessIds = useUserStore((s) => s.setQuickAccessIds);
@@ -875,11 +1062,13 @@ export function OnboardingFlow() {
     variant: RankVariant,
     enlistDate: string,
     rankDate: string,
+    drillsPerMonth: number,
   ) => {
     if (grade) {
       setServiceInfo(grade, lastName, nickname, yos, enlistDate || undefined, rankDate || undefined);
       setRankVariant(variant);
     }
+    if (pendingStatus === 'reserve') setReserveInfo(drillsPerMonth);
     setStep(5);
   };
 
@@ -894,6 +1083,20 @@ export function OnboardingFlow() {
     setStep(5);
   };
 
+  const handleRetiredInfo = (
+    grade: PayGrade | undefined,
+    lastName: string,
+    nickname: string,
+    retirementDate: string,
+    vaDisabilityPercent: number,
+  ) => {
+    if (grade) {
+      setServiceInfo(grade, lastName, nickname, 0, undefined, undefined);
+    }
+    setRetiredInfo(retirementDate || undefined, vaDisabilityPercent);
+    setStep(5);
+  };
+
   const handleLocationFamily = (
     mhaZip: string,
     installName: string,
@@ -902,8 +1105,7 @@ export function OnboardingFlow() {
     stateCode: string,
     housingStatus: HousingStatus,
   ) => {
-    setLocationFamily(mhaZip, hasSpouse, numChildren, housingStatus);
-    if (installName) useUserStore.setState((s) => ({ ...s, installationName: installName }));
+    setLocationFamily(mhaZip, hasSpouse, numChildren, housingStatus, installName || undefined);
     if (stateCode) setStateResidence(stateCode);
     setStep(6);
   };
@@ -940,7 +1142,9 @@ export function OnboardingFlow() {
           )}
           {step === 4 && (isCivilian
             ? <CivilianServiceInfoStep onNext={handleCivilianInfo} />
-            : <ServiceInfoStep branch={pendingBranch} status={pendingStatus} onNext={handleServiceInfo} />
+            : pendingStatus === 'retired'
+              ? <RetiredServiceInfoStep branch={pendingBranch} onNext={handleRetiredInfo} />
+              : <ServiceInfoStep branch={pendingBranch} status={pendingStatus} onNext={handleServiceInfo} />
           )}
           {step === 5 && <LocationFamilyStep onNext={handleLocationFamily} />}
           {step === 6 && <FinancialGoalStep onNext={handleFinancialGoal} />}

@@ -32,6 +32,9 @@ const DEFAULTS: UserPreferences = {
   dateOfRank: undefined,
   gsGrade: undefined,
   gsStep: undefined,
+  drillsPerMonth: undefined,
+  retirementDate: undefined,
+  vaDisabilityPercent: undefined,
   tspContribPct: 0,
   rothTspPct: 0,
   hasDentalFamily: false,
@@ -58,7 +61,9 @@ interface UserState extends UserPreferences {
   setHasSeenTutorial: () => void;
   setServiceInfo: (payGrade: PayGrade, lastName: string, nickname: string, yos: number, dateOfEnlistment?: string, dateOfRank?: string) => void;
   setGSInfo: (gsGrade: number, gsStep: number, lastName: string, nickname: string, dateOfEnlistment?: string) => void;
-  setLocationFamily: (mhaZip: string, hasSpouse: boolean, numChildren: number, housingStatus: HousingStatus) => void;
+  setReserveInfo: (drillsPerMonth: number) => void;
+  setRetiredInfo: (retirementDate: string | undefined, vaDisabilityPercent: number) => void;
+  setLocationFamily: (mhaZip: string, hasSpouse: boolean, numChildren: number, housingStatus: HousingStatus, installationName?: string) => void;
   setPaySetup: (tspContribPct: number, rothTspPct: number, hasDentalFamily: boolean, sglOptOut: boolean) => void;
   setPersonalDetails: (params: { payGrade: PayGrade; lastName: string; nickname: string; yos: number; mhaZip: string; installationName: string; hasSpouse: boolean; numChildren: number; housingStatus: HousingStatus; stateResidence: string; dateOfEnlistment: string; dateOfRank: string; rankVariant: RankVariant }) => void;
   setPayDetails: (params: { tspContribPct: number; rothTspPct: number; hasDentalFamily: boolean; sglOptOut: boolean; spouseMonthlyIncome: number; bahOverride?: number; basOverride?: number; basePayOverride?: number }) => void;
@@ -103,6 +108,9 @@ function snapshot(get: () => UserState): UserPreferences {
     housingStatus: s.housingStatus,
     dateOfEnlistment: s.dateOfEnlistment,
     dateOfRank: s.dateOfRank,
+    drillsPerMonth: s.drillsPerMonth,
+    retirementDate: s.retirementDate,
+    vaDisabilityPercent: s.vaDisabilityPercent,
     tspContribPct: s.tspContribPct,
     rothTspPct: s.rothTspPct,
     hasDentalFamily: s.hasDentalFamily,
@@ -191,9 +199,22 @@ export const useUserStore = create<UserState>((set, get) => ({
     save({ ...snapshot(get), gsGrade, gsStep, lastName, nickname, dateOfEnlistment });
   },
 
-  setLocationFamily: (mhaZip, hasSpouse, numChildren, housingStatus) => {
-    set({ mhaZip, hasSpouse, numChildren, housingStatus });
-    save({ ...snapshot(get), mhaZip, hasSpouse, numChildren, housingStatus });
+  setReserveInfo: (drillsPerMonth) => {
+    set({ drillsPerMonth });
+    save({ ...snapshot(get), drillsPerMonth });
+  },
+
+  setRetiredInfo: (retirementDate, vaDisabilityPercent) => {
+    set({ retirementDate, vaDisabilityPercent });
+    save({ ...snapshot(get), retirementDate, vaDisabilityPercent });
+  },
+
+  setLocationFamily: (mhaZip, hasSpouse, numChildren, housingStatus, installationName) => {
+    const update = installationName !== undefined
+      ? { mhaZip, hasSpouse, numChildren, housingStatus, installationName }
+      : { mhaZip, hasSpouse, numChildren, housingStatus };
+    set(update);
+    save({ ...snapshot(get), ...update });
   },
 
   setPaySetup: (tspContribPct, rothTspPct, hasDentalFamily, sglOptOut) => {

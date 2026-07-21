@@ -154,6 +154,11 @@ export interface UserPreferences {
   // Civilian GS info
   gsGrade?: number;  // 1-15
   gsStep?: number;   // 1-10
+  // Reserve / Guard pay info
+  drillsPerMonth?: number;   // typically 4 (one battle assembly weekend)
+  // Retired info
+  retirementDate?: string;      // YYYY-MM-DD (date of retirement)
+  vaDisabilityPercent?: number; // 0-100, in 10% increments
   // Pay setup
   tspContribPct: number;   // Traditional TSP contribution %
   rothTspPct: number;      // Roth TSP contribution %
