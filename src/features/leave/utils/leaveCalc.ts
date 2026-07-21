@@ -3,16 +3,28 @@
  *
  * References:
  *  - 10 USC §701 — leave accrual (2.5 days/month), 60-day carryover limit.
- *  - 10 USC §501 — leave payout at separation: daily basic pay × days (max 60 days).
+ *  - 37 U.S.C. §501 — leave payout at separation: daily basic pay × days (max
+ *    60 days across a career, effective 10 Feb 1976). Note: this is Title 37
+ *    (Pay and Allowances), not Title 10 — a common miscitation to watch for.
  *  - DoD FMR Vol 7A Ch 35 — terminal leave procedures.
  *  - DoD Instruction 1327.06 — leave and liberty policy.
  *  - JAGINST / AR 600-8-10 — use-or-lose guidance.
  *
  * Leave accrual: 2.5 days per calendar month of active duty.
  * Use-or-lose: balance cannot exceed 60 days at fiscal year end (Sep 30).
- *   Exception: members whose leave was denied may carry up to 75 days.
- * Payout cap: only 60 days can be paid out at separation (10 USC §501(b)).
- * Daily rate: (monthly basic pay × 12) / 365.
+ *   Exception: Special Leave Accrual (SLA) — for members serving in a combat
+ *   zone/hostile-fire-pay area 120+ days, or otherwise approved by a flag/
+ *   general officer for operational necessity — allows carryover up to 90
+ *   days (60 standard + 30 SLA-protected), effective since 1 Jan 2023. This
+ *   replaced an older, since-superseded 75-day figure from a 2008-2015 SLA
+ *   window — 75 is NOT the current number, a stale figure previously used
+ *   here and worth double-checking again if this code is revisited, since
+ *   SLA policy has changed more than once.
+ * Payout cap: only 60 days can be paid out across an entire career (37 U.S.C. §501(b)).
+ * Daily rate: monthly basic pay ÷ 30 — the DFAS leave sell-back/terminal-leave
+ * formula (base pay only, no BAH/BAS/special pays). This is NOT (monthly ×
+ * 12) / 365 — verified against DFAS separation-finance guidance; using a
+ * 365-day-year divisor understates the payout by ~1.4%.
  */
 
 import { BASIC_PAY_DATA_YEAR, getBasicPay } from '@/data/basic-pay-rates';
@@ -22,8 +34,9 @@ export { BASIC_PAY_DATA_YEAR };
 
 export const ACCRUAL_PER_MONTH = 2.5;   // days
 export const MAX_CARRYOVER = 60;         // days (standard cap, 10 USC §701)
-export const MAX_PAYOUT_DAYS = 60;       // days (separation payout cap, 10 USC §501)
-export const DAYS_PER_YEAR = 365;
+export const SLA_MAX_CARRYOVER = 90;     // days (60 standard + 30 SLA-protected, effective 1 Jan 2023)
+export const MAX_PAYOUT_DAYS = 60;       // days (separation payout cap, 37 U.S.C. §501)
+export const DAYS_PER_MONTH = 30;        // DFAS leave daily-rate divisor
 
 export interface LeaveInputs {
   grade: PayGrade;
@@ -32,7 +45,7 @@ export interface LeaveInputs {
   monthsUntilEts: number;     // months from today until ETS/retirement date
   plannedLeaveDays: number;   // leave you plan to use before terminal (R&R, vacation, etc.)
   terminalLeaveDays: number;  // days of terminal leave at the end
-  useOrLoseExempt: boolean;   // true = denied-leave exception allows 75-day carryover
+  useOrLoseExempt: boolean;   // true = Special Leave Accrual allows 90-day carryover
 }
 
 export interface LeaveResult {
@@ -53,7 +66,7 @@ export interface LeaveResult {
   terminalStartOffset: number;  // months before ETS terminal leave begins
 
   // Use-or-lose warning
-  maxCarryover: number;         // 60 or 75 depending on useOrLoseExempt
+  maxCarryover: number;         // 60 or 90 depending on useOrLoseExempt
   uyLossRisk: number;           // days at risk of forfeiture (balance > maxCarryover at FY end)
   uyWarning: boolean;
 
@@ -66,11 +79,10 @@ export function calcLeave(inputs: LeaveInputs): LeaveResult {
   const { grade, yos, currentBalance, monthsUntilEts, plannedLeaveDays, terminalLeaveDays, useOrLoseExempt } = inputs;
 
   const monthlyBasicPay = getBasicPay(grade, yos);
-  const annualBasicPay = monthlyBasicPay * 12;
-  const dailyRate = annualBasicPay / DAYS_PER_YEAR;
+  const dailyRate = monthlyBasicPay / DAYS_PER_MONTH;
 
   const accrualTotal = monthsUntilEts * ACCRUAL_PER_MONTH;
-  const maxCarryover = useOrLoseExempt ? 75 : MAX_CARRYOVER;
+  const maxCarryover = useOrLoseExempt ? SLA_MAX_CARRYOVER : MAX_CARRYOVER;
 
   // Raw projected balance at ETS after planned leave & terminal leave
   const projectedBalance = Math.max(

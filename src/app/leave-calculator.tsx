@@ -199,7 +199,7 @@ export default function LeaveCalculatorScreen() {
                 label="Current Leave Balance"
                 value={currentBalance}
                 min={0}
-                max={75}
+                max={90}
                 onChange={setCurrentBalance}
                 unit="days"
               />
@@ -262,11 +262,17 @@ export default function LeaveCalculatorScreen() {
                     style={[styles.toggleBtn, useOrLoseExempt === val && styles.toggleBtnActive]}>
                     <ThemedText
                       style={[styles.toggleText, useOrLoseExempt === val && styles.toggleTextActive]}>
-                      {val ? 'Denied-Leave Exempt (75 days)' : 'Standard (60 days)'}
+                      {val ? 'Special Leave Accrual (90 days)' : 'Standard (60 days)'}
                     </ThemedText>
                   </Pressable>
                 ))}
               </View>
+              {useOrLoseExempt && (
+                <ThemedText type="small" themeColor="textSecondary" style={styles.hint}>
+                  SLA requires 120+ days in a combat zone/hostile-fire-pay area, or command approval
+                  for operational necessity — it isn't automatic. Confirm your eligibility with S1.
+                </ThemedText>
+              )}
             </View>
           </ThemedView>
         </View>
@@ -305,7 +311,7 @@ export default function LeaveCalculatorScreen() {
             <ResultRow
               label="Daily Rate"
               value={fmtMoneyDec(dailyRate)}
-              sub="(Monthly × 12) ÷ 365 — used for both payout & terminal leave"
+              sub="Monthly basic pay ÷ 30 — used for both payout & terminal leave"
               accent
             />
           </ThemedView>
@@ -321,7 +327,7 @@ export default function LeaveCalculatorScreen() {
               <ResultRow
                 label="Paid-Out Leave"
                 value={fmtMoney(payoutValue)}
-                sub={`${fmtDays(payableDays)} × ${fmtMoneyDec(dailyRate)}/day — lump sum (10 USC §501, max ${MAX_PAYOUT_DAYS} days)`}
+                sub={`${fmtDays(payableDays)} × ${fmtMoneyDec(dailyRate)}/day — lump sum (37 U.S.C. §501, max ${MAX_PAYOUT_DAYS} days per career)`}
               />
               <ResultRow
                 label="Terminal Leave Pay"
@@ -382,7 +388,9 @@ export default function LeaveCalculatorScreen() {
         {/* ── DISCLAIMER ─────────────────────────────────────────────────────── */}
         <ThemedText type="small" themeColor="textSecondary" style={styles.disclaimer}>
           Estimates based on FY{dataYear} basic pay rates. Leave balances and accrual rules
-          governed by 10 USC §701 and DoD Instruction 1327.06. Max payout is 60 days per 10 USC §501.
+          governed by 10 USC §701 and DoD Instruction 1327.06. Max payout is 60 days across an
+          entire career per 37 U.S.C. §501 — base pay only, no BAH/BAS/special pays. Leave payout
+          is also subject to federal tax withholding, not shown here.
           Verify your exact balance and separation options with your unit S1 / personnel office.
         </ThemedText>
       </ScrollView>
