@@ -62,9 +62,10 @@ export interface DeploymentResult {
   dataYear: { pay: number; bas: number };
 }
 
-// E9 max pay (FY2026, 30+ YOS) = $9,017 — CZTE officer cap = E9 max + $225 IDP
-// Source: basic-pay-rates.ts E9 bracket [30, 9017]
-const E9_MAX_PAY = 9017;
+// CZTE officer cap = highest enlisted (E9) basic pay + $225 IDP (26 U.S.C. §112).
+// Derived from the canonical basic-pay-rates.ts table rather than duplicated
+// here, so it can't drift out of sync with the real E9 pay chart.
+const E9_MAX_PAY = getBasicPay('E9', 40);
 const IDP_MONTHLY = 225;
 const FSA_MONTHLY = 300;
 const SDP_APR = 0.10;
