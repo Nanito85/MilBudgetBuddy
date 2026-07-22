@@ -9,6 +9,7 @@ import {
 import { create } from 'zustand';
 
 import { auth } from '@/services/firebase';
+import { deleteCloudData } from '@/services/firestore-sync';
 
 interface AuthState {
   user: User | null;
@@ -66,6 +67,9 @@ export const useAuthStore = create<AuthState>((set) => ({
   deleteAccount: async () => {
     const current = auth.currentUser;
     if (!current) return;
+    // Delete synced Firestore data first — once the auth user is gone,
+    // security rules would no longer allow this client to touch it.
+    await deleteCloudData(current.uid);
     await deleteUser(current);
     set({ user: null });
   },

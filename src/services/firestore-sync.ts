@@ -1,4 +1,5 @@
 import {
+  deleteDoc,
   doc,
   getDoc,
   onSnapshot,
@@ -28,6 +29,18 @@ const applyingRemote = new Set<string>();
 
 function userDoc(uid: string, collection: string) {
   return doc(db, 'users', uid, 'data', collection);
+}
+
+const ALL_COLLECTIONS = [
+  'profile', 'budget', 'debt', 'expenses', 'kids', 'goals', 'networth', 'lifeEvents',
+] as const;
+
+// Permanently deletes every synced document for this user. Call this — and
+// await it — before deleting the Firebase Auth user, since Firestore security
+// rules gate these writes on the caller being that authenticated user.
+export async function deleteCloudData(uid: string) {
+  stopSync();
+  await Promise.all(ALL_COLLECTIONS.map((c) => deleteDoc(userDoc(uid, c))));
 }
 
 // ── Write helpers ─────────────────────────────────────────────────────────────
