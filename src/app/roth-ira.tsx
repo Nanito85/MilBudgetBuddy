@@ -8,8 +8,8 @@ import { ThemedView } from '@/components/themed-view';
 import { Brand, Spacing } from '@/constants/theme';
 import { useThemeColors } from '@/hooks/use-theme';
 
-const ROTH_ANNUAL_LIMIT = 7000;
-const ROTH_MONTHLY_LIMIT = Math.round(ROTH_ANNUAL_LIMIT / 12); // 583
+const ROTH_ANNUAL_LIMIT = 7500;
+const ROTH_MONTHLY_LIMIT = Math.round(ROTH_ANNUAL_LIMIT / 12); // 625
 
 const GROWTH_RATE = 0.07; // 7% annual
 
@@ -72,7 +72,7 @@ export default function RothIraScreen() {
   const tc = useThemeColors();
 
   const [balance, setBalance]  = useState(5000);
-  const [monthly, setMonthly]  = useState(583);
+  const [monthly, setMonthly]  = useState(ROTH_MONTHLY_LIMIT);
   const [age, setAge]          = useState(22);
   const currentYear = new Date().getFullYear();
 
@@ -123,7 +123,7 @@ export default function RothIraScreen() {
         <ThemedView type="backgroundElement" style={styles.card}>
           <ThemedText style={styles.cardLabel}>YOUR NUMBERS</ThemedText>
           <Stepper label="Current Roth IRA balance" value={balance} step={500} min={0} max={100000} onChange={setBalance} />
-          <Stepper label="Monthly contribution" value={monthly} step={50} min={0} max={583} onChange={setMonthly} />
+          <Stepper label="Monthly contribution" value={monthly} step={50} min={0} max={ROTH_MONTHLY_LIMIT} onChange={setMonthly} />
           <Stepper label="Your age" value={age} step={1} min={17} max={55} onChange={(v) => setAge(v)} />
         </ThemedView>
 
@@ -195,13 +195,13 @@ export default function RothIraScreen() {
         <ThemedView type="backgroundElement" style={styles.card}>
           <ThemedText style={styles.cardLabel}>ROTH IRA RULES & TIPS</ThemedText>
           {[
-            '2026 limit: $7,000/yr ($583/mo). Age 50+ can contribute $8,000.',
-            'Phase-out starts at $150K MAGI (single). Most junior enlisted are well under.',
+            '2026 limit: $7,500/yr ($625/mo). Age 50+ can contribute $8,600 (includes a $1,100 catch-up).',
+            'Phase-out range for 2026: $153K–$168K MAGI (single). Most junior enlisted are well under.',
             'Combat Zone pay is excluded from MAGI — you can max a Roth even on large CZ bonuses.',
             'Contributions (not earnings) can be withdrawn penalty-free at any time.',
             'Best brokers: Fidelity (zero-fee index funds), Schwab, Vanguard.',
             'Fund to buy: FSKAX (Fidelity), VTI (Vanguard), SCHB (Schwab) — total US market.',
-            'Missed 2025? You have until April 15, 2026 to contribute for tax year 2025.',
+            'Behind on 2026? You have until April 15, 2027 to contribute for tax year 2026.',
           ].map((tip, i) => (
             <View key={i} style={styles.tipRow}>
               <ThemedText style={styles.tipBullet}>▸</ThemedText>

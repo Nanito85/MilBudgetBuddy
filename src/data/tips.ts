@@ -149,7 +149,7 @@ export const TIPS: Tip[] = [
   {
     id: 'invest-001',
     title: 'Open a Roth IRA — Even a Small One',
-    body: 'A Roth IRA lets your money grow completely tax-free. In 2025 you can contribute up to $7,000 a year. Open one with as little as $1 at Fidelity, Vanguard, or Schwab and set up automatic contributions.',
+    body: 'A Roth IRA lets your money grow completely tax-free. In 2026 you can contribute up to $7,500 a year. Open one with as little as $1 at Fidelity, Vanguard, or Schwab and set up automatic contributions.',
     category: 'investing',
     tags: ['Roth IRA', 'tax-free', 'retirement'],
   },
