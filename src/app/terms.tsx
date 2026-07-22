@@ -128,8 +128,7 @@ export default function TermsScreen() {
 
         <Article num="9." title="CONTACT">
           <Para>
-            For support or legal inquiries: support@milbudgetbuddy.app{'\n'}
-            Privacy questions: privacy@milbudgetbuddy.app
+            For support, legal, or privacy inquiries: support@milbudgetbuddy.com
           </Para>
         </Article>
 

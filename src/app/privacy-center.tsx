@@ -105,7 +105,7 @@ export default function PrivacyCenterScreen() {
         </View>
 
         <ThemedText style={[s.contactText, { color: tc.textMuted }]}>
-          Questions? Contact us at: privacy@milbudgetbuddy.app
+          Questions? Contact us at: support@milbudgetbuddy.com
         </ThemedText>
 
       </ScrollView>

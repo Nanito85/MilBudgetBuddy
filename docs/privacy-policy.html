@@ -20,14 +20,14 @@
 
 <h1>Privacy Policy</h1>
 <div class="badge">🔐 Your data stays on your device</div>
-<p class="updated">Last updated: June 2026</p>
+<p class="updated">Last updated: July 2026 · <a href="./terms.html">View Terms of Service →</a></p>
 
 <p>MilBudgetBuddy ("the App") is a personal finance tool for US military service members, veterans, and military families. We are committed to protecting your privacy and being fully transparent about how your data is handled.</p>
 
 <h2>1. What Data We Collect</h2>
 <ul>
   <li><strong>Local device storage:</strong> Your profile (branch, rank, years of service), budget categories, expenses, savings goals, net worth entries, and app preferences are stored locally on your device using AsyncStorage. This data never leaves your device unless you sign in to sync.</li>
-  <li><strong>Cloud sync (optional):</strong> If you create an account and sign in, your data is synced to a private Firebase Realtime Database. Only you can access this data using your credentials.</li>
+  <li><strong>Cloud sync (optional):</strong> If you create an account and sign in, your data is synced to a private Cloud Firestore database (Google Firebase), secured by rules that only allow your own authenticated account to read or write it.</li>
   <li><strong>Account information:</strong> If you create an account, we store your email address only. This is used for authentication and account recovery.</li>
   <li><strong>Anonymous usage analytics:</strong> We collect anonymous analytics about which features are used (e.g., "user opened Pay Chart"). No personally identifiable information, pay amounts, or financial data is included in analytics.</li>
 </ul>
@@ -55,7 +55,7 @@
   <li><strong>Firebase (Google):</strong> Used for authentication and optional cloud sync. Subject to Google's Privacy Policy.</li>
   <li><strong>Expo / EAS:</strong> Used for app distribution and over-the-air updates. Expo does not have access to your financial data.</li>
   <li><strong>Sentry:</strong> Used for anonymous crash reporting. No financial data or PII is included in crash reports.</li>
-  <li><strong>Apple App Store / Google Play:</strong> Standard app store analytics apply per their respective policies.</li>
+  <li><strong>Apple App Store / Google Play:</strong> MilBudgetBuddy Pro subscription purchases are processed entirely by Apple or Google. We never see, receive, or store your payment card details — standard app store analytics apply per their respective policies.</li>
 </ul>
 
 <h2>5. Children's Privacy</h2>
