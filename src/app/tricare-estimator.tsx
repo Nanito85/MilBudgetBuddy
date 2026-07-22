@@ -8,6 +8,7 @@ import { ThemedView } from '@/components/themed-view';
 import { BottomTabInset, Brand, Spacing } from '@/constants/theme';
 import { useThemeColors } from '@/hooks/use-theme';
 import {
+  BeneficiaryGroup,
   CoverageStatus,
   DentalPlan,
   FamilySize,
@@ -155,10 +156,9 @@ function PlanCard({ plan, isWinner }: { plan: PlanDetail; isWinner: boolean }) {
 function PharmacyTable() {
   const tc = useThemeColors();
   const rows = [
-    { fill: 'Generic', mtf: 'FREE',  mail: 'FREE',  retail: '$13' },
-    { fill: 'Brand-formulary', mtf: 'FREE', mail: '$43', retail: '$43' },
-    { fill: 'Non-formulary', mtf: 'FREE', mail: '$56', retail: '$56' },
-    { fill: 'Specialty', mtf: 'Varies', mail: '$100', retail: '$100' },
+    { fill: 'Generic', mtf: 'FREE',  mail: '$14',  retail: '$16' },
+    { fill: 'Brand-formulary', mtf: 'FREE', mail: '$44', retail: '$48' },
+    { fill: 'Non-formulary', mtf: 'N/A', mail: '$85', retail: '$85' },
   ];
   return (
     <View style={[styles.rxTable, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
@@ -189,15 +189,16 @@ export default function TricareEstimatorScreen() {
   const tc = useThemeColors();
 
   const [status,     setStatus]     = useState<CoverageStatus>('active');
+  const [group,      setGroup]      = useState<BeneficiaryGroup>('groupB');
   const [gradeTier,  setGradeTier]  = useState<GradeTier>('e5_plus');
   const [familySize, setFamilySize] = useState<FamilySize>('family');
   const [usage,      setUsage]      = useState<UsageLevel>('medium');
   const [dental,     setDental]     = useState<DentalPlan>('none');
 
   const result = useMemo(() => {
-    const inputs: TricareInputs = { status, gradeTier, familySize, usage, dental };
+    const inputs: TricareInputs = { status, group, gradeTier, familySize, usage, dental };
     return calcTricare(inputs);
-  }, [status, gradeTier, familySize, usage, dental]);
+  }, [status, group, gradeTier, familySize, usage, dental]);
 
   return (
     <ThemedView style={styles.container}>
@@ -231,17 +232,46 @@ export default function TricareEstimatorScreen() {
           />
         </View>
 
-        {status === 'active' && (
+        {status !== 'retired' && (
           <View style={[styles.inputCard, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
             <ThemedText style={[styles.inputLabel, { color: tc.textMuted }]}>PAY GRADE TIER</ThemedText>
-            <ThemedText style={[styles.inputHint, { color: tc.textMuted }]}>Affects Select deductible amount</ThemedText>
+            <ThemedText style={[styles.inputHint, { color: tc.textMuted }]}>Affects Select/TRS deductible and TDP dental premium</ThemedText>
             <ChipRow<GradeTier>
-              options={[
-                { value: 'e1_e4',   label: 'E1–E4', sub: '$50 deductible' },
-                { value: 'e5_plus', label: 'E5+',   sub: '$150 deductible' },
-              ]}
+              options={
+                status === 'reserve'
+                  ? [
+                      { value: 'e1_e4',   label: 'E1–E4', sub: '$66 deductible' },
+                      { value: 'e5_plus', label: 'E5+',   sub: '$198 deductible' },
+                    ]
+                  : group === 'groupA'
+                  ? [
+                      { value: 'e1_e4',   label: 'E1–E4', sub: '$50 deductible' },
+                      { value: 'e5_plus', label: 'E5+',   sub: '$150 deductible' },
+                    ]
+                  : [
+                      { value: 'e1_e4',   label: 'E1–E4', sub: '$66 deductible' },
+                      { value: 'e5_plus', label: 'E5+',   sub: '$198 deductible' },
+                    ]
+              }
               selected={gradeTier}
               onSelect={setGradeTier}
+            />
+          </View>
+        )}
+
+        {status !== 'reserve' && (
+          <View style={[styles.inputCard, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
+            <ThemedText style={[styles.inputLabel, { color: tc.textMuted }]}>BENEFICIARY GROUP</ThemedText>
+            <ThemedText style={[styles.inputHint, { color: tc.textMuted }]}>
+              Based on sponsor's initial enlistment/appointment date — affects enrollment fees, deductibles &amp; catastrophic caps
+            </ThemedText>
+            <ChipRow<BeneficiaryGroup>
+              options={[
+                { value: 'groupA', label: 'Group A', sub: 'Before Jan 1, 2018' },
+                { value: 'groupB', label: 'Group B', sub: 'On/after Jan 1, 2018' },
+              ]}
+              selected={group}
+              onSelect={setGroup}
             />
           </View>
         )}
@@ -272,26 +302,32 @@ export default function TricareEstimatorScreen() {
           />
         </View>
 
-        <View style={[styles.inputCard, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
-          <ThemedText style={[styles.inputLabel, { color: tc.textMuted }]}>DENTAL COVERAGE (TDP)</ThemedText>
-          <ThemedText style={[styles.inputHint, { color: tc.textMuted }]}>
-            {status === 'active'
-              ? 'Active Duty member dental is free. TDP covers family members.'
-              : status === 'retired'
-              ? 'Retirees use FEDVIP — see notes below for cost range.'
-              : 'TRS members can add TDP for family coverage.'}
-          </ThemedText>
-          <ChipRow<DentalPlan>
-            options={[
-              { value: 'none',     label: 'None' },
-              { value: 'member',   label: 'Member', sub: '$14/mo' },
-              { value: 'plus_one', label: '+ 1',    sub: '$34/mo' },
-              { value: 'family',   label: 'Family',  sub: '$45/mo' },
-            ]}
-            selected={dental}
-            onSelect={setDental}
-          />
-        </View>
+        {status !== 'retired' && (
+          <View style={[styles.inputCard, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
+            <ThemedText style={[styles.inputLabel, { color: tc.textMuted }]}>DENTAL COVERAGE (TDP)</ThemedText>
+            <ThemedText style={[styles.inputHint, { color: tc.textMuted }]}>
+              TDP covers family members (sponsor's own dental is free at MTFs). Priced by sponsor pay grade.
+            </ThemedText>
+            <ChipRow<DentalPlan>
+              options={[
+                { value: 'none',  label: 'None' },
+                { value: 'one',   label: '1 Dependent', sub: gradeTier === 'e1_e4' ? '$8.79/mo' : '$11.72/mo' },
+                { value: 'multi', label: '2+ Dependents', sub: gradeTier === 'e1_e4' ? '$22.85/mo' : '$30.47/mo' },
+              ]}
+              selected={dental}
+              onSelect={setDental}
+            />
+          </View>
+        )}
+
+        {status === 'retired' && (
+          <View style={[styles.inputCard, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
+            <ThemedText style={[styles.inputLabel, { color: tc.textMuted }]}>DENTAL COVERAGE</ThemedText>
+            <ThemedText style={[styles.inputHint, { color: tc.textMuted }]}>
+              Retirees aren't eligible for TDP — you'd use FEDVIP instead. See notes below for typical cost.
+            </ThemedText>
+          </View>
+        )}
 
         {/* ── Note ── */}
         <View style={styles.noteCard}>
@@ -358,7 +394,7 @@ export default function TricareEstimatorScreen() {
             { icon: '📍', title: 'MTF PROXIMITY', body: 'Prime is most valuable when you live near a Military Treatment Facility. MTF care is free for active duty families under Prime.' },
             { icon: '🔄', title: 'REFERRALS', body: 'Prime requires a PCM referral to see a specialist. Select lets you book specialists directly — important for families with ongoing conditions.' },
             { icon: '📅', title: 'ENROLLMENT PERIOD', body: 'You can change plans each year (Nov 1–Dec 31 for most) or within 90 days of a qualifying life event (PCS, birth, marriage).' },
-            { icon: '🏥', title: 'URGENT CARE', body: 'Both plans cover TRICARE-authorized urgent care. Active Duty Prime: $0. Retired/Reserve Prime: $22 copay. Select: 20% after deductible.' },
+            { icon: '🏥', title: 'URGENT CARE', body: 'Both plans cover TRICARE-authorized urgent care. Active Duty Prime: $0. Retired/Reserve Prime: $39 copay. Select/TRS: flat network copay ($26–$38 depending on group), 20–25% for non-network.' },
           ].map((d) => (
             <View key={d.title} style={styles.decisionRow}>
               <ThemedText style={styles.decisionIcon}>{d.icon}</ThemedText>
