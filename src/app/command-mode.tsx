@@ -241,7 +241,7 @@ export default function CommandModeScreen() {
   ${breakdown.traditionalTsp > 0 ? row(`Traditional TSP (${tspContribPct}%)`, fmt(breakdown.traditionalTsp)) : ''}
   ${breakdown.rothTsp > 0 ? row(`Roth TSP (${rothTspPct}%)`, fmt(breakdown.rothTsp)) : ''}
   ${breakdown.sgli > 0 ? row('SGLI Premium', fmt(breakdown.sgli)) : ''}
-  ${breakdown.dental > 0 ? row('FEDVIP Dental', fmt(breakdown.dental)) : ''}
+  ${breakdown.dental > 0 ? row('TDP Dental (Family)', fmt(breakdown.dental)) : ''}
   ${breakdown.extraDeductionItems.map((i) => row('· ' + i.label, fmt(i.amount))).join('')}
   ${row('TOTAL DEDUCTIONS', fmt(breakdown.totalDeductions), true)}
 </table>
@@ -449,7 +449,7 @@ export default function CommandModeScreen() {
               {breakdown.rothTsp > 0       && <Row label={`Roth TSP (${rothTspPct}%)`}           value={fmt(breakdown.rothTsp)} />}
               {breakdown.tsp === 0         && <Row label="TSP Contribution" value={fmt(0)} />}
               {breakdown.sgli > 0 && <Row label="SGLI Premium" value={fmt(breakdown.sgli)} />}
-              {breakdown.dental > 0 && <Row label="FEDVIP Dental" value={fmt(breakdown.dental)} />}
+              {breakdown.dental > 0 && <Row label="TDP Dental (Family)" value={fmt(breakdown.dental)} />}
               {breakdown.extraDeductionItems.map((item) => (
                 <View key={item.id} style={styles.extraItemRow}>
                   <Row label={item.label} value={fmt(item.amount)} dim />
