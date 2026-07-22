@@ -217,27 +217,22 @@ export default function SavingsRateScreen() {
         {/* Rate benchmarks */}
         <ThemedView type="backgroundElement" style={styles.card}>
           <ThemedText style={styles.cardLabel}>SAVINGS RATE → YEARS TO FI</ThemedText>
-          {[
-            { rate: 10, years: '~46 years' },
-            { rate: 20, years: '~37 years' },
-            { rate: 30, years: '~28 years' },
-            { rate: 40, years: '~22 years' },
-            { rate: 50, years: '~17 years' },
-            { rate: 65, years: '~10 years' },
-          ].map((item) => {
-            const isAbove = savingsRate >= item.rate;
+          {[10, 20, 30, 40, 50, 65].map((rate) => {
+            const isAbove = savingsRate >= rate;
+            const y = yearsToFi(rate / 100, 100000, 0);
+            const years = y !== null ? `~${y} years` : '100+ years';
             return (
-              <View key={item.rate} style={styles.benchRow}>
+              <View key={rate} style={styles.benchRow}>
                 <ThemedText style={[styles.benchRate, { color: tc.textSecondary }, isAbove && { color: Brand.success }]}>
-                  {item.rate}%{isAbove ? ' ✓' : ''}
+                  {rate}%{isAbove ? ' ✓' : ''}
                 </ThemedText>
                 <View style={[styles.benchBarTrack, { backgroundColor: tc.surfaceInner }]}>
                   <View style={[styles.benchBarFill, {
-                    width: `${(item.rate / 65) * 100}%` as any,
+                    width: `${(rate / 65) * 100}%` as any,
                     backgroundColor: isAbove ? Brand.success : tc.borderColor,
                   }]} />
                 </View>
-                <ThemedText style={[styles.benchYears, { color: tc.textSecondary }, isAbove && { color: Brand.success }]}>{item.years}</ThemedText>
+                <ThemedText style={[styles.benchYears, { color: tc.textSecondary }, isAbove && { color: Brand.success }]}>{years}</ThemedText>
               </View>
             );
           })}
