@@ -234,11 +234,16 @@ export default function CodesScreen() {
           text: item.active ? 'Disable' : 'Enable',
           onPress: async () => {
             const token = await getToken();
-            await fetch(`${API_BASE}/api/admin/codes/${item.id}`, {
-              method: 'PATCH',
-              headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-              body: JSON.stringify({ active: !item.active }),
-            });
+            try {
+              const res = await fetch(`${API_BASE}/api/admin/codes/${item.id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                body: JSON.stringify({ active: !item.active }),
+              });
+              if (!res.ok) throw new Error(`Status ${res.status}`);
+            } catch (e: any) {
+              Alert.alert('Error', e?.message ?? 'Failed to update code.');
+            }
             fetchCodes();
           },
         },
@@ -253,10 +258,15 @@ export default function CodesScreen() {
         text: 'Delete', style: 'destructive',
         onPress: async () => {
           const token = await getToken();
-          await fetch(`${API_BASE}/api/admin/codes/${item.id}`, {
-            method: 'DELETE',
-            headers: { Authorization: `Bearer ${token}` },
-          });
+          try {
+            const res = await fetch(`${API_BASE}/api/admin/codes/${item.id}`, {
+              method: 'DELETE',
+              headers: { Authorization: `Bearer ${token}` },
+            });
+            if (!res.ok) throw new Error(`Status ${res.status}`);
+          } catch (e: any) {
+            Alert.alert('Error', e?.message ?? 'Failed to delete code.');
+          }
           fetchCodes();
         },
       },
