@@ -2,9 +2,11 @@
  * School data keyed by installation ID (from installations.ts).
  *
  * DoDEA (Dept of Defense Education Activity) operates ~160 schools at military
- * installations worldwide. CONUS installations generally feed into local public
- * school districts funded by Impact Aid (20 USC §7701). OCONUS installations
- * use DoDEA schools exclusively.
+ * installations worldwide. Since Sept 5, 2025 (Executive Order 14347), DoDEA
+ * also uses "DoWEA" (Department of War Education Activity) as a secondary
+ * designation — both names refer to the same organization. CONUS installations
+ * generally feed into local public school districts funded by Impact Aid
+ * (20 USC §7701). OCONUS installations use DoDEA schools exclusively.
  *
  * Sources:
  *  - DoDEA school finder: dodea.edu/schools
@@ -50,9 +52,10 @@ export const SCHOOL_DATA: InstallationSchoolInfo[] = [
     dodea: [
       { name: 'Barsanti Elementary School', grades: 'K–5', type: 'Elementary' },
       { name: 'Wassom Middle School',        grades: '6–8', type: 'Middle' },
+      { name: 'Fort Campbell High School',   grades: '8–12', type: 'High' },
     ],
     localDistrict: 'Clarksville-Montgomery County School System (TN) / Fort Campbell Independent School District (KY)',
-    notes: 'DoDEA operates on-post Elementary and Middle School. High school students attend Clarksville-area schools (e.g., Northeast HS, Rossview HS in TN, or Christian County HS in KY).',
+    notes: 'DoDEA (now also branded DoWEA) operates a full on-post K–12 pipeline, including Fort Campbell High School. Some families still opt for off-post Clarksville-area schools (e.g., Northeast HS, Rossview HS in TN, or Christian County HS in KY).',
   },
   {
     installationId: 'fort_cavazos',
@@ -112,9 +115,10 @@ export const SCHOOL_DATA: InstallationSchoolInfo[] = [
       { name: 'Van Voorhis Elementary',  grades: 'K–5', type: 'Elementary' },
       { name: 'Kingsolver Elementary',   grades: 'K–5', type: 'Elementary' },
       { name: 'Fort Knox Middle School', grades: '6–8', type: 'Middle' },
+      { name: 'Fort Knox High School',   grades: '9–12', type: 'High' },
     ],
     localDistrict: 'Hardin County Schools (KY)',
-    notes: 'DoDEA operates two on-post elementary schools and one middle school. High school students attend North Hardin HS or Elizabethtown HS in the Hardin County district.',
+    notes: 'DoDEA (now also branded DoWEA) operates two on-post elementary schools, a middle school, and Fort Knox High School. Some families still opt for North Hardin HS or Elizabethtown HS in the Hardin County district.',
   },
   {
     installationId: 'fort_sill',
@@ -684,12 +688,10 @@ export const SCHOOL_DATA: InstallationSchoolInfo[] = [
   },
   {
     installationId: 'white_sands',
-    hasDoDEA: true,
-    dodea: [
-      { name: 'White Sands Elementary School', grades: 'K–8', type: 'K-12' },
-    ],
+    hasDoDEA: false,
+    dodea: [],
     localDistrict: 'Las Cruces Public Schools / Tularosa Municipal Schools (NM)',
-    notes: 'Isolated installation. DoDEA operates K–8 on post. High school students commute to Las Cruces or Tularosa.',
+    notes: 'Isolated installation. White Sands School (PK–8) on post is run by Las Cruces Public Schools, not DoDEA. High school students commute to Las Cruces or Tularosa.',
   },
   {
     installationId: 'usma',

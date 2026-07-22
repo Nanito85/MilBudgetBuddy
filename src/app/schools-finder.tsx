@@ -241,7 +241,7 @@ export default function SchoolsFinderScreen() {
               </ThemedText>
               {[
                 { icon: '🌐', name: 'DoDEA School Finder',      url: 'dodea.edu/schools',                  desc: 'Official DoDEA school directory' },
-                { icon: '🔍', name: 'SchoolQuest',               url: 'schoolquest.militaryonesource.mil',  desc: 'DoD-operated school search tool for military families' },
+                { icon: '🔍', name: 'MCEC School Search',        url: 'militarychild.org',                  desc: 'Military Child Education Coalition — school search (SchoolQuest was discontinued Aug 2025 and folded in here)' },
                 { icon: '🤝', name: 'MIC3 Compact',              url: 'mic3.net',                           desc: 'Military Interstate Children\'s Compact — all 50 states + DC' },
                 { icon: '📞', name: 'School Liaison Officers',   url: 'dodea.edu/Partnership/schoolliaison', desc: 'Find the SLO at your installation' },
               ].map((r) => (
