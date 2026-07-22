@@ -44,7 +44,7 @@ const SECTIONS: TaxSection[] = [
     summary: 'Nine states exempt all military pay. Others exempt partial amounts or have no income tax at all.',
     body:
       'STATES WITH NO INCOME TAX (all residents benefit):\n' +
-      'Alaska, Florida, Nevada, New Hampshire (wages only), South Dakota, Tennessee (wages only), Texas, Washington, Wyoming\n\n' +
+      'Alaska, Florida, Nevada, New Hampshire, South Dakota, Tennessee, Texas, Washington, Wyoming\n\n' +
       'STATES THAT FULLY EXEMPT ACTIVE DUTY MILITARY PAY:\n' +
       'Arkansas, Hawaii, Illinois, Iowa, Kansas, Louisiana, Michigan, Minnesota, Missouri, Montana, New Jersey, New Mexico, New York, Ohio, Oregon, Pennsylvania, Rhode Island, South Carolina, Utah, Vermont, Wisconsin\n\n' +
       'STATES WITH PARTIAL EXEMPTIONS OR CONDITIONS:\n' +
@@ -74,7 +74,7 @@ const SECTIONS: TaxSection[] = [
       '• E-filing included\n\n' +
       'OTHER FREE OPTIONS:\n' +
       '• VITA (Volunteer Income Tax Assistance): in-person help on base, free\n' +
-      '• IRS Free File: if income under $73,000\n' +
+      '• IRS Free File: if AGI is $89,000 or under\n' +
       '• JAG / Legal Assistance: can review returns and advise',
     tip: 'Use MilTax if you have combat zone income, SGLI, or multiple state filings — standard commercial software often mishandles these military-specific items.',
   },
@@ -130,7 +130,7 @@ const SECTIONS: TaxSection[] = [
       '• Deducted pre-tax from basic pay — reduces your taxable income.\n' +
       '• Shown on your LES but NOT added back to taxable wages on W-2.\n\n' +
       'SGLI DEATH BENEFIT:\n' +
-      '• Up to $400,000 paid to beneficiaries.\n' +
+      '• Up to $500,000 paid to beneficiaries (increased from $400,000 effective March 1, 2023).\n' +
       '• Generally not subject to federal income tax (IRC §101).\n' +
       '• Interest earned on the benefit after death is taxable.\n\n' +
       'VGLI (after separation):\n' +
