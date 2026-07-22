@@ -14,6 +14,7 @@ import { calcRetirement, formatMoney, govtMatchRate } from '@/features/retiremen
 import { GradePicker } from '@/features/pcs/components/GradePicker';
 import { BottomTabInset, Brand, Spacing } from '@/constants/theme';
 import { monthlyCompensation } from '@/features/va/utils/vaDisabilityCalc';
+import { useUserStore } from '@/store/user.store';
 
 type RetirementSystem = 'both' | 'high3' | 'brs';
 
@@ -25,9 +26,17 @@ export default function RetirementCalculatorScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
 
+  const profilePayGrade = useUserStore((s) => s.payGrade);
+  const profileYos      = useUserStore((s) => s.yos);
+
   const [grade, setGrade] = useState<PayGrade>('E7');
+  // Grade the member holds today — distinct from "grade" (grade at retirement)
+  // above. Without this, "Current Basic Pay" and the TSP contribution preview
+  // were silently computed from the RETIREMENT grade instead of today's grade,
+  // overstating both for anyone who hasn't yet reached their planned final grade.
+  const [currentGrade, setCurrentGrade] = useState<PayGrade>(profilePayGrade ?? 'E5');
   const [currentAge, setCurrentAge] = useState(30);
-  const [currentYOS, setCurrentYOS] = useState(10);
+  const [currentYOS, setCurrentYOS] = useState(profileYos || 10);
   const [yearsAtGrade, setYearsAtGrade] = useState(3);
   const [retirementYOS, setRetirementYOS] = useState(20);
   const [system, setSystem] = useState<RetirementSystem>('both');
@@ -51,7 +60,7 @@ export default function RetirementCalculatorScreen() {
   const showHigh3 = system === 'both' || system === 'high3';
   const showBRS   = system === 'both' || system === 'brs';
 
-  const currentPay = getBasicPay(grade, currentYOS);
+  const currentPay = getBasicPay(currentGrade, currentYOS);
 
   // VA disability — same canonical rate table as the dedicated VA Disability calculator
   const vaMonthly = monthlyCompensation(vaRating, false, 0);
@@ -90,9 +99,9 @@ export default function RetirementCalculatorScreen() {
           <ThemedView type="backgroundElement" style={styles.card}>
             <View style={styles.cardPadded}>
               <ThemedText type="small" themeColor="textSecondary" style={styles.fieldLabel}>
-                Grade at Retirement
+                Current Grade
               </ThemedText>
-              <GradePicker selected={grade} onSelect={setGrade} />
+              <GradePicker selected={currentGrade} onSelect={setCurrentGrade} />
             </View>
             <View style={styles.divider} />
             <View style={styles.cardPadded}>
@@ -102,6 +111,13 @@ export default function RetirementCalculatorScreen() {
               <ThemedText style={styles.payPreview}>
                 {formatMoney(currentPay)}/mo
               </ThemedText>
+            </View>
+            <View style={styles.divider} />
+            <View style={styles.cardPadded}>
+              <ThemedText type="small" themeColor="textSecondary" style={styles.fieldLabel}>
+                Grade at Retirement
+              </ThemedText>
+              <GradePicker selected={grade} onSelect={setGrade} />
             </View>
             <View style={styles.divider} />
             <View style={[styles.cardPadded, styles.stepperGroup]}>

@@ -47,7 +47,7 @@ const DLA: Record<string, { noDep: number; withDep: number }> = {
   O10: { noDep: 5187.33, withDep: 6385.58 },
 };
 
-const MALT_RATE = 0.21; // FY2026, $/mile per vehicle
+const MALT_RATE = 0.205; // CY2026, $/mile per vehicle (PDTATAC MAP-CAP 73-25(I), effective 1 Jan 2026)
 
 const fmt = (n: number) => `$${Math.round(n).toLocaleString()}`;
 
@@ -118,7 +118,7 @@ export default function PCSCalculatorScreen() {
   };
 
   // ── Entitlement calculations ─────────────────────────────────────────────────
-  const dla = (DLA[grade] ?? { noDep: 748.84, withDep: 1198.14 })[withDep ? 'withDep' : 'noDep'];
+  const dla = DLA[grade][withDep ? 'withDep' : 'noDep'];
 
   const miles = parseFloat(milesInput) || 0;
   const malt = miles * MALT_RATE * vehicles;

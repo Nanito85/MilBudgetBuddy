@@ -113,12 +113,12 @@ export interface LFundInfo {
 
 export const L_FUNDS: LFundInfo[] = [
   {
-    id: 'L2025',
-    targetDate: '2025 (income)',
-    description: 'Most conservative — near or in retirement. Heavy bond allocation.',
+    id: 'LIncome',
+    targetDate: 'Income (in retirement)',
+    description: 'Most conservative — for those already in retirement and drawing income. Heavy bond allocation. The L 2025 Fund merged into L Income in July 2025.',
     allocations: [
-      { fund: 'G', pct: 69 }, { fund: 'F', pct: 6 }, { fund: 'C', pct: 13 },
-      { fund: 'S', pct: 3 }, { fund: 'I', pct: 9 },
+      { fund: 'G', pct: 72 }, { fund: 'F', pct: 6 }, { fund: 'C', pct: 11 },
+      { fund: 'S', pct: 3 }, { fund: 'I', pct: 8 },
     ],
   },
   {

@@ -104,7 +104,6 @@ export default function RootLayout() {
         <Stack.Screen name="tip-library" />
         <Stack.Screen name="credit-score" />
         <Stack.Screen name="dity-calculator" />
-        <Stack.Screen name="explore" />
         <Stack.Screen name="invest-101" />
         <Stack.Screen name="pcs-calculator" />
         <Stack.Screen name="profile" />

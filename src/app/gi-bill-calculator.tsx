@@ -72,7 +72,8 @@ export default function GiBillCalculatorScreen() {
   const [manualBah, setManualBah] = useState('2400');
   const [tuitionPerYear, setTuitionPerYear] = useState(10000);
 
-  // Look up E5-w/dep BAH from entered ZIP — falls back to nearest MHA for any US ZIP
+  // Look up E5-w/dep BAH from entered ZIP — falls back to an approximate
+  // same-prefix ZIP match (not necessarily the nearest MHA) for any US ZIP
   const zipLookup = useMemo(() => {
     const z = zipInput.trim();
     if (z.length === 5) return findBahRateApprox(z, 'E5', true);
@@ -201,7 +202,7 @@ export default function GiBillCalculatorScreen() {
                   {zipLookup.exact ? (
                     <ThemedText style={styles.zipFound}>✓ {fmtDollar(zipLookup.rate)}/mo</ThemedText>
                   ) : (
-                    <ThemedText style={styles.zipApprox}>≈ {fmtDollar(zipLookup.rate)}/mo (nearest MHA)</ThemedText>
+                    <ThemedText style={styles.zipApprox}>≈ {fmtDollar(zipLookup.rate)}/mo (approx. by ZIP)</ThemedText>
                   )}
                 </View>
               ) : null}

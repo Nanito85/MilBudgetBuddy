@@ -93,9 +93,7 @@ export function calcRetirement(inputs: RetirementInputs): RetirementResult {
 
   // ── High-3 pension ──────────────────────────────────────────────────────────
   const high3Avg = getHigh3Average(grade, retirementYOS);
-  const h3Monthly = (retirementYOS * 0.025 * high3Avg * 12) / 12;
-  // Simplified: (yos × 2.5% × annual_high3) / 12
-  const h3MonthlyPension = (retirementYOS * 0.025 * high3Avg);
+  const h3MonthlyPension = retirementYOS * 0.025 * high3Avg;
   const h3AnnualPension = h3MonthlyPension * 12;
 
   // ── BRS pension ─────────────────────────────────────────────────────────────
