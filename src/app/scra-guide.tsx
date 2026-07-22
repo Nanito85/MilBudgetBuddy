@@ -50,7 +50,7 @@ const PROTECTIONS: Protection[] = [
     title: 'Eviction Protection',
     summary: 'Landlords cannot evict you or your dependents without a court order while on active duty.',
     details:
-      'Under 50 USC §3951, landlords must obtain a court order to evict a service member or their family from rented premises during active duty if monthly rent is at or below the threshold ($4,258.36/month in 2026, adjusted annually).\n\n' +
+      'Under 50 USC §3951, landlords must obtain a court order to evict a service member or their family from rented premises during active duty if monthly rent is at or below the threshold ($10,542.60/month in 2026, adjusted annually by DoD).\n\n' +
       '• Court may stay the eviction for up to 3 months upon service member\'s application.\n' +
       '• Applies to the primary residence of the service member or dependents.\n' +
       '• Does not excuse unpaid rent — it only provides court protection and time.',
@@ -62,11 +62,11 @@ const PROTECTIONS: Protection[] = [
     title: 'Lease & Auto Contract Termination',
     summary: 'You can terminate residential leases and auto leases upon receiving qualifying orders.',
     details:
-      'Under 50 USC §§3955–3956:\n\n' +
+      'Under 50 USC §3955 (both residential and motor vehicle leases are covered by this same section):\n\n' +
       'RESIDENTIAL LEASES: You may terminate a lease entered into before or during service if you receive orders for a PCS of 90+ miles, or deployment of 90+ days.\n' +
       '• Termination effective 30 days after next rent payment due date after delivering notice.\n' +
       '• Must provide written notice + copy of orders to the landlord.\n\n' +
-      'AUTO LEASES: You may terminate an auto lease if you are deployed 180+ days OCONUS, or PCS OCONUS.\n' +
+      'AUTO LEASES: You may terminate an auto lease if you are called to active duty for 180+ days, or receive PCS orders from CONUS to OCONUS (or OCONUS to a new location).\n' +
       '• Provide written notice + copy of orders to dealer/lender.\n' +
       '• No early termination fee may be charged.',
     action: 'Send certified mail notice + orders to landlord or auto lender. Keep the return receipt as proof. No fee should be charged for qualifying lease terminations.',
