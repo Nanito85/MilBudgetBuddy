@@ -185,7 +185,12 @@ export default function ToolsScreen() {
 
   useEffect(() => {
     AsyncStorage.getItem(RECENTLY_USED_KEY).then((raw) => {
-      if (raw) setRecentIds(JSON.parse(raw));
+      if (!raw) return;
+      try {
+        setRecentIds(JSON.parse(raw));
+      } catch {
+        // Corrupted entry — ignore, recently-used list just stays empty.
+      }
     });
   }, []);
 
