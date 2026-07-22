@@ -22,9 +22,11 @@ export interface EligibilityTier {
 }
 
 export const ELIGIBILITY_TIERS: EligibilityTier[] = [
-  { id: 't40',  label: '40%',  description: '90+ days active duty',             pct: 40  },
-  { id: 't60',  label: '60%',  description: '6 months active duty',             pct: 60  },
-  { id: 't80',  label: '80%',  description: '18 months active duty',            pct: 80  },
+  { id: 't50',  label: '50%',  description: '90–179 days (3–5 mo) active duty',   pct: 50  },
+  { id: 't60',  label: '60%',  description: '180–544 days (6–17 mo) active duty', pct: 60  },
+  { id: 't70',  label: '70%',  description: '545–729 days (18–23 mo) active duty', pct: 70  },
+  { id: 't80',  label: '80%',  description: '730–909 days (24–29 mo) active duty', pct: 80  },
+  { id: 't90',  label: '90%',  description: '910–1,094 days (30–35 mo) active duty', pct: 90  },
   { id: 't100', label: '100%', description: '36+ months OR 30+ days w/ SCD',   pct: 100 },
 ];
 
