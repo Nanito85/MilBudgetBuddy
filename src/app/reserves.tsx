@@ -29,8 +29,11 @@ const TRS_PREMIUMS = {
   member_family: 286.66,
 };
 
-// FY2026 SELRES retirement multiplier: 2.5% per qualifying year at age 60
-const RETIREMENT_MULTIPLIER = 0.025;
+// SELRES retirement multiplier per qualifying point-year at age 60.
+// High-3 (legacy, DIEMS on/before Dec 31, 2017): 2.5%. BRS (DIEMS on/after
+// Jan 1, 2018 — the default for most currently serving reservists): 2.0%.
+const HIGH3_MULTIPLIER = 0.025;
+const BRS_MULTIPLIER = 0.020;
 const RETIREMENT_AGE = 60;
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -121,20 +124,22 @@ export default function ReservesScreen() {
 
   const [goodYears, setGoodYears] = useState(Math.min(storeYos ?? 6, 40));
   const [retirementPoints, setRetirementPoints] = useState(0);
+  const [retirementSystem, setRetirementSystem] = useState<'brs' | 'high3'>('brs');
+  const retirementMultiplier = retirementSystem === 'high3' ? HIGH3_MULTIPLIER : BRS_MULTIPLIER;
 
   // Points needed for a "good year": 50 minimum
-  // Creditable retirement pay = (points / 360) × 2.5% × highest 36-mo avg basic pay
+  // Creditable retirement pay = (points / 360) × multiplier × highest 36-mo avg basic pay
   const pointsBasedCalc = useMemo(() => {
     const divisor = 360;
     const fraction = retirementPoints / divisor;
-    const retirePay = fraction * RETIREMENT_MULTIPLIER * monthlyBasicPay;
+    const retirePay = fraction * retirementMultiplier * monthlyBasicPay;
     return retirePay;
-  }, [retirementPoints, monthlyBasicPay]);
+  }, [retirementPoints, monthlyBasicPay, retirementMultiplier]);
 
-  // Year-based (simplified): 2.5% × good years × base pay / 12
+  // Year-based (simplified): multiplier × good years × base pay / 12
   const yearBasedMonthly = useMemo(() => {
-    return RETIREMENT_MULTIPLIER * goodYears * (monthlyBasicPay * 12) / 12;
-  }, [goodYears, monthlyBasicPay]);
+    return retirementMultiplier * goodYears * (monthlyBasicPay * 12) / 12;
+  }, [goodYears, monthlyBasicPay, retirementMultiplier]);
 
   // ── Mobilization ──────────────────────────────────────────────────────────
 
@@ -289,8 +294,32 @@ export default function ReservesScreen() {
             <ThemedView type="backgroundElement" style={styles.card}>
               <ThemedText style={[styles.cardLabel, { color: tc.textSecondary }]}>RETIREMENT POINTS CALCULATOR</ThemedText>
               <ThemedText style={[styles.cardHint, { color: tc.textMuted }]}>
-                Reserve retirement pay = (total points ÷ 360) × 2.5% × active-duty base pay. You need at least 20 "good years" (≥50 points/year).
+                Reserve retirement pay = (total points ÷ 360) × {(retirementMultiplier * 100).toFixed(1)}% × active-duty base pay. You need at least 20 "good years" (≥50 points/year).
               </ThemedText>
+
+              <View style={styles.rowItem}>
+                <ThemedText style={[styles.rowLabel, { color: tc.textSecondary }]}>Retirement System</ThemedText>
+                <View style={styles.stepperWrap}>
+                  {(['brs', 'high3'] as const).map((sys) => (
+                    <Pressable
+                      key={sys}
+                      onPress={() => setRetirementSystem(sys)}
+                      style={[
+                        styles.gradeChip,
+                        { borderColor: tc.borderColor },
+                        retirementSystem === sys && styles.gradeChipActive,
+                      ]}>
+                      <ThemedText style={[styles.gradeChipText, { color: tc.textHint }, retirementSystem === sys && styles.gradeChipTextActive]}>
+                        {sys === 'brs' ? 'BRS (2.0%)' : 'High-3 (2.5%)'}
+                      </ThemedText>
+                    </Pressable>
+                  ))}
+                </View>
+              </View>
+              <ThemedText style={[styles.cardHint, { color: tc.textMuted }]}>
+                BRS applies if your DIEMS is on/after Jan 1, 2018 — the default for most currently serving reservists. High-3 applies if your DIEMS is before that date and you didn't opt into BRS.
+              </ThemedText>
+              <View style={[styles.divider, { backgroundColor: tc.borderColor }]} />
 
               <View style={styles.rowItem}>
                 <ThemedText style={[styles.rowLabel, { color: tc.textSecondary }]}>Good Years (qualifying)</ThemedText>
@@ -400,10 +429,11 @@ export default function ReservesScreen() {
                 { label: 'Plan Type', value: 'PPO (preferred provider)' },
                 { label: 'Deductible (individual)', value: '$66 E4 & below / $198 E5+' },
                 { label: 'Deductible (family)', value: '$132 E4 & below / $397 E5+' },
-                { label: 'Cost share (civilian)', value: '15% after deductible' },
+                { label: 'Cost share (network)', value: '$19-52 flat copay by visit type' },
+                { label: 'Cost share (non-network)', value: '20% after deductible' },
                 { label: 'Catastrophic cap (annual)', value: '$1,324' },
                 { label: 'Prescriptions (mail order, 90-day)', value: '$14 generic / $44 brand' },
-                { label: 'Emergency care (civilian ER)', value: '$90 copay after deductible' },
+                { label: 'Emergency care (network ER)', value: '$52 flat copay' },
               ].map((item, i) => (
                 <View key={i} style={[styles.rowItem, i > 0 && styles.itemBorderTop, i > 0 && { borderTopColor: tc.borderColor }]}>
                   <ThemedText style={[styles.rowLabel, { color: tc.textSecondary }]}>{item.label}</ThemedText>
