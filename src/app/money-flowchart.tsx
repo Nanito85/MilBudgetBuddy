@@ -55,7 +55,7 @@ const STEPS: Step[] = [
     order: 4,
     icon: '📈',
     title: 'Max Roth IRA ($7,500/year)',
-    why: 'Your military income is likely low enough for Roth eligibility. Tax-free growth forever. $7.5K/yr from E3 to 20 YOS = ~$500K tax-free by retirement.',
+    why: 'Your military income is likely low enough for Roth eligibility. Tax-free growth forever. $7.5K/yr over a full 20-year career (7% avg return) ≈ $300K+ tax-free by retirement.',
     how: 'Open a Roth IRA at Fidelity, Vanguard, or Schwab (all free). Buy a total market index fund (e.g. FSKAX, VTI). Set auto-invest for $625/month.',
     target: '$7,500/year ($625/month)',
     color: '#6A1B9A',
