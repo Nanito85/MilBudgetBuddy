@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { Alert, Linking, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Alert, Linking, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
@@ -20,39 +20,35 @@ export default function LegalScreen() {
   const router = useRouter();
   const tc = useThemeColors();
   const [expanded, setExpanded] = useState<Section>(null);
-  const { user } = useAuthStore();
+  const [deleting, setDeleting] = useState(false);
+  const { user, deleteAccount } = useAuthStore();
   const resetAll = useUserStore((s) => s.resetAll);
 
   const toggle = (section: Section) =>
     setExpanded((prev) => (prev === section ? null : section));
 
   const handleDeleteAccount = () => {
+    if (!user) {
+      Alert.alert('Not Signed In', 'You need to be signed in to delete your account.');
+      return;
+    }
     Alert.alert(
       'Delete Account',
-      'This will permanently delete your account and all data. This cannot be undone.',
+      'This will immediately and permanently delete your account and all synced data. This cannot be undone.',
       [
         { text: 'Cancel', style: 'cancel' },
         {
           text: 'Delete',
           style: 'destructive',
-          onPress: () => {
-            Alert.alert(
-              'Confirm Deletion',
-              `Send a deletion request to ${SUPPORT_EMAIL}? We will process it within 30 days per our Privacy Policy.`,
-              [
-                { text: 'Cancel', style: 'cancel' },
-                {
-                  text: 'Send Request',
-                  onPress: () => {
-                    const subject = encodeURIComponent('Account Deletion Request');
-                    const body = encodeURIComponent(
-                      `Please delete my account.\n\nUID: ${user?.uid ?? 'N/A'}\nEmail: ${user?.email ?? 'N/A'}`,
-                    );
-                    Linking.openURL(`mailto:${SUPPORT_EMAIL}?subject=${subject}&body=${body}`);
-                  },
-                },
-              ],
-            );
+          onPress: async () => {
+            setDeleting(true);
+            try {
+              await deleteAccount();
+            } catch {
+              Alert.alert('Error', 'Could not delete account. You may need to sign out and sign back in first, then try again.');
+            } finally {
+              setDeleting(false);
+            }
           },
         },
       ],
@@ -90,12 +86,13 @@ export default function LegalScreen() {
                 </ThemedText>
                 <ThemedText style={[styles.bodyText, { color: tc.textSecondary }]}>
                   We do not sell your data. Anonymous usage analytics (screen views, feature usage counts) may be collected
-                  to improve the app. No personally identifiable financial data is sent to our servers.
+                  to improve the app. If you sign in, your pay profile and budget data (pay grade, ZIP code, TSP
+                  contributions, and similar entries) sync to your Firebase account so you can access them across devices.
+                  We do not store payment card details.
                 </ThemedText>
                 <ThemedText style={[styles.bodyText, { color: tc.textSecondary }]}>
                   Firebase Authentication is used for optional account sign-in. Google's privacy policy applies to that
-                  service. In-app purchase receipts are verified server-side through Google Play; we do not store payment
-                  details.
+                  service.
                 </ThemedText>
                 <Pressable onPress={() => Linking.openURL(PRIVACY_URL)} style={styles.linkBtn}>
                   <ThemedText style={styles.linkText}>View Full Privacy Policy →</ThemedText>
@@ -123,12 +120,13 @@ export default function LegalScreen() {
                   official myPay account.
                 </ThemedText>
                 <ThemedText style={[styles.bodyText, { color: tc.textSecondary }]}>
-                  Pro upgrade is a one-time, non-refundable purchase unless required by applicable law. Purchases are
-                  processed through Google Play.
+                  MilBudgetBuddy Pro is available as a monthly ($4.99/month) or annual ($49.99/year) auto-renewing
+                  subscription, billed through Google Play or the App Store. Subscriptions renew automatically unless
+                  cancelled at least 24 hours before the renewal date, and no refunds are provided for partial periods.
                 </ThemedText>
                 <ThemedText style={[styles.bodyText, { color: tc.textSecondary }]}>
-                  Subscription disclosure: This app offers a one-time lifetime purchase for {'“'}Pro\{'”'} access. There is no
-                  auto-renewing subscription. No charges will recur after your single purchase.
+                  You can manage or cancel your subscription anytime through your device's App Store or Google Play
+                  account settings.
                 </ThemedText>
                 <Pressable onPress={() => Linking.openURL(TERMS_URL)} style={styles.linkBtn}>
                   <ThemedText style={styles.linkText}>View Full Terms of Service →</ThemedText>
@@ -152,17 +150,21 @@ export default function LegalScreen() {
           <View style={[styles.section, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
             <ThemedText style={[styles.sectionTitle, { color: tc.textPrimary }]}>Data & Account Deletion</ThemedText>
             <ThemedText style={[styles.supportBody, { color: tc.textSecondary }]}>
-              You may request deletion of your account and all associated data at any time. We will process deletion
-              requests within 30 days.
+              You may delete your account and all associated cloud data at any time. Deletion is immediate and
+              permanent.
             </ThemedText>
-            <Pressable onPress={handleDeleteAccount} style={styles.deleteBtn}>
-              <ThemedText style={styles.deleteBtnText}>Request Account Deletion</ThemedText>
+            <Pressable onPress={handleDeleteAccount} disabled={deleting} style={styles.deleteBtn}>
+              {deleting ? (
+                <ActivityIndicator color="#FF6666" />
+              ) : (
+                <ThemedText style={styles.deleteBtnText}>Delete Account Now</ThemedText>
+              )}
             </Pressable>
           </View>
 
           <ThemedText style={[styles.footer, { color: tc.textMuted }]}>
             MilBudgetBuddy is not affiliated with the DoD. Pay figures are estimates only.{'\n'}
-            © 2024–2025 MilBudgetBuddy. All rights reserved.
+            © 2024–2026 MilBudgetBuddy. All rights reserved.
           </ThemedText>
 
         </ScrollView>
