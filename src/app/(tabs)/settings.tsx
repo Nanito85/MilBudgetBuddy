@@ -1,3 +1,4 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Alert, Modal, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
@@ -12,8 +13,18 @@ import { ALL_QUICK_ACTIONS } from '@/data/quick-actions';
 import { useThemeColors } from '@/hooks/use-theme';
 import { useIsAdmin } from '@/hooks/use-admin';
 import { useAuthStore } from '@/store/auth.store';
-import { useUserStore } from '@/store/user.store';
+import { useBudgetStore } from '@/store/budget.store';
+import { useChatStore } from '@/store/chat.store';
+import { useDebtStore } from '@/store/debt.store';
+import { useExpensesStore } from '@/store/expenses.store';
 import { useKidModeStore } from '@/store/kid-mode.store';
+import { useKidsStore } from '@/store/kids.store';
+import { useLifeEventsStore } from '@/store/life-events.store';
+import { useNetWorthStore } from '@/store/networth.store';
+import { useNwSnapshotsStore } from '@/store/networth-snapshots.store';
+import { useSavingsGoalsStore } from '@/store/savings-goals.store';
+import { useTipsStore } from '@/store/tips.store';
+import { useUserStore } from '@/store/user.store';
 
 const MAX_TILES = 4;
 
@@ -484,13 +495,28 @@ export default function SettingsScreen() {
           onPress={() =>
             Alert.alert(
               'Reset All Data',
-              'This will wipe your profile, budget, and all settings. This cannot be undone.',
+              'This will wipe your profile, budget, debts, goals, kids, and all other saved data. This cannot be undone.',
               [
                 { text: 'Cancel', style: 'cancel' },
                 {
                   text: 'Reset Everything',
                   style: 'destructive',
-                  onPress: () => { resetAll(); router.replace('/' as any); },
+                  onPress: async () => {
+                    resetAll();
+                    useTipsStore.setState({ savedTipIds: [] }, false);
+                    useChatStore.getState().clearChat();
+                    useBudgetStore.getState().resetAll();
+                    useDebtStore.getState().resetAll();
+                    useNetWorthStore.getState().resetAll();
+                    useNwSnapshotsStore.getState().clearHistory();
+                    useSavingsGoalsStore.getState().resetAll();
+                    useExpensesStore.getState().resetAll();
+                    useKidsStore.getState().resetAll();
+                    useLifeEventsStore.getState().resetAll();
+                    await useKidModeStore.getState().resetAll();
+                    await AsyncStorage.clear();
+                    router.replace('/' as any);
+                  },
                 },
               ],
             )
