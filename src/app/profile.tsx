@@ -985,7 +985,7 @@ function EditPayModal({ visible, onClose }: { visible: boolean; onClose: () => v
             <View style={editStyles.toggleRow}>
               <View style={{ flex: 1, gap: 2 }}>
                 <ThemedText style={[editStyles.toggleLabel, { color: tc.textPrimary }]}>Family Dental Plan</ThemedText>
-                <ThemedText style={[editStyles.toggleSub, { color: tc.textHint }]}>-$36/mo deduction</ThemedText>
+                <ThemedText style={[editStyles.toggleSub, { color: tc.textHint }]}>-$30.47/mo deduction</ThemedText>
               </View>
               <Switch value={dental} onValueChange={setDental} trackColor={{ true: Brand.accent }} thumbColor="#FFF" />
             </View>
@@ -993,7 +993,7 @@ function EditPayModal({ visible, onClose }: { visible: boolean; onClose: () => v
             <View style={editStyles.toggleRow}>
               <View style={{ flex: 1, gap: 2 }}>
                 <ThemedText style={[editStyles.toggleLabel, { color: tc.textPrimary }]}>Opt Out of SGLI</ThemedText>
-                <ThemedText style={[editStyles.toggleSub, { color: tc.textHint }]}>-$29/mo savings (removes coverage)</ThemedText>
+                <ThemedText style={[editStyles.toggleSub, { color: tc.textHint }]}>-$26/mo savings (removes coverage)</ThemedText>
               </View>
               <Switch value={sgl} onValueChange={setSgl} trackColor={{ true: Brand.classified }} thumbColor="#FFF" />
             </View>
