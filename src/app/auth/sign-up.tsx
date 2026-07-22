@@ -100,7 +100,7 @@ export default function SignUpScreen() {
                 <TextInput
                   value={password}
                   onChangeText={setPassword}
-                  placeholder="Min. 6 characters"
+                  placeholder="Min. 8 characters"
                   placeholderTextColor={tc.textHint}
                   secureTextEntry={!showPassword}
                   returnKeyType="next"
