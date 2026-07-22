@@ -9,7 +9,6 @@ import { CategoryBadge } from '@/features/daily-tip/components/CategoryBadge';
 import { BottomTabInset, Brand, Spacing } from '@/constants/theme';
 import { TIPS } from '@/data/tips';
 import { useThemeColors } from '@/hooks/use-theme';
-import { useChatStore } from '@/store/chat.store';
 import { useTipsStore } from '@/store/tips.store';
 
 export default function TipDetailScreen() {
@@ -21,16 +20,10 @@ export default function TipDetailScreen() {
   const tip = TIPS.find((t) => t.id === id);
   const saved = useTipsStore((s) => s.savedTipIds.includes(id ?? ''));
   const toggleSave = useTipsStore((s) => s.toggleSave);
-  const setContextTip = useChatStore((s) => s.setContextTip);
 
   const handleBack = () => {
     if (router.canGoBack()) router.back();
     else router.push('/tip-library' as any);
-  };
-
-  const handleAskAI = () => {
-    if (tip) setContextTip(tip.id);
-    router.push('/chat');
   };
 
   if (!tip) {
@@ -84,12 +77,6 @@ export default function TipDetailScreen() {
             </View>
           ))}
         </View>
-
-        <Pressable
-          onPress={handleAskAI}
-          style={({ pressed }) => [styles.aiButton, pressed && styles.aiButtonPressed]}>
-          <ThemedText style={styles.aiButtonText}>Ask AI about this  →</ThemedText>
-        </Pressable>
       </ScrollView>
     </ThemedView>
   );
@@ -150,22 +137,6 @@ const styles = StyleSheet.create({
     borderRadius: 99,
     paddingVertical: Spacing.half,
     paddingHorizontal: Spacing.two,
-  },
-  aiButton: {
-    backgroundColor: Brand.primary,
-    borderRadius: Spacing.two,
-    paddingVertical: Spacing.two + 2,
-    paddingHorizontal: Spacing.four,
-    alignItems: 'center',
-    marginTop: Spacing.two,
-  },
-  aiButtonPressed: {
-    opacity: 0.8,
-  },
-  aiButtonText: {
-    color: '#FFFFFF',
-    fontWeight: '600',
-    fontSize: 15,
   },
   notFound: {
     padding: Spacing.four,

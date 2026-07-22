@@ -14,7 +14,6 @@ export interface RemoteConfig {
     lesDecoderEnabled: boolean;
     travelEnabled: boolean;
     reservesHubEnabled: boolean;
-    claudeAssistantEnabled: boolean;
   };
   announcements: Array<{
     id: string;
@@ -33,7 +32,6 @@ const FALLBACK_CONFIG: RemoteConfig = {
     lesDecoderEnabled: true,
     travelEnabled: true,
     reservesHubEnabled: true,
-    claudeAssistantEnabled: true,
   },
   announcements: [],
   minAppVersion: '1.0.0',
@@ -84,7 +82,6 @@ function sanitizeConfig(raw: unknown): RemoteConfig {
       lesDecoderEnabled:       typeof flags.lesDecoderEnabled === 'boolean'      ? flags.lesDecoderEnabled       : FALLBACK_CONFIG.featureFlags.lesDecoderEnabled,
       travelEnabled:           typeof flags.travelEnabled === 'boolean'          ? flags.travelEnabled           : FALLBACK_CONFIG.featureFlags.travelEnabled,
       reservesHubEnabled:      typeof flags.reservesHubEnabled === 'boolean'     ? flags.reservesHubEnabled      : FALLBACK_CONFIG.featureFlags.reservesHubEnabled,
-      claudeAssistantEnabled:  typeof flags.claudeAssistantEnabled === 'boolean' ? flags.claudeAssistantEnabled  : FALLBACK_CONFIG.featureFlags.claudeAssistantEnabled,
     },
     announcements: Array.isArray(r.announcements)
       ? (r.announcements as any[])

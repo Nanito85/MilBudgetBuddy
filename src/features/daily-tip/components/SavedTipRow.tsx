@@ -1,4 +1,3 @@
-import { useRouter } from 'expo-router';
 import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
@@ -6,7 +5,6 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { useThemeColors } from '@/hooks/use-theme';
-import { useChatStore } from '@/store/chat.store';
 import { useTipsStore } from '@/store/tips.store';
 import { Tip } from '@/types/tip.types';
 
@@ -17,15 +15,8 @@ interface SavedTipRowProps {
 }
 
 export function SavedTipRow({ tip }: SavedTipRowProps) {
-  const router = useRouter();
   const tc = useThemeColors();
   const { toggleSave } = useTipsStore();
-  const { setContextTip } = useChatStore();
-
-  const handleAskAI = () => {
-    setContextTip(tip.id);
-    router.push('/chat');
-  };
 
   return (
     <ThemedView type="backgroundElement" style={styles.row}>
@@ -38,9 +29,6 @@ export function SavedTipRow({ tip }: SavedTipRowProps) {
       <View style={styles.actions}>
         <Pressable onPress={() => toggleSave(tip.id)} hitSlop={8} style={styles.iconBtn}>
           <ThemedText type="small" style={[styles.removeText, { color: tc.textMuted }]}>Remove</ThemedText>
-        </Pressable>
-        <Pressable onPress={handleAskAI} hitSlop={8} style={styles.iconBtn}>
-          <ThemedText type="small" style={styles.askText}>Ask AI →</ThemedText>
         </Pressable>
       </View>
     </ThemedView>
@@ -72,8 +60,4 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.one,
   },
   removeText: {},
-  askText: {
-    color: '#2E5FA3',
-    fontWeight: '600',
-  },
 });

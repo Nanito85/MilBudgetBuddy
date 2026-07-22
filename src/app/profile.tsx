@@ -36,7 +36,6 @@ import {
   schedulePayDayReminders,
 } from '@/services/notifications';
 import { useBudgetStore } from '@/store/budget.store';
-import { useChatStore } from '@/store/chat.store';
 import { useDebtStore } from '@/store/debt.store';
 import { useExpensesStore } from '@/store/expenses.store';
 import { useKidModeStore } from '@/store/kid-mode.store';
@@ -1174,7 +1173,6 @@ export default function ProfileScreen() {
 
   const savedTipIds = useTipsStore((s) => s.savedTipIds);
   const clearSaved  = () => useTipsStore.setState({ savedTipIds: [] }, false);
-  const clearChat   = useChatStore((s) => s.clearChat);
 
   const kids        = useKidsStore((s) => s.kids);
   const addKid      = useKidsStore((s) => s.addKid);
@@ -1216,7 +1214,7 @@ export default function ProfileScreen() {
         Alert.alert('Final Confirmation', 'Are you absolutely sure? All data will be erased.', [
           { text: 'Go Back', style: 'cancel' },
           { text: 'Erase All Data', style: 'destructive', onPress: async () => {
-            resetAll(); clearSaved(); clearChat();
+            resetAll(); clearSaved();
             useBudgetStore.getState().resetAll();
             useDebtStore.getState().resetAll();
             useNetWorthStore.getState().resetAll();

@@ -14,7 +14,6 @@ import { useThemeColors } from '@/hooks/use-theme';
 import { useIsAdmin } from '@/hooks/use-admin';
 import { useAuthStore } from '@/store/auth.store';
 import { useBudgetStore } from '@/store/budget.store';
-import { useChatStore } from '@/store/chat.store';
 import { useDebtStore } from '@/store/debt.store';
 import { useExpensesStore } from '@/store/expenses.store';
 import { useKidModeStore } from '@/store/kid-mode.store';
@@ -504,7 +503,6 @@ export default function SettingsScreen() {
                   onPress: async () => {
                     resetAll();
                     useTipsStore.setState({ savedTipIds: [] }, false);
-                    useChatStore.getState().clearChat();
                     useBudgetStore.getState().resetAll();
                     useDebtStore.getState().resetAll();
                     useNetWorthStore.getState().resetAll();
