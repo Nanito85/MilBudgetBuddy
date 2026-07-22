@@ -49,6 +49,7 @@ export const RANK_ABBREV: Record<MilitaryBranch, Partial<Record<PayGrade, string
   },
   air_force: {
     E1:'AB', E2:'Amn', E3:'A1C', E4:'SrA', E5:'SSgt', E6:'TSgt', E7:'MSgt', E8:'SMSgt', E9:'CMSgt',
+    W1:'WO1', // Warrant officer program reactivated 2024 (IT/cyber fields); W2-W5 not yet in active use
     O1:'2d Lt', O2:'1st Lt', O3:'Capt', O4:'Maj', O5:'Lt Col', O6:'Col', O7:'Brig Gen', O8:'Maj Gen', O9:'Lt Gen', O10:'Gen',
   },
   space_force: {
@@ -57,8 +58,10 @@ export const RANK_ABBREV: Record<MilitaryBranch, Partial<Record<PayGrade, string
   },
   coast_guard: {
     E1:'SR', E2:'SA', E3:'SN', E4:'PO3', E5:'PO2', E6:'PO1', E7:'CPO', E8:'SCPO', E9:'MCPO',
-    W1:'WO', W2:'CWO2', W3:'CWO3', W4:'CWO4',
+    // No W1/W5 — Coast Guard discontinued WO1 in 1975; entry warrant grade is CWO2
+    W2:'CWO2', W3:'CWO3', W4:'CWO4',
     O1:'ENS', O2:'LTJG', O3:'LT', O4:'LCDR', O5:'CDR', O6:'CAPT', O7:'RDML', O8:'RADM', O9:'VADM',
+    O10:'ADM', // Commandant/Vice Commandant only
   },
   other: {},
 };

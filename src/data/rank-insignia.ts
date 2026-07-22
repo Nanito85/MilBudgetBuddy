@@ -14,10 +14,11 @@ export type RankVariant =
   // Marines
   | 'marines_e8_1stsgt'  // First Sergeant (vs Master Sergeant)
   | 'marines_e9_sgtmaj'  // Sergeant Major (vs Master Gunnery Sergeant)
+  | 'marines_e9_smmc'    // Sergeant Major of the Marine Corps
   // Air Force
   | 'af_e9_cmsaf'        // Chief Master Sergeant of the Air Force
   // Space Force
-  | 'sf_e9_seac'         // Senior Enlisted Advisor of the Space Force
+  | 'sf_e9_cmssf'        // Chief Master Sergeant of the Space Force
   // Navy
   | 'navy_e9_mcpon'      // Master Chief Petty Officer of the Navy
   // Coast Guard
@@ -50,14 +51,15 @@ export const DUAL_RANKS: Partial<Record<string, RankVariantOption[]>> = {
   'marines-E9': [
     { variant: 'default',           abbrev: 'MGySgt', fullName: 'Master Gunnery Sergeant' },
     { variant: 'marines_e9_sgtmaj', abbrev: 'SgtMaj', fullName: 'Sergeant Major' },
+    { variant: 'marines_e9_smmc',   abbrev: 'SMMC',   fullName: 'Sergeant Major of the Marine Corps' },
   ],
   'air_force-E9': [
     { variant: 'default',    abbrev: 'CMSgt', fullName: 'Chief Master Sergeant' },
     { variant: 'af_e9_cmsaf', abbrev: 'CMSAF', fullName: 'Chief Master Sergeant of the Air Force' },
   ],
   'space_force-E9': [
-    { variant: 'default',   abbrev: 'CMSgt', fullName: 'Chief Master Sergeant' },
-    { variant: 'sf_e9_seac', abbrev: 'SEAC',  fullName: 'Senior Enlisted Advisor of the Space Force' },
+    { variant: 'default',    abbrev: 'CMSgt', fullName: 'Chief Master Sergeant' },
+    { variant: 'sf_e9_cmssf', abbrev: 'CMSSF', fullName: 'Chief Master Sergeant of the Space Force' },
   ],
   'navy-E9': [
     { variant: 'default',      abbrev: 'MCPO',  fullName: 'Master Chief Petty Officer' },
@@ -172,9 +174,10 @@ function marinesRows(grade: PayGrade, variant: RankVariant): InsigniaRows {
     case 'E8': return variant === 'marines_e8_1stsgt'
       ? ['◆', '∧', '∧', '∧', '⌣', '⌣', '⌣']                      // 1stSgt — diamond device
       : ['✚', '∧', '∧', '∧', '⌣', '⌣', '⌣'];                     // MSgt — EGA device
-    case 'E9': return variant === 'marines_e9_sgtmaj'
-      ? ['★', '∧', '∧', '∧', '⌣', '⌣', '⌣', '✚']                 // SgtMaj — star + EGA
-      : ['✦', '∧', '∧', '∧', '⌣', '⌣', '⌣', '✚'];               // MGySgt — burst device + EGA
+    case 'E9':
+      if (variant === 'marines_e9_smmc')   return ['✦', '★', '∧', '∧', '∧', '⌣', '⌣', '⌣', '✚']; // SMMC — burst device + star + EGA
+      if (variant === 'marines_e9_sgtmaj') return ['★', '∧', '∧', '∧', '⌣', '⌣', '⌣', '✚'];        // SgtMaj — star + EGA
+      return ['✦', '∧', '∧', '∧', '⌣', '⌣', '⌣', '✚'];                                             // MGySgt — burst device + EGA
     default: return grade.startsWith('W') ? warrantRows(grade) : officerRows(grade);
   }
 }
@@ -191,8 +194,8 @@ function airForceRows(grade: PayGrade, variant: RankVariant = 'default'): Insign
     case 'E6': return ['—', '—'];         // TSgt — 2 rocker stripes
     case 'E7': return ['—', '—', '—'];    // MSgt — 3 rocker stripes
     case 'E8': return ['◆', '—', '—', '—']; // SMSgt — diamond + 3 stripes
-    case 'E9': return (variant === 'af_e9_cmsaf' || variant === 'sf_e9_seac')
-      ? ['✦', '★', '—', '—', '—']  // CMSAF/SEAC — special device + star + 3 stripes
+    case 'E9': return (variant === 'af_e9_cmsaf' || variant === 'sf_e9_cmssf')
+      ? ['✦', '★', '—', '—', '—']  // CMSAF/CMSSF — special device + star + 3 stripes
       : ['★', '—', '—', '—'];       // CMSgt — star + 3 stripes
     default:   return officerRows(grade);
   }
