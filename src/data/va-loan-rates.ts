@@ -1,13 +1,13 @@
 /**
- * VA Loan funding fee tables — FY2025.
+ * VA Loan funding fee tables — FY2026.
  * Source: VA Pamphlet 26-7, Chapter 8. Verify at benefits.va.gov.
  * Rates are percentages of the base loan amount.
  */
 
-export const VA_LOAN_DATA_YEAR = 2025;
+export const VA_LOAN_DATA_YEAR = 2026;
 
-// 2025 conforming loan limit (most counties)
-export const CONFORMING_LOAN_LIMIT = 806_500;
+// 2026 conforming loan limit (most counties), per FHFA
+export const CONFORMING_LOAN_LIMIT = 832_750;
 
 export type VAUsage = 'first' | 'subsequent';
 export type DownPaymentTier = 'none' | 'five' | 'ten';
