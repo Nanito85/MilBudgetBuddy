@@ -127,7 +127,7 @@ export const LIFE_EVENTS: Record<LifeEventType, LifeEventMeta> = {
     checklist: [
       { id: 'sep_tap', label: 'Attend TAP (Transition Assistance Program)', category: 'admin' },
       { id: 'sep_va_disability', label: 'File for VA disability rating before separation', category: 'benefits' },
-      { id: 'sep_vgli', label: 'Convert SGLI to VGLI within 120 days of separation', category: 'benefits' },
+      { id: 'sep_vgli', label: 'Convert SGLI to VGLI within 240 days of separation to skip health questions', category: 'benefits' },
       { id: 'sep_va_health', label: 'Enroll in VA healthcare', category: 'benefits' },
       { id: 'sep_sbp', label: 'Evaluate Survivor Benefit Plan (SBP) options', category: 'finance' },
       { id: 'sep_tricare', label: 'Review TRICARE Retired Reserve / Retiree options', category: 'benefits' },
