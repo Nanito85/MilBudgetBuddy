@@ -803,6 +803,22 @@ function EditPayModal({ visible, onClose }: { visible: boolean; onClose: () => v
   const [payAmountInput, setPayAmountInput] = useState('');
   const [showPayTypePicker, setShowPayTypePicker] = useState(false);
 
+  // Re-sync every local field from the store each time the modal opens — see
+  // the same fix in EditPersonalModal above. Without this, fields only ever
+  // reflect what the store held when ProfileScreen first mounted this
+  // component, so pay data set later (onboarding, cloud sync) never shows.
+  useEffect(() => {
+    if (!visible) return;
+    setTsp(tspContribPct);
+    setRothTsp(rothTspPct);
+    setDental(hasDentalFamily);
+    setSgl(sglOptOut);
+    setSpouseAmt(spouseIncome > 0 ? spouseIncome.toString() : '');
+    setBasePayStr(lesOverrides.basePayOverride ? lesOverrides.basePayOverride.toString() : '');
+    setBahStr(lesOverrides.bahOverride ? lesOverrides.bahOverride.toString() : '');
+    setBasStr(lesOverrides.basOverride ? lesOverrides.basOverride.toString() : '');
+  }, [visible]);
+
   const save = () => {
     Keyboard.dismiss();
     setPayDetails({
