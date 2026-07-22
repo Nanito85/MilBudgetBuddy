@@ -39,6 +39,7 @@ export default function PromotionCalculatorScreen() {
   });
   const [yos, setYos] = useState(profileYos ?? 6);
   const [projYos, setProjYos] = useState(Math.min(40, (profileYos ?? 6) + 2));
+  const [retirementSystem, setRetirementSystem] = useState<'brs' | 'high3'>('brs');
 
   const currentPay = useMemo(() => getBasicPay(currentGrade, yos),     [currentGrade, yos]);
   const targetPay  = useMemo(() => getBasicPay(targetGrade, projYos),  [targetGrade, projYos]);
@@ -46,13 +47,15 @@ export default function PromotionCalculatorScreen() {
   const monthlyDiff = targetPay - currentPay;
   const annualDiff  = monthlyDiff * 12;
 
-  // High-3 pension impact (20-yr retirement at O-whatever)
-  // Extra pension per month = (monthlyDiff * 2.5% * min(YOS at retirement, 20)) for High-3 approximation
+  // Pension impact at a 20-yr retirement: extra monthly pension =
+  // monthlyDiff × multiplier-per-YOS × 20 years. High-3 (legacy, joined
+  // on/before Dec 31, 2017) uses 2.5%/YOS; BRS (joined on/after Jan 1,
+  // 2018 — the default for most currently serving members) uses 2.0%/YOS.
   const pensionImpact = useMemo(() => {
     const retYos = 20;
-    const pct = targetGrade.startsWith('O') ? 0.025 : 0.025; // 2.5% per year High-3
+    const pct = retirementSystem === 'high3' ? 0.025 : 0.020;
     return Math.round(monthlyDiff * pct * retYos);
-  }, [monthlyDiff, targetGrade]);
+  }, [monthlyDiff, retirementSystem]);
 
   // 5-year cumulative pay increase
   const fiveYearTotal = annualDiff * 5;
@@ -125,9 +128,30 @@ export default function PromotionCalculatorScreen() {
           </View>
           <View style={[s.divider, { backgroundColor: tc.borderColor }]} />
           <View style={s.resultRow}>
-            <ThemedText style={[s.resultLabel, { color: tc.textSecondary }]}>Estimated Pension Impact (20-yr High-3)</ThemedText>
+            <ThemedText style={[s.resultLabel, { color: tc.textSecondary }]}>
+              Estimated Pension Impact (20-yr {retirementSystem === 'high3' ? 'High-3' : 'BRS'})
+            </ThemedText>
             <ThemedText style={[s.resultValue, { color: Brand.accent }]}>{fmtSign(pensionImpact)}/mo</ThemedText>
           </View>
+          <View style={s.retirementToggleRow}>
+            {(['brs', 'high3'] as const).map((sys) => (
+              <Pressable
+                key={sys}
+                onPress={() => setRetirementSystem(sys)}
+                style={[
+                  s.retirementToggleBtn,
+                  { borderColor: tc.borderColor },
+                  retirementSystem === sys && { backgroundColor: Brand.accent + '20', borderColor: Brand.accent },
+                ]}>
+                <ThemedText style={[s.retirementToggleText, { color: tc.textHint }, retirementSystem === sys && { color: Brand.accent }]}>
+                  {sys === 'brs' ? 'BRS (2.0%/yr)' : 'High-3 (2.5%/yr)'}
+                </ThemedText>
+              </Pressable>
+            ))}
+          </View>
+          <ThemedText style={[s.hint, { color: tc.textHint }]}>
+            BRS applies if you joined on/after Jan 1, 2018 — the default for most currently serving members. High-3 applies if you joined on/before Dec 31, 2017 and didn't opt into BRS.
+          </ThemedText>
         </View>
 
         {/* Hero number */}
@@ -140,7 +164,7 @@ export default function PromotionCalculatorScreen() {
         {/* Disclaimer */}
         <View style={[s.disclaimer, { backgroundColor: tc.surfaceInner }]}>
           <ThemedText style={[s.disclaimerText, { color: tc.textHint }]}>
-            🟡 Estimates only. Actual pay depends on promotion sequence, time in grade, and official DoD pay tables. Pension estimates use High-3 approximation (2.5% × years × average base pay). Does not include BAH, BAS, or special pays. Verify at DFAS.mil.
+            🟡 Estimates only. Actual pay depends on promotion sequence, time in grade, and official DoD pay tables. Pension estimates use a simplified {retirementSystem === 'high3' ? 'High-3 (2.5%' : 'BRS (2.0%'} × years × average base pay) approximation. Does not include BAH, BAS, or special pays. Verify at DFAS.mil.
           </ThemedText>
         </View>
       </ScrollView>
@@ -186,6 +210,13 @@ const s = StyleSheet.create({
   resultLabel: { fontSize: 12, flex: 1 },
   resultValue: { fontSize: 14, fontWeight: '800', fontFamily: 'Courier New' },
   divider: { height: StyleSheet.hairlineWidth },
+
+  retirementToggleRow: { flexDirection: 'row', gap: Spacing.two },
+  retirementToggleBtn: {
+    flex: 1, borderWidth: 1, borderRadius: 6,
+    paddingVertical: Spacing.one, alignItems: 'center',
+  },
+  retirementToggleText: { fontSize: 10, fontWeight: '700' },
 
   heroCard: {
     borderWidth: 1, borderColor: Brand.accent + '30',
