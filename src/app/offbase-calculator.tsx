@@ -319,7 +319,7 @@ export default function OffbaseCalculatorScreen() {
             'E5+: You are entitled to BAH without dependents. Move off-base to start building housing equity.',
             'Roommate strategy: Split a 2BR apartment with another SM — each gets full BAH, costs cut in half.',
             'Utility allowance: Your BAH "without dependents" rate factors in average utility costs. Undercut utilities to pocket more.',
-            'Renter\'s insurance: ~$15/mo — worth it. Barracks theft is not covered by the Army.',
+            'Renter\'s insurance: ~$15/mo — worth it. Barracks theft is not automatically covered by the military.',
           ].map((tip, i) => (
             <View key={i} style={styles.tipRow}>
               <ThemedText style={styles.tipBullet}>▸</ThemedText>
