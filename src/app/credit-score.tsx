@@ -75,8 +75,8 @@ const MILITARY_PROTECTIONS = [
   },
   {
     icon: '📋',
-    title: 'Free Annual Credit Reports',
-    body: 'Pull all three reports — Equifax, Experian, TransUnion — free at annualcreditreport.com. Look for accounts you don\'t recognize, wrong balances, or fraudulent activity. Dispute errors in writing.',
+    title: 'Free Weekly Credit Reports',
+    body: 'Pull all three reports — Equifax, Experian, TransUnion — free at annualcreditreport.com. This access is now permanent and available once a week from each bureau (not just once a year). Look for accounts you don\'t recognize, wrong balances, or fraudulent activity. Dispute errors in writing.',
   },
 ];
 
