@@ -63,7 +63,7 @@ import {
   getRankAbbrev,
 } from '@/types/user.types';
 import { VALID_RATINGS, monthlyCompensation } from '@/features/va/utils/vaDisabilityCalc';
-import { getDrillPay, fmtPay } from '@/features/home/utils/lesCalc';
+import { calcLES, getDrillPay, fmtPay } from '@/features/home/utils/lesCalc';
 
 const HOUSING_STATUS_ORDER: HousingStatus[] = ['off_base', 'barracks', 'on_base_family_housing'];
 import { PayGrade } from '@/data/bah-rates';
@@ -788,14 +788,38 @@ function EditPayModal({ visible, onClose }: { visible: boolean; onClose: () => v
   const addSpecialPay    = useUserStore((s) => s.addSpecialPay);
   const removeSpecialPay = useUserStore((s) => s.removeSpecialPay);
 
+  // Needed to compute the same calculated Base Pay/BAH/BAS the Pay Statement
+  // card shows, so this modal can pre-fill those fields the same way instead
+  // of leaving them blank whenever no override has been set yet.
+  const payGrade         = useUserStore((s) => s.payGrade);
+  const yos              = useUserStore((s) => s.yos);
+  const mhaZip           = useUserStore((s) => s.mhaZip);
+  const hasSpouse        = useUserStore((s) => s.hasSpouse);
+  const housingStatus    = useUserStore((s) => s.housingStatus);
+  const stateResidence   = useUserStore((s) => s.stateResidence);
+
+  const specialPaysTotal = specialPays.reduce((s, p) => s + p.monthlyAmount, 0);
+  const calculated = payGrade
+    ? calcLES({
+        payGrade, yos, mhaZip, hasSpouse, housingStatus, specialPaysTotal,
+        tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence,
+      })
+    : null;
+
   const [tsp, setTsp]         = useState(tspContribPct);
   const [rothTsp, setRothTsp] = useState(rothTspPct);
   const [dental, setDental]   = useState(hasDentalFamily);
   const [sgl, setSgl]         = useState(sglOptOut);
   const [spouseAmt, setSpouseAmt] = useState(spouseIncome > 0 ? spouseIncome.toString() : '');
-  const [basePayStr, setBasePayStr] = useState(lesOverrides.basePayOverride ? lesOverrides.basePayOverride.toString() : '');
-  const [bahStr, setBahStr]   = useState(lesOverrides.bahOverride ? lesOverrides.bahOverride.toString() : '');
-  const [basStr, setBasStr]   = useState(lesOverrides.basOverride ? lesOverrides.basOverride.toString() : '');
+  const [basePayStr, setBasePayStr] = useState(
+    lesOverrides.basePayOverride ? lesOverrides.basePayOverride.toString() : calculated ? String(Math.round(calculated.basePay)) : '',
+  );
+  const [bahStr, setBahStr]   = useState(
+    lesOverrides.bahOverride ? lesOverrides.bahOverride.toString() : calculated ? String(Math.round(calculated.bah)) : '',
+  );
+  const [basStr, setBasStr]   = useState(
+    lesOverrides.basOverride ? lesOverrides.basOverride.toString() : calculated ? String(Math.round(calculated.bas)) : '',
+  );
 
   // Special pay inline add form
   const [showAddPay, setShowAddPay]         = useState(false);
@@ -814,22 +838,32 @@ function EditPayModal({ visible, onClose }: { visible: boolean; onClose: () => v
     setDental(hasDentalFamily);
     setSgl(sglOptOut);
     setSpouseAmt(spouseIncome > 0 ? spouseIncome.toString() : '');
-    setBasePayStr(lesOverrides.basePayOverride ? lesOverrides.basePayOverride.toString() : '');
-    setBahStr(lesOverrides.bahOverride ? lesOverrides.bahOverride.toString() : '');
-    setBasStr(lesOverrides.basOverride ? lesOverrides.basOverride.toString() : '');
+    setBasePayStr(lesOverrides.basePayOverride ? lesOverrides.basePayOverride.toString() : calculated ? String(Math.round(calculated.basePay)) : '');
+    setBahStr(lesOverrides.bahOverride ? lesOverrides.bahOverride.toString() : calculated ? String(Math.round(calculated.bah)) : '');
+    setBasStr(lesOverrides.basOverride ? lesOverrides.basOverride.toString() : calculated ? String(Math.round(calculated.bas)) : '');
   }, [visible]);
 
   const save = () => {
     Keyboard.dismiss();
+    const bp  = parseFloat(basePayStr);
+    const bah = parseFloat(bahStr);
+    const bas = parseFloat(basStr);
+    // Only persist as an override if it meaningfully differs from the
+    // calculated value — otherwise a pre-filled, unedited field would freeze
+    // in a stale override instead of continuing to track future recalcs
+    // (e.g. a rate change, or a later PCS/rank update).
+    const bpDiffers  = calculated && !isNaN(bp)  && Math.abs(bp  - calculated.basePay) > 0.5;
+    const bahDiffers = calculated && !isNaN(bah) && Math.abs(bah - calculated.bah)     > 0.5;
+    const basDiffers = calculated && !isNaN(bas) && Math.abs(bas - calculated.bas)     > 0.5;
     setPayDetails({
       tspContribPct: tsp,
       rothTspPct: rothTsp,
       hasDentalFamily: dental,
       sglOptOut: sgl,
       spouseMonthlyIncome: parseFloat(spouseAmt) || 0,
-      basePayOverride: parseFloat(basePayStr) || undefined,
-      bahOverride: parseFloat(bahStr) || undefined,
-      basOverride: parseFloat(basStr) || undefined,
+      basePayOverride: bpDiffers  ? bp  : (calculated ? undefined : (parseFloat(basePayStr) || undefined)),
+      bahOverride:     bahDiffers ? bah : (calculated ? undefined : (parseFloat(bahStr) || undefined)),
+      basOverride:     basDiffers ? bas : (calculated ? undefined : (parseFloat(basStr) || undefined)),
     });
     onClose();
   };
@@ -873,13 +907,13 @@ function EditPayModal({ visible, onClose }: { visible: boolean; onClose: () => v
             {/* LES Overrides */}
             <View style={[editStyles.sectionHead, { borderTopColor: tc.borderColor }]}>
               <ThemedText style={[editStyles.sectionHeadText, { color: tc.textPrimary }]}>📋 LES OVERRIDES</ThemedText>
-              <ThemedText style={[editStyles.sectionHeadSub, { color: tc.textHint }]}>Enter actual amounts from your LES to override calculated values. Leave blank to use calculated rates.</ThemedText>
+              <ThemedText style={[editStyles.sectionHeadSub, { color: tc.textHint }]}>Pre-filled with the app's calculated estimate — edit any that differ from your actual LES.</ThemedText>
             </View>
 
             <ThemedText style={[editStyles.fieldLabel, { color: tc.textHint }]}>BASE PAY ($/mo from LES)</ThemedText>
             <View style={[editStyles.inputWrap, { backgroundColor: inputBg, borderColor: tc.borderColor, flexDirection: 'row', alignItems: 'center' }]}>
               <ThemedText style={[editStyles.input, { color: tc.textHint, paddingVertical: Spacing.two + 4 }]}>$</ThemedText>
-              <TextInput value={basePayStr} onChangeText={setBasePayStr} placeholder="Leave blank to use calculated"
+              <TextInput value={basePayStr} onChangeText={setBasePayStr} placeholder="0"
                 placeholderTextColor={placeholder} keyboardType="decimal-pad"
                 style={[editStyles.input, { color: tc.textPrimary, flex: 1 }]} returnKeyType="next" />
             </View>
@@ -887,7 +921,7 @@ function EditPayModal({ visible, onClose }: { visible: boolean; onClose: () => v
             <ThemedText style={[editStyles.fieldLabel, { color: tc.textHint }]}>BAH ($/mo from LES)</ThemedText>
             <View style={[editStyles.inputWrap, { backgroundColor: inputBg, borderColor: tc.borderColor, flexDirection: 'row', alignItems: 'center' }]}>
               <ThemedText style={[editStyles.input, { color: tc.textHint, paddingVertical: Spacing.two + 4 }]}>$</ThemedText>
-              <TextInput value={bahStr} onChangeText={setBahStr} placeholder="Leave blank to use calculated"
+              <TextInput value={bahStr} onChangeText={setBahStr} placeholder="0"
                 placeholderTextColor={placeholder} keyboardType="decimal-pad"
                 style={[editStyles.input, { color: tc.textPrimary, flex: 1 }]} returnKeyType="next" />
             </View>
@@ -895,7 +929,7 @@ function EditPayModal({ visible, onClose }: { visible: boolean; onClose: () => v
             <ThemedText style={[editStyles.fieldLabel, { color: tc.textHint }]}>BAS ($/mo from LES)</ThemedText>
             <View style={[editStyles.inputWrap, { backgroundColor: inputBg, borderColor: tc.borderColor, flexDirection: 'row', alignItems: 'center' }]}>
               <ThemedText style={[editStyles.input, { color: tc.textHint, paddingVertical: Spacing.two + 4 }]}>$</ThemedText>
-              <TextInput value={basStr} onChangeText={setBasStr} placeholder="Leave blank to use calculated"
+              <TextInput value={basStr} onChangeText={setBasStr} placeholder="0"
                 placeholderTextColor={placeholder} keyboardType="decimal-pad"
                 style={[editStyles.input, { color: tc.textPrimary, flex: 1 }]} returnKeyType="next" />
             </View>

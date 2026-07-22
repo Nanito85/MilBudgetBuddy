@@ -7,8 +7,8 @@
 
 export const BAS_DATA_YEAR = 2026;
 
-export const BAS_ENLISTED = 492.00;   // $/month (~4.6% increase from FY2025 $470.49)
-export const BAS_OFFICER  = 325.71;   // $/month (~4.5% increase from FY2025 $311.68)
+export const BAS_ENLISTED = 476.95;   // $/month
+export const BAS_OFFICER  = 328.48;   // $/month
 
 export type PayComponent = 'enlisted' | 'warrant' | 'officer';
 
