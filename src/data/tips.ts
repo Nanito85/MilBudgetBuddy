@@ -365,7 +365,7 @@ export const TIPS: Tip[] = [
   {
     id: 'insure-001',
     title: 'Max Out SGLI — It Is the Best Deal You Will Find',
-    body: 'SGLI life insurance covers up to $500,000 for about $30 per month. That is an exceptional rate for life insurance at any age. Make sure you are at the maximum and that your beneficiaries are up to date.',
+    body: 'SGLI life insurance covers up to $500,000 for about $26 per month. That is an exceptional rate for life insurance at any age. Make sure you are at the maximum and that your beneficiaries are up to date.',
     category: 'insurance',
     tags: ['SGLI', 'life insurance', 'beneficiary'],
   },
@@ -386,7 +386,7 @@ export const TIPS: Tip[] = [
   {
     id: 'insure-004',
     title: 'Convert SGLI to VGLI When You Separate',
-    body: 'You have 1 year and 120 days after separation to convert your SGLI life insurance to VGLI (Veterans Group Life Insurance) with no medical exam required. If you have any health conditions, lock this in before you separate — you may not qualify for private life insurance later.',
+    body: 'You have up to 1 year and 120 days after separation to convert your SGLI life insurance to VGLI (Veterans Group Life Insurance), but no medical exam is required only if you apply within the first 240 days — after that, you will need to prove good health. If you have any health conditions, lock this in before you separate — you may not qualify for private life insurance later.',
     category: 'insurance',
     tags: ['VGLI', 'SGLI', 'separation'],
   },
