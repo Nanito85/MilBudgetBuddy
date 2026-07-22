@@ -14,7 +14,6 @@ import { useUserStore } from '@/store/user.store';
 const SBP_ANNUITY_PCT   = 0.55;   // spouse receives 55% of covered base
 const SBP_PREMIUM_PCT   = 0.065;  // 6.5% of covered base
 const SBP_MAX_BASE_PCT  = 1.0;    // covered base up to 100% of retirement pay
-const VA_OFFSET_THRESHOLD = 1320; // DIC monthly amount (FY2026) — SBP offset if VA DIC applies
 
 function fmtDollar(n: number) {
   return '$' + Math.round(n).toLocaleString('en-US');
@@ -256,10 +255,10 @@ export default function SbpCalculatorScreen() {
           <ThemedText style={[styles.cardLabel, { color: tc.textHint }]}>KEY CONSIDERATIONS</ThemedText>
           {[
             { icon: '✅', text: 'Paid-up after 30 years of premiums AND age 70 — coverage continues free.' },
-            { icon: '⚠️', text: 'SBP annuity is offset dollar-for-dollar by VA DIC if your spouse qualifies. Spouses can receive both, but SBP is reduced.' },
+            { icon: 'ℹ️', text: 'The SBP-DIC offset ("Widow\'s Tax") was fully repealed effective Jan 1, 2023. Spouses who qualify for both SBP and VA DIC now receive both in full — no reduction to either.' },
             { icon: '📋', text: 'You must elect SBP at retirement. The window closes — you cannot add it later without a qualifying life event.' },
             { icon: '💰', text: 'Premiums are pre-tax, reducing your taxable income. The annuity is taxable income to your spouse.' },
-            { icon: '🔄', text: 'If your spouse dies before you, SBP premiums continue but can be suspended (annuity stops). Remarriage to a new beneficiary requires a new election.' },
+            { icon: '🔄', text: 'If your spouse dies before you, SBP coverage is suspended and premiums stop (no eligible beneficiary). If you remarry, coverage automatically reactivates for your new spouse after 1 year of marriage (or sooner if you have a child together) — notify DFAS promptly or you may owe back premiums.' },
           ].map((item, i) => (
             <View key={i} style={styles.bulletRow}>
               <ThemedText style={styles.bulletIcon}>{item.icon}</ThemedText>
