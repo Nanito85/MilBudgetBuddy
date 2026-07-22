@@ -29,11 +29,11 @@ const fmt  = (n: number) => '$' + Math.round(n).toLocaleString();
 
 // Rough federal tax estimate for display only
 function estimateAnnualNet(annual: number): number {
-  const std = 15450;
+  const std = 16100;
   const taxable = Math.max(0, annual - std);
   const brackets: [number, number][] = [
-    [12250, 0.10], [49850, 0.12], [106350, 0.22],
-    [202850, 0.24], [257600, 0.32], [643850, 0.35], [Infinity, 0.37],
+    [12400, 0.10], [50400, 0.12], [105700, 0.22],
+    [201775, 0.24], [256225, 0.32], [640600, 0.35], [Infinity, 0.37],
   ];
   let tax = 0;
   let prev = 0;

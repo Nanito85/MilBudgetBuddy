@@ -4,34 +4,34 @@ import { getBasicPay } from '@/data/basic-pay-rates';
 import { getStateTaxRate } from '@/data/state-tax';
 import { HousingStatus, LESOverrides } from '@/types/user.types';
 
-// SGLI: $0.065/month per $1,000 × $500,000 coverage = $32.50 + $1.00 TSGLI = $33.50
+// SGLI: $0.05/month per $1,000 × $500,000 coverage = $25.00 + $1.00 TSGLI = $26.00
 // Source: DFAS SGLI rates — dfas.mil/MilitaryMembers/payentitlements/SGLI
-export const SGLI_MONTHLY = 34;      // $500k coverage — rounded from $33.50
-export const DENTAL_FAMILY = 38.67;  // TDP family plan $/month (FY2026)
+export const SGLI_MONTHLY = 26;      // $500k coverage (effective July 1, 2025 rate)
+export const DENTAL_FAMILY = 30.47;  // TDP family (2+ dependents), E5+ sponsor rate, Mar 2026-Feb 2027
 
 // Federal income tax estimate — base pay only (allowances not taxable)
 // FY2026 brackets (inflation-adjusted); filing status: 'single' | 'married'
 function estimateFedTax(annualBasePay: number, married: boolean): number {
-  const stdDeduction = married ? 30900 : 15450;
+  const stdDeduction = married ? 32200 : 16100;
   const taxable = Math.max(0, annualBasePay - stdDeduction);
 
   const brackets = married
     ? [
-        [24500, 0.10],
-        [99700, 0.12],
-        [212700, 0.22],
-        [405600, 0.24],
-        [515200, 0.32],
-        [772750, 0.35],
+        [24800, 0.10],
+        [100800, 0.12],
+        [211400, 0.22],
+        [403550, 0.24],
+        [512450, 0.32],
+        [768700, 0.35],
         [Infinity, 0.37],
       ]
     : [
-        [12250, 0.10],
-        [49850, 0.12],
-        [106350, 0.22],
-        [202850, 0.24],
-        [257600, 0.32],
-        [643850, 0.35],
+        [12400, 0.10],
+        [50400, 0.12],
+        [105700, 0.22],
+        [201775, 0.24],
+        [256225, 0.32],
+        [640600, 0.35],
         [Infinity, 0.37],
       ];
 
