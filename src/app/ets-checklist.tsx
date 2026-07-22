@@ -89,7 +89,7 @@ const SECTIONS: CheckSection[] = [
       {
         id: 'tricare_plan',
         label: 'Plan TRICARE transition',
-        detail: 'Active duty TRICARE Prime ends on ETS date. Options: TRICARE Transitional Coverage (TRS) for up to 180 days, VA healthcare enrollment, employer insurance, or marketplace plan. Enroll before coverage lapses.',
+        detail: 'Active duty TRICARE Prime ends on ETS date. Options: the Transitional Assistance Management Program (TAMP) for up to 180 days (no premium), the Continued Health Care Benefit Program (CHCBP, premium-based, 18-36 months) after that, VA healthcare enrollment, employer insurance, or a marketplace plan. Enroll before coverage lapses.',
         timeframe: '90 days',
       },
       {
@@ -119,9 +119,9 @@ const SECTIONS: CheckSection[] = [
       },
       {
         id: 'sgli_conversion',
-        label: 'Convert SGLI to VGLI within 240 days',
-        detail: 'You have 240 days from ETS to convert SGLI to Veterans\' Group Life Insurance (VGLI) with no health questions asked. After 120 days, you\'ll need to prove good health. Apply at benefits.va.gov/insurance.',
-        timeframe: '240 days post-ETS',
+        label: 'Convert SGLI to VGLI — apply within 240 days to skip health questions',
+        detail: 'You have up to 1 year and 120 days from ETS to convert SGLI to Veterans\' Group Life Insurance (VGLI). Apply within the first 240 days and no health questions are asked; apply after 240 days and you\'ll need to prove good health. Apply at benefits.va.gov/insurance.',
+        timeframe: '240 days post-ETS (no health questions) / 1 yr 120 days (final deadline)',
       },
       {
         id: 'final_pay',
@@ -157,7 +157,7 @@ const SECTIONS: CheckSection[] = [
       {
         id: 'va_enrollment',
         label: 'Enroll in VA healthcare',
-        detail: 'Enrollment is separate from filing a disability claim. Go to va.gov/health-care/apply or visit the nearest VA medical center. Free care for 5 years post-combat zone service. Priority groups affect copays.',
+        detail: 'Enrollment is separate from filing a disability claim. Go to va.gov/health-care/apply or visit the nearest VA medical center. Combat veterans get free enhanced VA healthcare eligibility for 10 years post-discharge (extended from 5 years by the PACT Act). Priority groups affect copays.',
         timeframe: 'ETS day',
       },
     ],
