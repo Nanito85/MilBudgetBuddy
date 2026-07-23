@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
+  Alert,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -20,7 +21,7 @@ import { useAuthStore } from '@/store/auth.store';
 export default function SignInScreen() {
   const router = useRouter();
   const tc = useThemeColors();
-  const { signIn, loading, error, clearError } = useAuthStore();
+  const { signIn, resetPassword, loading, error, clearError } = useAuthStore();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -34,6 +35,28 @@ export default function SignInScreen() {
     if (!email.trim() || !password) return;
     clearError();
     await signIn(email.trim().toLowerCase(), password);
+  };
+
+  const handleForgotPassword = () => {
+    if (!email.trim()) {
+      Alert.alert('Enter Your Email', 'Type your email address above first, then tap "Forgot password?" again.');
+      return;
+    }
+    Alert.alert(
+      'Reset Password',
+      `Send a password reset link to ${email.trim()}?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Send Link',
+          onPress: async () => {
+            clearError();
+            const ok = await resetPassword(email.trim().toLowerCase());
+            if (ok) Alert.alert('Check Your Email', 'If an account exists for that email, a password reset link is on its way.');
+          },
+        },
+      ],
+    );
   };
 
   return (
@@ -93,6 +116,9 @@ export default function SignInScreen() {
                   <Ionicons name={showPassword ? 'eye-off-outline' : 'eye-outline'} size={20} color={tc.textHint} />
                 </Pressable>
               </View>
+              <Pressable onPress={handleForgotPassword} hitSlop={8} style={styles.forgotBtn}>
+                <ThemedText style={[styles.forgotText, { color: Brand.tactical }]}>Forgot password?</ThemedText>
+              </Pressable>
             </View>
 
             <Pressable
@@ -170,6 +196,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   eyeBtn: { paddingHorizontal: Spacing.two + 2 },
+
+  forgotBtn: { alignSelf: 'flex-end', paddingTop: 4 },
+  forgotText: { fontSize: 12, fontWeight: '700' },
 
   btn: {
     backgroundColor: Brand.tactical,

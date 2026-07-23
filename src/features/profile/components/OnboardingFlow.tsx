@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import {
+  Alert,
   KeyboardAvoidingView,
   Modal,
   Platform,
@@ -123,7 +124,7 @@ function AuthModal({
   onClose: () => void;
 }) {
   const tc = useThemeColors();
-  const { signIn, signUp, loading, error, clearError } = useAuthStore();
+  const { signIn, signUp, resetPassword, loading, error, clearError } = useAuthStore();
   const [email, setEmail]     = useState('');
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
@@ -151,6 +152,25 @@ function AuthModal({
     } else {
       await signIn(email.trim().toLowerCase(), password);
     }
+  };
+
+  const forgotPassword = () => {
+    if (!email.trim()) { setLocalError('Type your email above first, then tap "Forgot password?" again.'); return; }
+    Alert.alert(
+      'Reset Password',
+      `Send a password reset link to ${email.trim()}?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Send Link',
+          onPress: async () => {
+            setLocalError(''); clearError();
+            const ok = await resetPassword(email.trim().toLowerCase());
+            if (ok) Alert.alert('Check Your Email', 'If an account exists for that email, a password reset link is on its way.');
+          },
+        },
+      ],
+    );
   };
 
   return (
@@ -197,6 +217,12 @@ function AuthModal({
                 style={[authModalStyles.input, { color: tc.textPrimary }]}
               />
             </ThemedView>
+
+            {mode === 'signin' && (
+              <Pressable onPress={forgotPassword} hitSlop={8} style={authModalStyles.forgotBtn}>
+                <ThemedText style={[authModalStyles.forgotText, { color: Brand.primary }]}>Forgot password?</ThemedText>
+              </Pressable>
+            )}
 
             {mode === 'signup' && (
               <>
@@ -251,6 +277,8 @@ const authModalStyles = StyleSheet.create({
   errorBox: { backgroundColor: Brand.classified + '15', borderWidth: 1, borderColor: Brand.classified + '40', borderRadius: 6, padding: Spacing.two + 2 },
   errorText: { color: Brand.classified, fontSize: 13, lineHeight: 18 },
   label: { fontSize: 10, fontWeight: '700', letterSpacing: 0.8, marginTop: Spacing.one },
+  forgotBtn: { alignSelf: 'flex-end' },
+  forgotText: { fontSize: 12, fontWeight: '700' },
   inputWrap: { borderRadius: Spacing.two, paddingHorizontal: Spacing.two },
   input: { fontSize: 16, paddingVertical: Spacing.two + 4, fontWeight: '600' },
   primaryBtn: { backgroundColor: Brand.primary, borderRadius: Spacing.two, paddingVertical: Spacing.two + 4, alignItems: 'center', marginTop: Spacing.two },
