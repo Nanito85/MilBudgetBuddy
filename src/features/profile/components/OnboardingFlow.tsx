@@ -1,7 +1,7 @@
-import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
   KeyboardAvoidingView,
+  Modal,
   Platform,
   Pressable,
   ScrollView,
@@ -105,9 +105,161 @@ function StepHeader({
 }
 
 // ── Step 0: Auth ───────────────────────────────────────────────────────────────
+//
+// Sign-in/sign-up render as a modal INSIDE this step rather than navigating to
+// the /auth/sign-in or /auth/sign-up routes. Those routes only exist inside the
+// root Stack navigator, which RootLayout does not mount at all while onboarding
+// is showing (see src/app/_layout.tsx) — a router.push() here has no navigator
+// to push onto, so it silently does nothing. Every brand-new install hits this
+// exact step, which is why testers reported "Create Account" doing nothing.
+
+function AuthModal({
+  visible,
+  mode,
+  onClose,
+}: {
+  visible: boolean;
+  mode: 'signin' | 'signup';
+  onClose: () => void;
+}) {
+  const tc = useThemeColors();
+  const { signIn, signUp, loading, error, clearError } = useAuthStore();
+  const [email, setEmail]     = useState('');
+  const [password, setPassword] = useState('');
+  const [confirm, setConfirm] = useState('');
+  const [localError, setLocalError] = useState('');
+
+  useEffect(() => {
+    if (visible) {
+      setEmail(''); setPassword(''); setConfirm(''); setLocalError(''); clearError();
+    }
+  }, [visible, mode]);
+
+  const displayError = localError || error;
+  const canSubmit = mode === 'signup'
+    ? email.trim().length > 0 && password.length >= 8 && confirm.length > 0 && !loading
+    : email.trim().length > 0 && password.length > 0 && !loading;
+
+  const submit = async () => {
+    setLocalError('');
+    clearError();
+    if (!email.trim() || !password) return;
+    if (mode === 'signup') {
+      if (password !== confirm) { setLocalError("Passwords don't match."); return; }
+      if (password.length < 8) { setLocalError('Password must be at least 8 characters.'); return; }
+      await signUp(email.trim().toLowerCase(), password);
+    } else {
+      await signIn(email.trim().toLowerCase(), password);
+    }
+  };
+
+  return (
+    <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
+      <KeyboardAvoidingView style={{ flex: 1, backgroundColor: tc.background }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+        <SafeAreaView style={{ flex: 1 }}>
+          <View style={authModalStyles.header}>
+            <Pressable onPress={onClose}><ThemedText style={[authModalStyles.cancel, { color: tc.textSecondary }]}>CANCEL</ThemedText></Pressable>
+            <ThemedText style={[authModalStyles.title, { color: tc.textPrimary }]}>
+              {mode === 'signup' ? 'CREATE ACCOUNT' : 'SIGN IN'}
+            </ThemedText>
+            <View style={{ width: 60 }} />
+          </View>
+          <ScrollView contentContainerStyle={authModalStyles.content} keyboardShouldPersistTaps="handled">
+            {displayError ? (
+              <View style={authModalStyles.errorBox}>
+                <ThemedText style={authModalStyles.errorText}>{displayError}</ThemedText>
+              </View>
+            ) : null}
+
+            <ThemedText type="small" themeColor="textSecondary" style={authModalStyles.label}>EMAIL</ThemedText>
+            <ThemedView type="backgroundElement" style={authModalStyles.inputWrap}>
+              <TextInput
+                value={email}
+                onChangeText={setEmail}
+                placeholder="your@email.com"
+                placeholderTextColor="rgba(128,128,128,0.5)"
+                autoCapitalize="none"
+                keyboardType="email-address"
+                style={[authModalStyles.input, { color: tc.textPrimary }]}
+              />
+            </ThemedView>
+
+            <ThemedText type="small" themeColor="textSecondary" style={authModalStyles.label}>PASSWORD</ThemedText>
+            <ThemedView type="backgroundElement" style={authModalStyles.inputWrap}>
+              <TextInput
+                value={password}
+                onChangeText={setPassword}
+                placeholder={mode === 'signup' ? 'Min. 8 characters' : '••••••••'}
+                placeholderTextColor="rgba(128,128,128,0.5)"
+                secureTextEntry
+                onSubmitEditing={mode === 'signin' ? submit : undefined}
+                returnKeyType={mode === 'signin' ? 'done' : 'next'}
+                style={[authModalStyles.input, { color: tc.textPrimary }]}
+              />
+            </ThemedView>
+
+            {mode === 'signup' && (
+              <>
+                <ThemedText type="small" themeColor="textSecondary" style={authModalStyles.label}>CONFIRM PASSWORD</ThemedText>
+                <ThemedView type="backgroundElement" style={authModalStyles.inputWrap}>
+                  <TextInput
+                    value={confirm}
+                    onChangeText={setConfirm}
+                    placeholder="Re-enter password"
+                    placeholderTextColor="rgba(128,128,128,0.5)"
+                    secureTextEntry
+                    onSubmitEditing={submit}
+                    returnKeyType="done"
+                    style={[authModalStyles.input, { color: tc.textPrimary }]}
+                  />
+                </ThemedView>
+              </>
+            )}
+
+            <Pressable
+              onPress={submit}
+              disabled={!canSubmit}
+              style={({ pressed }) => [authModalStyles.primaryBtn, (!canSubmit || pressed) && { opacity: 0.6 }]}>
+              <ThemedText style={authModalStyles.primaryBtnText}>
+                {loading
+                  ? (mode === 'signup' ? 'CREATING...' : 'SIGNING IN...')
+                  : (mode === 'signup' ? 'CREATE ACCOUNT' : 'SIGN IN')}
+              </ThemedText>
+            </Pressable>
+
+            {mode === 'signup' && (
+              <ThemedText type="small" themeColor="textSecondary" style={authModalStyles.note}>
+                🔒 Your data is private and encrypted. We never share it.
+              </ThemedText>
+            )}
+          </ScrollView>
+        </SafeAreaView>
+      </KeyboardAvoidingView>
+    </Modal>
+  );
+}
+
+const authModalStyles = StyleSheet.create({
+  header: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingHorizontal: Spacing.three, paddingVertical: Spacing.two,
+    borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: 'rgba(128,128,128,0.2)',
+  },
+  cancel: { fontSize: 14, fontWeight: '600', width: 60 },
+  title: { fontSize: 13, fontWeight: '800', letterSpacing: 1 },
+  content: { padding: Spacing.four, gap: Spacing.two },
+  errorBox: { backgroundColor: Brand.classified + '15', borderWidth: 1, borderColor: Brand.classified + '40', borderRadius: 6, padding: Spacing.two + 2 },
+  errorText: { color: Brand.classified, fontSize: 13, lineHeight: 18 },
+  label: { fontSize: 10, fontWeight: '700', letterSpacing: 0.8, marginTop: Spacing.one },
+  inputWrap: { borderRadius: Spacing.two, paddingHorizontal: Spacing.two },
+  input: { fontSize: 16, paddingVertical: Spacing.two + 4, fontWeight: '600' },
+  primaryBtn: { backgroundColor: Brand.primary, borderRadius: Spacing.two, paddingVertical: Spacing.two + 4, alignItems: 'center', marginTop: Spacing.two },
+  primaryBtnText: { color: '#FFFFFF', fontSize: 16, fontWeight: '700' },
+  note: { fontSize: 11, lineHeight: 16, textAlign: 'center', marginTop: Spacing.two },
+});
 
 function AuthStep({ onSkip }: { onSkip: () => void }) {
-  const router = useRouter();
+  const [authMode, setAuthMode] = useState<'signin' | 'signup' | null>(null);
   return (
     <View style={styles.step}>
       <View style={styles.heroArea}>
@@ -120,12 +272,12 @@ function AuthStep({ onSkip }: { onSkip: () => void }) {
       </View>
       <View style={styles.btnGroup}>
         <Pressable
-          onPress={() => router.push('/auth/sign-in' as any)}
+          onPress={() => setAuthMode('signin')}
           style={({ pressed }) => [styles.primaryBtn, pressed && styles.btnPressed]}>
           <ThemedText style={styles.primaryBtnText}>Sign In  →</ThemedText>
         </Pressable>
         <Pressable
-          onPress={() => router.push('/auth/sign-up' as any)}
+          onPress={() => setAuthMode('signup')}
           style={({ pressed }) => [styles.secondaryBtn, pressed && styles.btnPressed]}>
           <ThemedText style={styles.secondaryBtnText}>Create Account</ThemedText>
         </Pressable>
@@ -133,6 +285,11 @@ function AuthStep({ onSkip }: { onSkip: () => void }) {
           <ThemedText type="small" themeColor="textSecondary">Continue without account (local only)</ThemedText>
         </Pressable>
       </View>
+      <AuthModal
+        visible={authMode !== null}
+        mode={authMode ?? 'signin'}
+        onClose={() => setAuthMode(null)}
+      />
     </View>
   );
 }
