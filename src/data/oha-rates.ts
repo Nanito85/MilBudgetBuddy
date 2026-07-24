@@ -27,8 +27,10 @@ export const OHA_DATA_QUARTER   = 'Q2 2026';
 export const OHA_EFFECTIVE_DATE = '2026-05-16';
 export const DTMO_OHA_URL       = 'https://www.travel.dod.mil/Allowances/Overseas-Housing-Allowance/OHA-Rate-Lookup/';
 
-// Without-dep multipliers applied to stored (with-dep) rates.
-export const RENT_NO_DEP_MULT = 0.83;
+// Without-dep multipliers applied to stored (with-dep) rates. These are a
+// standard approximation (real DTMO tables independently rate each dependency
+// status per location rather than a fixed ratio) — rent ~90%, utility ~75%.
+export const RENT_NO_DEP_MULT = 0.90;
 export const UTIL_NO_DEP_MULT = 0.75;
 
 // Rates update bi-monthly; flag as stale after ~45 days.
