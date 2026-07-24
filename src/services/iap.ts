@@ -4,12 +4,24 @@ import { auth } from '@/services/firebase';
 
 const API_BASE = process.env.EXPO_PUBLIC_API_BASE_URL ?? 'http://localhost:3000';
 
-// Must match the subscription product IDs configured in Google Play Console
-// and App Store Connect exactly — these are store-side identifiers, not
-// something this app can rename on its own.
-export const PRO_MONTHLY_SKU = 'milbudgetbuddy_pro_monthly';
-export const PRO_ANNUAL_SKU  = 'milbudgetbuddy_pro_annual';
-export const PRO_SKUS = [PRO_MONTHLY_SKU, PRO_ANNUAL_SKU];
+// ── Store-side product identifiers ──────────────────────────────────────────
+// Android (Google Play): pricing lives one level below the product, as "base
+// plans" — a single product can offer multiple billing periods. This app's
+// Play Console listing has ONE subscription product ("mbb_pro_monthly") with
+// two base plans under it, not two separate products.
+export const ANDROID_PRODUCT_ID = 'mbb_pro_monthly';
+export const ANDROID_BASE_PLAN_MONTHLY = 'mbb-pro-monthly-base';
+export const ANDROID_BASE_PLAN_ANNUAL  = 'mbb-pro-annual-base';
+
+// iOS (App Store Connect): no base-plan concept — each billing period is its
+// own product. Placeholders until the App Store Connect subscriptions are
+// created; update these to match whatever product IDs get configured there.
+export const IOS_MONTHLY_SKU = 'mbb_pro_monthly';
+export const IOS_ANNUAL_SKU  = 'mbb_pro_annual';
+
+// The full set of store product IDs to fetch, per platform.
+export const PRO_SKUS =
+  Platform.OS === 'ios' ? [IOS_MONTHLY_SKU, IOS_ANNUAL_SKU] : [ANDROID_PRODUCT_ID];
 
 export interface VerifyPurchaseResponse {
   proExpiresAt: string; // ISO 8601

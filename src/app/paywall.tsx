@@ -2,15 +2,25 @@ import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ProductSubscription, useIAP } from 'expo-iap';
+import { useIAP } from 'expo-iap';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Brand, Spacing } from '@/constants/theme';
 import { useThemeColors } from '@/hooks/use-theme';
 import { useIsPro } from '@/hooks/use-is-pro';
-import { PRO_ANNUAL_SKU, PRO_MONTHLY_SKU, PRO_SKUS, verifyPurchaseWithServer } from '@/services/iap';
+import {
+  ANDROID_BASE_PLAN_ANNUAL,
+  ANDROID_BASE_PLAN_MONTHLY,
+  ANDROID_PRODUCT_ID,
+  IOS_ANNUAL_SKU,
+  IOS_MONTHLY_SKU,
+  PRO_SKUS,
+  verifyPurchaseWithServer,
+} from '@/services/iap';
 import { useUserStore } from '@/store/user.store';
+
+type Plan = 'monthly' | 'annual';
 
 const FEATURES = [
   'Full pay & entitlements suite — BAH, BAS, special pays, LES decoder',
@@ -27,7 +37,7 @@ export default function PaywallScreen() {
   const proExpiresAt = useUserStore((s) => s.proExpiresAt);
   const setProEntitlement = useUserStore((s) => s.setProEntitlement);
 
-  const [selected, setSelected] = useState<string>(PRO_ANNUAL_SKU);
+  const [selected, setSelected] = useState<Plan>('annual');
   const [verifying, setVerifying] = useState(false);
 
   const {
@@ -71,25 +81,43 @@ export default function PaywallScreen() {
     if (connected) fetchProducts({ skus: PRO_SKUS, type: 'subs' });
   }, [connected]);
 
-  const monthly = subscriptions.find((s) => s.id === PRO_MONTHLY_SKU);
-  const annual  = subscriptions.find((s) => s.id === PRO_ANNUAL_SKU);
+  // Android: one product ("mbb_pro_monthly") with two base-plan offers under it.
+  const androidProduct = subscriptions.find((s) => s.id === ANDROID_PRODUCT_ID) as
+    | (typeof subscriptions[number] & { subscriptionOffers?: { basePlanIdAndroid?: string | null; offerTokenAndroid?: string | null; displayPrice?: string }[] })
+    | undefined;
+  const androidMonthlyOffer = androidProduct?.subscriptionOffers?.find((o) => o.basePlanIdAndroid === ANDROID_BASE_PLAN_MONTHLY);
+  const androidAnnualOffer  = androidProduct?.subscriptionOffers?.find((o) => o.basePlanIdAndroid === ANDROID_BASE_PLAN_ANNUAL);
+
+  // iOS: each billing period is its own product.
+  const iosMonthly = subscriptions.find((s) => s.id === IOS_MONTHLY_SKU);
+  const iosAnnual  = subscriptions.find((s) => s.id === IOS_ANNUAL_SKU);
+
+  const monthlyDisplayPrice = Platform.OS === 'ios' ? iosMonthly?.displayPrice : androidMonthlyOffer?.displayPrice;
+  const annualDisplayPrice  = Platform.OS === 'ios' ? iosAnnual?.displayPrice  : androidAnnualOffer?.displayPrice;
 
   const purchase = async () => {
-    const sub = subscriptions.find((s) => s.id === selected);
-    if (!sub) {
+    if (Platform.OS === 'ios') {
+      const sku = selected === 'monthly' ? IOS_MONTHLY_SKU : IOS_ANNUAL_SKU;
+      const sub = subscriptions.find((s) => s.id === sku);
+      if (!sub) {
+        Alert.alert('Not Available', 'Pricing is still loading — try again in a moment.');
+        return;
+      }
+      await requestPurchase({ type: 'subs', request: { apple: { sku } } });
+      return;
+    }
+
+    const offer = selected === 'monthly' ? androidMonthlyOffer : androidAnnualOffer;
+    if (!offer?.offerTokenAndroid) {
       Alert.alert('Not Available', 'Pricing is still loading — try again in a moment.');
       return;
     }
-    const androidOffer = (sub as ProductSubscription & { subscriptionOffers?: any[] }).subscriptionOffers?.[0];
     await requestPurchase({
       type: 'subs',
       request: {
-        apple: { sku: sub.id },
         google: {
-          skus: [sub.id],
-          subscriptionOffers: androidOffer?.offerTokenAndroid
-            ? [{ sku: sub.id, offerToken: androidOffer.offerTokenAndroid }]
-            : undefined,
+          skus: [ANDROID_PRODUCT_ID],
+          subscriptionOffers: [{ sku: ANDROID_PRODUCT_ID, offerToken: offer.offerTokenAndroid }],
         },
       },
     });
@@ -143,20 +171,20 @@ export default function PaywallScreen() {
 
               <View style={styles.planRow}>
                 <Pressable
-                  onPress={() => setSelected(PRO_MONTHLY_SKU)}
-                  style={[styles.planCard, { borderColor: tc.borderColor }, selected === PRO_MONTHLY_SKU && styles.planCardActive]}>
+                  onPress={() => setSelected('monthly')}
+                  style={[styles.planCard, { borderColor: tc.borderColor }, selected === 'monthly' && styles.planCardActive]}>
                   <ThemedText style={[styles.planLabel, { color: tc.textPrimary }]}>Monthly</ThemedText>
-                  <ThemedText style={[styles.planPrice, { color: tc.textPrimary }]}>{monthly?.displayPrice ?? '$4.99'}</ThemedText>
+                  <ThemedText style={[styles.planPrice, { color: tc.textPrimary }]}>{monthlyDisplayPrice ?? '$4.99'}</ThemedText>
                   <ThemedText type="small" themeColor="textSecondary">per month</ThemedText>
                 </Pressable>
                 <Pressable
-                  onPress={() => setSelected(PRO_ANNUAL_SKU)}
-                  style={[styles.planCard, { borderColor: tc.borderColor }, selected === PRO_ANNUAL_SKU && styles.planCardActive]}>
+                  onPress={() => setSelected('annual')}
+                  style={[styles.planCard, { borderColor: tc.borderColor }, selected === 'annual' && styles.planCardActive]}>
                   <View style={styles.bestValueBadge}>
                     <ThemedText style={styles.bestValueText}>BEST VALUE</ThemedText>
                   </View>
                   <ThemedText style={[styles.planLabel, { color: tc.textPrimary }]}>Annual</ThemedText>
-                  <ThemedText style={[styles.planPrice, { color: tc.textPrimary }]}>{annual?.displayPrice ?? '$49.99'}</ThemedText>
+                  <ThemedText style={[styles.planPrice, { color: tc.textPrimary }]}>{annualDisplayPrice ?? '$49.99'}</ThemedText>
                   <ThemedText type="small" themeColor="textSecondary">per year</ThemedText>
                 </Pressable>
               </View>
