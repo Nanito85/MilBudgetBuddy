@@ -180,7 +180,14 @@ export interface UserPreferences {
   fontScale: number; // 1.0 | 1.15 | 1.3 | 1.5
   // LES manual overrides
   lesOverrides: LESOverrides;
+  // Pro entitlement — access is granted through this timestamp, not a boolean,
+  // since Apple/Google subscriptions remain active through the paid period even
+  // after cancellation (auto-renew just turns off). null/undefined = no access.
+  proExpiresAt?: string;     // ISO 8601 timestamp
+  proSource?: ProSource;
 }
+
+export type ProSource = 'purchase' | 'admin_code';
 
 // ─── LES Manual Overrides ─────────────────────────────────────────────────────
 

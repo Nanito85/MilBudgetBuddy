@@ -12,6 +12,7 @@ import { Brand, Spacing } from '@/constants/theme';
 import { ALL_QUICK_ACTIONS } from '@/data/quick-actions';
 import { useThemeColors } from '@/hooks/use-theme';
 import { useIsAdmin } from '@/hooks/use-admin';
+import { useIsPro } from '@/hooks/use-is-pro';
 import { useAuthStore } from '@/store/auth.store';
 import { useBudgetStore } from '@/store/budget.store';
 import { useDebtStore } from '@/store/debt.store';
@@ -195,6 +196,8 @@ export default function SettingsScreen() {
   const [showPINManage, setShowPINManage] = useState(false);
   const [showTutorial, setShowTutorial] = useState(false);
   const { isAdmin, resolving: adminResolving } = useIsAdmin();
+  const isPro = useIsPro();
+  const proExpiresAt = useUserStore((s) => s.proExpiresAt);
 
   const { user, signOut: signOutUser, deleteAccount } = useAuthStore();
 
@@ -426,6 +429,38 @@ export default function SettingsScreen() {
               <ThemedText style={[settingsProStyles.proSub, { color: textDim }]}>Access your data from any device.</ThemedText>
             </View>
             <ThemedText style={[settingsProStyles.chevron, { color: Brand.tactical }]}>›</ThemedText>
+          </Pressable>
+        )}
+
+        {/* ── PRO ────────────────────────────────────────────────────── */}
+        <View style={styles.section}>
+          <ThemedText type="label" style={styles.eyebrow}>// SUBSCRIPTION</ThemedText>
+          <ThemedText style={[styles.sectionTitle, { color: text }]}>PRO</ThemedText>
+        </View>
+
+        {isPro ? (
+          <Pressable
+            onPress={() => router.push('/paywall' as any)}
+            style={({ pressed }) => [settingsProStyles.upgradeCard, { backgroundColor: card, borderColor: Brand.tactical + '40' }, pressed && { opacity: 0.7 }]}>
+            <ThemedText style={settingsProStyles.proIcon}>✓</ThemedText>
+            <View style={{ flex: 1 }}>
+              <ThemedText style={[settingsProStyles.proTitle, { color: Brand.tactical }]}>PRO ACTIVE</ThemedText>
+              <ThemedText style={[settingsProStyles.proSub, { color: textDim }]}>
+                {proExpiresAt ? `Renews/expires ${new Date(proExpiresAt).toLocaleDateString()}` : 'Manage your subscription'}
+              </ThemedText>
+            </View>
+            <ThemedText style={[settingsProStyles.chevron, { color: Brand.tactical }]}>›</ThemedText>
+          </Pressable>
+        ) : (
+          <Pressable
+            onPress={() => router.push('/paywall' as any)}
+            style={({ pressed }) => [settingsProStyles.upgradeCard, { backgroundColor: card, borderColor: Brand.accent + '40' }, pressed && { opacity: 0.7 }]}>
+            <ThemedText style={settingsProStyles.proIcon}>🎖️</ThemedText>
+            <View style={{ flex: 1 }}>
+              <ThemedText style={[settingsProStyles.proTitle, { color: Brand.accent }]}>UPGRADE TO PRO</ThemedText>
+              <ThemedText style={[settingsProStyles.proSub, { color: textDim }]}>7-day free trial, then $4.99/mo or $49.99/yr.</ThemedText>
+            </View>
+            <ThemedText style={[settingsProStyles.chevron, { color: Brand.accent }]}>›</ThemedText>
           </Pressable>
         )}
 

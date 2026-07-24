@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 
 import { PayGrade } from '@/data/bah-rates';
-import { FinancialGoal, HousingStatus, LESOverrides, MilitaryBranch, RankVariant, ServiceStatus, SpecialPay, SpecialPayType, UserPreferences } from '@/types/user.types';
+import { FinancialGoal, HousingStatus, LESOverrides, MilitaryBranch, ProSource, RankVariant, ServiceStatus, SpecialPay, SpecialPayType, UserPreferences } from '@/types/user.types';
 
 const STORAGE_KEY = 'mbb_user_prefs';
 
@@ -45,6 +45,8 @@ const DEFAULTS: UserPreferences = {
   appTheme: 'dark',
   fontScale: 1.0,
   lesOverrides: { extraIncome: [], extraDeductions: [] },
+  proExpiresAt: undefined,
+  proSource: undefined,
 };
 
 interface UserState extends UserPreferences {
@@ -76,6 +78,7 @@ interface UserState extends UserPreferences {
   setAppTheme: (theme: 'dark' | 'light') => void;
   setFontScale: (scale: number) => void;
   setLesOverrides: (overrides: LESOverrides) => void;
+  setProEntitlement: (proExpiresAt: string | undefined, proSource: ProSource | undefined) => void;
   resetAll: () => void;
 }
 
@@ -124,6 +127,8 @@ function snapshot(get: () => UserState): UserPreferences {
     appTheme: s.appTheme,
     fontScale: s.fontScale,
     lesOverrides: s.lesOverrides,
+    proExpiresAt: s.proExpiresAt,
+    proSource: s.proSource,
   };
 }
 
@@ -273,6 +278,15 @@ export const useUserStore = create<UserState>((set, get) => ({
   setLesOverrides: (lesOverrides) => {
     set({ lesOverrides });
     save({ ...snapshot(get), lesOverrides });
+  },
+
+  // Only ever called after server-side verification (real purchase) or by the
+  // admin discount-code redemption flow — never trust a client-only claim of
+  // Pro access. Access lasts until proExpiresAt regardless of cancellation,
+  // matching how Apple/Google subscriptions actually behave.
+  setProEntitlement: (proExpiresAt, proSource) => {
+    set({ proExpiresAt, proSource });
+    save({ ...snapshot(get), proExpiresAt, proSource });
   },
 
   setPersonalDetails: ({ payGrade, lastName, nickname, yos, mhaZip, installationName, hasSpouse, numChildren, housingStatus, stateResidence, dateOfEnlistment, dateOfRank, rankVariant }) => {

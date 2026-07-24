@@ -220,6 +220,8 @@ function snapshotUser() {
     onboarded: s.onboarded,
     disclaimerAcknowledged: s.disclaimerAcknowledged,
     lesOverrides: s.lesOverrides,
+    proExpiresAt: s.proExpiresAt ?? null,
+    proSource: s.proSource ?? null,
   };
 }
 

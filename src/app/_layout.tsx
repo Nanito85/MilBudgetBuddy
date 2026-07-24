@@ -98,6 +98,7 @@ export default function RootLayout() {
 
         <Stack.Screen name="auth/sign-in" />
         <Stack.Screen name="auth/sign-up" />
+        <Stack.Screen name="paywall" />
         <Stack.Screen name="category/[slug]" />
         <Stack.Screen name="kids/[id]" />
         <Stack.Screen name="tip/[id]" />
