@@ -99,6 +99,7 @@ export default function CommandModeScreen() {
   const nickname     = useUserStore((s) => s.nickname);
   const yos          = useUserStore((s) => s.yos);
   const mhaZip       = useUserStore((s) => s.mhaZip);
+  const dutyStationId = useUserStore((s) => s.dutyStationId);
   const hasSpouse    = useUserStore((s) => s.hasSpouse);
   const housingStatus = useUserStore((s) => s.housingStatus);
   const numChildren  = useUserStore((s) => s.numChildren);
@@ -172,11 +173,11 @@ export default function CommandModeScreen() {
   const breakdown = useMemo(() => {
     if (!payGrade) return null;
     return calcLES({
-      payGrade, yos, mhaZip, hasSpouse, housingStatus, specialPaysTotal,
+      payGrade, yos, mhaZip, dutyStationId, hasSpouse, housingStatus, specialPaysTotal,
       tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence,
       overrides: lesOverrides,
     });
-  }, [payGrade, yos, mhaZip, hasSpouse, housingStatus, specialPaysTotal, tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence, lesOverrides]);
+  }, [payGrade, yos, mhaZip, dutyStationId, hasSpouse, housingStatus, specialPaysTotal, tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence, lesOverrides]);
 
   const totalBudgeted = useMemo(
     () => budgetCategories.reduce((s, c) => s + c.monthlyBudget, 0),

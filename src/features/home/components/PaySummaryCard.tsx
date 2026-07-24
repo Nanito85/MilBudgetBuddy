@@ -225,7 +225,7 @@ function OverrideModal({
               {bpInput ? <Pressable onPress={() => setBpInput('')}><ThemedText style={[mStyles.clearX, { color: tc.textMuted }]}>✕</ThemedText></Pressable> : null}
             </View>
 
-            <ThemedText style={[mStyles.fieldLabel, { color: tc.textHint }]}>BAH (monthly)</ThemedText>
+            <ThemedText style={[mStyles.fieldLabel, { color: tc.textHint }]}>{breakdown.isOha ? 'OHA' : 'BAH'} (monthly)</ThemedText>
             <View style={[mStyles.inputRow, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
               <ThemedText style={[mStyles.dollar, { color: tc.textHint }]}>$</ThemedText>
               <TextInput
@@ -566,12 +566,14 @@ export function PaySummaryCard({ breakdown }: Props) {
   const removeSpecialPay    = useUserStore((s) => s.removeSpecialPay);
 
   const bahLabel = breakdown.bahOverridden
-    ? 'BAH'
-    : housingStatus === 'barracks'
-      ? 'BAH (PARTIAL — BARRACKS)'
-      : housingStatus === 'on_base_family_housing'
-        ? 'BAH (ON-BASE HOUSING)'
-        : 'BAH';
+    ? (breakdown.isOha ? 'OHA' : 'BAH')
+    : breakdown.isOha
+      ? `OHA${breakdown.ohaApproximate ? ' (APPROX.)' : ''}`
+      : housingStatus === 'barracks'
+        ? 'BAH (PARTIAL — BARRACKS)'
+        : housingStatus === 'on_base_family_housing'
+          ? 'BAH (ON-BASE HOUSING)'
+          : 'BAH';
 
   const [spouseInput, setSpouseInput] = useState(
     spouseMonthlyIncome > 0 ? String(spouseMonthlyIncome) : '',

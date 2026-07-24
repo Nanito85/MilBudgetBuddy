@@ -326,6 +326,12 @@ export function getInstallationByZip(zip: string | undefined | null): Installati
   return INSTALLATIONS.find(i => i.mhaZip === zip) ?? null;
 }
 
+/** Finds an installation by its stable id (needed for OCONUS stations, which have no mhaZip). */
+export function getInstallationById(id: string | undefined | null): Installation | null {
+  if (!id) return null;
+  return INSTALLATIONS.find(i => i.id === id) ?? null;
+}
+
 // ── ZIP fallback ─────────────────────────────────────────────────────────────
 // BAH rates only exist for the installations listed above. A member stationed
 // somewhere not on that list (a recruiting sub-station, a reserve center, an

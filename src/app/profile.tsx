@@ -47,7 +47,7 @@ import { useSavingsGoalsStore } from '@/store/savings-goals.store';
 import { useTipsStore } from '@/store/tips.store';
 import { useUserStore } from '@/store/user.store';
 import { KidGender, KidProfile, PendingCompletion } from '@/types/kids.types';
-import { Installation, getInstallationByZip } from '@/data/installations';
+import { Installation, getInstallationById, getInstallationByZip } from '@/data/installations';
 import {
   BRANCH_LABELS,
   HOUSING_STATUS_DESCRIPTIONS,
@@ -349,6 +349,7 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
   const yos            = useUserStore((s) => s.yos);
   const mhaZip         = useUserStore((s) => s.mhaZip);
   const installName    = useUserStore((s) => s.installationName);
+  const storedDutyStationId = useUserStore((s) => s.dutyStationId);
   const hasSpouse      = useUserStore((s) => s.hasSpouse);
   const numChildren    = useUserStore((s) => s.numChildren);
   const housingStatus  = useUserStore((s) => s.housingStatus);
@@ -385,7 +386,7 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
   const [nn, setNn]               = useState(nickname ?? '');
   const [y, setY]                 = useState(yos);
   const [yManual, setYManual]     = useState(false);
-  const [station, setStation]     = useState<Installation | null>(() => getInstallationByZip(mhaZip));
+  const [station, setStation]     = useState<Installation | null>(() => getInstallationById(storedDutyStationId) ?? getInstallationByZip(mhaZip));
   const [spouse, setSpouse]       = useState(hasSpouse);
   const [children, setChildren]   = useState(numChildren);
   const [housing, setHousing]     = useState<HousingStatus>(housingStatus ?? 'off_base');
@@ -423,7 +424,7 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
     setNn(nickname ?? '');
     setY(yos);
     setYManual(false);
-    setStation(getInstallationByZip(mhaZip));
+    setStation(getInstallationById(storedDutyStationId) ?? getInstallationByZip(mhaZip));
     setSpouse(hasSpouse);
     setChildren(numChildren);
     setHousing(housingStatus ?? 'off_base');
@@ -463,6 +464,7 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
       yos: y,
       mhaZip: station?.mhaZip ?? mhaZip ?? '',
       installationName: station?.name ?? installName ?? '',
+      dutyStationId: station?.id ?? storedDutyStationId ?? '',
       hasSpouse: spouse,
       numChildren: children,
       housingStatus: housing,
@@ -793,6 +795,7 @@ function EditPayModal({ visible, onClose }: { visible: boolean; onClose: () => v
   const payGrade         = useUserStore((s) => s.payGrade);
   const yos              = useUserStore((s) => s.yos);
   const mhaZip           = useUserStore((s) => s.mhaZip);
+  const dutyStationId    = useUserStore((s) => s.dutyStationId);
   const hasSpouse        = useUserStore((s) => s.hasSpouse);
   const housingStatus    = useUserStore((s) => s.housingStatus);
   const stateResidence   = useUserStore((s) => s.stateResidence);
@@ -800,7 +803,7 @@ function EditPayModal({ visible, onClose }: { visible: boolean; onClose: () => v
   const specialPaysTotal = specialPays.reduce((s, p) => s + p.monthlyAmount, 0);
   const calculated = payGrade
     ? calcLES({
-        payGrade, yos, mhaZip, hasSpouse, housingStatus, specialPaysTotal,
+        payGrade, yos, mhaZip, dutyStationId, hasSpouse, housingStatus, specialPaysTotal,
         tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence,
       })
     : null;

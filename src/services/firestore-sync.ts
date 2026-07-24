@@ -193,6 +193,7 @@ function snapshotUser() {
     yos: s.yos,
     mhaZip: s.mhaZip ?? null,
     installationName: s.installationName ?? null,
+    dutyStationId: s.dutyStationId ?? null,
     hasSpouse: s.hasSpouse,
     numChildren: s.numChildren,
     housingStatus: s.housingStatus,

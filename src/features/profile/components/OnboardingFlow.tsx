@@ -958,7 +958,7 @@ function RetiredServiceInfoStep({
 function LocationFamilyStep({
   onNext,
 }: {
-  onNext: (mhaZip: string, installName: string, hasSpouse: boolean, numChildren: number, stateCode: string, housingStatus: HousingStatus) => void;
+  onNext: (mhaZip: string, installName: string, hasSpouse: boolean, numChildren: number, stateCode: string, housingStatus: HousingStatus, dutyStationId: string) => void;
 }) {
   const [station, setStation]         = useState<Installation | null>(null);
   const [hasSpouse, setHasSpouse]     = useState(false);
@@ -1085,11 +1085,11 @@ function LocationFamilyStep({
 
       <View style={styles.btnGroup}>
         <Pressable
-          onPress={() => onNext(station?.mhaZip ?? '', station?.name ?? '', hasSpouse, numChildren, stateCode, housingStatus)}
+          onPress={() => onNext(station?.mhaZip ?? '', station?.name ?? '', hasSpouse, numChildren, stateCode, housingStatus, station?.id ?? '')}
           style={({ pressed }) => [styles.primaryBtn, pressed && styles.btnPressed]}>
           <ThemedText style={styles.primaryBtnText}>Continue  →</ThemedText>
         </Pressable>
-        <Pressable onPress={() => onNext('', '', false, 0, '', 'off_base')} hitSlop={8} style={styles.skipBtn}>
+        <Pressable onPress={() => onNext('', '', false, 0, '', 'off_base', '')} hitSlop={8} style={styles.skipBtn}>
           <ThemedText type="small" themeColor="textSecondary">Skip for now</ThemedText>
         </Pressable>
       </View>
@@ -1289,8 +1289,9 @@ export function OnboardingFlow() {
     numChildren: number,
     stateCode: string,
     housingStatus: HousingStatus,
+    dutyStationId: string,
   ) => {
-    setLocationFamily(mhaZip, hasSpouse, numChildren, housingStatus, installName || undefined);
+    setLocationFamily(mhaZip, hasSpouse, numChildren, housingStatus, installName || undefined, dutyStationId || undefined);
     if (stateCode) setStateResidence(stateCode);
     setStep(6);
   };

@@ -127,6 +127,7 @@ export default function DashboardScreen() {
   const specialPays = useUserStore((s) => s.specialPays);
   const yos = useUserStore((s) => s.yos);
   const mhaZip = useUserStore((s) => s.mhaZip);
+  const dutyStationId = useUserStore((s) => s.dutyStationId);
   const hasSpouse = useUserStore((s) => s.hasSpouse);
   const housingStatus = useUserStore((s) => s.housingStatus);
   const tspContribPct = useUserStore((s) => s.tspContribPct);
@@ -205,18 +206,18 @@ export default function DashboardScreen() {
   const breakdown = useMemo(() => {
     if (!payGrade) return null;
     return calcLES({
-      payGrade, yos, mhaZip, hasSpouse, housingStatus, specialPaysTotal,
+      payGrade, yos, mhaZip, dutyStationId, hasSpouse, housingStatus, specialPaysTotal,
       tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence,
       overrides: lesOverrides,
     });
-  }, [payGrade, yos, mhaZip, hasSpouse, housingStatus, specialPaysTotal, tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence, lesOverrides]);
+  }, [payGrade, yos, mhaZip, dutyStationId, hasSpouse, housingStatus, specialPaysTotal, tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence, lesOverrides]);
 
   // ── Mission Readiness Score (0-100) ─────────────────────────────────────────
   const readinessChecks = useMemo(() => {
     const setCats = budgetCategories.filter((c) => c.monthlyBudget > 0).length;
     return [
       { label: 'Profile complete',        done: !!(payGrade && branch && yos > 0), pts: 20 },
-      { label: 'Duty station set',        done: !!mhaZip,                           pts: 5  },
+      { label: 'Duty station set',        done: !!(mhaZip || dutyStationId),        pts: 5  },
       { label: 'State of residence set',  done: !!stateResidence,                   pts: 5  },
       { label: 'Budget configured (3+)',  done: setCats >= 3,                        pts: 15 },
       { label: 'Budget balanced',         done: !!(breakdown && budgetTotal <= breakdown.netPay && budgetTotal > 0), pts: 10 },
@@ -226,7 +227,7 @@ export default function DashboardScreen() {
       { label: 'Debt entries tracked',    done: debtEntries.length > 0,             pts: 5  },
       { label: 'Income & budget linked',  done: !!(breakdown && breakdown.netPay > 0 && budgetTotal > 0), pts: 10 },
     ];
-  }, [payGrade, branch, yos, mhaZip, stateResidence, budgetCategories, budgetTotal, breakdown, tspContribPct, savingsGoals, debtEntries]);
+  }, [payGrade, branch, yos, mhaZip, dutyStationId, stateResidence, budgetCategories, budgetTotal, breakdown, tspContribPct, savingsGoals, debtEntries]);
 
   const readinessScore = useMemo(() => {
     if (!payGrade) return null;

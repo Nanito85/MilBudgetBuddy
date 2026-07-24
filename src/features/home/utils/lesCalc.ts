@@ -1,6 +1,7 @@
-import { BAH_PARTIAL, getBahRate } from '@/data/bah-rates';
+import { BAH_PARTIAL, getBahRate, PayGrade } from '@/data/bah-rates';
 import { getBAS } from '@/data/bas-rates';
 import { getBasicPay } from '@/data/basic-pay-rates';
+import { getOhaAreaForInstallation, getOhaRate } from '@/data/oha-rates';
 import { getStateTaxRate } from '@/data/state-tax';
 import { HousingStatus, LESOverrides } from '@/types/user.types';
 
@@ -73,12 +74,17 @@ export interface LESBreakdown {
   basePayOverridden: boolean;
   extraIncomeItems: { id: string; label: string; amount: number }[];
   extraDeductionItems: { id: string; label: string; amount: number }[];
+  // True when `bah` is actually an OHA estimate (OCONUS duty station with no
+  // BAH-eligible mhaZip). Lets the UI relabel the line item accordingly.
+  isOha: boolean;
+  ohaApproximate: boolean;
 }
 
 export interface LESInputs {
   payGrade: string;
   yos: number;
   mhaZip: string | undefined;
+  dutyStationId?: string; // used to resolve OHA when mhaZip is unset (OCONUS station)
   hasSpouse: boolean;
   housingStatus?: HousingStatus; // defaults to 'off_base' (full BAH) if omitted
   specialPaysTotal: number;
@@ -90,20 +96,50 @@ export interface LESInputs {
   overrides?: LESOverrides;
 }
 
+interface HousingResult {
+  amount: number;
+  isOha: boolean;
+  approximate: boolean;
+}
+
 // Full BAH only applies off base. Barracks residents (no dependents, government
 // single-type quarters) get flat Partial BAH; on-base family housing residents
-// get no BAH — housing is provided in-kind. Per JTR Ch. 10.
-function resolveBah(mhaZip: string | undefined, payGrade: string, hasSpouse: boolean, housingStatus: HousingStatus): number {
-  if (housingStatus === 'on_base_family_housing') return 0;
-  if (housingStatus === 'barracks') return BAH_PARTIAL;
-  return mhaZip ? (getBahRate(mhaZip, payGrade as any, hasSpouse) ?? 0) : 0;
+// get no BAH — housing is provided in-kind. Per JTR Ch. 10. OCONUS stations have
+// no mhaZip (BAH doesn't apply overseas) — they draw OHA instead, resolved from
+// the duty station's installation id. On-base family housing OCONUS also gets no
+// OHA (government housing provided in-kind); OCONUS "barracks"/unaccompanied
+// government quarters get no OHA either — Partial OHA is a distinct, much
+// smaller stipend this app doesn't have data for, so 0 is shown rather than a
+// wrong number borrowed from the CONUS BAH_PARTIAL table.
+function resolveHousing(
+  mhaZip: string | undefined,
+  dutyStationId: string | undefined,
+  payGrade: string,
+  hasSpouse: boolean,
+  housingStatus: HousingStatus,
+): HousingResult {
+  if (housingStatus === 'on_base_family_housing') return { amount: 0, isOha: false, approximate: false };
+
+  if (mhaZip) {
+    const amount = housingStatus === 'barracks' ? BAH_PARTIAL : (getBahRate(mhaZip, payGrade as any, hasSpouse) ?? 0);
+    return { amount, isOha: false, approximate: false };
+  }
+
+  if (housingStatus === 'barracks') return { amount: 0, isOha: false, approximate: false };
+
+  const area = dutyStationId ? getOhaAreaForInstallation(dutyStationId) : undefined;
+  if (!area) return { amount: 0, isOha: false, approximate: false };
+  const rate = getOhaRate(area.locationLabel, payGrade as PayGrade, hasSpouse);
+  if (!rate) return { amount: 0, isOha: true, approximate: area.approximate };
+  return { amount: rate.rentCeilingUSD + rate.utilityAllowanceUSD, isOha: true, approximate: area.approximate };
 }
 
 export function calcLES(inputs: LESInputs): LESBreakdown {
-  const { payGrade, yos, mhaZip, hasSpouse, housingStatus = 'off_base', specialPaysTotal, tspContribPct, rothTspPct = 0, hasDentalFamily, sglOptOut, stateResidence, overrides } = inputs;
+  const { payGrade, yos, mhaZip, dutyStationId, hasSpouse, housingStatus = 'off_base', specialPaysTotal, tspContribPct, rothTspPct = 0, hasDentalFamily, sglOptOut, stateResidence, overrides } = inputs;
 
   const calcBasePay = getBasicPay(payGrade as any, yos);
-  const calcBah = resolveBah(mhaZip, payGrade, hasSpouse, housingStatus);
+  const housing = resolveHousing(mhaZip, dutyStationId, payGrade, hasSpouse, housingStatus);
+  const calcBah = housing.amount;
   const calcBas = getBAS(payGrade);
 
   const basePay = overrides?.basePayOverride ?? calcBasePay;
@@ -141,6 +177,8 @@ export function calcLES(inputs: LESInputs): LESBreakdown {
     basePayOverridden: overrides?.basePayOverride != null,
     extraIncomeItems,
     extraDeductionItems,
+    isOha: housing.isOha,
+    ohaApproximate: housing.approximate,
   };
 }
 

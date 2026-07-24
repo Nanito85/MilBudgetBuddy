@@ -112,8 +112,8 @@ export const OHA_RATES: OhaLocationRate[] = [
     // Utility is a flat rate across all grades per USFJ policy.
     locationLabel: 'Okinawa (All Installations)',
     country: 'Japan', currency: 'JPY',
-    installationIds: ['kadena','mcb_butler','camp_foster','camp_courtney','camp_kinser',
-                      'camp_mctureous','camp_hansen','camp_schwab','torii_station','white_beach'],
+    installationIds: ['kadena','mcb_butler','mcas_futenma','camp_foster','camp_courtney','camp_kinser',
+                      'camp_mctureous','camp_hansen','camp_schwab','camp_gonsalves','torii_station','white_beach'],
     miha: 320, approximate: true,
     notes: 'All Okinawa bases share one OHA area. Utility is flat for all grades.',
     rates: [

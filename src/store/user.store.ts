@@ -25,6 +25,7 @@ const DEFAULTS: UserPreferences = {
   yos: 0,
   mhaZip: undefined,
   installationName: undefined,
+  dutyStationId: undefined,
   hasSpouse: false,
   numChildren: 0,
   housingStatus: 'off_base',
@@ -65,9 +66,9 @@ interface UserState extends UserPreferences {
   setGSInfo: (gsGrade: number, gsStep: number, lastName: string, nickname: string, dateOfEnlistment?: string) => void;
   setReserveInfo: (drillsPerMonth: number) => void;
   setRetiredInfo: (retirementDate: string | undefined, vaDisabilityPercent: number) => void;
-  setLocationFamily: (mhaZip: string, hasSpouse: boolean, numChildren: number, housingStatus: HousingStatus, installationName?: string) => void;
+  setLocationFamily: (mhaZip: string, hasSpouse: boolean, numChildren: number, housingStatus: HousingStatus, installationName?: string, dutyStationId?: string) => void;
   setPaySetup: (tspContribPct: number, rothTspPct: number, hasDentalFamily: boolean, sglOptOut: boolean) => void;
-  setPersonalDetails: (params: { payGrade: PayGrade; lastName: string; nickname: string; yos: number; mhaZip: string; installationName: string; hasSpouse: boolean; numChildren: number; housingStatus: HousingStatus; stateResidence: string; dateOfEnlistment: string; dateOfRank: string; rankVariant: RankVariant }) => void;
+  setPersonalDetails: (params: { payGrade: PayGrade; lastName: string; nickname: string; yos: number; mhaZip: string; installationName: string; dutyStationId?: string; hasSpouse: boolean; numChildren: number; housingStatus: HousingStatus; stateResidence: string; dateOfEnlistment: string; dateOfRank: string; rankVariant: RankVariant }) => void;
   setPayDetails: (params: { tspContribPct: number; rothTspPct: number; hasDentalFamily: boolean; sglOptOut: boolean; spouseMonthlyIncome: number; bahOverride?: number; basOverride?: number; basePayOverride?: number }) => void;
   setStateResidence: (stateCode: string) => void;
   addSpecialPay: (type: SpecialPayType, monthlyAmount: number, customLabel?: string) => void;
@@ -106,6 +107,7 @@ function snapshot(get: () => UserState): UserPreferences {
     yos: s.yos,
     mhaZip: s.mhaZip,
     installationName: s.installationName,
+    dutyStationId: s.dutyStationId,
     hasSpouse: s.hasSpouse,
     numChildren: s.numChildren,
     housingStatus: s.housingStatus,
@@ -214,10 +216,12 @@ export const useUserStore = create<UserState>((set, get) => ({
     save({ ...snapshot(get), retirementDate, vaDisabilityPercent });
   },
 
-  setLocationFamily: (mhaZip, hasSpouse, numChildren, housingStatus, installationName) => {
-    const update = installationName !== undefined
-      ? { mhaZip, hasSpouse, numChildren, housingStatus, installationName }
-      : { mhaZip, hasSpouse, numChildren, housingStatus };
+  setLocationFamily: (mhaZip, hasSpouse, numChildren, housingStatus, installationName, dutyStationId) => {
+    const update = {
+      mhaZip, hasSpouse, numChildren, housingStatus,
+      ...(installationName !== undefined ? { installationName } : {}),
+      ...(dutyStationId !== undefined ? { dutyStationId } : {}),
+    };
     set(update);
     save({ ...snapshot(get), ...update });
   },
@@ -289,8 +293,8 @@ export const useUserStore = create<UserState>((set, get) => ({
     save({ ...snapshot(get), proExpiresAt, proSource });
   },
 
-  setPersonalDetails: ({ payGrade, lastName, nickname, yos, mhaZip, installationName, hasSpouse, numChildren, housingStatus, stateResidence, dateOfEnlistment, dateOfRank, rankVariant }) => {
-    const update = { payGrade, lastName, nickname, yos, mhaZip, installationName, hasSpouse, numChildren, housingStatus, stateResidence, dateOfEnlistment, dateOfRank, rankVariant };
+  setPersonalDetails: ({ payGrade, lastName, nickname, yos, mhaZip, installationName, dutyStationId, hasSpouse, numChildren, housingStatus, stateResidence, dateOfEnlistment, dateOfRank, rankVariant }) => {
+    const update = { payGrade, lastName, nickname, yos, mhaZip, installationName, dutyStationId, hasSpouse, numChildren, housingStatus, stateResidence, dateOfEnlistment, dateOfRank, rankVariant };
     set(update);
     save({ ...snapshot(get), ...update });
   },

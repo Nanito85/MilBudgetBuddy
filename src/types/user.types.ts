@@ -148,6 +148,7 @@ export interface UserPreferences {
   // Location & family
   mhaZip?: string;
   installationName?: string;
+  dutyStationId?: string; // Installation.id from data/installations.ts — needed to look up OHA for OCONUS stations, which have no mhaZip
   hasSpouse: boolean;
   numChildren: number;
   housingStatus: HousingStatus;
