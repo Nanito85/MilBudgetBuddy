@@ -108,29 +108,38 @@ export const OHA_RATES: OhaLocationRate[] = [
 
   {
     // All Okinawa installations share one OHA area code (JA048).
-    // Rates reflect the May 16 2026 increase per Stars & Stripes / USFJ.
-    // Utility is a flat rate across all grades per USFJ policy.
+    // E1-E8/O1-O3 rent ceilings confirmed directly against the May 1 2026
+    // USFJ increase (Stars and Stripes, citing the DTMO calculator) — the
+    // prior figures here were simply wrong (not just stale), overstated by
+    // ~20-30% at every confirmed grade. E9/O4-O10/W1-W5 could not be
+    // independently verified from public reporting; those are scaled from
+    // the previous estimate by ~0.78 (the average correction ratio observed
+    // across confirmed grades) and are a rough approximation, not confirmed.
+    // Utility is a flat rate across all grades per USFJ policy — confirmed at
+    // $661.56 (w/ dep) — matches RENT/UTIL_NO_DEP_MULT-derived without-dep
+    // figures almost exactly ($1,263 vs. reported "~$140 less" for E1-E4;
+    // $496 vs. reported $496.17 utility).
     locationLabel: 'Okinawa (All Installations)',
     country: 'Japan', currency: 'JPY',
     installationIds: ['kadena','mcb_butler','mcas_futenma','camp_foster','camp_courtney','camp_kinser',
                       'camp_mctureous','camp_hansen','camp_schwab','camp_gonsalves','torii_station','white_beach'],
     miha: 320, approximate: true,
-    notes: 'All Okinawa bases share one OHA area. Utility is flat for all grades.',
+    notes: 'All Okinawa bases share one OHA area. Utility is flat for all grades. E1-E8/O1-O3 confirmed May 2026; E9/O4-O10/W1-W5 are estimated (not independently confirmed).',
     rates: [
-      { grade: 'E1',  rentCeilingUSD: 1800, utilityAllowanceUSD: 662 },
-      { grade: 'E4',  rentCeilingUSD: 1800, utilityAllowanceUSD: 662 },
-      { grade: 'E5',  rentCeilingUSD: 1943, utilityAllowanceUSD: 662 },
-      { grade: 'E6',  rentCeilingUSD: 2050, utilityAllowanceUSD: 662 },
-      { grade: 'E7',  rentCeilingUSD: 2105, utilityAllowanceUSD: 662 },
-      { grade: 'E9',  rentCeilingUSD: 2250, utilityAllowanceUSD: 662 },
-      { grade: 'W1',  rentCeilingUSD: 2100, utilityAllowanceUSD: 662 },
-      { grade: 'W5',  rentCeilingUSD: 2450, utilityAllowanceUSD: 662 },
-      { grade: 'O1',  rentCeilingUSD: 1943, utilityAllowanceUSD: 662 },
-      { grade: 'O3',  rentCeilingUSD: 2105, utilityAllowanceUSD: 662 },
-      { grade: 'O4',  rentCeilingUSD: 2600, utilityAllowanceUSD: 662 },
-      { grade: 'O6',  rentCeilingUSD: 3100, utilityAllowanceUSD: 662 },
-      { grade: 'O7',  rentCeilingUSD: 3500, utilityAllowanceUSD: 662 },
-      { grade: 'O10', rentCeilingUSD: 3500, utilityAllowanceUSD: 662 },
+      { grade: 'E1',  rentCeilingUSD: 1403, utilityAllowanceUSD: 662 },
+      { grade: 'E4',  rentCeilingUSD: 1403, utilityAllowanceUSD: 662 },
+      { grade: 'E5',  rentCeilingUSD: 1439, utilityAllowanceUSD: 662 },
+      { grade: 'E6',  rentCeilingUSD: 1655, utilityAllowanceUSD: 662 },
+      { grade: 'E7',  rentCeilingUSD: 1655, utilityAllowanceUSD: 662 },
+      { grade: 'E9',  rentCeilingUSD: 1755, utilityAllowanceUSD: 662 }, // estimated
+      { grade: 'W1',  rentCeilingUSD: 1638, utilityAllowanceUSD: 662 }, // estimated
+      { grade: 'W5',  rentCeilingUSD: 1911, utilityAllowanceUSD: 662 }, // estimated
+      { grade: 'O1',  rentCeilingUSD: 1439, utilityAllowanceUSD: 662 },
+      { grade: 'O3',  rentCeilingUSD: 1655, utilityAllowanceUSD: 662 },
+      { grade: 'O4',  rentCeilingUSD: 2028, utilityAllowanceUSD: 662 }, // estimated
+      { grade: 'O6',  rentCeilingUSD: 2418, utilityAllowanceUSD: 662 }, // estimated
+      { grade: 'O7',  rentCeilingUSD: 2730, utilityAllowanceUSD: 662 }, // estimated
+      { grade: 'O10', rentCeilingUSD: 2730, utilityAllowanceUSD: 662 }, // estimated
     ],
   },
 
