@@ -989,7 +989,7 @@ function LocationFamilyStep({
 
       <View style={styles.fieldBlock}>
         <ThemedText type="smallBold" themeColor="textSecondary" style={styles.fieldLabel}>DUTY STATION</ThemedText>
-        <StationPicker label="Duty Station" selected={station} onSelect={setStation} conusOnly />
+        <StationPicker label="Duty Station" selected={station} onSelect={setStation} />
       </View>
 
       <View style={styles.fieldBlock}>

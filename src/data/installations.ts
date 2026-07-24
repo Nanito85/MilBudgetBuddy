@@ -228,6 +228,7 @@ export const INSTALLATIONS: Installation[] = [
   { id: 'yokosuka',            name: 'Naval Base Yokosuka',        city: 'Yokosuka',           state: 'Japan', mhaZip: '', oconus: true, branch: 'Navy' },
   { id: 'yokota',              name: 'Yokota AB',                  city: 'Fussa',              state: 'Japan', mhaZip: '', oconus: true, branch: 'Air Force' },
   { id: 'mcb_butler',          name: 'Camp Butler (MCB Okinawa)',  city: 'Ginowan',            state: 'Japan', mhaZip: '', oconus: true, branch: 'Marines' },
+  { id: 'mcas_futenma',        name: 'MCAS Futenma (Okinawa)',     city: 'Ginowan',            state: 'Japan', mhaZip: '', oconus: true, branch: 'Marines' },
   { id: 'camp_foster',         name: 'Camp Foster (Okinawa)',      city: 'Okinawa',            state: 'Japan', mhaZip: '', oconus: true, branch: 'Marines' },
   { id: 'camp_courtney',       name: 'Camp Courtney (Okinawa)',    city: 'Uruma',              state: 'Japan', mhaZip: '', oconus: true, branch: 'Marines' },
   { id: 'camp_kinser',         name: 'Camp Kinser (Okinawa)',      city: 'Urasoe',             state: 'Japan', mhaZip: '', oconus: true, branch: 'Marines' },
@@ -240,6 +241,7 @@ export const INSTALLATIONS: Installation[] = [
   { id: 'camp_schwab',         name: 'Camp Schwab (Okinawa)',      city: 'Nago',               state: 'Japan', mhaZip: '', oconus: true, branch: 'Marines' },
   { id: 'camp_hansen',         name: 'Camp Hansen (Okinawa)',      city: 'Kin',                state: 'Japan', mhaZip: '', oconus: true, branch: 'Marines' },
   { id: 'camp_mctureous',      name: 'Camp McTureous (Okinawa)',   city: 'Uruma',              state: 'Japan', mhaZip: '', oconus: true, branch: 'Marines' },
+  { id: 'camp_gonsalves',      name: 'Camp Gonsalves (JWTC, Okinawa)', city: 'Kunigami',        state: 'Japan', mhaZip: '', oconus: true, branch: 'Marines' },
   { id: 'white_beach',         name: 'White Beach Naval Facility', city: 'Uruma',              state: 'Japan', mhaZip: '', oconus: true, branch: 'Navy' },
 
   // ── OCONUS — GERMANY / EUROPE ─────────────────────────────────────────────────

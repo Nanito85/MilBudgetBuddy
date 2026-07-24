@@ -681,7 +681,7 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
 
             {/* Duty Station */}
             <ThemedText style={[editStyles.fieldLabel, { color: tc.textHint }]}>DUTY STATION</ThemedText>
-            <StationPicker label="Duty Station" selected={station} onSelect={setStation} conusOnly />
+            <StationPicker label="Duty Station" selected={station} onSelect={setStation} />
 
             {/* State */}
             <ThemedText style={[editStyles.fieldLabel, { color: tc.textHint }]}>STATE OF RESIDENCE</ThemedText>
