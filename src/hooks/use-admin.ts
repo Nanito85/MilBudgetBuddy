@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { auth } from '@/services/firebase';
 import { useAuthStore } from '@/store/auth.store';
 
-const ADMIN_EMAIL       = 'alonebum@protonmail.com';
+const ADMIN_EMAILS = ['alonebum@protonmail.com', 'vallejomj2010@gmail.com'];
 const DEVELOPER_UID     = process.env.EXPO_PUBLIC_DEVELOPER_UID ?? '';
 
 export function useIsAdmin(): { isAdmin: boolean; resolving: boolean } {
@@ -18,7 +18,7 @@ export function useIsAdmin(): { isAdmin: boolean; resolving: boolean } {
     }
 
     // Primary check: exact admin email
-    if (user.email?.toLowerCase() === ADMIN_EMAIL) {
+    if (user.email && ADMIN_EMAILS.includes(user.email.toLowerCase())) {
       setIsAdmin(true);
       setResolving(false);
       return;

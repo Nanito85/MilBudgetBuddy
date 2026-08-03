@@ -7,6 +7,7 @@ import { AnimatedSplashOverlay } from '@/components/animated-icon';
 import { DisclaimerModal } from '@/components/DisclaimerModal';
 import { KidModeScreen } from '@/components/KidModeScreen';
 import { OfflineBanner } from '@/components/OfflineBanner';
+import { ProGateOverlay } from '@/components/ProGateOverlay';
 import { OnboardingFlow } from '@/features/profile/components/OnboardingFlow';
 import { Brand } from '@/constants/theme';
 import { useAppTheme } from '@/hooks/use-theme';
@@ -89,6 +90,7 @@ export default function RootLayout() {
     <ThemeProvider value={appTheme === 'light' ? DefaultTheme : DarkTheme}>
       <AnimatedSplashOverlay />
       <DisclaimerModal />
+      <ProGateOverlay>
       <Stack screenOptions={{ headerShown: false }}>
         {/* ── Tab group (Home/Budget/Kids/Tools/Settings) — the only screen
             with a bottom tab bar. Everything below is pushed on top of it,
@@ -144,6 +146,7 @@ export default function RootLayout() {
         <Stack.Screen name="legal" />
         <Stack.Screen name="admin" />
       </Stack>
+      </ProGateOverlay>
       <OfflineBanner />
       {kidModeActive && <KidModeScreen />}
     </ThemeProvider>
