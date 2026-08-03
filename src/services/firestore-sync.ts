@@ -221,9 +221,13 @@ function snapshotUser() {
     onboarded: s.onboarded,
     disclaimerAcknowledged: s.disclaimerAcknowledged,
     lesOverrides: s.lesOverrides,
-    proExpiresAt: s.proExpiresAt ?? null,
-    proSource: s.proSource ?? null,
     installedAt: s.installedAt ?? null,
+    // proExpiresAt/proSource are deliberately NOT included here — they decide
+    // Pro access, and Firestore security rules deny client writes to them on
+    // this document (see firestore.rules). Only the backend (Admin SDK, which
+    // bypasses rules) is allowed to set them, via /api/iap/verify or
+    // /api/admin/codes/redeem. applyUser() below still pulls them down from
+    // Firestore normally so a purchase made on one device reaches others.
   };
 }
 
