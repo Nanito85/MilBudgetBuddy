@@ -186,9 +186,13 @@ export interface UserPreferences {
   // after cancellation (auto-renew just turns off). null/undefined = no access.
   proExpiresAt?: string;     // ISO 8601 timestamp
   proSource?: ProSource;
+  // First-hydrate timestamp, used only to distinguish a genuinely fresh
+  // install from a device that already had the app before Pro gating
+  // shipped (so existing users can be grandfathered in for free).
+  installedAt?: string;
 }
 
-export type ProSource = 'purchase' | 'admin_code';
+export type ProSource = 'purchase' | 'admin_code' | 'grandfather';
 
 // ─── LES Manual Overrides ─────────────────────────────────────────────────────
 

@@ -223,6 +223,7 @@ function snapshotUser() {
     lesOverrides: s.lesOverrides,
     proExpiresAt: s.proExpiresAt ?? null,
     proSource: s.proSource ?? null,
+    installedAt: s.installedAt ?? null,
   };
 }
 

@@ -48,6 +48,7 @@ const DEFAULTS: UserPreferences = {
   lesOverrides: { extraIncome: [], extraDeductions: [] },
   proExpiresAt: undefined,
   proSource: undefined,
+  installedAt: undefined,
 };
 
 interface UserState extends UserPreferences {
@@ -131,6 +132,7 @@ function snapshot(get: () => UserState): UserPreferences {
     lesOverrides: s.lesOverrides,
     proExpiresAt: s.proExpiresAt,
     proSource: s.proSource,
+    installedAt: s.installedAt,
   };
 }
 
@@ -142,7 +144,28 @@ export const useUserStore = create<UserState>((set, get) => ({
     try {
       const raw = await AsyncStorage.getItem(STORAGE_KEY);
       const prefs: Partial<UserPreferences> = raw ? JSON.parse(raw) : {};
-      set({ ...DEFAULTS, ...prefs, hydrated: true });
+
+      // Grandfather anyone who already had the app installed before Pro
+      // gating shipped — a device with no saved prefs at all (raw === null)
+      // is a genuinely fresh install and gets the normal 7-day-trial flow;
+      // a device with saved prefs but no installedAt predates this feature
+      // and gets free access backfilled, without ever overwriting a real
+      // purchase/admin-code entitlement it may already hold.
+      let patch: Partial<UserPreferences> = {};
+      if (!raw) {
+        patch.installedAt = new Date().toISOString();
+      } else if (!prefs.installedAt) {
+        patch.installedAt = '2020-01-01T00:00:00.000Z';
+        if (!prefs.proExpiresAt) {
+          patch.proExpiresAt = '2099-01-01T00:00:00.000Z';
+          patch.proSource = 'grandfather';
+        }
+      }
+
+      set({ ...DEFAULTS, ...prefs, ...patch, hydrated: true });
+      if (Object.keys(patch).length > 0) {
+        await save(snapshot(get));
+      }
     } catch {
       set({ hydrated: true });
     }

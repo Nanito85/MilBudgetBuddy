@@ -7,6 +7,12 @@ import { Brand, Spacing } from '@/constants/theme';
 import { useIsAdmin } from '@/hooks/use-admin';
 import { useIsPro } from '@/hooks/use-is-pro';
 
+// Master kill switch — flip to true and OTA-publish once the Pro subscription
+// (7-day trial via Google Play/App Store) has actually gone live in both
+// stores. Until then this stays false so the gate never activates, no matter
+// what any individual member's entitlement looks like.
+const PRO_GATE_ENABLED = false;
+
 // Screens that must always work regardless of Pro status — otherwise a member
 // could never actually pay, sign in, manage their account, or read legal
 // docs. Everything else is gated by default (safer than listing every gated
@@ -36,7 +42,7 @@ export function ProGateOverlay({ children }: { children: React.ReactNode }) {
   const { isAdmin } = useIsAdmin();
 
   const allowed = ALWAYS_ALLOWED_PREFIXES.some((p) => pathname === p || pathname.startsWith(p + '/'));
-  const gated = !isPro && !isAdmin && !allowed;
+  const gated = PRO_GATE_ENABLED && !isPro && !isAdmin && !allowed;
 
   return (
     <View style={{ flex: 1 }}>
