@@ -1,7 +1,9 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Constants from 'expo-constants';
+import { deepLinkToSubscriptions } from 'expo-iap';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { Alert, Modal, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import { Alert, Linking, Modal, Platform, Pressable, ScrollView, Share, StyleSheet, TextInput, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { FeedbackModal } from '@/components/FeedbackModal';
@@ -13,6 +15,7 @@ import { ALL_QUICK_ACTIONS } from '@/data/quick-actions';
 import { useThemeColors } from '@/hooks/use-theme';
 import { useIsAdmin } from '@/hooks/use-admin';
 import { useIsPro } from '@/hooks/use-is-pro';
+import { ANDROID_PRODUCT_ID } from '@/services/iap';
 import { useAuthStore } from '@/store/auth.store';
 import { useBudgetStore } from '@/store/budget.store';
 import { useDebtStore } from '@/store/debt.store';
@@ -27,6 +30,15 @@ import { useTipsStore } from '@/store/tips.store';
 import { useUserStore } from '@/store/user.store';
 
 const MAX_TILES = 4;
+
+const ANDROID_PACKAGE = 'com.nanito85.MilBudgetBuddy';
+const PLAY_STORE_URL = `https://play.google.com/store/apps/details?id=${ANDROID_PACKAGE}`;
+// TODO: replace with the real numeric App Store ID once the iOS app is live
+// (App Store Connect > App Information), e.g. `https://apps.apple.com/app/id1234567890?action=write-review`.
+const IOS_APP_STORE_ID = '';
+const IOS_STORE_URL = IOS_APP_STORE_ID
+  ? `https://apps.apple.com/app/id${IOS_APP_STORE_ID}`
+  : 'https://apps.apple.com/search?term=milbudgetbuddy';
 
 const FONT_SCALE_OPTIONS: { label: string; sublabel: string; value: number }[] = [
   { label: 'Normal',     sublabel: 'Default text size',        value: 1.0 },
@@ -217,6 +229,24 @@ export default function SettingsScreen() {
   const save = () => {
     setQuickAccessIds(selected);
     router.back();
+  };
+
+  const handleManageSubscription = async () => {
+    try {
+      await deepLinkToSubscriptions({ skuAndroid: ANDROID_PRODUCT_ID, packageNameAndroid: ANDROID_PACKAGE });
+    } catch {
+      Alert.alert('Unavailable', 'Could not open subscription management. Check your device\'s App Store or Play Store settings directly.');
+    }
+  };
+
+  const handleRateApp = () => {
+    Linking.openURL(Platform.OS === 'ios' ? IOS_STORE_URL : PLAY_STORE_URL).catch(() => {});
+  };
+
+  const handleShareApp = () => {
+    Share.share({
+      message: `I've been using MilBudgetBuddy to manage my military pay and budget — thought you might find it useful too. ${Platform.OS === 'ios' ? IOS_STORE_URL : PLAY_STORE_URL}`,
+    }).catch(() => {});
   };
 
   return (
@@ -451,7 +481,22 @@ export default function SettingsScreen() {
             </View>
             <ThemedText style={[settingsProStyles.chevron, { color: Brand.tactical }]}>›</ThemedText>
           </Pressable>
-        ) : (
+        ) : null}
+
+        {isPro && (
+          <Pressable
+            onPress={handleManageSubscription}
+            style={({ pressed }) => [settingsProStyles.upgradeCard, { backgroundColor: card, borderColor: tc.borderColor }, pressed && { opacity: 0.7 }]}>
+            <ThemedText style={settingsProStyles.proIcon}>⚙️</ThemedText>
+            <View style={{ flex: 1 }}>
+              <ThemedText style={[settingsProStyles.proTitle, { color: text }]}>MANAGE SUBSCRIPTION</ThemedText>
+              <ThemedText style={[settingsProStyles.proSub, { color: textDim }]}>Change plan or cancel via {Platform.OS === 'ios' ? 'App Store' : 'Google Play'}.</ThemedText>
+            </View>
+            <ThemedText style={[settingsProStyles.chevron, { color: textDim }]}>›</ThemedText>
+          </Pressable>
+        )}
+
+        {!isPro && (
           <Pressable
             onPress={() => router.push('/paywall' as any)}
             style={({ pressed }) => [settingsProStyles.upgradeCard, { backgroundColor: card, borderColor: Brand.accent + '40' }, pressed && { opacity: 0.7 }]}>
@@ -494,6 +539,34 @@ export default function SettingsScreen() {
           <View style={{ flex: 1 }}>
             <ThemedText style={[settingsProStyles.proTitle, { color: Brand.tactical }]}>SEND FEEDBACK</ThemedText>
             <ThemedText style={[settingsProStyles.proSub, { color: textDim }]}>Report a bug, request a feature, or share a thought.</ThemedText>
+          </View>
+          <ThemedText style={[settingsProStyles.chevron, { color: Brand.tactical }]}>›</ThemedText>
+        </Pressable>
+
+        {/* ── SUPPORT THE APP ───────────────────────────────────────── */}
+        <View style={styles.section}>
+          <ThemedText type="label" style={styles.eyebrow}>// SPREAD THE WORD</ThemedText>
+          <ThemedText style={[styles.sectionTitle, { color: text }]}>SUPPORT MILBUDGETBUDDY</ThemedText>
+        </View>
+
+        <Pressable
+          onPress={handleRateApp}
+          style={({ pressed }) => [settingsProStyles.upgradeCard, { backgroundColor: card, borderColor: Brand.tactical + '40' }, pressed && { opacity: 0.7 }]}>
+          <ThemedText style={settingsProStyles.proIcon}>⭐</ThemedText>
+          <View style={{ flex: 1 }}>
+            <ThemedText style={[settingsProStyles.proTitle, { color: Brand.tactical }]}>RATE MILBUDGETBUDDY</ThemedText>
+            <ThemedText style={[settingsProStyles.proSub, { color: textDim }]}>Leave a review on the {Platform.OS === 'ios' ? 'App Store' : 'Play Store'}.</ThemedText>
+          </View>
+          <ThemedText style={[settingsProStyles.chevron, { color: Brand.tactical }]}>›</ThemedText>
+        </Pressable>
+
+        <Pressable
+          onPress={handleShareApp}
+          style={({ pressed }) => [settingsProStyles.upgradeCard, { backgroundColor: card, borderColor: Brand.tactical + '40' }, pressed && { opacity: 0.7 }]}>
+          <ThemedText style={settingsProStyles.proIcon}>📤</ThemedText>
+          <View style={{ flex: 1 }}>
+            <ThemedText style={[settingsProStyles.proTitle, { color: Brand.tactical }]}>SHARE WITH A FRIEND</ThemedText>
+            <ThemedText style={[settingsProStyles.proSub, { color: textDim }]}>Know someone who could use this? Send them the link.</ThemedText>
           </View>
           <ThemedText style={[settingsProStyles.chevron, { color: Brand.tactical }]}>›</ThemedText>
         </Pressable>
@@ -662,6 +735,10 @@ export default function SettingsScreen() {
           </>
         )}
 
+        <ThemedText type="small" themeColor="textMuted" style={styles.versionText}>
+          MilBudgetBuddy v{Constants.expoConfig?.version ?? '1.0.0'}
+        </ThemedText>
+
       </ScrollView>
 
       <FeedbackModal visible={showFeedback} onClose={() => setShowFeedback(false)} />
@@ -691,6 +768,7 @@ const styles = StyleSheet.create({
 
   content: { paddingHorizontal: Spacing.three, gap: Spacing.three, paddingTop: Spacing.three },
   section: { gap: Spacing.one },
+  versionText: { textAlign: 'center', marginTop: Spacing.three, marginBottom: Spacing.two },
   eyebrow: { color: Brand.tactical, fontSize: 9 },
   sectionTitle: { fontSize: 20, fontWeight: '900', letterSpacing: 1 },
   sectionDesc: { fontSize: 13, lineHeight: 18 },
