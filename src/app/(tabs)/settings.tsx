@@ -33,12 +33,9 @@ const MAX_TILES = 4;
 
 const ANDROID_PACKAGE = 'com.nanito85.MilBudgetBuddy';
 const PLAY_STORE_URL = `https://play.google.com/store/apps/details?id=${ANDROID_PACKAGE}`;
-// TODO: replace with the real numeric App Store ID once the iOS app is live
-// (App Store Connect > App Information), e.g. `https://apps.apple.com/app/id1234567890?action=write-review`.
-const IOS_APP_STORE_ID = '';
-const IOS_STORE_URL = IOS_APP_STORE_ID
-  ? `https://apps.apple.com/app/id${IOS_APP_STORE_ID}`
-  : 'https://apps.apple.com/search?term=milbudgetbuddy';
+const IOS_APP_STORE_ID = '6773172742';
+const IOS_STORE_URL = `https://apps.apple.com/app/id${IOS_APP_STORE_ID}`;
+const IOS_REVIEW_URL = `${IOS_STORE_URL}?action=write-review`;
 
 const FONT_SCALE_OPTIONS: { label: string; sublabel: string; value: number }[] = [
   { label: 'Normal',     sublabel: 'Default text size',        value: 1.0 },
@@ -240,7 +237,7 @@ export default function SettingsScreen() {
   };
 
   const handleRateApp = () => {
-    Linking.openURL(Platform.OS === 'ios' ? IOS_STORE_URL : PLAY_STORE_URL).catch(() => {});
+    Linking.openURL(Platform.OS === 'ios' ? IOS_REVIEW_URL : PLAY_STORE_URL).catch(() => {});
   };
 
   const handleShareApp = () => {
