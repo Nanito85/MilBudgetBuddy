@@ -10,13 +10,10 @@ import { Locality, PER_DIEM_DATA_YEAR, STANDARD_LODGING, STANDARD_MEALS, STANDAR
 import { FamilyComposer } from '@/features/tle/components/FamilyComposer';
 import { LocalityPicker } from '@/features/tle/components/LocalityPicker';
 import {
-  ADDITIONAL_DEPENDENT_12PLUS_PCT,
-  ADDITIONAL_DEPENDENT_UNDER12_PCT,
   calcTLE,
   familyLabel,
   fmtMoney,
   fmtMoneyRound,
-  MEMBER_ALONE_PCT,
   MoveMode,
   TLA_MAX_DAYS,
   TLE_DAILY_CAP,
@@ -58,8 +55,6 @@ export default function TLECalculatorScreen() {
   const result = effectiveLodging != null && effectiveMeals != null
     ? calcTLE({ mode, lodging: effectiveLodging, meals: effectiveMeals, hasSpouse, childAges, days })
     : null;
-
-  const numChildren = childAges.length;
 
   const handleModeChange = (newMode: MoveMode) => {
     setMode(newMode);
@@ -186,54 +181,37 @@ export default function TLECalculatorScreen() {
             onChildAgesChange={setChildAges}
           />
 
-          {/* Rate factor summary */}
+          {/* Rate factor summary — single plain-language line instead of a
+              JTR-style itemized breakdown; the itemized $/night and $/day
+              numbers still appear once, in the results section below. */}
           {effectivePerDiem != null && result != null && (
             <ThemedView type="backgroundElement" style={styles.factorCard}>
-              <ThemedText type="small" themeColor="textSecondary" style={styles.fieldLabel}>
-                DAILY RATE FACTOR (JTR)
+              <ThemedText type="small" style={styles.factorSummaryText}>
+                {familyLabel(hasSpouse, childAges)} → {(result.familyPct * 100).toFixed(0)}% of the locality rate
+                (${effectivePerDiem}/day) = <ThemedText style={{ fontWeight: '800' }}>{fmtMoney(result.dailyRaw)}/day</ThemedText>
+                {result.capped ? ` (capped at $${TLE_DAILY_CAP}/day)` : ''}
               </ThemedText>
-              {!hasSpouse && numChildren === 0 && (
-                <View style={styles.factorRow}>
-                  <View style={[styles.factorDot, { backgroundColor: Brand.primary }]} />
-                  <ThemedText type="small" style={styles.factorText}>
-                    Member alone: {(MEMBER_ALONE_PCT * 100).toFixed(0)}% × ${effectivePerDiem}
-                  </ThemedText>
-                </View>
-              )}
-              {(hasSpouse || numChildren > 0) && (
-                <View style={styles.factorRow}>
-                  <View style={[styles.factorDot, { backgroundColor: Brand.primary }]} />
-                  <ThemedText type="small" style={styles.factorText}>
-                    Member + first dependent: 100% × ${effectivePerDiem}
-                  </ThemedText>
-                </View>
-              )}
-              {result.children12Plus - (hasSpouse ? 0 : 1) > 0 && (
-                <View style={styles.factorRow}>
-                  <View style={[styles.factorDot, { backgroundColor: Brand.success }]} />
-                  <ThemedText type="small" style={styles.factorText}>
-                    +{result.children12Plus - (hasSpouse ? 0 : 1)} additional dependent{result.children12Plus - (hasSpouse ? 0 : 1) > 1 ? 's' : ''} age 12+: {(ADDITIONAL_DEPENDENT_12PLUS_PCT * 100).toFixed(0)}% each
-                  </ThemedText>
-                </View>
-              )}
-              {result.childrenUnder12 - (hasSpouse || result.children12Plus > 0 ? 0 : 1) > 0 && (
-                <View style={styles.factorRow}>
-                  <View style={[styles.factorDot, { backgroundColor: Brand.warning }]} />
-                  <ThemedText type="small" style={styles.factorText}>
-                    +{result.childrenUnder12 - (hasSpouse || result.children12Plus > 0 ? 0 : 1)} additional dependent{result.childrenUnder12 - (hasSpouse || result.children12Plus > 0 ? 0 : 1) > 1 ? 's' : ''} under 12: {(ADDITIONAL_DEPENDENT_UNDER12_PCT * 100).toFixed(0)}% each
-                  </ThemedText>
-                </View>
-              )}
-              <View style={styles.factorRow}>
-                <View style={[styles.factorDot, { backgroundColor: Brand.accent }]} />
-                <ThemedText type="small" style={[styles.factorText, { fontWeight: '700' }]}>
-                  Total: {(result.familyPct * 100).toFixed(0)}% × ${effectivePerDiem} = {fmtMoney(result.dailyRaw)}/day
-                  {result.capped ? ` (capped at $${TLE_DAILY_CAP}/day)` : ''}
-                </ThemedText>
-              </View>
             </ThemedView>
           )}
         </View>
+
+        {/* ── ESTIMATED TOTAL (early preview) ──────────────────────────────────
+            Surfaces the total as soon as locality + family are set, using the
+            current day count (defaulted, adjustable below) — so the headline
+            number isn't the last thing on the page after Days + Results. */}
+        {result != null && effectivePerDiem != null && (
+          <ThemedView type="backgroundElement" style={[styles.previewTotalCard, { borderColor: Brand.primary }]}>
+            <ThemedText type="small" themeColor="textSecondary" style={styles.fieldLabel}>
+              ESTIMATED {mode === 'tle' ? 'TLE' : 'TLA'} TOTAL ({result.days} DAYS)
+            </ThemedText>
+            <ThemedText style={[styles.previewTotalValue, { color: Brand.primary }]}>
+              {fmtMoneyRound(result.totalEntitlement)}
+            </ThemedText>
+            <ThemedText type="small" themeColor="textSecondary">
+              Adjust days below to fine-tune
+            </ThemedText>
+          </ThemedView>
+        )}
 
         {/* ── DAYS ───────────────────────────────────────────────────────────── */}
         <View style={styles.section}>
@@ -360,36 +338,6 @@ export default function TLECalculatorScreen() {
                   {'\n'}
                   Locality: {locality ? locality.name : 'Custom rate'}
                 </ThemedText>
-              </View>
-
-              {/* Per diem breakdown — the input rates lodging/M&IE above are calculated from */}
-              <View style={styles.pdBreakdownCard}>
-                <ThemedText style={[styles.pdBreakdownLabel, { color: tc.textHint }]}>LOCALITY RATES (100% — BEFORE FAMILY %)</ThemedText>
-                <View style={styles.pdBreakdownRow}>
-                  <View style={styles.pdBreakdownItem}>
-                    <ThemedText style={[styles.pdBreakdownItemLabel, { color: tc.textHint }]}>HOTEL CAP</ThemedText>
-                    <ThemedText style={[styles.pdBreakdownValue, { color: Brand.accent }]}>
-                      ${effectiveLodging}/night
-                    </ThemedText>
-                    <ThemedText style={[styles.pdBreakdownNote, { color: tc.textHint }]}>max lodging rate</ThemedText>
-                  </View>
-                  <View style={styles.pdBreakdownDivider} />
-                  <View style={styles.pdBreakdownItem}>
-                    <ThemedText style={[styles.pdBreakdownItemLabel, { color: tc.textHint }]}>M&IE</ThemedText>
-                    <ThemedText style={[styles.pdBreakdownValue, { color: Brand.success }]}>
-                      ${effectiveMeals}/day
-                    </ThemedText>
-                    <ThemedText style={[styles.pdBreakdownNote, { color: tc.textHint }]}>meals &amp; incidentals</ThemedText>
-                  </View>
-                  <View style={styles.pdBreakdownDivider} />
-                  <View style={styles.pdBreakdownItem}>
-                    <ThemedText style={[styles.pdBreakdownItemLabel, { color: tc.textHint }]}>TOTAL</ThemedText>
-                    <ThemedText style={[styles.pdBreakdownValue, { color: Brand.primary }]}>
-                      ${effectivePerDiem}/day
-                    </ThemedText>
-                    <ThemedText style={[styles.pdBreakdownNote, { color: tc.textHint }]}>full per diem</ThemedText>
-                  </View>
-                </View>
               </View>
             </ThemedView>
           </View>
@@ -522,11 +470,9 @@ const styles = StyleSheet.create({
   perDayLabel: { fontSize: 16, marginBottom: 4 },
   backToListBtn: { alignSelf: 'flex-start' },
 
-  factorCard: { borderRadius: Spacing.three, padding: Spacing.three, gap: Spacing.two },
+  factorCard: { borderRadius: Spacing.three, padding: Spacing.three },
   fieldLabel: { fontSize: 11, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.5 },
-  factorRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.one + 2 },
-  factorDot: { width: 8, height: 8, borderRadius: 4 },
-  factorText: { lineHeight: 18 },
+  factorSummaryText: { lineHeight: 19 },
 
   card: { borderRadius: Spacing.three, overflow: 'hidden' },
   cardPadded: { padding: Spacing.three, gap: Spacing.two },
@@ -549,46 +495,14 @@ const styles = StyleSheet.create({
 
   summaryBox: { borderRadius: Spacing.two, padding: Spacing.two },
 
-  pdBreakdownCard: {
-    borderRadius: Spacing.two,
-    borderWidth: 1,
-    borderColor: 'rgba(128,128,128,0.18)',
-    padding: Spacing.two,
-    gap: Spacing.one,
-  },
-  pdBreakdownLabel: {
-    fontSize: 10,
-    fontWeight: '800',
-    letterSpacing: 1,
-    marginBottom: 2,
-  },
-  pdBreakdownRow: {
-    flexDirection: 'row',
-    alignItems: 'stretch',
-  },
-  pdBreakdownItem: {
-    flex: 1,
+  previewTotalCard: {
+    borderRadius: Spacing.three,
+    borderWidth: 1.5,
+    padding: Spacing.three,
     alignItems: 'center',
     gap: 2,
   },
-  pdBreakdownDivider: {
-    width: 1,
-    backgroundColor: 'rgba(128,128,128,0.2)',
-    marginHorizontal: 4,
-  },
-  pdBreakdownItemLabel: {
-    fontSize: 9,
-    fontWeight: '800',
-    letterSpacing: 0.6,
-  },
-  pdBreakdownValue: {
-    fontSize: 15,
-    fontWeight: '800',
-  },
-  pdBreakdownNote: {
-    fontSize: 9,
-    textAlign: 'center',
-  },
+  previewTotalValue: { fontSize: 30, fontWeight: '900', lineHeight: 36 },
 
   emptyState: { borderRadius: Spacing.three, padding: Spacing.five, alignItems: 'center', gap: Spacing.two },
   emptyIcon: { fontSize: 40, lineHeight: 48 },
