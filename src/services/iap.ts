@@ -14,8 +14,8 @@ export const ANDROID_BASE_PLAN_MONTHLY = 'mbb-pro-monthly-base';
 export const ANDROID_BASE_PLAN_ANNUAL  = 'mbb-pro-annual-base';
 
 // iOS (App Store Connect): no base-plan concept — each billing period is its
-// own product. Placeholders until the App Store Connect subscriptions are
-// created; update these to match whatever product IDs get configured there.
+// own product, confirmed matching the IDs actually configured in App Store
+// Connect (same names as the Android product, just no base-plan nesting).
 export const IOS_MONTHLY_SKU = 'mbb_pro_monthly';
 export const IOS_ANNUAL_SKU  = 'mbb_pro_annual';
 
