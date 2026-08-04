@@ -1,10 +1,14 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { initializeApp } from 'firebase/app';
-// @ts-expect-error — getReactNativePersistence exists at runtime (Metro resolves
-// @firebase/auth's "react-native" export condition correctly), but the `firebase`
-// wrapper package's typings don't expose it — known ecosystem gap, not a bug here.
-import { getReactNativePersistence, initializeAuth } from 'firebase/auth';
+import { getAuth, initializeAuth } from 'firebase/auth';
+// @ts-expect-error — getReactNativePersistence exists at runtime on native
+// (Metro resolves @firebase/auth's "react-native" export condition), but the
+// `firebase` wrapper package's typings don't expose it. It genuinely does NOT
+// exist in the browser build @firebase/auth ships for web, so it must never
+// be called when Platform.OS === 'web' — see the branch below.
+import { getReactNativePersistence } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
+import { Platform } from 'react-native';
 
 const firebaseConfig = {
   apiKey:            process.env.EXPO_PUBLIC_FIREBASE_API_KEY            ?? '',
@@ -16,10 +20,13 @@ const firebaseConfig = {
 };
 
 const app  = initializeApp(firebaseConfig);
-// getAuth() alone defaults to in-memory-only persistence on React Native —
-// the session silently disappears the moment the app is closed. This wires
-// AsyncStorage-backed persistence so sign-in survives an app restart.
-export const auth = initializeAuth(app, {
-  persistence: getReactNativePersistence(AsyncStorage),
-});
+// getAuth() alone defaults to in-memory-only persistence on native (iOS/
+// Android) — the session silently disappears the moment the app is closed.
+// initializeAuth + AsyncStorage fixes that, but only exists in the native
+// build of the SDK; the web build already persists via localStorage on its
+// own through plain getAuth(), and calling getReactNativePersistence there
+// would crash (it's undefined in that bundle).
+export const auth = Platform.OS === 'web'
+  ? getAuth(app)
+  : initializeAuth(app, { persistence: getReactNativePersistence(AsyncStorage) });
 export const db   = getFirestore(app);
