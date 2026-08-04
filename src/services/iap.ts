@@ -70,7 +70,7 @@ export async function redeemPromoCode(code: string): Promise<RedeemCodeResponse>
   const idToken = await auth.currentUser?.getIdToken();
   if (!idToken) throw new Error('You must be signed in to redeem a code.');
 
-  const res = await fetch(`${API_BASE}/api/admin/codes/redeem`, {
+  const res = await fetch(`${API_BASE}/api/codes/redeem`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${idToken}` },
     body: JSON.stringify({ code: code.toUpperCase().trim() }),
