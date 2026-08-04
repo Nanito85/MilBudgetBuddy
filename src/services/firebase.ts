@@ -1,5 +1,9 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { initializeApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
+// @ts-expect-error — getReactNativePersistence exists at runtime (Metro resolves
+// @firebase/auth's "react-native" export condition correctly), but the `firebase`
+// wrapper package's typings don't expose it — known ecosystem gap, not a bug here.
+import { getReactNativePersistence, initializeAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 
 const firebaseConfig = {
@@ -12,5 +16,10 @@ const firebaseConfig = {
 };
 
 const app  = initializeApp(firebaseConfig);
-export const auth = getAuth(app);
+// getAuth() alone defaults to in-memory-only persistence on React Native —
+// the session silently disappears the moment the app is closed. This wires
+// AsyncStorage-backed persistence so sign-in survives an app restart.
+export const auth = initializeAuth(app, {
+  persistence: getReactNativePersistence(AsyncStorage),
+});
 export const db   = getFirestore(app);
