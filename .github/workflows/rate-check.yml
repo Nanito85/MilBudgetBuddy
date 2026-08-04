@@ -1,0 +1,57 @@
+name: Monthly rate freshness check
+
+# Runs at 06:00 UTC on the 1st of every month, plus can be triggered manually.
+# Only flags stale/unverified financial data via a GitHub issue for human
+# review — never auto-applies dollar-figure changes. See
+# scripts/rate-check/check-rates.mjs for the full rationale.
+on:
+  schedule:
+    - cron: '0 6 1 * *'
+  workflow_dispatch: {}
+
+permissions:
+  issues: write
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run freshness check
+        id: check
+        run: node scripts/rate-check/check-rates.mjs
+
+      - name: Open or update tracking issue
+        if: steps.check.outputs.should_open == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const body = fs.readFileSync('rate-check-issue-body.md', 'utf8');
+            const title = 'Monthly rate freshness check';
+
+            const { data: existing } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'rate-check',
+            });
+
+            if (existing.length > 0) {
+              await github.rest.issues.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: existing[0].number,
+                body,
+              });
+            } else {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title,
+                body,
+                labels: ['rate-check'],
+              });
+            }
