@@ -95,6 +95,7 @@ export default function PCSCalculatorScreen() {
   const [gainingStation, setGainingStation] = useState<Installation | null>(null);
 
   // PCS details
+  const [isDriving,       setIsDriving]        = useState(true);
   const [milesInput,      setMilesInput]      = useState('');
   const [vehicles,        setVehicles]         = useState<1 | 2>(1);
   const [tleDepartDays,   setTleDepartDays]    = useState(5);
@@ -121,7 +122,7 @@ export default function PCSCalculatorScreen() {
   const dla = DLA[grade][withDep ? 'withDep' : 'noDep'];
 
   const miles = parseFloat(milesInput) || 0;
-  const malt = miles * MALT_RATE * vehicles;
+  const malt = isDriving ? miles * MALT_RATE * vehicles : 0;
 
   // TLE/TLA — same engine as the dedicated TLE/TLA calculator (tleCalc.ts):
   // lodging and M&IE are each calculated separately at the family percentage,
@@ -262,49 +263,79 @@ export default function PCSCalculatorScreen() {
           </ThemedText>
 
           <ThemedView type="backgroundElement" style={styles.card}>
-            {/* Mileage */}
+            {/* Driving? */}
             <View style={styles.cardPadded}>
               <ThemedText type="small" themeColor="textSecondary" style={styles.fieldLabel}>
-                Distance Between Stations (miles)
-              </ThemedText>
-              <View style={styles.milesRow}>
-                <TextInput
-                  style={[styles.milesInput, { color: tc.textPrimary, borderColor: tc.borderColor }]}
-                  value={milesInput}
-                  onChangeText={(t) => setMilesInput(t.replace(/[^0-9]/g, ''))}
-                  keyboardType="number-pad"
-                  placeholder="e.g. 1500"
-                  placeholderTextColor={tc.textMuted}
-                  returnKeyType="done"
-                  onSubmitEditing={Keyboard.dismiss}
-                />
-                <ThemedText type="small" themeColor="textSecondary">miles</ThemedText>
-              </View>
-              <ThemedText type="small" themeColor="textSecondary" style={styles.hint}>
-                MALT rate: ${MALT_RATE.toFixed(2)}/mile × vehicles
-              </ThemedText>
-            </View>
-
-            <View style={styles.divider} />
-
-            {/* Vehicles */}
-            <View style={styles.cardPadded}>
-              <ThemedText type="small" themeColor="textSecondary" style={styles.fieldLabel}>
-                Authorized Vehicles (POV)
+                Driving Your Vehicle to the New Station?
               </ThemedText>
               <View style={styles.depToggle}>
-                {([1, 2] as const).map((v) => (
+                {[true, false].map((val) => (
                   <Pressable
-                    key={v}
-                    onPress={() => setVehicles(v)}
-                    style={[styles.depBtn, vehicles === v && styles.depBtnActive]}>
-                    <ThemedText style={[styles.depBtnText, vehicles === v && styles.depBtnTextActive]}>
-                      {v} Vehicle{v > 1 ? 's' : ''}
+                    key={String(val)}
+                    onPress={() => setIsDriving(val)}
+                    style={[styles.depBtn, isDriving === val && styles.depBtnActive]}>
+                    <ThemedText style={[styles.depBtnText, isDriving === val && styles.depBtnTextActive]}>
+                      {val ? 'Yes' : 'No'}
                     </ThemedText>
                   </Pressable>
                 ))}
               </View>
+              {!isDriving && (
+                <ThemedText type="small" themeColor="textSecondary" style={styles.hint}>
+                  MALT (mileage reimbursement) doesn't apply if you're not driving — e.g. flying, shipping a POV, or already there.
+                </ThemedText>
+              )}
             </View>
+
+            {isDriving && (
+              <>
+                <View style={styles.divider} />
+
+                {/* Mileage */}
+                <View style={styles.cardPadded}>
+                  <ThemedText type="small" themeColor="textSecondary" style={styles.fieldLabel}>
+                    Distance Between Stations (miles)
+                  </ThemedText>
+                  <View style={styles.milesRow}>
+                    <TextInput
+                      style={[styles.milesInput, { color: tc.textPrimary, borderColor: tc.borderColor }]}
+                      value={milesInput}
+                      onChangeText={(t) => setMilesInput(t.replace(/[^0-9]/g, ''))}
+                      keyboardType="number-pad"
+                      placeholder="e.g. 1500"
+                      placeholderTextColor={tc.textMuted}
+                      returnKeyType="done"
+                      onSubmitEditing={Keyboard.dismiss}
+                    />
+                    <ThemedText type="small" themeColor="textSecondary">miles</ThemedText>
+                  </View>
+                  <ThemedText type="small" themeColor="textSecondary" style={styles.hint}>
+                    MALT rate: ${MALT_RATE.toFixed(2)}/mile × vehicles
+                  </ThemedText>
+                </View>
+
+                <View style={styles.divider} />
+
+                {/* Vehicles */}
+                <View style={styles.cardPadded}>
+                  <ThemedText type="small" themeColor="textSecondary" style={styles.fieldLabel}>
+                    Authorized Vehicles (POV)
+                  </ThemedText>
+                  <View style={styles.depToggle}>
+                    {([1, 2] as const).map((v) => (
+                      <Pressable
+                        key={v}
+                        onPress={() => setVehicles(v)}
+                        style={[styles.depBtn, vehicles === v && styles.depBtnActive]}>
+                        <ThemedText style={[styles.depBtnText, vehicles === v && styles.depBtnTextActive]}>
+                          {v} Vehicle{v > 1 ? 's' : ''}
+                        </ThemedText>
+                      </Pressable>
+                    ))}
+                  </View>
+                </View>
+              </>
+            )}
 
             <View style={styles.divider} />
 
@@ -416,14 +447,17 @@ export default function PCSCalculatorScreen() {
             <View style={styles.cardPadded}>
               <View style={styles.entitlementRow}>
                 <View style={{ flex: 1 }}>
-                  <ThemedText style={styles.entitlementLabel}>MALT ({miles.toLocaleString()} mi × {vehicles} POV)</ThemedText>
+                  <ThemedText style={styles.entitlementLabel}>
+                    MALT{isDriving ? ` (${miles.toLocaleString()} mi × ${vehicles} POV)` : ''}
+                  </ThemedText>
                   <ThemedText type="small" themeColor="textSecondary">
-                    ${MALT_RATE.toFixed(2)}/mile mileage reimbursement
-                    {miles === 0 ? ' — enter distance above' : ''}
+                    {isDriving
+                      ? `$${MALT_RATE.toFixed(2)}/mile mileage reimbursement${miles === 0 ? ' — enter distance above' : ''}`
+                      : 'Not applicable — not driving'}
                   </ThemedText>
                 </View>
-                <ThemedText style={[styles.entitlementAmt, { color: miles > 0 ? Brand.tactical : tc.textMuted }]}>
-                  {miles > 0 ? fmt(malt) : '—'}
+                <ThemedText style={[styles.entitlementAmt, { color: isDriving && miles > 0 ? Brand.tactical : tc.textMuted }]}>
+                  {isDriving && miles > 0 ? fmt(malt) : '—'}
                 </ThemedText>
               </View>
             </View>
@@ -539,9 +573,11 @@ export default function PCSCalculatorScreen() {
                 <ThemedText style={[styles.packageAmt, { color: tc.textPrimary }]}>{fmt(dla)}</ThemedText>
               </View>
               <View style={styles.packageRow}>
-                <ThemedText style={[styles.packageLabel, { color: tc.textSecondary }]}>MALT</ThemedText>
-                <ThemedText style={[styles.packageAmt, { color: miles > 0 ? tc.textPrimary : tc.textMuted }]}>
-                  {miles > 0 ? fmt(malt) : '—'}
+                <ThemedText style={[styles.packageLabel, { color: tc.textSecondary }]}>
+                  MALT{!isDriving ? ' (not driving)' : ''}
+                </ThemedText>
+                <ThemedText style={[styles.packageAmt, { color: isDriving && miles > 0 ? tc.textPrimary : tc.textMuted }]}>
+                  {isDriving && miles > 0 ? fmt(malt) : '—'}
                 </ThemedText>
               </View>
               <View style={styles.packageRow}>
