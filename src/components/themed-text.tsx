@@ -36,15 +36,34 @@ export function ThemedText({ style, type = 'default', themeColor, ...rest }: The
   if (flat) {
     processedStyle = { ...flat };
     if (flat.fontSize != null) {
-      processedStyle.fontSize = (flat.fontSize as number) * scale;
+      const scaledFontSize = (flat.fontSize as number) * scale;
+      processedStyle.fontSize = scaledFontSize;
       if (flat.lineHeight != null) {
         processedStyle.lineHeight = (flat.lineHeight as number) * scale;
+      } else {
+        // Caller overrode fontSize but not lineHeight — left alone, this would
+        // fall through to baseStyle's lineHeight, which was sized for that
+        // `type`'s own default fontSize, not this one. At best that mismatch
+        // clips ascenders/descenders/emoji; at the larger fontScale settings
+        // (Large/X-Large/XX-Large) it gets worse since only the type's fixed
+        // lineHeight was scaling, disconnected from the actual rendered size.
+        // Derive a sane one from the font size actually being rendered instead.
+        processedStyle.lineHeight = Math.ceil(scaledFontSize * 1.25);
       }
     }
   }
 
   return (
     <Text
+      // The app has its own Normal/Large/X-Large/XX-Large text-size setting
+      // (useFontScale above) as the intended accessibility control. RN's
+      // `allowFontScaling` defaults to true, which layers the OS Dynamic Type
+      // setting on top of that multiplicatively — on a device with both an
+      // enlarged system text size AND XX-Large selected in-app, sizes compound
+      // well past what these fixed-layout cards/badges were built for and text
+      // clips. Disabling it makes the in-app setting the sole, predictable
+      // driver; callers can still opt back in by passing allowFontScaling.
+      allowFontScaling={false}
       style={[
         { color: theme[themeColor ?? 'text'] },
         baseStyle,
