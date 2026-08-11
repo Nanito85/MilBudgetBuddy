@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, Platform, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import { ActivityIndicator, Alert, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useIAP } from 'expo-iap';
 
@@ -16,7 +16,6 @@ import {
   IOS_ANNUAL_SKU,
   IOS_MONTHLY_SKU,
   PRO_SKUS,
-  redeemPromoCode,
   verifyPurchaseWithServer,
 } from '@/services/iap';
 import { useUserStore } from '@/store/user.store';
@@ -40,8 +39,6 @@ export default function PaywallScreen() {
 
   const [selected, setSelected] = useState<Plan>('annual');
   const [verifying, setVerifying] = useState(false);
-  const [promoCode, setPromoCode] = useState('');
-  const [redeeming, setRedeeming] = useState(false);
 
   const {
     connected,
@@ -124,22 +121,6 @@ export default function PaywallScreen() {
         },
       },
     });
-  };
-
-  const handleRedeemCode = async () => {
-    if (!promoCode.trim()) return;
-    setRedeeming(true);
-    try {
-      const result = await redeemPromoCode(promoCode);
-      setProEntitlement(result.proExpiresAt, 'admin_code');
-      setPromoCode('');
-      Alert.alert('Code Applied', 'Your Pro access has been activated.');
-      router.back();
-    } catch (e: any) {
-      Alert.alert('Invalid Code', e?.message ?? 'Could not redeem that code.');
-    } finally {
-      setRedeeming(false);
-    }
   };
 
   const handleRestore = async () => {
@@ -226,28 +207,6 @@ export default function PaywallScreen() {
               <Pressable onPress={handleRestore} disabled={verifying} style={styles.restoreBtn}>
                 <ThemedText style={[styles.restoreText, { color: Brand.tactical }]}>Restore Purchases</ThemedText>
               </Pressable>
-
-              <View style={[styles.promoRow, { borderTopColor: tc.borderColor }]}>
-                <ThemedText type="small" themeColor="textSecondary" style={styles.promoLabel}>Have a promo code?</ThemedText>
-                <View style={styles.promoInputRow}>
-                  <TextInput
-                    value={promoCode}
-                    onChangeText={(t) => setPromoCode(t.toUpperCase())}
-                    placeholder="ENTER CODE"
-                    placeholderTextColor={tc.textHint}
-                    autoCapitalize="characters"
-                    style={[styles.promoInput, { color: tc.textPrimary, borderColor: tc.borderColor, backgroundColor: tc.inputBg }]}
-                  />
-                  <Pressable
-                    onPress={handleRedeemCode}
-                    disabled={redeeming || !promoCode.trim()}
-                    style={({ pressed }) => [styles.promoBtn, (redeeming || !promoCode.trim()) && { opacity: 0.4 }, pressed && { opacity: 0.7 }]}>
-                    {redeeming ? <ActivityIndicator color={Brand.tactical} size="small" /> : (
-                      <ThemedText style={[styles.promoBtnText, { color: Brand.tactical }]}>APPLY</ThemedText>
-                    )}
-                  </Pressable>
-                </View>
-              </View>
             </>
           )}
         </ScrollView>
@@ -299,16 +258,6 @@ const styles = StyleSheet.create({
   legalNote: { textAlign: 'center', lineHeight: 17, marginTop: Spacing.one },
   restoreBtn: { alignItems: 'center', paddingVertical: Spacing.two },
   restoreText: { fontSize: 13, fontWeight: '700' },
-
-  promoRow: { marginTop: Spacing.two, paddingTop: Spacing.three, borderTopWidth: StyleSheet.hairlineWidth, gap: Spacing.one + 2 },
-  promoLabel: { textAlign: 'center' },
-  promoInputRow: { flexDirection: 'row', gap: Spacing.two },
-  promoInput: {
-    flex: 1, borderWidth: 1, borderRadius: Spacing.two, paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.two, fontSize: 14, fontWeight: '700', letterSpacing: 1,
-  },
-  promoBtn: { borderRadius: Spacing.two, paddingHorizontal: Spacing.three, alignItems: 'center', justifyContent: 'center' },
-  promoBtnText: { fontSize: 13, fontWeight: '900', letterSpacing: 0.5 },
 
   activeCard: { borderWidth: 1.5, borderRadius: Spacing.two, padding: Spacing.four, alignItems: 'center', gap: 4 },
   activeTitle: { fontSize: 16, fontWeight: '900', letterSpacing: 0.5 },

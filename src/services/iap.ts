@@ -57,30 +57,9 @@ export async function verifyPurchaseWithServer(purchaseToken: string, productId:
   return res.json();
 }
 
-export interface RedeemCodeResponse {
-  proExpiresAt: string; // ISO 8601
-}
-
-/**
- * Redeems an admin-issued promo/discount code for Pro access. Grants access
- * for the code's configured duration — see admin/codes.tsx for how codes are
- * created. Server-side only; the client never grants access on its own.
- */
-export async function redeemPromoCode(code: string): Promise<RedeemCodeResponse> {
-  const idToken = await auth.currentUser?.getIdToken();
-  if (!idToken) throw new Error('You must be signed in to redeem a code.');
-
-  const res = await fetch(`${API_BASE}/api/codes/redeem`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${idToken}` },
-    body: JSON.stringify({ code: code.toUpperCase().trim() }),
-    signal: AbortSignal.timeout(15000),
-  });
-
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.error ?? `Could not redeem code (${res.status})`);
-  }
-
-  return res.json();
-}
+// NOTE: client-side promo code redemption (unlocking Pro outside the App
+// Store / Play Store purchase flow) was removed per Apple Guideline 3.1.1 —
+// see paywall.tsx. The admin code-generation panel (admin/codes.tsx) and its
+// backend endpoint still exist for record-keeping, but nothing in the app
+// redeems a code client-side anymore; any comp access must be granted
+// server-side directly (e.g. by an admin writing proSource/proExpiresAt).
