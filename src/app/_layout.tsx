@@ -1,5 +1,5 @@
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { Stack } from 'expo-router';
+import { Stack, usePathname } from 'expo-router';
 import React, { useEffect } from 'react';
 
 import { ErrorBoundary } from '@/components/ErrorBoundary';
@@ -20,7 +20,7 @@ import { pullFromCloud, pushToCloud, startSync, stopSync } from '@/services/fire
 import { useKidsStore } from '@/store/kids.store';
 import { initRemoteConfig } from '@/services/remote-config';
 import { initSentry, setUserContext } from '@/services/sentry';
-import { startAnalytics, stopAnalytics, trackEvent } from '@/services/analytics';
+import { startAnalytics, stopAnalytics, trackEvent, trackScreen } from '@/services/analytics';
 
 // Init Sentry at module load time — before any component renders
 initSentry();
@@ -31,6 +31,14 @@ export default function RootLayout() {
   const onboarded = useUserStore((s) => s.onboarded);
   const kidModeActive = useKidModeStore((s) => s.active);
   const { user, initialized, init: initAuth } = useAuthStore();
+  const pathname = usePathname();
+
+  // Track every screen/tool navigation — powers the admin "Tool Usage" chart.
+  // Fires on the actual route (e.g. "/bah-guide", "/(tabs)/budget"), not the
+  // label shown in the UI, so it stays accurate as screens are added/renamed.
+  useEffect(() => {
+    if (pathname) trackScreen(pathname);
+  }, [pathname]);
 
   // Hydrate local stores on mount + initialize Firebase auth listener
   useEffect(() => {

@@ -692,6 +692,16 @@ export default function SettingsScreen() {
               </View>
               <ThemedText style={[settingsProStyles.chevron, { color: '#8B5CF6' }]}>›</ThemedText>
             </Pressable>
+            <Pressable
+              onPress={() => router.push('/admin/usage' as any)}
+              style={({ pressed }) => [settingsProStyles.upgradeCard, { backgroundColor: card, borderColor: '#8B5CF640' }, pressed && { opacity: 0.7 }]}>
+              <ThemedText style={settingsProStyles.proIcon}>📊</ThemedText>
+              <View style={{ flex: 1 }}>
+                <ThemedText style={[settingsProStyles.proTitle, { color: '#8B5CF6' }]}>ADMIN — TOOL USAGE</ThemedText>
+                <ThemedText style={[settingsProStyles.proSub, { color: textDim }]}>See which tools and tabs get used the most.</ThemedText>
+              </View>
+              <ThemedText style={[settingsProStyles.chevron, { color: '#8B5CF6' }]}>›</ThemedText>
+            </Pressable>
           </>
         )}
 
