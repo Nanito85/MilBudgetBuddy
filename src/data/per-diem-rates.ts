@@ -2,12 +2,35 @@
  * Per diem rates for overseas (OCONUS) locations.
  * CONUS rates now live in gsa-per-diem.ts (296 GSA destinations, 15,157 ZIP codes).
  * OCONUS rates: State Dept Foreign Per Diem Rates (DSSR 925 / aoprals.state.gov), the source
- * DoD PDTATAC uses for JTR OCONUS per diem, effective January 2026. Where the exact base town
- * isn't separately listed, the country's "[Other]" rate is used. Where multiple seasonal rates
- * exist for a location, the highest is used (same peak-season convention as the CONUS GSA data).
- * US territories (Guam, CNMI, Puerto Rico) and Guantanamo Bay use a separate DoD non-foreign
- * OCONUS per diem schedule, not this file — those entries are unverified estimates; verify at
- * travel.dod.mil before travel.
+ * DoD PDTATAC uses for JTR OCONUS per diem. Where the exact base town isn't separately listed,
+ * the country's "[Other]" rate is used (or the nearest listed city, where that's the applicable
+ * DoD PDTATAC convention — e.g. Osan AB uses the Pyeongtaek rate, RAF Alconbury uses the UK
+ * "[Other]" rate rather than distant Cambridge). Where multiple seasonal rates exist for a
+ * location, the highest is used (same peak-season convention as the CONUS GSA data).
+ *
+ * Every entry below was diffed 2026-08-13 against the actual State Dept February 2026 DSSR bulk
+ * file (`February2026PD.xls`, retrieved via the Wayback Machine — aoprals.state.gov itself
+ * requires a live session and can't be fetched directly, same issue noted for travel.dod.mil in
+ * project memory). 6 entries were off (Madrid, Warsaw, Poznań, Bucharest/Kogălniceanu, Darwin,
+ * Vicenza — some by >40%, e.g. Bucharest was using the Bucharest-city rate for what's actually
+ * the separately-listed, much cheaper Constanța-Kogălniceanu AB rate) and were corrected; the
+ * rest matched exactly. Baghdad intentionally uses Iraq's "[Other]" rate rather than DSSR's own
+ * literal ~$11/day Baghdad line (which reflects government-furnished lodging for in-country
+ * State Dept staff, not a usable TLA planning figure) — this is deliberate, not an error.
+ * Bagram is dated (Afghanistan drawdown; DSSR's real Afghanistan rates are similarly near-zero
+ * for the same government-furnished-lodging reason) and kept only as a legacy placeholder.
+ *
+ * Guam, CNMI (Tinian), and Puerto Rico are technically on a separate DoD non-foreign OCONUS
+ * per diem schedule, not this DSSR 925 file — confirmed absent from the DSSR bulk file entirely
+ * during this pass — but they're kept here (not moved to nonforeign-oconus-rates.ts) because
+ * their Installation entries are already plain `oconus: true` and correctly resolve to TLA/OHA
+ * through pcsCalc.ts's country-scoped match; only Hawaii/Alaska needed the separate
+ * nonForeignOconus routing, since they're the OCONUS-for-travel/CONUS-for-BAH edge case.
+ * oc_guam/oc_tinian/oc_puerto_rico rates were re-sourced 2026-08-13 from third-party DTMO
+ * aggregators (previously unverified estimates, materially too low) — see
+ * nonforeign-oconus-rates.ts's header for the same caveat on those. Guantanamo Bay
+ * (oc_guantanamo) was not re-verified this pass — still an estimate. Verify at travel.dod.mil
+ * before travel.
  */
 
 export { STANDARD_LODGING, STANDARD_MEALS, STANDARD_TOTAL, CONUS_DESTINATIONS, lookupPerDiemByZip, searchConusDest } from '@/data/gsa-per-diem';
@@ -66,14 +89,14 @@ export const OCONUS_LOCATIONS: OconusLocation[] = [
   { id: 'oc_aviano', name: 'Aviano AB', area: 'Friuli-Venezia Giulia', country: 'Italy', countryCode: 'ITA', lodging: 117, meals: 89, total: 206 },
   { id: 'oc_naples', name: 'NSA Naples / Capodichino', area: 'Campania', country: 'Italy', countryCode: 'ITA', lodging: 377, meals: 169, total: 546 },
   { id: 'oc_sigonella', name: 'NAS Sigonella', area: 'Sicily', country: 'Italy', countryCode: 'ITA', lodging: 177, meals: 128, total: 305 },
-  { id: 'oc_vicenza', name: 'Caserma Ederle / Del Din', area: 'Veneto', country: 'Italy', countryCode: 'ITA', lodging: 280, meals: 135, total: 415 },
+  { id: 'oc_vicenza', name: 'Caserma Ederle / Del Din', area: 'Veneto', country: 'Italy', countryCode: 'ITA', lodging: 237, meals: 127, total: 364 },
   { id: 'oc_camp_darby', name: 'Camp Darby', area: 'Tuscany (Livorno)', country: 'Italy', countryCode: 'ITA', lodging: 280, meals: 135, total: 415 },
   { id: 'oc_rome', name: 'Rome (embassy / liaison)', area: 'Lazio', country: 'Italy', countryCode: 'ITA', lodging: 489, meals: 179, total: 668 },
 
   // ── Spain ──────────────────────────────────────────────────────────────────
   { id: 'oc_rota', name: 'Naval Station Rota', area: 'Rota, Cadiz', country: 'Spain', countryCode: 'ESP', lodging: 153, meals: 100, total: 253 },
   { id: 'oc_moron', name: 'Morón AB', area: 'Sevilla', country: 'Spain', countryCode: 'ESP', lodging: 153, meals: 100, total: 253 },
-  { id: 'oc_madrid', name: 'Madrid (embassy / NATO)', area: 'Madrid', country: 'Spain', countryCode: 'ESP', lodging: 375, meals: 137, total: 512 },
+  { id: 'oc_madrid', name: 'Madrid (embassy / NATO)', area: 'Madrid', country: 'Spain', countryCode: 'ESP', lodging: 399, meals: 139, total: 538 },
 
   // ── United Kingdom ─────────────────────────────────────────────────────────
   { id: 'oc_uk_alconbury', name: 'RAF Alconbury / Mildenhall', area: 'Cambridgeshire', country: 'United Kingdom', countryCode: 'GBR', lodging: 252, meals: 108, total: 360 },
@@ -103,10 +126,10 @@ export const OCONUS_LOCATIONS: OconusLocation[] = [
   { id: 'oc_ankara', name: 'Ankara (embassy / TUSLOG)', area: 'Ankara', country: 'Turkey', countryCode: 'TUR', lodging: 230, meals: 119, total: 349 },
 
   // ── Poland / Romania / Baltics ─────────────────────────────────────────────
-  { id: 'oc_warsaw', name: 'Warsaw / Camp Miron', area: 'Masovian', country: 'Poland', countryCode: 'POL', lodging: 202, meals: 113, total: 315 },
-  { id: 'oc_poznan', name: 'Poznań (Camp Kosciuszko)', area: 'Greater Poland', country: 'Poland', countryCode: 'POL', lodging: 125, meals: 102, total: 227 },
+  { id: 'oc_warsaw', name: 'Warsaw / Camp Miron', area: 'Masovian', country: 'Poland', countryCode: 'POL', lodging: 198, meals: 108, total: 306 },
+  { id: 'oc_poznan', name: 'Poznań (Camp Kosciuszko)', area: 'Greater Poland', country: 'Poland', countryCode: 'POL', lodging: 128, meals: 102, total: 230 },
   { id: 'oc_camp_silva', name: 'Camp Silva / Dragão', area: 'Sintra, Portugal', country: 'Portugal', countryCode: 'PRT', lodging: 280, meals: 112, total: 392 },
-  { id: 'oc_bucharest', name: 'Bucharest / Mihail Kogalniceanu', area: 'Constanta', country: 'Romania', countryCode: 'ROU', lodging: 185, meals: 127, total: 312 },
+  { id: 'oc_bucharest', name: 'Bucharest / Mihail Kogalniceanu', area: 'Constanta', country: 'Romania', countryCode: 'ROU', lodging: 124, meals: 90, total: 214 },
   { id: 'oc_tallinn', name: 'Tallinn / eFP Estonia', area: 'Harju', country: 'Estonia', countryCode: 'EST', lodging: 217, meals: 139, total: 356 },
   { id: 'oc_riga', name: 'Riga / eFP Latvia', area: 'Riga', country: 'Latvia', countryCode: 'LVA', lodging: 217, meals: 132, total: 349 },
   { id: 'oc_vilnius', name: 'Vilnius / eFP Lithuania', area: 'Vilnius', country: 'Lithuania', countryCode: 'LTU', lodging: 240, meals: 144, total: 384 },
@@ -135,9 +158,9 @@ export const OCONUS_LOCATIONS: OconusLocation[] = [
   { id: 'oc_kampala', name: 'Kampala (SOCOM activities)', area: 'Kampala', country: 'Uganda', countryCode: 'UGA', lodging: 250, meals: 71, total: 321 },
 
   // ── Pacific / Indo-Pacific ─────────────────────────────────────────────────
-  { id: 'oc_guam',         name: 'Andersen AFB / NS Guam',     area: 'Guam',                 country: 'Guam (US)',     countryCode: 'GUM', lodging: 137, meals: 71,  total: 208 },
-  { id: 'oc_tinian',       name: 'Tinian / CNMI',              area: 'Northern Mariana Is.',  country: 'CNMI (US)',    countryCode: 'MNP', lodging: 128, meals: 68,  total: 196 },
-  { id: 'oc_darwin', name: 'Robertson Barracks', area: 'Northern Territory', country: 'Australia', countryCode: 'AUS', lodging: 185, meals: 112, total: 297 },
+  { id: 'oc_guam',         name: 'Andersen AFB / NS Guam',     area: 'Guam',                 country: 'Guam (US)',     countryCode: 'GUM', lodging: 179, meals: 124, total: 303 },
+  { id: 'oc_tinian',       name: 'Tinian / CNMI',              area: 'Northern Mariana Is.',  country: 'CNMI (US)',    countryCode: 'MNP', lodging: 161, meals: 95,  total: 256 },
+  { id: 'oc_darwin', name: 'Robertson Barracks', area: 'Northern Territory', country: 'Australia', countryCode: 'AUS', lodging: 192, meals: 117, total: 309 },
   { id: 'oc_sydney', name: 'Sydney (embassy / exercises)', area: 'New South Wales', country: 'Australia', countryCode: 'AUS', lodging: 260, meals: 136, total: 396 },
   { id: 'oc_singapore', name: 'Sembawang (RSN) / PACOM', area: 'Singapore', country: 'Singapore', countryCode: 'SGP', lodging: 302, meals: 162, total: 464 },
   { id: 'oc_philippines', name: 'Clark / Subic Bay / EDCAs', area: 'Luzon', country: 'Philippines', countryCode: 'PHL', lodging: 131, meals: 90, total: 221 },
@@ -150,10 +173,10 @@ export const OCONUS_LOCATIONS: OconusLocation[] = [
   { id: 'oc_soto_cano', name: 'Soto Cano AB (JTF-B)', area: 'Comayagua', country: 'Honduras', countryCode: 'HND', lodging: 130, meals: 80, total: 210 },
   { id: 'oc_guantanamo',   name: 'GTMO / Naval Station',       area: 'Guantánamo Bay',       country: 'Cuba (US base)',countryCode: 'CUB', lodging: 65,  meals: 45,  total: 110 },
   { id: 'oc_miami_jiatf',  name: 'JIATF-S / SOUTHCOM',        area: 'Miami, FL / Doral',    country: 'United States', countryCode: 'USA', lodging: 156, meals: 80,  total: 236 },
-  { id: 'oc_colombia', name: 'Larandia / Bogotá (COLAR)', area: 'Cundinamarca', country: 'Colombia', countryCode: 'COL', lodging: 135, meals: 84, total: 219 },
+  { id: 'oc_colombia', name: 'Larandia / Bogotá (COLAR)', area: 'Cundinamarca', country: 'Colombia', countryCode: 'COL', lodging: 141, meals: 88, total: 229 },
   { id: 'oc_peru', name: 'Lima / SOF exercises', area: 'Lima', country: 'Peru', countryCode: 'PER', lodging: 250, meals: 103, total: 353 },
   { id: 'oc_panama', name: 'Panama (embassy / exercises)', area: 'Panama City', country: 'Panama', countryCode: 'PAN', lodging: 173, meals: 99, total: 272 },
-  { id: 'oc_puerto_rico',  name: 'Camp Santiago / Fort Buchanan', area: 'Puerto Rico (US)', country: 'Puerto Rico (US)',countryCode: 'PRI', lodging: 148, meals: 68,  total: 216 },
+  { id: 'oc_puerto_rico',  name: 'Camp Santiago / Fort Buchanan', area: 'Puerto Rico (US)', country: 'Puerto Rico (US)',countryCode: 'PRI', lodging: 245, meals: 148, total: 393 },
 
   // ── Afghanistan / Iraq / Hazardous Duty ───────────────────────────────────
   { id: 'oc_bagram',       name: 'Bagram / USFOR-A (legacy)',  area: 'Parwan Province',      country: 'Afghanistan',   countryCode: 'AFG', lodging: 50,  meals: 40,  total: 90  },
@@ -177,6 +200,7 @@ export function searchOconus(query: string): OconusLocation[] {
 // ── Legacy compat (tle-calculator, LocalityPicker) ───────────────────────────
 import { CONUS_DESTINATIONS as _CONUS, lookupPerDiemByZip as _lookupPD } from '@/data/gsa-per-diem';
 import { INSTALLATIONS } from '@/data/installations';
+import { lookupNonForeignOconus } from '@/data/nonforeign-oconus-rates';
 
 export const PER_DIEM_DATA_YEAR = 2026;
 
@@ -204,9 +228,12 @@ export const LOCALITIES: Locality[] = [
     oconus: false,
   })),
 
-  // All CONUS military installations — searchable by base name
+  // All CONUS military installations — searchable by base name. Hawaii/Alaska are
+  // excluded here even though `oconus` is false on them (they draw BAH like CONUS) —
+  // they're non-foreign OCONUS for travel/per-diem purposes and belong in the OCONUS
+  // list below with the correct DoD rate, not a GSA CONUS lookup.
   ...INSTALLATIONS
-    .filter((i) => !i.oconus && !!i.mhaZip)
+    .filter((i) => !i.oconus && !i.nonForeignOconus && !!i.mhaZip)
     .map((i) => {
       const pd = _lookupPD(i.mhaZip);
       return {
@@ -221,7 +248,7 @@ export const LOCALITIES: Locality[] = [
       };
     }),
 
-  // OCONUS per diem locations
+  // Foreign OCONUS per diem locations
   ...OCONUS_LOCATIONS.map((l) => ({
     id: l.id,
     name: l.name,
@@ -232,6 +259,23 @@ export const LOCALITIES: Locality[] = [
     perDiem: l.total,
     oconus: true,
   })),
+
+  // Non-foreign OCONUS (Hawaii/Alaska) military installations — TLA, not TLE.
+  ...INSTALLATIONS
+    .filter((i) => i.nonForeignOconus)
+    .map((i) => {
+      const pd = lookupNonForeignOconus(i.city, i.state as 'HI' | 'AK');
+      return {
+        id: `inst_${i.id}`,
+        name: i.name,
+        area: `${i.city}, ${i.state} · ${i.branch}`,
+        state: i.state,
+        lodging: pd.lodging,
+        meals: pd.meals,
+        perDiem: pd.total,
+        oconus: true,
+      };
+    }),
 ];
 
 export function searchLocalities(query: string, oconus?: boolean): Locality[] {

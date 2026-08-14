@@ -9,7 +9,22 @@ import { ThemedView } from '@/components/themed-view';
 import { Brand, Spacing } from '@/constants/theme';
 import { CONUS_DESTINATIONS, lookupPerDiemByZip, PerDiemDestination, PerDiemResult, STANDARD_LODGING, STANDARD_MEALS, STANDARD_TOTAL } from '@/data/gsa-per-diem';
 import { OconusLocation, OCONUS_LOCATIONS } from '@/data/per-diem-rates';
+import { NON_FOREIGN_OCONUS_AREAS } from '@/data/nonforeign-oconus-rates';
 import { useThemeColors } from '@/hooks/use-theme';
+
+// TDY to Hawaii/Alaska uses the DoD non-foreign OCONUS per diem schedule, not the GSA CONUS
+// table (which doesn't cover HI/AK at all) — folded into the OCONUS search list here so a
+// city search finds a real rate instead of silently falling back to the CONUS standard rate.
+const HI_AK_OCONUS: OconusLocation[] = NON_FOREIGN_OCONUS_AREAS.map((a) => ({
+  id: a.id,
+  name: a.name,
+  area: a.state === 'HI' ? 'Hawaii' : 'Alaska',
+  country: 'United States',
+  countryCode: 'USA',
+  lodging: a.lodging,
+  meals: a.meals,
+  total: a.total,
+}));
 
 type Mode = 'conus' | 'oconus';
 
@@ -74,9 +89,10 @@ export default function TdyOptimizerScreen() {
   }, [citySearch]);
 
   const oconusResults = useMemo(() => {
-    if (!citySearch.trim()) return OCONUS_LOCATIONS.slice(0, 20);
+    const all = [...OCONUS_LOCATIONS, ...HI_AK_OCONUS];
+    if (!citySearch.trim()) return all.slice(0, 20);
     const q = citySearch.toLowerCase();
-    return OCONUS_LOCATIONS.filter(
+    return all.filter(
       (l) => l.name.toLowerCase().includes(q) || l.area.toLowerCase().includes(q) || l.country.toLowerCase().includes(q),
     ).slice(0, 20);
   }, [citySearch]);

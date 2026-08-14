@@ -6,7 +6,16 @@ export interface Installation {
   city: string;
   state: string;
   mhaZip: string;
+  // `oconus` drives BAH-vs-OHA: Hawaii and Alaska get standard BAH (not OHA,
+  // since the 2018 JTR reform folded them into the CONUS-style BAH system), so
+  // they are correctly `oconus: false` here — do not "fix" that.
   oconus: boolean;
+  // Separate flag for PCS-travel classification (TLE vs TLA, per diem schedule,
+  // COLA type). Hawaii and Alaska are non-foreign OCONUS: they draw BAH like
+  // CONUS, but they are NOT CONUS for travel purposes — a PCS move there/away
+  // uses TLA (60 days, no $/day cap) on the DoD non-foreign per diem schedule,
+  // never GSA CONUS per-diem or the TLE $290/day cap. See src/data/nonforeign-oconus-rates.ts.
+  nonForeignOconus?: boolean;
   branch: 'Army' | 'Navy' | 'Marines' | 'Air Force' | 'Space Force' | 'Coast Guard' | 'Joint';
 }
 
@@ -28,9 +37,9 @@ export const INSTALLATIONS: Installation[] = [
   { id: 'fort_sill',           name: 'Fort Sill',                 city: 'Lawton',             state: 'OK', mhaZip: '73503', oconus: false, branch: 'Army' },
   { id: 'fort_novosel',        name: 'Fort Novosel',              city: 'Daleville',          state: 'AL', mhaZip: '36322', oconus: false, branch: 'Army' },
   { id: 'fort_johnson',        name: 'Fort Johnson',              city: 'Leesville',          state: 'LA', mhaZip: '71446', oconus: false, branch: 'Army' },
-  { id: 'schofield',           name: 'Schofield Barracks',        city: 'Wahiawa',            state: 'HI', mhaZip: '96818', oconus: false, branch: 'Army' },
-  { id: 'fort_wainwright',     name: 'Fort Wainwright',           city: 'Fairbanks',          state: 'AK', mhaZip: '99703', oconus: false, branch: 'Army' },
-  { id: 'fort_richardson',     name: 'Fort Richardson (JBER)',    city: 'Anchorage',          state: 'AK', mhaZip: '99501', oconus: false, branch: 'Army' },
+  { id: 'schofield',           name: 'Schofield Barracks',        city: 'Wahiawa',            state: 'HI', mhaZip: '96818', oconus: false, nonForeignOconus: true, branch: 'Army' },
+  { id: 'fort_wainwright',     name: 'Fort Wainwright',           city: 'Fairbanks',          state: 'AK', mhaZip: '99703', oconus: false, nonForeignOconus: true, branch: 'Army' },
+  { id: 'fort_richardson',     name: 'Fort Richardson (JBER)',    city: 'Anchorage',          state: 'AK', mhaZip: '99501', oconus: false, nonForeignOconus: true, branch: 'Army' },
   { id: 'fort_irwin',          name: 'Fort Irwin (NTC)',          city: 'Fort Irwin',         state: 'CA', mhaZip: '92310', oconus: false, branch: 'Army' },
   { id: 'fort_hunter_liggett', name: 'Fort Hunter Liggett',       city: 'Jolon',              state: 'CA', mhaZip: '93928', oconus: false, branch: 'Army' },
   { id: 'presidio_monterey',   name: 'Presidio of Monterey',      city: 'Monterey',           state: 'CA', mhaZip: '93944', oconus: false, branch: 'Army' },
@@ -56,7 +65,7 @@ export const INSTALLATIONS: Installation[] = [
   { id: 'nas_san_diego',       name: 'Naval Base San Diego',      city: 'San Diego',          state: 'CA', mhaZip: '92136', oconus: false, branch: 'Navy' },
   { id: 'nbk',                 name: 'Naval Base Kitsap',         city: 'Bremerton',          state: 'WA', mhaZip: '98312', oconus: false, branch: 'Navy' },
   { id: 'ns_mayport',          name: 'Naval Station Mayport',     city: 'Jacksonville',       state: 'FL', mhaZip: '32228', oconus: false, branch: 'Navy' },
-  { id: 'jbphh',               name: 'JB Pearl Harbor-Hickam',    city: 'Honolulu',           state: 'HI', mhaZip: '96818', oconus: false, branch: 'Joint' },
+  { id: 'jbphh',               name: 'JB Pearl Harbor-Hickam',    city: 'Honolulu',           state: 'HI', mhaZip: '96818', oconus: false, nonForeignOconus: true, branch: 'Joint' },
   { id: 'nas_whidbey',         name: 'NAS Whidbey Island',        city: 'Oak Harbor',         state: 'WA', mhaZip: '98278', oconus: false, branch: 'Navy' },
   { id: 'nsa_mid_south',       name: 'NSA Mid-South (Millington)',city: 'Millington',         state: 'TN', mhaZip: '38053', oconus: false, branch: 'Navy' },
   { id: 'nbvc',                name: 'Naval Base Ventura County', city: 'Point Mugu',         state: 'CA', mhaZip: '93042', oconus: false, branch: 'Navy' },
@@ -85,7 +94,7 @@ export const INSTALLATIONS: Installation[] = [
   { id: 'mcas_cherry_point',   name: 'MCAS Cherry Point',         city: 'Havelock',           state: 'NC', mhaZip: '28533', oconus: false, branch: 'Marines' },
   { id: 'mcas_new_river',      name: 'MCAS New River',            city: 'Jacksonville',       state: 'NC', mhaZip: '28542', oconus: false, branch: 'Marines' },
   { id: 'mcas_yuma',           name: 'MCAS Yuma',                 city: 'Yuma',               state: 'AZ', mhaZip: '85365', oconus: false, branch: 'Marines' },
-  { id: 'mcb_hawaii',          name: 'MCB Hawaii (Kaneohe Bay)',   city: 'Kailua',             state: 'HI', mhaZip: '96744', oconus: false, branch: 'Marines' },
+  { id: 'mcb_hawaii',          name: 'MCB Hawaii (Kaneohe Bay)',   city: 'Kailua',             state: 'HI', mhaZip: '96744', oconus: false, nonForeignOconus: true, branch: 'Marines' },
   { id: 'mcsf_blount_island',  name: 'MCSF Blount Island',        city: 'Jacksonville',       state: 'FL', mhaZip: '32226', oconus: false, branch: 'Marines' },
 
   // ── AIR FORCE ────────────────────────────────────────────────────────────────
@@ -142,10 +151,10 @@ export const INSTALLATIONS: Installation[] = [
   { id: 'altus',               name: 'Altus AFB',                 city: 'Altus',              state: 'OK', mhaZip: '73523', oconus: false, branch: 'Air Force' },
   { id: 'vance',               name: 'Vance AFB',                 city: 'Enid',               state: 'OK', mhaZip: '73705', oconus: false, branch: 'Air Force' },
   { id: 'little_rock',         name: 'Little Rock AFB',           city: 'Jacksonville',       state: 'AR', mhaZip: '72099', oconus: false, branch: 'Air Force' },
-  { id: 'jb_elmendorf',        name: 'JBER Elmendorf',            city: 'Anchorage',          state: 'AK', mhaZip: '99506', oconus: false, branch: 'Joint' },
-  { id: 'eielson',             name: 'Eielson AFB',               city: 'North Pole',         state: 'AK', mhaZip: '99702', oconus: false, branch: 'Air Force' },
+  { id: 'jb_elmendorf',        name: 'JBER Elmendorf',            city: 'Anchorage',          state: 'AK', mhaZip: '99506', oconus: false, nonForeignOconus: true, branch: 'Joint' },
+  { id: 'eielson',             name: 'Eielson AFB',               city: 'North Pole',         state: 'AK', mhaZip: '99702', oconus: false, nonForeignOconus: true, branch: 'Air Force' },
   { id: 'jb_charleston',       name: 'Joint Base Charleston',     city: 'North Charleston',   state: 'SC', mhaZip: '29404', oconus: false, branch: 'Air Force' },
-  { id: 'jb_pearl_hickam',     name: 'JB Pearl Harbor-Hickam',    city: 'Honolulu',           state: 'HI', mhaZip: '96818', oconus: false, branch: 'Joint' },
+  { id: 'jb_pearl_hickam',     name: 'JB Pearl Harbor-Hickam',    city: 'Honolulu',           state: 'HI', mhaZip: '96818', oconus: false, nonForeignOconus: true, branch: 'Joint' },
 
   // ── COAST GUARD ──────────────────────────────────────────────────────────────
   { id: 'cg_island',           name: 'USCG Training Center Cape May', city: 'Cape May',       state: 'NJ', mhaZip: '08204', oconus: false, branch: 'Coast Guard' },
@@ -155,10 +164,10 @@ export const INSTALLATIONS: Installation[] = [
   { id: 'cg_elizabeth_city',   name: 'USCG Aviation Technical Training', city: 'Elizabeth City', state: 'NC', mhaZip: '27909', oconus: false, branch: 'Coast Guard' },
   { id: 'cg_petaluma',         name: 'USCG Training Center Petaluma', city: 'Petaluma',        state: 'CA', mhaZip: '94952', oconus: false, branch: 'Coast Guard' },
   { id: 'cg_new_london',       name: 'USCG Academy',               city: 'New London',        state: 'CT', mhaZip: '06320', oconus: false, branch: 'Coast Guard' },
-  { id: 'cg_kodiak',           name: 'USCG Base Kodiak',           city: 'Kodiak',            state: 'AK', mhaZip: '99615', oconus: false, branch: 'Coast Guard' },
+  { id: 'cg_kodiak',           name: 'USCG Base Kodiak',           city: 'Kodiak',            state: 'AK', mhaZip: '99615', oconus: false, nonForeignOconus: true, branch: 'Coast Guard' },
   { id: 'cg_miami',            name: 'USCG Sector Miami',              city: 'Miami',          state: 'FL', mhaZip: '33132', oconus: false, branch: 'Coast Guard' },
-  { id: 'cg_honolulu',         name: 'USCG Base Honolulu',             city: 'Honolulu',       state: 'HI', mhaZip: '96813', oconus: false, branch: 'Coast Guard' },
-  { id: 'cg_barbers_point',    name: 'USCG Air Station Barbers Point', city: 'Kapolei',        state: 'HI', mhaZip: '96818', oconus: false, branch: 'Coast Guard' },
+  { id: 'cg_honolulu',         name: 'USCG Base Honolulu',             city: 'Honolulu',       state: 'HI', mhaZip: '96813', oconus: false, nonForeignOconus: true, branch: 'Coast Guard' },
+  { id: 'cg_barbers_point',    name: 'USCG Air Station Barbers Point', city: 'Kapolei',        state: 'HI', mhaZip: '96818', oconus: false, nonForeignOconus: true, branch: 'Coast Guard' },
   // ── COAST GUARD — Northeast ───────────────────────────────────────────────────
   { id: 'cg_boston',           name: 'USCG Sector New England',        city: 'Boston',         state: 'MA', mhaZip: '02110', oconus: false, branch: 'Coast Guard' },
   { id: 'cg_airsta_capecod',   name: 'USCG Air Station Cape Cod',      city: 'Bourne',         state: 'MA', mhaZip: '02563', oconus: false, branch: 'Coast Guard' },
@@ -190,9 +199,9 @@ export const INSTALLATIONS: Installation[] = [
   { id: 'cg_seattle',          name: 'USCG Sector Puget Sound',        city: 'Seattle',        state: 'WA', mhaZip: '98134', oconus: false, branch: 'Coast Guard' },
   { id: 'cg_port_angeles',     name: 'USCG Air Station Port Angeles',  city: 'Port Angeles',   state: 'WA', mhaZip: '98363', oconus: false, branch: 'Coast Guard' },
   // ── COAST GUARD — Alaska ──────────────────────────────────────────────────────
-  { id: 'cg_anchorage',        name: 'USCG Sector Anchorage',          city: 'Anchorage',      state: 'AK', mhaZip: '99501', oconus: false, branch: 'Coast Guard' },
-  { id: 'cg_juneau',           name: 'USCG Sector Juneau',             city: 'Juneau',         state: 'AK', mhaZip: '99801', oconus: false, branch: 'Coast Guard' },
-  { id: 'cg_sitka',            name: 'USCG Air Station Sitka',         city: 'Sitka',          state: 'AK', mhaZip: '99835', oconus: false, branch: 'Coast Guard' },
+  { id: 'cg_anchorage',        name: 'USCG Sector Anchorage',          city: 'Anchorage',      state: 'AK', mhaZip: '99501', oconus: false, nonForeignOconus: true, branch: 'Coast Guard' },
+  { id: 'cg_juneau',           name: 'USCG Sector Juneau',             city: 'Juneau',         state: 'AK', mhaZip: '99801', oconus: false, nonForeignOconus: true, branch: 'Coast Guard' },
+  { id: 'cg_sitka',            name: 'USCG Air Station Sitka',         city: 'Sitka',          state: 'AK', mhaZip: '99835', oconus: false, nonForeignOconus: true, branch: 'Coast Guard' },
 
   // ── RESERVE & RECRUITING COMMAND HEADQUARTERS ───────────────────────────────
   // These share their MHA/BAH rate with the covered installation they're
@@ -290,7 +299,7 @@ export const INSTALLATIONS: Installation[] = [
   { id: 'camp_blaz',           name: 'Marine Corps Base Camp Blaz', city: 'Dededo',            state: 'Guam', mhaZip: '', oconus: true, branch: 'Marines' },
   { id: 'kwajalein',           name: 'Kwajalein Atoll (USAKA)',    city: 'Kwajalein',          state: 'Marshall Islands', mhaZip: '', oconus: true, branch: 'Army' },
   { id: 'thule',               name: 'Pituffik Space Base (Thule)', city: 'Pituffik',          state: 'Greenland', mhaZip: '', oconus: true, branch: 'Space Force' },
-  { id: 'camp_smith',          name: 'Camp H.M. Smith (INDOPACOM)', city: 'Halawa',            state: 'HI', mhaZip: '96818', oconus: false, branch: 'Joint' },
+  { id: 'camp_smith',          name: 'Camp H.M. Smith (INDOPACOM)', city: 'Halawa',            state: 'HI', mhaZip: '96818', oconus: false, nonForeignOconus: true, branch: 'Joint' },
 
   // ── OCONUS — AMERICAS ────────────────────────────────────────────────────────
   { id: 'gtmo',                name: 'Naval Station Guantanamo Bay', city: 'Guantanamo Bay',   state: 'Cuba', mhaZip: '', oconus: true, branch: 'Navy' },

@@ -157,10 +157,10 @@ export function StationPicker({ label, selected, onSelect, conusOnly = false }: 
                       <ThemedText style={styles.rowName}>{item.name}</ThemedText>
                       <ThemedText type="small" themeColor="textSecondary">
                         {item.city}, {item.state} · {item.branch}
-                        {item.oconus ? ' · OCONUS' : ''}
+                        {(item.oconus || item.nonForeignOconus) ? ' · OCONUS (TLA)' : ''}
                       </ThemedText>
                     </View>
-                    {item.oconus && (
+                    {(item.oconus || item.nonForeignOconus) && (
                       <View style={styles.oconusBadge}>
                         <ThemedText style={styles.oconusBadgeText}>OCONUS</ThemedText>
                       </View>
