@@ -9,6 +9,7 @@ import { ThemedView } from '@/components/themed-view';
 import { Brand, Spacing } from '@/constants/theme';
 import { useThemeColors } from '@/hooks/use-theme';
 import { useIsPro } from '@/hooks/use-is-pro';
+import { captureError } from '@/services/sentry';
 import {
   ANDROID_BASE_PLAN_ANNUAL,
   ANDROID_BASE_PLAN_MONTHLY,
@@ -51,6 +52,11 @@ export default function PaywallScreen() {
   } = useIAP({
     onPurchaseSuccess: async (purchase) => {
       if (!purchase.purchaseToken) {
+        captureError(new Error('Purchase succeeded but no purchaseToken was returned'), {
+          stage: 'purchase-success-no-token',
+          platform: Platform.OS,
+          productId: purchase.productId,
+        });
         Alert.alert('Purchase Error', 'No purchase token was returned. Please contact support.');
         return;
       }
@@ -65,6 +71,7 @@ export default function PaywallScreen() {
         // Do NOT grant access on a verification failure — the purchase stays
         // in the platform queue unfinished so it can be retried (e.g. via
         // Restore Purchases) rather than silently trusting the client.
+        captureError(e, { stage: 'verify-purchase', platform: Platform.OS, productId: purchase.productId });
         Alert.alert('Verification Failed', e?.message ?? 'Could not verify your purchase. Try Restore Purchases, or contact support.');
       } finally {
         setVerifying(false);
@@ -72,8 +79,17 @@ export default function PaywallScreen() {
     },
     onPurchaseError: (error) => {
       if (error.code !== 'user-cancelled') {
+        captureError(error, { stage: 'purchase-error', platform: Platform.OS, code: error.code ?? 'unknown' });
         Alert.alert('Purchase Error', error.message);
       }
+    },
+    // Fires for failures inside fetchProducts/restorePurchases/etc. — without
+    // this, a silent product-load failure (e.g. Paid Apps Agreement not active,
+    // product not cleared for the reviewed build) left no trace anywhere; the
+    // UI just fell back to hardcoded placeholder prices and the purchase button
+    // dead-ended on the generic "Not Available" alert below with no diagnostics.
+    onError: (error) => {
+      captureError(error, { stage: 'iap-hook-error', platform: Platform.OS });
     },
   });
 
@@ -95,12 +111,33 @@ export default function PaywallScreen() {
   const monthlyDisplayPrice = Platform.OS === 'ios' ? iosMonthly?.displayPrice : androidMonthlyOffer?.displayPrice;
   const annualDisplayPrice  = Platform.OS === 'ios' ? iosAnnual?.displayPrice  : androidAnnualOffer?.displayPrice;
 
+  // If the product genuinely never loaded (not just "still loading" — connected
+  // is true and fetchProducts already resolved, one way or another), tapping
+  // Purchase would otherwise silently no-op against a stale/missing product.
+  // Log it so this is diagnosable from Sentry instead of just an App Store
+  // Connect config guess next time a review (or a real user) hits it.
+  const notAvailable = (sku: string) => {
+    captureError(new Error('IAP product not loaded at purchase time'), {
+      stage: 'purchase-not-available',
+      platform: Platform.OS,
+      sku,
+      connected: String(connected),
+      subscriptionsLoaded: String(subscriptions.length),
+    });
+    Alert.alert(
+      'Not Available',
+      connected
+        ? "This subscription isn't available right now. Please try again later or contact support."
+        : 'Still connecting to the store — try again in a moment.',
+    );
+  };
+
   const purchase = async () => {
     if (Platform.OS === 'ios') {
       const sku = selected === 'monthly' ? IOS_MONTHLY_SKU : IOS_ANNUAL_SKU;
       const sub = subscriptions.find((s) => s.id === sku);
       if (!sub) {
-        Alert.alert('Not Available', 'Pricing is still loading — try again in a moment.');
+        notAvailable(sku);
         return;
       }
       await requestPurchase({ type: 'subs', request: { apple: { sku } } });
@@ -109,7 +146,7 @@ export default function PaywallScreen() {
 
     const offer = selected === 'monthly' ? androidMonthlyOffer : androidAnnualOffer;
     if (!offer?.offerTokenAndroid) {
-      Alert.alert('Not Available', 'Pricing is still loading — try again in a moment.');
+      notAvailable(ANDROID_PRODUCT_ID);
       return;
     }
     await requestPurchase({
@@ -130,6 +167,7 @@ export default function PaywallScreen() {
       await getActiveSubscriptions(PRO_SKUS);
       Alert.alert('Restore Complete', 'If you had an active subscription, it has been restored.');
     } catch (e: any) {
+      captureError(e, { stage: 'restore-purchases', platform: Platform.OS });
       Alert.alert('Restore Failed', e?.message ?? 'Could not restore purchases.');
     } finally {
       setVerifying(false);
