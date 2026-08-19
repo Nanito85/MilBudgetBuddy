@@ -57,6 +57,8 @@ export const INSTALLATIONS: Installation[] = [
   { id: 'aberdeen_pg',         name: 'Aberdeen Proving Ground',   city: 'Aberdeen',           state: 'MD', mhaZip: '21005', oconus: false, branch: 'Army' },
   { id: 'white_sands',         name: 'White Sands Missile Range', city: 'White Sands',        state: 'NM', mhaZip: '88002', oconus: false, branch: 'Army' },
   { id: 'yuma_pg',             name: 'Yuma Proving Ground',       city: 'Yuma',               state: 'AZ', mhaZip: '85365', oconus: false, branch: 'Army' },
+  { id: 'fort_riley',          name: 'Fort Riley',                city: 'Junction City',      state: 'KS', mhaZip: '66442', oconus: false, branch: 'Army' },
+  { id: 'fort_gregg_adams',    name: 'Fort Gregg-Adams',          city: 'Petersburg',         state: 'VA', mhaZip: '23230', oconus: false, branch: 'Army' },
 
   // ── NAVY ─────────────────────────────────────────────────────────────────────
   { id: 'ns_norfolk',          name: 'Naval Station Norfolk',     city: 'Norfolk',            state: 'VA', mhaZip: '23511', oconus: false, branch: 'Navy' },
@@ -84,6 +86,7 @@ export const INSTALLATIONS: Installation[] = [
   { id: 'nas_joint_reserve',   name: 'JRB Fort Worth (NAS)',      city: 'Fort Worth',         state: 'TX', mhaZip: '76127', oconus: false, branch: 'Navy' },
   { id: 'nws_earle',           name: 'Naval Weapons Station Earle', city: 'Colts Neck',       state: 'NJ', mhaZip: '07722', oconus: false, branch: 'Navy' },
   { id: 'nws_charleston',      name: 'Naval Weapons Station Charleston', city: 'Goose Creek', state: 'SC', mhaZip: '29445', oconus: false, branch: 'Navy' },
+  { id: 'nas_meridian',        name: 'NAS Meridian',              city: 'Meridian',           state: 'MS', mhaZip: '39301', oconus: false, branch: 'Navy' },
 
   // ── MARINES ──────────────────────────────────────────────────────────────────
   { id: 'camp_lejeune',        name: 'MCB Camp Lejeune',          city: 'Jacksonville',       state: 'NC', mhaZip: '28542', oconus: false, branch: 'Marines' },
@@ -162,6 +165,11 @@ export const INSTALLATIONS: Installation[] = [
   { id: 'eielson',             name: 'Eielson AFB',               city: 'North Pole',         state: 'AK', mhaZip: '99702', oconus: false, nonForeignOconus: true, branch: 'Air Force' },
   { id: 'jb_charleston',       name: 'Joint Base Charleston',     city: 'North Charleston',   state: 'SC', mhaZip: '29404', oconus: false, branch: 'Air Force' },
   { id: 'jb_pearl_hickam',     name: 'JB Pearl Harbor-Hickam',    city: 'Honolulu',           state: 'HI', mhaZip: '96818', oconus: false, nonForeignOconus: true, branch: 'Joint' },
+  { id: 'mcconnell',           name: 'McConnell AFB',             city: 'Wichita',            state: 'KS', mhaZip: '67210', oconus: false, branch: 'Air Force' },
+  { id: 'grand_forks',         name: 'Grand Forks AFB',           city: 'Grand Forks',        state: 'ND', mhaZip: '58201', oconus: false, branch: 'Air Force' },
+  { id: 'fe_warren',           name: 'F.E. Warren AFB',           city: 'Cheyenne',           state: 'WY', mhaZip: '82001', oconus: false, branch: 'Space Force' },
+  { id: 'buckley_sfb',         name: 'Buckley SFB',               city: 'Aurora',             state: 'CO', mhaZip: '80202', oconus: false, branch: 'Space Force' },
+  { id: 'cape_canaveral_sfs',  name: 'Cape Canaveral SFS',        city: 'Cape Canaveral',     state: 'FL', mhaZip: '32925', oconus: false, branch: 'Space Force' },
 
   // ── COAST GUARD ──────────────────────────────────────────────────────────────
   { id: 'cg_island',           name: 'USCG Training Center Cape May', city: 'Cape May',       state: 'NJ', mhaZip: '08204', oconus: false, branch: 'Coast Guard' },

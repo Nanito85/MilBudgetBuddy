@@ -41,6 +41,8 @@ export const INSTALLATION_COORDS: Record<string, InstallationCoords> = {
   carlisle_barracks:   { lat: 40.20,  lon: -77.19 },
   fort_mcnair:         { lat: 38.87,  lon: -77.01 },
   presidio_monterey:   { lat: 36.59,  lon: -121.88 },
+  fort_riley:          { lat: 39.09,  lon: -96.79 },
+  fort_gregg_adams:    { lat: 37.23,  lon: -77.33 },
   // Navy
   ns_norfolk:          { lat: 36.94,  lon: -76.33 },
   nas_jacksonville:    { lat: 30.23,  lon: -81.68 },
@@ -61,6 +63,7 @@ export const INSTALLATION_COORDS: Record<string, InstallationCoords> = {
   subase_kings_bay:    { lat: 30.80,  lon: -81.59 },
   nas_fallon:          { lat: 39.42,  lon: -118.70 },
   nas_corpus_christi:  { lat: 27.70,  lon: -97.29 },
+  nas_meridian:        { lat: 32.55,  lon: -88.55 },
   // Marines
   camp_lejeune:        { lat: 34.68,  lon: -77.36 },
   camp_pendleton:      { lat: 33.37,  lon: -117.42 },
@@ -92,6 +95,11 @@ export const INSTALLATION_COORDS: Record<string, InstallationCoords> = {
   minot:               { lat: 48.42,  lon: -101.35 },
   keesler:             { lat: 30.42,  lon: -88.92 },
   maxwell:             { lat: 32.38,  lon: -86.36 },
+  mcconnell:           { lat: 37.62,  lon: -97.27 },
+  grand_forks:         { lat: 47.96,  lon: -97.40 },
+  fe_warren:           { lat: 41.16,  lon: -104.87 },
+  buckley_sfb:         { lat: 39.70,  lon: -104.75 },
+  cape_canaveral_sfs:  { lat: 28.49,  lon: -80.57 },
 };
 
 /** Haversine great-circle distance in miles between two lat/lon points. */
