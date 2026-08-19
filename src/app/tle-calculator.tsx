@@ -38,8 +38,13 @@ export default function TLECalculatorScreen() {
 
   const maxDays = mode === 'tle' ? TLE_MAX_DAYS : TLA_MAX_DAYS;
 
+  const parsedCustomRate = parseFloat(customRateText);
+  const customRateInvalid = useCustomRate
+    && customRateText.trim().length > 0
+    && (Number.isNaN(parsedCustomRate) || parsedCustomRate <= 0);
+
   const effectivePerDiem: number | null = useCustomRate
-    ? parseFloat(customRateText) || null
+    ? (Number.isFinite(parsedCustomRate) && parsedCustomRate > 0 ? parsedCustomRate : null)
     : locality?.perDiem ?? null;
 
   // A custom flat rate has no real lodging/M&IE split, so approximate it using
@@ -91,9 +96,10 @@ export default function TLECalculatorScreen() {
         <ThemedView type="backgroundElement" style={styles.blufBox}>
           <ThemedText style={styles.blufLabel}>BLUF</ThemedText>
           <ThemedText type="small" style={{ lineHeight: 18 }}>
-            TLE (CONUS) and TLA (OCONUS) reimburse lodging and meals when you cannot move directly
-            into permanent housing at your new duty station. Rates are a percentage of the locality
-            per diem and scale with your family size.
+            TLE (CONUS) and TLA (OCONUS) are separate allowances under different JTR rules — they
+            both reimburse lodging and meals when you cannot move directly into permanent housing,
+            but with different day limits and caps. Rates are a percentage of the locality per diem
+            and scale with your family size.
           </ThemedText>
         </ThemedView>
 
@@ -157,6 +163,11 @@ export default function TLECalculatorScreen() {
                 />
                 <ThemedText themeColor="textSecondary" style={styles.perDayLabel}>/day</ThemedText>
               </View>
+              {customRateInvalid && (
+                <ThemedText type="small" style={styles.customRateError}>
+                  Enter a rate greater than $0.
+                </ThemedText>
+              )}
               <Pressable
                 onPress={() => { setUseCustomRate(false); setCustomRateText(''); }}
                 style={styles.backToListBtn}>
@@ -344,10 +355,13 @@ export default function TLECalculatorScreen() {
         ) : (
           <ThemedView type="backgroundElement" style={styles.emptyState}>
             <ThemedText style={styles.emptyIcon}>🏨</ThemedText>
-            <ThemedText style={styles.emptyTitle}>Select a location above</ThemedText>
+            <ThemedText style={styles.emptyTitle}>
+              {useCustomRate ? 'Enter a valid daily rate' : 'Select a location above'}
+            </ThemedText>
             <ThemedText type="small" themeColor="textSecondary" style={styles.emptyBody}>
-              Choose your gaining duty station location or enter a custom per diem rate to see your
-              {mode === 'tle' ? ' TLE' : ' TLA'} entitlement.
+              {useCustomRate
+                ? `Enter a per diem rate greater than $0 to see your${mode === 'tle' ? ' TLE' : ' TLA'} entitlement.`
+                : `Choose your gaining duty station location or enter a custom per diem rate to see your${mode === 'tle' ? ' TLE' : ' TLA'} entitlement.`}
             </ThemedText>
           </ThemedView>
         )}
@@ -468,6 +482,7 @@ const styles = StyleSheet.create({
     paddingBottom: 2,
   },
   perDayLabel: { fontSize: 16, marginBottom: 4 },
+  customRateError: { color: Brand.danger, fontWeight: '600' },
   backToListBtn: { alignSelf: 'flex-start' },
 
   factorCard: { borderRadius: Spacing.three, padding: Spacing.three },

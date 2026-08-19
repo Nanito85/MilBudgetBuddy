@@ -1,10 +1,40 @@
 # Plan: TLE / TLA Calculator
 
-Calculate Temporary Lodging Expense (TLE) entitlement for CONUS moves and Temporary Lodging Allowance (TLA) for OCONUS moves.
+> **⚠️ SUPERSEDED — do not use this doc as a spec.** This was the original
+> pre-build plan. The shipped implementation deliberately diverges from the
+> formula and rules below because they turned out to be wrong (verified
+> against the current JTR). Kept only for historical context on the feature's
+> origin. For the actual, current rules, read the code directly:
+> - `src/features/tle/utils/tleCalc.ts` — formula, day caps, $290/day TLE
+>   combined cap, JTR citations
+> - `src/app/tle-calculator.tsx` — UI/inputs
+> - `src/data/per-diem-rates.ts`, `src/data/nonforeign-oconus-rates.ts` —
+>   locality rate data and sourcing/vintage notes
+>
+> Known divergences from this plan, as actually implemented:
+> - TLE max is **21 days** (not 10) — increased effective 27 Nov 2024 per
+>   PDTATAC MAP 66-24.
+> - Family percentage table is **65% alone / 100% flat with the first
+>   dependent / +35% per additional dependent 12+ / +25% per additional
+>   dependent under 12** — not the flat "spouse 16.25% + child 8.125%" split
+>   described below, which does not match the real JTR family-member table.
+> - TLE has a **$290/day combined lodging + M&IE cap** (JTR par. 050601,
+>   PDTATAC MAP 66-24(R), FY2026) — not described in this plan at all.
+> - TLA applies **the same flat family percentage every day**, with no
+>   90%/65% two-tier day-range schedule as described below (that schedule
+>   appears to be from an older JTR edition and was not carried into current
+>   guidance — confirmed 2026-08-19 against a primary DTMO source, see
+>   `tleCalc.ts` for the citation).
+> - Location selection is a **picker over a bundled dataset** (installations
+>   + GSA CONUS destinations + OCONUS locations), not a pay-grade-driven
+>   lookup — pay grade does not affect TLE/TLA per diem, so it was dropped.
+>
+> Full audit: see conversation history (2026-08-18) for the file-by-file
+> review that surfaced these divergences.
 
 ---
 
-## Background
+## Background (original, superseded — see warning above)
 
 - **TLE (CONUS)**: Paid when a member cannot move into permanent housing immediately. Covers a member up to 10 days total (5 days at old duty station + 5 days at new, or 10 combined at new).
 - **TLA (OCONUS)**: Similar but for overseas assignments. Duration can be longer (up to 60 days).

@@ -10,8 +10,17 @@
 //      as PDTATAC revisits it periodically.
 // TLA: OCONUS — up to 60 days on arrival at the new PDS (installation commander may authorize a
 //      different amount; departure TLA is a separate allotment, typically up to 10 days — verify
-//      locally). No declining-percentage phase — the same flat family percentage applies every day.
-//      TLA has no equivalent flat-dollar daily cap — it's bounded only by the locality rate.
+//      locally). This calculator applies the same flat family percentage to every TLA day, with
+//      no declining-percentage phase-down. CONFIRMED against a primary DTMO source: "TLA: Daily
+//      M&IE and Lodging Ceiling Percentages" (DTMO Directorate of Military Compensation Policy,
+//      computation guide CE-TLA-01, "Arrival TLA - TDY or Deployment (POV Travel)") keys the
+//      percentage table ONLY by number of eligible persons occupying temporary lodging — there is
+//      no day-range axis at all. Its worked multi-week example applies the identical percentage to
+//      every day across several distinct TLA periods, with no reduction. (Fetched via the Wayback
+//      Machine workaround, since travel.dod.mil blocks direct fetches — see the BAH sourcing note
+//      in project memory for the same issue.) An older JTR edition apparently used a tiered
+//      schedule at some point, but it is not present in current guidance. TLA has no equivalent
+//      flat-dollar daily cap — it's bounded only by the locality rate.
 
 export type MoveMode = 'tle' | 'tla';
 
