@@ -728,6 +728,21 @@ export const SCHOOL_DATA: InstallationSchoolInfo[] = [
     localDistrict: 'Frederick County Public Schools (MD)',
     districtUrl: 'www.fcps.org',
   },
+  {
+    installationId: 'fort_riley',
+    hasDoDEA: false,
+    dodea: [],
+    localDistrict: 'Geary County USD 475 (KS)',
+    districtUrl: 'www.usd475.org',
+    notes: 'USD 475 (not DoDEA) operates one middle school and four elementary schools directly on post — Fort Riley Elementary, Morris Hill Elementary, Seitz Elementary, Ware Elementary, and Fort Riley Middle School.',
+  },
+  {
+    installationId: 'fort_gregg_adams',
+    hasDoDEA: false,
+    dodea: [],
+    localDistrict: 'Prince George County Public Schools (VA)',
+    notes: 'Prince George County Public Schools operates an elementary and a middle school directly on post. High school students attend Prince George HS off post.',
+  },
 
   // ── NAVY — CONUS (additional) ──────────────────────────────────────────────
   {
@@ -821,6 +836,14 @@ export const SCHOOL_DATA: InstallationSchoolInfo[] = [
     localDistrict: 'Churchill County School District (NV)',
     notes: 'DoDEA operates one on-post elementary. Churchill County HS serves middle and high school students.',
   },
+  {
+    installationId: 'nas_meridian',
+    hasDoDEA: false,
+    dodea: [],
+    localDistrict: 'Lauderdale County School District (MS)',
+    districtUrl: 'www.lauderdale.k12.ms.us',
+    notes: 'No schools on base. Families are zoned into Northeast Lauderdale elementary, middle, and high school.',
+  },
 
   // ── MARINES — CONUS (additional) ──────────────────────────────────────────
   {
@@ -847,6 +870,59 @@ export const SCHOOL_DATA: InstallationSchoolInfo[] = [
     ],
     localDistrict: 'Yuma Union High School District / Crane Elementary District (AZ)',
     notes: 'DoDEA operates one on-post elementary. Middle and HS students use the Yuma Union district — Cibola HS and Kofa HS are primary.',
+  },
+  {
+    installationId: 'mcagcc_29palms',
+    hasDoDEA: false,
+    dodea: [],
+    localDistrict: 'Morongo Unified School District (CA)',
+    districtUrl: 'www.morongo.k12.ca.us',
+    sloNotes: 'MUSD is headquartered in Twentynine Palms and serves the base directly. Highly isolated area — contact the SLO early for enrollment and transition support.',
+  },
+  {
+    installationId: 'mclb_albany',
+    hasDoDEA: false,
+    dodea: [],
+    localDistrict: 'Dougherty County School System (GA)',
+    notes: 'Worth County and Lee County School Systems also serve families depending on off-post address. No schools on base.',
+  },
+  {
+    installationId: 'mclb_barstow',
+    hasDoDEA: false,
+    dodea: [],
+    localDistrict: 'Barstow Unified School District (CA)',
+    districtUrl: 'www.barstow.k12.ca.us',
+    notes: 'Shares the Mojave Desert region with Fort Irwin, but is a separate, closer district. Bus transportation is available from base.',
+  },
+  {
+    installationId: 'mcrd_parris_island',
+    hasDoDEA: false,
+    dodea: [],
+    localDistrict: 'Beaufort County School District (SC)',
+    notes: 'No schools on Parris Island itself. The School Liaison is run out of nearby MCAS Beaufort.',
+  },
+  {
+    installationId: 'mcrd_san_diego',
+    hasDoDEA: false,
+    dodea: [],
+    localDistrict: 'San Diego Unified School District (CA)',
+    districtUrl: 'www.sandiegounified.org',
+    notes: 'No family housing on the Depot itself; most families live off post around Point Loma and elsewhere in San Diego Unified.',
+  },
+  {
+    installationId: 'mcmwtc_bridgeport',
+    hasDoDEA: false,
+    dodea: [],
+    localDistrict: 'Eastern Sierra Unified School District (CA)',
+    notes: 'Extremely isolated High Sierra posting. Most military families live in Coleville, NV and use Douglas County School District (NV) instead — verify current zoning with the SLO before PCSing.',
+  },
+  {
+    installationId: 'marine_barracks_dc',
+    hasDoDEA: false,
+    dodea: [],
+    localDistrict: 'DC Public Schools (DCPS)',
+    districtUrl: 'osse.dc.gov',
+    notes: 'No schools at 8th & I. Under a DCPS Chancellor directive, any K–12 child of an active-duty parent living on a DC military installation can enroll in DCPS regardless of home address. Contact the Family Readiness Officer for enrollment help.',
   },
 
   // ── AIR FORCE — CONUS (additional) ────────────────────────────────────────
@@ -880,6 +956,45 @@ export const SCHOOL_DATA: InstallationSchoolInfo[] = [
     localDistrict: 'DC Public Schools (DC)',
     districtUrl: 'dcps.dc.gov',
     notes: 'Small installation in Washington DC. DCPS serves the area; many families opt for DC charter schools.',
+  },
+  {
+    installationId: 'mcconnell',
+    hasDoDEA: false,
+    dodea: [],
+    localDistrict: 'Derby USD 260 (KS)',
+    districtUrl: 'www.derbyschools.com',
+    notes: 'Derby holds Kansas\' Purple Star Designation for military-family support. Wineteer Elementary is adjacent to base housing.',
+  },
+  {
+    installationId: 'grand_forks',
+    hasDoDEA: false,
+    dodea: [],
+    localDistrict: 'Grand Forks Public Schools (ND)',
+    notes: 'Nathan Twining Elementary & Middle School sits directly on base — a public school (District #140) contracted through Grand Forks Public Schools, not DoDEA. High schoolers commute into Grand Forks.',
+  },
+  {
+    installationId: 'fe_warren',
+    hasDoDEA: false,
+    dodea: [],
+    localDistrict: 'Laramie County School District #1 (WY)',
+    districtUrl: 'www.laramie1.org',
+    notes: 'Largest school district in Wyoming. Several LCSD1 schools hold Purple Star recognition for military-family support.',
+  },
+  {
+    installationId: 'buckley_sfb',
+    hasDoDEA: false,
+    dodea: [],
+    localDistrict: 'Aurora Public Schools (CO)',
+    districtUrl: 'www.aurorak12.org',
+    notes: 'Families in Buckley\'s privatized housing are zoned to Murphy Creek (K–8) and Gateway HS, or Mosley P–8 and Vista Peak Preparatory depending on housing area.',
+  },
+  {
+    installationId: 'cape_canaveral_sfs',
+    hasDoDEA: false,
+    dodea: [],
+    localDistrict: 'Brevard County Public Schools (FL)',
+    districtUrl: 'www.brevardschools.org',
+    notes: 'No on-base schools or childcare. Shares Brevard Public Schools with nearby Patrick SFB; Satellite HS is a common zone.',
   },
 ];
 
