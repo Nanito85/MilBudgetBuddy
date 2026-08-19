@@ -3434,6 +3434,7 @@ const ZIP_ALIAS: Record<string, string> = {
   '96860': '96744', // NCTAMS PAC, HI → Honolulu County MHA (HI408)
   '96861': '96744', // Fort Shafter, HI → Honolulu County MHA (HI408)
   '96863': '96744', // MCB Hawaii alt ZIP → Honolulu County MHA (HI408)
+  '92140': '92145', // MCRD San Diego on-base ZIP → San Diego MHA (CA038)
 };
 
 // Prefer a ZIP's own direct RAW entry; only fall back to the alias table

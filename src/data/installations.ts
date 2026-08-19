@@ -94,8 +94,15 @@ export const INSTALLATIONS: Installation[] = [
   { id: 'mcas_cherry_point',   name: 'MCAS Cherry Point',         city: 'Havelock',           state: 'NC', mhaZip: '28533', oconus: false, branch: 'Marines' },
   { id: 'mcas_new_river',      name: 'MCAS New River',            city: 'Jacksonville',       state: 'NC', mhaZip: '28542', oconus: false, branch: 'Marines' },
   { id: 'mcas_yuma',           name: 'MCAS Yuma',                 city: 'Yuma',               state: 'AZ', mhaZip: '85365', oconus: false, branch: 'Marines' },
+  { id: 'mcagcc_29palms',      name: 'MCAGCC Twentynine Palms',   city: 'Twentynine Palms',   state: 'CA', mhaZip: '92278', oconus: false, branch: 'Marines' },
   { id: 'mcb_hawaii',          name: 'MCB Hawaii (Kaneohe Bay)',   city: 'Kailua',             state: 'HI', mhaZip: '96744', oconus: false, nonForeignOconus: true, branch: 'Marines' },
   { id: 'mcsf_blount_island',  name: 'MCSF Blount Island',        city: 'Jacksonville',       state: 'FL', mhaZip: '32226', oconus: false, branch: 'Marines' },
+  { id: 'mclb_albany',         name: 'MCLB Albany',               city: 'Albany',             state: 'GA', mhaZip: '31701', oconus: false, branch: 'Marines' },
+  { id: 'mclb_barstow',        name: 'MCLB Barstow',              city: 'Barstow',            state: 'CA', mhaZip: '92311', oconus: false, branch: 'Marines' },
+  { id: 'mcrd_parris_island',  name: 'MCRD Parris Island',        city: 'Parris Island',      state: 'SC', mhaZip: '29902', oconus: false, branch: 'Marines' },
+  { id: 'mcrd_san_diego',      name: 'MCRD San Diego',            city: 'San Diego',          state: 'CA', mhaZip: '92140', oconus: false, branch: 'Marines' },
+  { id: 'mcmwtc_bridgeport',   name: 'MCMWTC Bridgeport',         city: 'Bridgeport',         state: 'CA', mhaZip: '93517', oconus: false, branch: 'Marines' },
+  { id: 'marine_barracks_dc',  name: 'Marine Barracks Washington (8th & I)', city: 'Washington', state: 'DC', mhaZip: '20319', oconus: false, branch: 'Marines' },
 
   // ── AIR FORCE ────────────────────────────────────────────────────────────────
   { id: 'jble',                name: 'JB Langley-Eustis',         city: 'Hampton',            state: 'VA', mhaZip: '23665', oconus: false, branch: 'Air Force' },
