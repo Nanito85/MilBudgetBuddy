@@ -2,7 +2,8 @@ import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { getAvailablePurchases, useIAP } from 'expo-iap';
+import { getActiveSubscriptions, getAvailablePurchases, useIAP } from 'expo-iap';
+import type { Purchase } from 'expo-iap';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -145,23 +146,46 @@ export default function PaywallScreen() {
     return true;
   };
 
-  // Wraps the raw call with diagnostics good enough to actually diagnose a
-  // failure on-screen — Sentry is currently a no-op in this build
-  // (EXPO_PUBLIC_SENTRY_DSN isn't set in EAS env, so captureError() silently
-  // does nothing every time), so a plain "undefined is not a function" with
-  // no context is currently unrecoverable information. Re-throws an error
-  // whose message is rich enough to screenshot and act on directly.
-  const fetchAvailablePurchases = async () => {
+  // getAvailablePurchases() and getActiveSubscriptions() call two genuinely
+  // different native bridge methods (ExpoIapModule.getAvailableItems vs.
+  // ExpoIapModule.getActiveSubscriptions — confirmed from expo-iap's own
+  // source, not a guess). If one is missing from whatever native binary is
+  // actually installed (a real possibility: OTA ships JS only, so a JS-side
+  // library update can reference a native method that predates the last
+  // actual app-store build), the other may still work. Try the richer one
+  // first, fall back to the other, and only give up if BOTH fail — and even
+  // then, surface real diagnostics instead of the raw, undiagnosable error,
+  // since Sentry (captureError) is currently a no-op in this build
+  // (EXPO_PUBLIC_SENTRY_DSN isn't set in EAS env).
+  //
+  // finishTransaction() on Android only actually reads purchase.purchaseToken
+  // (confirmed from source) — the minimal shape below is genuinely enough
+  // for verify + acknowledge to work even via the getActiveSubscriptions
+  // fallback, which doesn't return a full Purchase object.
+  const fetchOwnedProPurchases = async (): Promise<Pick<Purchase, 'purchaseToken' | 'productId'>[]> => {
+    const errors: string[] = [];
+
     try {
-      if (typeof getAvailablePurchases !== 'function') {
-        throw new Error(`getAvailablePurchases import is ${typeof getAvailablePurchases}, not a function — expo-iap import/native-module mismatch`);
-      }
-      return await getAvailablePurchases();
+      const purchases = await getAvailablePurchases();
+      return purchases.filter((p) => PRO_SKUS.includes(p.productId) && p.purchaseToken);
     } catch (e: any) {
-      const detail = `[getAvailablePurchases] ${e?.name ?? 'Error'}: ${e?.message ?? String(e)}`;
-      captureError(e, { stage: 'get-available-purchases', platform: Platform.OS, detail });
-      throw new Error(detail);
+      errors.push(`getAvailablePurchases: ${e?.name ?? 'Error'}: ${e?.message ?? String(e)}`);
+      captureError(e, { stage: 'get-available-purchases', platform: Platform.OS });
     }
+
+    try {
+      const subs = await getActiveSubscriptions(PRO_SKUS);
+      const owned = subs.filter((s) => s.purchaseToken).map((s) => ({ purchaseToken: s.purchaseToken!, productId: s.productId }));
+      if (owned.length > 0) return owned;
+    } catch (e: any) {
+      errors.push(`getActiveSubscriptions: ${e?.name ?? 'Error'}: ${e?.message ?? String(e)}`);
+      captureError(e, { stage: 'get-active-subscriptions', platform: Platform.OS });
+    }
+
+    if (errors.length > 0) {
+      throw new Error(`Could not query purchases — ${errors.join(' | ')}`);
+    }
+    return [];
   };
 
   // Shared by purchase()'s already-owned guard below and handleRestore().
@@ -170,8 +194,7 @@ export default function PaywallScreen() {
   // their own messaging (a plain "restore" vs. an "you already own this,
   // restoring instead of re-buying" redirect read very differently).
   const verifyAndAcknowledgeAvailable = async (): Promise<{ restoredCount: number; lastError: any }> => {
-    const purchases = await fetchAvailablePurchases();
-    const proPurchases = purchases.filter((p) => PRO_SKUS.includes(p.productId) && p.purchaseToken);
+    const proPurchases = await fetchOwnedProPurchases();
 
     let restoredCount = 0;
     let lastError: any = null;
@@ -182,7 +205,11 @@ export default function PaywallScreen() {
         // Acknowledging here is the actual fix — it's what clears Google's
         // "unacknowledged purchase" block, whether this purchase token is
         // brand new or has been stuck since an earlier failed attempt.
-        await finishTransaction({ purchase: p, isConsumable: false });
+        // p may only carry { purchaseToken, productId } when it came from the
+        // getActiveSubscriptions() fallback rather than a full Purchase from
+        // getAvailablePurchases() — finishTransaction on Android only reads
+        // those two fields anyway (confirmed from source), so the cast is safe.
+        await finishTransaction({ purchase: p as unknown as Purchase, isConsumable: false });
         restoredCount++;
       } catch (e: any) {
         lastError = e;
@@ -202,9 +229,8 @@ export default function PaywallScreen() {
   // purchase — this is exactly the state a purchase that failed to
   // acknowledge the first time leaves someone in.
   const restoreIfAlreadyOwned = async (): Promise<boolean> => {
-    const purchases = await fetchAvailablePurchases();
-    const alreadyOwned = purchases.some((p) => PRO_SKUS.includes(p.productId) && p.purchaseToken);
-    if (!alreadyOwned) return false;
+    const owned = await fetchOwnedProPurchases();
+    if (owned.length === 0) return false;
 
     Alert.alert(
       'Already Purchased',
@@ -223,6 +249,14 @@ export default function PaywallScreen() {
     setVerifying(true);
     try {
       if (await restoreIfAlreadyOwned()) return;
+    } catch (e: any) {
+      // Couldn't determine ownership at all (both native queries failed) —
+      // stop here rather than attempt a new purchase blind. If they really
+      // do already own this and we just couldn't see it, launching a new
+      // purchase now would hit Google's DEVELOPER_ERROR again anyway.
+      captureError(e, { stage: 'purchase-ownership-check', platform: Platform.OS });
+      Alert.alert('Could Not Continue', e?.message ?? 'Could not check your purchase history. Try again, or contact support.');
+      return;
     } finally {
       setVerifying(false);
     }
@@ -267,7 +301,18 @@ export default function PaywallScreen() {
       // network drop right after buying — stayed unacknowledged forever,
       // which is exactly what produces Google's "Developer hasn't
       // acknowledged your purchase" error on any future purchase attempt).
-      await restorePurchases();
+      //
+      // On Android this call is a pure passthrough to getAvailablePurchases()
+      // internally (confirmed from expo-iap's own source) — i.e. it does
+      // nothing that verifyAndAcknowledgeAvailable() below doesn't already
+      // do via fetchOwnedProPurchases(), except throw the SAME native
+      // failure with a generic, undiagnosable message and no fallback to
+      // getActiveSubscriptions(). Skip it on Android so any failure surfaces
+      // through the wrapped call instead. Kept on iOS since it also runs
+      // syncIOS() first.
+      if (Platform.OS === 'ios') {
+        await restorePurchases();
+      }
       const { restoredCount, lastError } = await verifyAndAcknowledgeAvailable();
 
       if (restoredCount > 0) {
