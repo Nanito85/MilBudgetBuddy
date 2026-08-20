@@ -21,6 +21,11 @@ export interface LifeEventMeta {
   description: string;
   color: string;
   checklist: ChecklistTemplate[];
+  // Points to a dedicated, more detailed standalone tool that covers the same
+  // life event in depth (e.g. a full phased timeline vs. this quick task
+  // list). Optional — most life events don't have one. Surfaced as a link in
+  // life-events.tsx so browsing either tool leads to the other.
+  relatedTool?: { label: string; route: string };
 }
 
 export const LIFE_EVENTS: Record<LifeEventType, LifeEventMeta> = {
@@ -124,6 +129,7 @@ export const LIFE_EVENTS: Record<LifeEventType, LifeEventMeta> = {
     title: 'Separation / Retirement',
     description: 'Transition planning, VA benefits, and financial continuity.',
     color: '#37474F',
+    relatedTool: { label: 'Open the full 12-month Separation Checklist', route: '/ets-checklist' },
     checklist: [
       { id: 'sep_tap', label: 'Attend TAP (Transition Assistance Program)', category: 'admin' },
       { id: 'sep_va_disability', label: 'File for VA disability rating before separation', category: 'benefits' },

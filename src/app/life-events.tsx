@@ -150,6 +150,17 @@ export default function LifeEventsScreen() {
                           </ThemedText>
                         </View>
                       )}
+
+                      {meta.relatedTool && (
+                        <Pressable
+                          onPress={() => router.push(meta.relatedTool!.route as any)}
+                          style={[styles.relatedToolRow, { borderTopColor: tc.borderColor }]}>
+                          <ThemedText style={[styles.relatedToolText, { color: meta.color }]}>
+                            {meta.relatedTool.label}
+                          </ThemedText>
+                          <ThemedText style={[styles.relatedToolChevron, { color: meta.color }]}>›</ThemedText>
+                        </Pressable>
+                      )}
                     </View>
                   );
                 })
@@ -212,6 +223,15 @@ export default function LifeEventsScreen() {
                       ))}
                       {meta.checklist.length > 5 && (
                         <ThemedText style={[styles.browsePreviewMore, { color: tc.textMuted }]}>+{meta.checklist.length - 5} more tasks</ThemedText>
+                      )}
+                      {meta.relatedTool && (
+                        <Pressable
+                          onPress={() => router.push(meta.relatedTool!.route as any)}
+                          style={styles.relatedToolInlineRow}>
+                          <ThemedText style={[styles.relatedToolInlineText, { color: meta.color }]}>
+                            {meta.relatedTool.label} ›
+                          </ThemedText>
+                        </Pressable>
                       )}
                       {!isActive && (
                         <Pressable
@@ -324,6 +344,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   completeText: { fontSize: 11, fontWeight: '800', letterSpacing: 1 },
+
+  relatedToolRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderTopWidth: StyleSheet.hairlineWidth,
+    padding: Spacing.three,
+  },
+  relatedToolText: { fontSize: 12, fontWeight: '700', flex: 1 },
+  relatedToolChevron: { fontSize: 16, fontWeight: '700' },
+  relatedToolInlineRow: { marginTop: Spacing.one },
+  relatedToolInlineText: { fontSize: 11, fontWeight: '700' },
 
   dismissedSection: { gap: Spacing.one, marginTop: Spacing.two },
   dismissedLabel: { fontSize: 9, fontWeight: '700', letterSpacing: 1 },

@@ -266,6 +266,13 @@ export default function EtsChecklistScreen() {
         <ThemedText style={styles.progressLabel}>{checkedCount}/{totalItems} COMPLETED</ThemedText>
       </View>
 
+      <Pressable onPress={() => router.push('/life-events' as any)} style={styles.relatedToolRow}>
+        <ThemedText style={[styles.relatedToolText, { color: tc.textSecondary }]}>
+          Want a shorter financial/admin task list instead? See Life Event Checklists
+        </ThemedText>
+        <ThemedText style={[styles.relatedToolChevron, { color: Brand.accent }]}>›</ThemedText>
+      </Pressable>
+
       <ScrollView
         contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + Spacing.five }]}
         showsVerticalScrollIndicator={false}>
@@ -362,6 +369,16 @@ const styles = StyleSheet.create({
     paddingBottom: Spacing.two,
     gap: Spacing.one,
   },
+  relatedToolRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: Spacing.three,
+    paddingBottom: Spacing.two,
+    gap: Spacing.two,
+  },
+  relatedToolText: { fontSize: 11, flex: 1, lineHeight: 15 },
+  relatedToolChevron: { fontSize: 16, fontWeight: '700' },
   progressTrack: {
     height: 4,
     backgroundColor: Brand.border,
