@@ -38,16 +38,29 @@ export async function verifyPurchaseWithServer(purchaseToken: string, productId:
   const idToken = await auth.currentUser?.getIdToken();
   if (!idToken) throw new Error('You must be signed in to verify a purchase.');
 
-  const res = await fetch(`${API_BASE}/api/iap/verify`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${idToken}` },
-    body: JSON.stringify({
-      platform: Platform.OS === 'ios' ? 'ios' : 'android',
-      productId,
-      purchaseToken,
-    }),
-    signal: AbortSignal.timeout(15000),
-  });
+  // AbortSignal.timeout() is a newer static method that isn't guaranteed to
+  // exist on every Hermes/React Native build — if it's missing, calling it
+  // throws a bare "undefined is not a function" with zero context, on the
+  // ONE call every purchase/restore code path shares. Built manually with
+  // AbortController + setTimeout instead, which has been supported forever.
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 15000);
+
+  let res: Response;
+  try {
+    res = await fetch(`${API_BASE}/api/iap/verify`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${idToken}` },
+      body: JSON.stringify({
+        platform: Platform.OS === 'ios' ? 'ios' : 'android',
+        productId,
+        purchaseToken,
+      }),
+      signal: controller.signal,
+    });
+  } finally {
+    clearTimeout(timeoutId);
+  }
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
