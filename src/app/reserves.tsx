@@ -429,7 +429,7 @@ export default function ReservesScreen() {
                 { label: 'Plan Type', value: 'PPO (preferred provider)' },
                 { label: 'Deductible (individual)', value: '$66 E4 & below / $198 E5+' },
                 { label: 'Deductible (family)', value: '$132 E4 & below / $397 E5+' },
-                { label: 'Cost share (network)', value: '$19-52 flat copay by visit type' },
+                { label: 'Cost share (network)', value: '$19-79 flat copay by visit type' },
                 { label: 'Cost share (non-network)', value: '20% after deductible' },
                 { label: 'Catastrophic cap (annual)', value: '$1,324' },
                 { label: 'Prescriptions (mail order, 90-day)', value: '$14 generic / $44 brand' },
