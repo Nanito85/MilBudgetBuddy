@@ -43,8 +43,14 @@ export async function verifyPurchaseWithServer(purchaseToken: string, productId:
   // throws a bare "undefined is not a function" with zero context, on the
   // ONE call every purchase/restore code path shares. Built manually with
   // AbortController + setTimeout instead, which has been supported forever.
+  //
+  // 30s, not 15s: the backend (Fly.io) runs with min_machines_running=0 —
+  // it auto-stops when idle and cold-starts on the next request, which can
+  // legitimately take longer than 15s. A real user hit exactly this: the
+  // first verify attempt after idle time aborted with no real error before
+  // the machine had even finished booting.
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 15000);
+  const timeoutId = setTimeout(() => controller.abort(), 30000);
 
   let res: Response;
   try {
