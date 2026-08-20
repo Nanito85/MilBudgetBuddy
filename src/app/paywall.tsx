@@ -201,16 +201,30 @@ export default function PaywallScreen() {
     for (const p of proPurchases) {
       try {
         const result = await verifyPurchaseWithServer(p.purchaseToken!, p.productId);
+        // verifyPurchaseWithServer succeeding means our backend independently
+        // confirmed this purchase with Google's own server API AND already
+        // acknowledged it server-side via the Play Developer API (see
+        // milbudgetbuddy-api's /api/iap/verify) — that's what actually
+        // clears Google's "unacknowledged purchase" block. The entitlement
+        // is real and granted at this point, full stop.
         setProEntitlement(result.proExpiresAt, 'purchase');
-        // Acknowledging here is the actual fix — it's what clears Google's
-        // "unacknowledged purchase" block, whether this purchase token is
-        // brand new or has been stuck since an earlier failed attempt.
-        // p may only carry { purchaseToken, productId } when it came from the
-        // getActiveSubscriptions() fallback rather than a full Purchase from
-        // getAvailablePurchases() — finishTransaction on Android only reads
-        // those two fields anyway (confirmed from source), so the cast is safe.
-        await finishTransaction({ purchase: p as unknown as Purchase, isConsumable: false });
         restoredCount++;
+
+        // finishTransaction() here is now just a best-effort client-side
+        // cleanup (clears Play Billing's on-device transaction queue) — NOT
+        // what fixes the Google block anymore, since the server already
+        // handled that above. So a failure here must not undo the restore
+        // that already genuinely succeeded, or show "Restore Failed" for
+        // something that didn't actually fail. p may only carry
+        // { purchaseToken, productId } when it came from the
+        // getActiveSubscriptions() fallback rather than a full Purchase —
+        // finishTransaction on Android only reads those two fields anyway
+        // (confirmed from source), so the cast is safe.
+        try {
+          await finishTransaction({ purchase: p as unknown as Purchase, isConsumable: false });
+        } catch (ackErr: any) {
+          captureError(ackErr, { stage: 'restore-finish-transaction', platform: Platform.OS, productId: p.productId });
+        }
       } catch (e: any) {
         lastError = e;
         captureError(e, { stage: 'restore-verify-one', platform: Platform.OS, productId: p.productId });
