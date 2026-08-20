@@ -145,13 +145,32 @@ export default function PaywallScreen() {
     return true;
   };
 
+  // Wraps the raw call with diagnostics good enough to actually diagnose a
+  // failure on-screen — Sentry is currently a no-op in this build
+  // (EXPO_PUBLIC_SENTRY_DSN isn't set in EAS env, so captureError() silently
+  // does nothing every time), so a plain "undefined is not a function" with
+  // no context is currently unrecoverable information. Re-throws an error
+  // whose message is rich enough to screenshot and act on directly.
+  const fetchAvailablePurchases = async () => {
+    try {
+      if (typeof getAvailablePurchases !== 'function') {
+        throw new Error(`getAvailablePurchases import is ${typeof getAvailablePurchases}, not a function — expo-iap import/native-module mismatch`);
+      }
+      return await getAvailablePurchases();
+    } catch (e: any) {
+      const detail = `[getAvailablePurchases] ${e?.name ?? 'Error'}: ${e?.message ?? String(e)}`;
+      captureError(e, { stage: 'get-available-purchases', platform: Platform.OS, detail });
+      throw new Error(detail);
+    }
+  };
+
   // Shared by purchase()'s already-owned guard below and handleRestore().
   // Verifies + acknowledges every available purchase matching this app's
   // SKUs. Returns how many were successfully restored so callers can tailor
   // their own messaging (a plain "restore" vs. an "you already own this,
   // restoring instead of re-buying" redirect read very differently).
   const verifyAndAcknowledgeAvailable = async (): Promise<{ restoredCount: number; lastError: any }> => {
-    const purchases = await getAvailablePurchases();
+    const purchases = await fetchAvailablePurchases();
     const proPurchases = purchases.filter((p) => PRO_SKUS.includes(p.productId) && p.purchaseToken);
 
     let restoredCount = 0;
@@ -183,7 +202,7 @@ export default function PaywallScreen() {
   // purchase — this is exactly the state a purchase that failed to
   // acknowledge the first time leaves someone in.
   const restoreIfAlreadyOwned = async (): Promise<boolean> => {
-    const purchases = await getAvailablePurchases();
+    const purchases = await fetchAvailablePurchases();
     const alreadyOwned = purchases.some((p) => PRO_SKUS.includes(p.productId) && p.purchaseToken);
     if (!alreadyOwned) return false;
 
