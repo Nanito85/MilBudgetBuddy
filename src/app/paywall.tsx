@@ -2,7 +2,7 @@ import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useIAP } from 'expo-iap';
+import { getAvailablePurchases, useIAP } from 'expo-iap';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -48,7 +48,6 @@ export default function PaywallScreen() {
     requestPurchase,
     finishTransaction,
     restorePurchases,
-    getActiveSubscriptions,
   } = useIAP({
     onPurchaseSuccess: async (purchase) => {
       if (!purchase.purchaseToken) {
@@ -163,9 +162,47 @@ export default function PaywallScreen() {
   const handleRestore = async () => {
     setVerifying(true);
     try {
+      // restorePurchases() only triggers the native refresh (iOS sync /
+      // Android re-query) — it does NOT return the purchases and does NOT
+      // verify or acknowledge anything itself. The old version of this
+      // function stopped right there and always claimed success, which was
+      // a no-op: it never called verifyPurchaseWithServer (so proExpiresAt
+      // never got set) and never called finishTransaction (so a purchase
+      // that failed to acknowledge the first time — e.g. a transient
+      // network drop right after buying — stayed unacknowledged forever,
+      // which is exactly what produces Google's "Developer hasn't
+      // acknowledged your purchase" error on any future purchase attempt).
       await restorePurchases();
-      await getActiveSubscriptions(PRO_SKUS);
-      Alert.alert('Restore Complete', 'If you had an active subscription, it has been restored.');
+      const purchases = await getAvailablePurchases();
+      const proPurchases = purchases.filter((p) => PRO_SKUS.includes(p.productId) && p.purchaseToken);
+
+      if (proPurchases.length === 0) {
+        Alert.alert('Nothing to Restore', 'No active MilBudgetBuddy Pro purchase was found for this account.');
+        return;
+      }
+
+      let restoredAny = false;
+      let lastError: any = null;
+      for (const p of proPurchases) {
+        try {
+          const result = await verifyPurchaseWithServer(p.purchaseToken!, p.productId);
+          setProEntitlement(result.proExpiresAt, 'purchase');
+          // Acknowledging here is the actual fix — it's what clears Google's
+          // "unacknowledged purchase" block, whether this purchase token is
+          // brand new or has been stuck since an earlier failed attempt.
+          await finishTransaction({ purchase: p, isConsumable: false });
+          restoredAny = true;
+        } catch (e: any) {
+          lastError = e;
+          captureError(e, { stage: 'restore-verify-one', platform: Platform.OS, productId: p.productId });
+        }
+      }
+
+      if (restoredAny) {
+        Alert.alert('Restore Complete', 'Your subscription has been restored and acknowledged.');
+      } else {
+        throw lastError ?? new Error('Found a purchase but could not verify it.');
+      }
     } catch (e: any) {
       captureError(e, { stage: 'restore-purchases', platform: Platform.OS });
       Alert.alert('Restore Failed', e?.message ?? 'Could not restore purchases.');
