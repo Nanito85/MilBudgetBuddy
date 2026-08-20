@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Constants from 'expo-constants';
 import { deepLinkToSubscriptions } from 'expo-iap';
 import { useRouter } from 'expo-router';
+import * as Updates from 'expo-updates';
 import React, { useState } from 'react';
 import { Alert, Linking, Modal, Platform, Pressable, ScrollView, Share, StyleSheet, TextInput, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -744,6 +745,18 @@ export default function SettingsScreen() {
 
         <ThemedText type="small" themeColor="textMuted" style={styles.versionText}>
           MilBudgetBuddy v{Constants.expoConfig?.version ?? '1.0.0'}
+        </ThemedText>
+        {/* OTA updates download in the background and only take effect on
+            the NEXT cold start — there was previously no way to tell
+            whether a device was actually running the latest published
+            fix or was still one relaunch behind it. This makes that
+            verifiable instead of guessable: compare the short ID here
+            against the "Android/iOS update ID" an `eas update` run
+            reports, or against the EAS dashboard's update list. */}
+        <ThemedText type="small" themeColor="textMuted" style={[styles.versionText, { marginTop: -Spacing.two }]}>
+          {Updates.isEmbeddedLaunch
+            ? 'Build: embedded (no OTA update applied)'
+            : `Update: ${Updates.updateId?.slice(0, 8) ?? 'unknown'}`}
         </ThemedText>
 
       </ScrollView>
