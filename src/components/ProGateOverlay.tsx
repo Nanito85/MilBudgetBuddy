@@ -1,6 +1,6 @@
 import { usePathname, useRouter } from 'expo-router';
 import React from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Platform, Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { Brand, Spacing } from '@/constants/theme';
@@ -11,7 +11,21 @@ import { useIsPro } from '@/hooks/use-is-pro';
 // (7-day trial via Google Play/App Store) has actually gone live in both
 // stores. Until then this stays false so the gate never activates, no matter
 // what any individual member's entitlement looks like.
-const PRO_GATE_ENABLED = false;
+//
+// Flipped true 2026-08-20 after a real Google Play sandbox purchase test
+// confirmed the full buy -> /api/iap/verify -> proExpiresAt unlock flow
+// works end to end on Android.
+const PRO_GATE_ENABLED = true;
+
+// iOS purchase verification is still stubbed server-side (milbudgetbuddy-api
+// src/routes/iap.ts returns 501 for platform: 'ios' — needs a .p8 signing
+// key + Key ID + Issuer ID from App Store Connect that don't exist yet). If
+// the gate applied to iOS now, an iOS member could pay Apple and STILL never
+// unlock — verification would 501 forever, worse than today's free access.
+// So the gate is Android-only until that backend gap is closed; flip this to
+// `true` (or drop the platform check) once iOS verification actually works.
+const IOS_GATE_ENABLED = false;
+const GATE_ACTIVE_ON_THIS_PLATFORM = Platform.OS === 'ios' ? IOS_GATE_ENABLED : PRO_GATE_ENABLED;
 
 // Screens that must always work regardless of Pro status — otherwise a member
 // could never actually pay, sign in, manage their account, or read legal
@@ -42,7 +56,7 @@ export function ProGateOverlay({ children }: { children: React.ReactNode }) {
   const { isAdmin } = useIsAdmin();
 
   const allowed = ALWAYS_ALLOWED_PREFIXES.some((p) => pathname === p || pathname.startsWith(p + '/'));
-  const gated = PRO_GATE_ENABLED && !isPro && !isAdmin && !allowed;
+  const gated = GATE_ACTIVE_ON_THIS_PLATFORM && !isPro && !isAdmin && !allowed;
 
   return (
     <View style={{ flex: 1 }}>
