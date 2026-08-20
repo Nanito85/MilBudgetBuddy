@@ -441,7 +441,15 @@ export default function SettingsScreen() {
             </View>
             <View style={{ gap: 6 }}>
               <Pressable
-                onPress={() => signOutUser()}
+                onPress={() => {
+                  // Previously fire-and-forget — a failed signOut() (e.g. a
+                  // transient network error) had zero visible feedback, so
+                  // tapping this could silently do nothing with no way to
+                  // tell that from "it worked, just re-render lagged."
+                  signOutUser().catch((e: any) => {
+                    Alert.alert('Sign Out Failed', e?.message ?? 'Could not sign out. Check your connection and try again.');
+                  });
+                }}
                 style={[settingsProStyles.upgradeBtn, { backgroundColor: tc.surfaceInner }]}>
                 <ThemedText style={[settingsProStyles.upgradeBtnText, { color: tc.textSecondary }]}>SIGN OUT</ThemedText>
               </Pressable>
