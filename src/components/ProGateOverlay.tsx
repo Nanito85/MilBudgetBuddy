@@ -6,6 +6,7 @@ import { ThemedText } from '@/components/themed-text';
 import { Brand, Spacing } from '@/constants/theme';
 import { useIsAdmin } from '@/hooks/use-admin';
 import { useIsPro } from '@/hooks/use-is-pro';
+import { useAuthStore } from '@/store/auth.store';
 
 // Master kill switch — flip to true and OTA-publish once the Pro subscription
 // (7-day trial via Google Play/App Store) has actually gone live in both
@@ -54,9 +55,25 @@ export function ProGateOverlay({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const isPro = useIsPro();
   const { isAdmin } = useIsAdmin();
+  const authUser = useAuthStore((s) => s.user);
 
   const allowed = ALWAYS_ALLOWED_PREFIXES.some((p) => pathname === p || pathname.startsWith(p + '/'));
   const gated = GATE_ACTIVE_ON_THIS_PLATFORM && !isPro && !isAdmin && !allowed;
+
+  // The gate dims and disables pointerEvents on the ENTIRE app content below
+  // — including the bottom tab bar, since that's rendered inside `children`
+  // too. That's fine for a signed-in member (the floating card routes them
+  // straight to checkout), but a signed-out member has no way to purchase
+  // (verification requires an auth token) and, before this fix, had no way
+  // to even REACH sign-in either — the only tappable thing left anywhere in
+  // the app was this card, which pushed straight to /paywall, and paywall
+  // itself has no sign-in UI. That's a hard lockout, not just an inconvenience.
+  // So: send a signed-out member to sign-in first, not straight to paywall.
+  const unlockRoute = authUser ? '/paywall' : '/auth/sign-in';
+  const unlockCopy = authUser
+    ? 'Start your 7-day free trial to unlock this screen — and everything else.'
+    : 'Sign in to start your 7-day free trial and unlock this screen — and everything else.';
+  const unlockBtnLabel = authUser ? 'UNLOCK NOW' : 'SIGN IN';
 
   return (
     <View style={{ flex: 1 }}>
@@ -66,12 +83,12 @@ export function ProGateOverlay({ children }: { children: React.ReactNode }) {
 
       {gated && (
         <View style={styles.overlay} pointerEvents="box-none">
-          <Pressable style={styles.card} onPress={() => router.push('/paywall' as any)}>
+          <Pressable style={styles.card} onPress={() => router.push(unlockRoute as any)}>
             <ThemedText style={styles.lockIcon}>🔒</ThemedText>
             <ThemedText style={styles.title}>MILBUDGETBUDDY PRO</ThemedText>
-            <ThemedText style={styles.sub}>Start your 7-day free trial to unlock this screen — and everything else.</ThemedText>
+            <ThemedText style={styles.sub}>{unlockCopy}</ThemedText>
             <View style={styles.btn}>
-              <ThemedText style={styles.btnText}>UNLOCK NOW</ThemedText>
+              <ThemedText style={styles.btnText}>{unlockBtnLabel}</ThemedText>
             </View>
           </Pressable>
         </View>

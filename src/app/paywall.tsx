@@ -19,6 +19,7 @@ import {
   PRO_SKUS,
   verifyPurchaseWithServer,
 } from '@/services/iap';
+import { useAuthStore } from '@/store/auth.store';
 import { useUserStore } from '@/store/user.store';
 
 type Plan = 'monthly' | 'annual';
@@ -35,6 +36,7 @@ export default function PaywallScreen() {
   const router = useRouter();
   const tc = useThemeColors();
   const isPro = useIsPro();
+  const authUser = useAuthStore((s) => s.user);
   const proExpiresAt = useUserStore((s) => s.proExpiresAt);
   const setProEntitlement = useUserStore((s) => s.setProEntitlement);
 
@@ -131,7 +133,20 @@ export default function PaywallScreen() {
     );
   };
 
+  // Purchase verification always requires an auth token (see
+  // verifyPurchaseWithServer) — a signed-out member could still open the
+  // store's buy sheet and pay, but the app could never verify or acknowledge
+  // it afterward, landing them in exactly the "paid but not unlocked, and
+  // Google now blocks retrying" state this was built to prevent. Send them
+  // to sign in first instead of letting that happen.
+  const requireSignIn = (): boolean => {
+    if (authUser) return false;
+    router.push('/auth/sign-in' as any);
+    return true;
+  };
+
   const purchase = async () => {
+    if (requireSignIn()) return;
     if (Platform.OS === 'ios') {
       const sku = selected === 'monthly' ? IOS_MONTHLY_SKU : IOS_ANNUAL_SKU;
       const sub = subscriptions.find((s) => s.id === sku);
@@ -160,6 +175,7 @@ export default function PaywallScreen() {
   };
 
   const handleRestore = async () => {
+    if (requireSignIn()) return;
     setVerifying(true);
     try {
       // restorePurchases() only triggers the native refresh (iOS sync /
@@ -264,12 +280,21 @@ export default function PaywallScreen() {
                 </Pressable>
               </View>
 
+              {!authUser && (
+                <ThemedText type="small" style={[styles.signInNotice, { color: Brand.tactical }]}>
+                  You'll need to sign in first — purchases are tied to your account so they sync
+                  across devices and can be verified.
+                </ThemedText>
+              )}
+
               <Pressable
                 onPress={purchase}
                 disabled={verifying}
                 style={({ pressed }) => [styles.ctaBtn, (pressed || verifying) && { opacity: 0.7 }]}>
                 {verifying ? <ActivityIndicator color="#04080F" /> : (
-                  <ThemedText style={styles.ctaBtnText}>START 7-DAY FREE TRIAL</ThemedText>
+                  <ThemedText style={styles.ctaBtnText}>
+                    {authUser ? 'START 7-DAY FREE TRIAL' : 'SIGN IN TO CONTINUE'}
+                  </ThemedText>
                 )}
               </Pressable>
 
@@ -331,6 +356,7 @@ const styles = StyleSheet.create({
   ctaBtnText: { color: '#04080F', fontSize: 14, fontWeight: '900', letterSpacing: 1 },
 
   legalNote: { textAlign: 'center', lineHeight: 17, marginTop: Spacing.one },
+  signInNotice: { textAlign: 'center', lineHeight: 17, fontWeight: '600' },
   restoreBtn: { alignItems: 'center', paddingVertical: Spacing.two },
   restoreText: { fontSize: 13, fontWeight: '700' },
 
