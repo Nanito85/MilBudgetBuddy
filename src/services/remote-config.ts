@@ -96,10 +96,16 @@ function sanitizeConfig(raw: unknown): RemoteConfig {
 
 export async function fetchRemoteConfig(): Promise<void> {
   try {
+    // AbortSignal.timeout() isn't guaranteed to exist on every Hermes/React
+    // Native build — built manually so it can't be a silent source of
+    // "undefined is not a function" here either (see src/services/iap.ts
+    // for the same fix on the purchase-verification path).
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
     const res = await fetch(`${API_BASE}/api/config`, {
       headers: { 'content-type': 'application/json' },
-      signal: AbortSignal.timeout(5000),
-    });
+      signal: controller.signal,
+    }).finally(() => clearTimeout(timeoutId));
     if (!res.ok) return;
     const raw = await res.json();
     const data = sanitizeConfig(raw);

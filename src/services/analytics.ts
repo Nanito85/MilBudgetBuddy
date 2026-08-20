@@ -44,12 +44,16 @@ async function flush() {
     const headers: Record<string, string> = { 'content-type': 'application/json' };
     if (token) headers['Authorization'] = `Bearer ${token}`;
 
+    // AbortSignal.timeout() isn't guaranteed to exist on every Hermes/React
+    // Native build — built manually instead (see src/services/iap.ts).
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
     await fetch(`${API_BASE}/api/analytics/events`, {
       method: 'POST',
       headers,
       body: JSON.stringify({ events: batch }),
-      signal: AbortSignal.timeout(5000),
-    });
+      signal: controller.signal,
+    }).finally(() => clearTimeout(timeoutId));
   } catch {
     // Silent — don't push back to queue; analytics loss is acceptable
   }

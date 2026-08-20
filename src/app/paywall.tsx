@@ -113,6 +113,18 @@ export default function PaywallScreen() {
   const monthlyDisplayPrice = Platform.OS === 'ios' ? iosMonthly?.displayPrice : androidMonthlyOffer?.displayPrice;
   const annualDisplayPrice  = Platform.OS === 'ios' ? iosAnnual?.displayPrice  : androidAnnualOffer?.displayPrice;
 
+  // Appends a truncated stack trace to an error message so a failure is
+  // diagnosable directly from the on-screen Alert — Sentry is currently a
+  // no-op in this build (EXPO_PUBLIC_SENTRY_DSN unset in EAS env), so a bare
+  // "undefined is not a function" with no file/line info has proven
+  // impossible to actually pin down across several rounds of otherwise-solid
+  // fixes. Grab this text and share it verbatim; it names the real culprit.
+  const withDebugInfo = (e: any, fallback: string): string => {
+    const base = e?.message || fallback;
+    const stack = typeof e?.stack === 'string' ? e.stack.split('\n').slice(0, 4).join('\n') : null;
+    return stack ? `${base}\n\n[debug]\n${stack}` : base;
+  };
+
   // If the product genuinely never loaded (not just "still loading" — connected
   // is true and fetchProducts already resolved, one way or another), tapping
   // Purchase would otherwise silently no-op against a stale/missing product.
@@ -253,7 +265,7 @@ export default function PaywallScreen() {
     const { restoredCount, lastError } = await verifyAndAcknowledgeAvailable();
     if (restoredCount === 0 && lastError) {
       captureError(lastError, { stage: 'purchase-already-owned-restore', platform: Platform.OS });
-      Alert.alert('Restore Failed', lastError?.message ?? 'Could not verify your existing purchase. Try Restore Purchases, or contact support.');
+      Alert.alert('Restore Failed', withDebugInfo(lastError, 'Could not verify your existing purchase. Try Restore Purchases, or contact support.'));
     }
     return true;
   };
@@ -269,7 +281,7 @@ export default function PaywallScreen() {
       // do already own this and we just couldn't see it, launching a new
       // purchase now would hit Google's DEVELOPER_ERROR again anyway.
       captureError(e, { stage: 'purchase-ownership-check', platform: Platform.OS });
-      Alert.alert('Could Not Continue', e?.message ?? 'Could not check your purchase history. Try again, or contact support.');
+      Alert.alert('Could Not Continue', withDebugInfo(e, 'Could not check your purchase history. Try again, or contact support.'));
       return;
     } finally {
       setVerifying(false);
@@ -338,7 +350,7 @@ export default function PaywallScreen() {
       }
     } catch (e: any) {
       captureError(e, { stage: 'restore-purchases', platform: Platform.OS });
-      Alert.alert('Restore Failed', e?.message ?? 'Could not restore purchases.');
+      Alert.alert('Restore Failed', withDebugInfo(e, 'Could not restore purchases.'));
     } finally {
       setVerifying(false);
     }
