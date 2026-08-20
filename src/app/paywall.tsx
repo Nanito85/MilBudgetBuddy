@@ -352,7 +352,16 @@ export default function PaywallScreen() {
             <ThemedText style={styles.backText}>‹ Back</ThemedText>
           </Pressable>
           <ThemedText style={[styles.title, { color: tc.textPrimary }]}>MILBUDGETBUDDY PRO</ThemedText>
-          <View style={styles.backBtn} />
+          {/* The Pro gate dims and disables the ENTIRE app below it while
+              gated — including the bottom tab bar, since that renders inside
+              the same gated region. Paywall is one of the few always-allowed
+              screens, but "back" from here just returns to the dimmed tab
+              content, not to Settings specifically — so without this link, a
+              signed-in non-Pro member had literally no way to reach Settings
+              (sign out, account, etc.) at all once gated. */}
+          <Pressable onPress={() => router.push('/settings' as any)} style={styles.backBtn}>
+            <ThemedText style={[styles.backText, { textAlign: 'right' }]}>Settings</ThemedText>
+          </Pressable>
         </View>
 
         <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
