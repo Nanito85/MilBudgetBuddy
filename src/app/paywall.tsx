@@ -145,8 +145,68 @@ export default function PaywallScreen() {
     return true;
   };
 
+  // Shared by purchase()'s already-owned guard below and handleRestore().
+  // Verifies + acknowledges every available purchase matching this app's
+  // SKUs. Returns how many were successfully restored so callers can tailor
+  // their own messaging (a plain "restore" vs. an "you already own this,
+  // restoring instead of re-buying" redirect read very differently).
+  const verifyAndAcknowledgeAvailable = async (): Promise<{ restoredCount: number; lastError: any }> => {
+    const purchases = await getAvailablePurchases();
+    const proPurchases = purchases.filter((p) => PRO_SKUS.includes(p.productId) && p.purchaseToken);
+
+    let restoredCount = 0;
+    let lastError: any = null;
+    for (const p of proPurchases) {
+      try {
+        const result = await verifyPurchaseWithServer(p.purchaseToken!, p.productId);
+        setProEntitlement(result.proExpiresAt, 'purchase');
+        // Acknowledging here is the actual fix — it's what clears Google's
+        // "unacknowledged purchase" block, whether this purchase token is
+        // brand new or has been stuck since an earlier failed attempt.
+        await finishTransaction({ purchase: p, isConsumable: false });
+        restoredCount++;
+      } catch (e: any) {
+        lastError = e;
+        captureError(e, { stage: 'restore-verify-one', platform: Platform.OS, productId: p.productId });
+      }
+    }
+    return { restoredCount, lastError };
+  };
+
+  // Google (and Apple) reject launching a brand-new purchase flow for a
+  // subscription the store already thinks you own — including one that's
+  // just stuck unacknowledged from an earlier attempt — with a flat
+  // DEVELOPER_ERROR ("Invalid arguments provided to the API"). That error
+  // gives the member zero indication of what actually went wrong or what to
+  // do about it. Check for an existing owned purchase first and restore
+  // (verify + acknowledge) it instead of ever launching a doomed new
+  // purchase — this is exactly the state a purchase that failed to
+  // acknowledge the first time leaves someone in.
+  const restoreIfAlreadyOwned = async (): Promise<boolean> => {
+    const purchases = await getAvailablePurchases();
+    const alreadyOwned = purchases.some((p) => PRO_SKUS.includes(p.productId) && p.purchaseToken);
+    if (!alreadyOwned) return false;
+
+    Alert.alert(
+      'Already Purchased',
+      "You already have a MilBudgetBuddy Pro purchase on this account — restoring it now instead of starting a new one.",
+    );
+    const { restoredCount, lastError } = await verifyAndAcknowledgeAvailable();
+    if (restoredCount === 0 && lastError) {
+      captureError(lastError, { stage: 'purchase-already-owned-restore', platform: Platform.OS });
+      Alert.alert('Restore Failed', lastError?.message ?? 'Could not verify your existing purchase. Try Restore Purchases, or contact support.');
+    }
+    return true;
+  };
+
   const purchase = async () => {
     if (requireSignIn()) return;
+    setVerifying(true);
+    try {
+      if (await restoreIfAlreadyOwned()) return;
+    } finally {
+      setVerifying(false);
+    }
     if (Platform.OS === 'ios') {
       const sku = selected === 'monthly' ? IOS_MONTHLY_SKU : IOS_ANNUAL_SKU;
       const sub = subscriptions.find((s) => s.id === sku);
@@ -189,35 +249,14 @@ export default function PaywallScreen() {
       // which is exactly what produces Google's "Developer hasn't
       // acknowledged your purchase" error on any future purchase attempt).
       await restorePurchases();
-      const purchases = await getAvailablePurchases();
-      const proPurchases = purchases.filter((p) => PRO_SKUS.includes(p.productId) && p.purchaseToken);
+      const { restoredCount, lastError } = await verifyAndAcknowledgeAvailable();
 
-      if (proPurchases.length === 0) {
-        Alert.alert('Nothing to Restore', 'No active MilBudgetBuddy Pro purchase was found for this account.');
-        return;
-      }
-
-      let restoredAny = false;
-      let lastError: any = null;
-      for (const p of proPurchases) {
-        try {
-          const result = await verifyPurchaseWithServer(p.purchaseToken!, p.productId);
-          setProEntitlement(result.proExpiresAt, 'purchase');
-          // Acknowledging here is the actual fix — it's what clears Google's
-          // "unacknowledged purchase" block, whether this purchase token is
-          // brand new or has been stuck since an earlier failed attempt.
-          await finishTransaction({ purchase: p, isConsumable: false });
-          restoredAny = true;
-        } catch (e: any) {
-          lastError = e;
-          captureError(e, { stage: 'restore-verify-one', platform: Platform.OS, productId: p.productId });
-        }
-      }
-
-      if (restoredAny) {
+      if (restoredCount > 0) {
         Alert.alert('Restore Complete', 'Your subscription has been restored and acknowledged.');
+      } else if (lastError) {
+        throw lastError;
       } else {
-        throw lastError ?? new Error('Found a purchase but could not verify it.');
+        Alert.alert('Nothing to Restore', 'No active MilBudgetBuddy Pro purchase was found for this account.');
       }
     } catch (e: any) {
       captureError(e, { stage: 'restore-purchases', platform: Platform.OS });
