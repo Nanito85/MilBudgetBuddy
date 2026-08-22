@@ -69,10 +69,14 @@ export default function AdminUsageScreen() {
     setLoading(true); setError('');
     const token = await getToken();
     try {
+      // AbortSignal.timeout() isn't guaranteed to exist on every Hermes/React
+      // Native build (see src/services/iap.ts for the full story).
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
       const res = await fetch(`${API_BASE}/api/admin/tool-usage?days=${windowDays}`, {
         headers: { Authorization: `Bearer ${token}` },
-        signal: AbortSignal.timeout(10000),
-      });
+        signal: controller.signal,
+      }).finally(() => clearTimeout(timeoutId));
       if (!res.ok) throw new Error(`Status ${res.status}`);
       const body = await res.json();
       setTools(body.tools ?? []);

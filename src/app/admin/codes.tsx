@@ -62,6 +62,10 @@ function CreateCodeForm({ onCreated }: { onCreated: () => void }) {
     setSaving(true);
     const token = await getToken();
     try {
+      // AbortSignal.timeout() isn't guaranteed to exist on every Hermes/React
+      // Native build (see src/services/iap.ts for the full story).
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8000);
       const res = await fetch(`${API_BASE}/api/admin/codes`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
@@ -72,8 +76,8 @@ function CreateCodeForm({ onCreated }: { onCreated: () => void }) {
           maxUses:      parseInt(maxUses, 10) || 0,
           expiresAt:    expiresAt || null,
         }),
-        signal: AbortSignal.timeout(8000),
-      });
+        signal: controller.signal,
+      }).finally(() => clearTimeout(timeoutId));
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
         Alert.alert('Error', err.error ?? `Server error ${res.status}`);
@@ -208,10 +212,12 @@ export default function CodesScreen() {
     setLoading(true); setError('');
     const token = await getToken();
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8000);
       const res = await fetch(`${API_BASE}/api/admin/codes`, {
         headers: { Authorization: `Bearer ${token}` },
-        signal: AbortSignal.timeout(8000),
-      });
+        signal: controller.signal,
+      }).finally(() => clearTimeout(timeoutId));
       if (!res.ok) throw new Error(`Status ${res.status}`);
       const body = await res.json();
       setCodes(body.codes ?? []);

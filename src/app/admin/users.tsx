@@ -40,12 +40,24 @@ export default function AdminUsersScreen() {
 
   const call = async (path: string, body: object) => {
     const token = await getToken();
-    const res = await fetch(`${API_BASE}${path}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify(body),
-      signal: AbortSignal.timeout(15000),
-    });
+    // AbortSignal.timeout() isn't guaranteed to exist on every Hermes/React
+    // Native build — it's the exact thing that caused "undefined is not a
+    // function" throughout today's purchase-flow debugging (see
+    // src/services/iap.ts). Built manually instead of copying the pattern
+    // still used elsewhere (codes.tsx, usage.tsx — those are next).
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
+    let res: Response;
+    try {
+      res = await fetch(`${API_BASE}${path}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(body),
+        signal: controller.signal,
+      });
+    } finally {
+      clearTimeout(timeoutId);
+    }
     const data = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(data.error ?? `Server error ${res.status}`);
     return data;
