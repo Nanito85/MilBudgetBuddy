@@ -38,6 +38,7 @@ interface EntitlementRow {
   platform?: string;
   note?: string;
   verifiedAt?: string;
+  accountDeleted?: boolean;
 }
 
 export default function AdminUsersScreen() {
@@ -52,6 +53,8 @@ export default function AdminUsersScreen() {
   const [rowsLoading, setRowsLoading] = useState(true);
   const [rowsError, setRowsError] = useState('');
   const [rowBusyUid, setRowBusyUid] = useState<string | null>(null);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [loadingMore, setLoadingMore] = useState(false);
 
   // AbortSignal.timeout() isn't guaranteed to exist on every Hermes/React
   // Native build — it's the exact thing that caused "undefined is not a
@@ -81,15 +84,34 @@ export default function AdminUsersScreen() {
   };
   const call = (path: string, body: object) => request(path, { method: 'POST', body });
 
+  // Cursor-paginated (see the backend route's comment for why — an offset
+  // wouldn't hold up once this list is in the thousands). fetchRows() always
+  // starts a fresh first page; loadMore() appends using the cursor the
+  // server handed back from the previous page.
   const fetchRows = async () => {
     setRowsLoading(true); setRowsError('');
     try {
-      const data = await request('/api/admin/entitlements?limit=200');
+      const data = await request('/api/admin/entitlements?limit=50');
       setRows(data.rows ?? []);
+      setNextCursor(data.nextCursor ?? null);
     } catch (e: any) {
       setRowsError(e?.message ?? 'Failed to load granted access list');
     } finally {
       setRowsLoading(false);
+    }
+  };
+
+  const loadMore = async () => {
+    if (!nextCursor) return;
+    setLoadingMore(true);
+    try {
+      const data = await request(`/api/admin/entitlements?limit=50&cursor=${encodeURIComponent(nextCursor)}`);
+      setRows((prev) => [...prev, ...(data.rows ?? [])]);
+      setNextCursor(data.nextCursor ?? null);
+    } catch (e: any) {
+      Alert.alert('Error', e?.message ?? 'Failed to load more.');
+    } finally {
+      setLoadingMore(false);
     }
   };
 
@@ -273,17 +295,19 @@ export default function AdminUsersScreen() {
 
         {rows.map((row) => {
           const expired = row.proExpiresAt ? new Date(row.proExpiresAt) < new Date() : true;
-          const active = row.status === 'pro' && !expired;
-          const statusColor = active ? Brand.tactical : '#6B7280';
+          const active = row.status === 'pro' && !expired && !row.accountDeleted;
+          const statusColor = row.accountDeleted ? Brand.classified : active ? Brand.tactical : '#6B7280';
           return (
             <View key={row.uid} style={[s.rowCard, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
               <View style={s.rowTop}>
-                <ThemedText style={[s.rowEmail, { color: tc.textPrimary }]} numberOfLines={1}>
+                <ThemedText
+                  style={[s.rowEmail, { color: row.accountDeleted ? tc.textMuted : tc.textPrimary }]}
+                  numberOfLines={1}>
                   {row.email ?? row.uid}
                 </ThemedText>
                 <View style={[s.statusPill, { backgroundColor: statusColor + '20', borderColor: statusColor + '50' }]}>
                   <ThemedText style={[s.statusText, { color: statusColor }]}>
-                    {active ? 'ACTIVE' : expired ? 'EXPIRED' : 'FREE'}
+                    {row.accountDeleted ? 'ACCOUNT DELETED' : active ? 'ACTIVE' : expired ? 'EXPIRED' : 'FREE'}
                   </ThemedText>
                 </View>
               </View>
@@ -292,6 +316,11 @@ export default function AdminUsersScreen() {
                 {row.proExpiresAt ? ` · exp ${new Date(row.proExpiresAt).toLocaleDateString()}` : ''}
               </ThemedText>
               {!!row.note && <ThemedText style={[s.rowMeta, { color: tc.textMuted }]}>note: {row.note}</ThemedText>}
+              {row.accountDeleted && (
+                <ThemedText style={[s.rowMeta, { color: tc.textMuted, fontStyle: 'italic' }]}>
+                  This entitlement record is orphaned — the member's account no longer exists. Kept for history; nothing to revoke.
+                </ThemedText>
+              )}
               {active && (
                 <Pressable
                   onPress={() => handleRowRevoke(row)}
@@ -305,6 +334,17 @@ export default function AdminUsersScreen() {
             </View>
           );
         })}
+
+        {nextCursor && (
+          <Pressable
+            onPress={loadMore}
+            disabled={loadingMore}
+            style={[s.loadMoreBtn, { borderColor: tc.borderColor }, loadingMore && { opacity: 0.6 }]}>
+            {loadingMore
+              ? <ActivityIndicator color={Brand.accent} size="small" />
+              : <ThemedText style={[s.loadMoreText, { color: Brand.accent }]}>LOAD MORE</ThemedText>}
+          </Pressable>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -353,4 +393,7 @@ const s = StyleSheet.create({
   rowMeta: { fontSize: 10 },
   rowRevokeBtn: { alignSelf: 'flex-start', borderWidth: 1, borderRadius: 4, paddingHorizontal: Spacing.two, paddingVertical: 4, marginTop: 4 },
   rowRevokeText: { fontSize: 9, fontWeight: '800', letterSpacing: 0.5 },
+
+  loadMoreBtn: { borderWidth: 1, borderRadius: 6, padding: Spacing.two, alignItems: 'center', marginTop: Spacing.one },
+  loadMoreText: { fontSize: 11, fontWeight: '800', letterSpacing: 0.5 },
 });
