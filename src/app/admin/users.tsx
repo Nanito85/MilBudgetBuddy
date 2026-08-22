@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -29,6 +29,17 @@ interface LastResult {
   proExpiresAt?: string;
 }
 
+interface EntitlementRow {
+  uid: string;
+  email: string | null;
+  status?: string;
+  proExpiresAt?: string;
+  productId?: string;
+  platform?: string;
+  note?: string;
+  verifiedAt?: string;
+}
+
 export default function AdminUsersScreen() {
   const router = useRouter();
   const tc = useThemeColors();
@@ -37,22 +48,28 @@ export default function AdminUsersScreen() {
   const [note, setNote] = useState('');
   const [busy, setBusy] = useState<'grant' | 'revoke' | null>(null);
   const [lastResult, setLastResult] = useState<LastResult | null>(null);
+  const [rows, setRows] = useState<EntitlementRow[]>([]);
+  const [rowsLoading, setRowsLoading] = useState(true);
+  const [rowsError, setRowsError] = useState('');
+  const [rowBusyUid, setRowBusyUid] = useState<string | null>(null);
 
-  const call = async (path: string, body: object) => {
+  // AbortSignal.timeout() isn't guaranteed to exist on every Hermes/React
+  // Native build — it's the exact thing that caused "undefined is not a
+  // function" throughout today's purchase-flow debugging (see
+  // src/services/iap.ts). Built manually everywhere in this screen instead.
+  const request = async (path: string, options: { method?: string; body?: object } = {}) => {
     const token = await getToken();
-    // AbortSignal.timeout() isn't guaranteed to exist on every Hermes/React
-    // Native build — it's the exact thing that caused "undefined is not a
-    // function" throughout today's purchase-flow debugging (see
-    // src/services/iap.ts). Built manually instead of copying the pattern
-    // still used elsewhere (codes.tsx, usage.tsx — those are next).
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 15000);
     let res: Response;
     try {
       res = await fetch(`${API_BASE}${path}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify(body),
+        method: options.method ?? 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        ...(options.body ? { body: JSON.stringify(options.body) } : {}),
         signal: controller.signal,
       });
     } finally {
@@ -62,6 +79,21 @@ export default function AdminUsersScreen() {
     if (!res.ok) throw new Error(data.error ?? `Server error ${res.status}`);
     return data;
   };
+  const call = (path: string, body: object) => request(path, { method: 'POST', body });
+
+  const fetchRows = async () => {
+    setRowsLoading(true); setRowsError('');
+    try {
+      const data = await request('/api/admin/entitlements?limit=200');
+      setRows(data.rows ?? []);
+    } catch (e: any) {
+      setRowsError(e?.message ?? 'Failed to load granted access list');
+    } finally {
+      setRowsLoading(false);
+    }
+  };
+
+  useEffect(() => { fetchRows(); }, []);
 
   const handleGrant = async () => {
     const trimmed = email.trim();
@@ -78,6 +110,7 @@ export default function AdminUsersScreen() {
         `${trimmed} now has Pro until ${new Date(data.proExpiresAt).toLocaleDateString()}.\n\nThey'll see it unlock automatically next time the app syncs — no action needed on their end. If they're using the app right now, a force-close and reopen will pick it up immediately.`,
       );
       setEmail(''); setNote('');
+      fetchRows();
     } catch (e: any) {
       Alert.alert('Grant Failed', e?.message ?? 'Could not grant Pro access.');
     } finally {
@@ -100,10 +133,32 @@ export default function AdminUsersScreen() {
             setLastResult({ action: 'revoke', email: trimmed, uid: data.uid });
             Alert.alert('Pro Revoked', `${trimmed}'s Pro access has been removed.`);
             setEmail(''); setNote('');
+            fetchRows();
           } catch (e: any) {
             Alert.alert('Revoke Failed', e?.message ?? 'Could not revoke Pro access.');
           } finally {
             setBusy(null);
+          }
+        },
+      },
+    ]);
+  };
+
+  const handleRowRevoke = (row: EntitlementRow) => {
+    const label = row.email ?? row.uid;
+    Alert.alert('Revoke Pro', `Remove Pro access from ${label}?`, [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Revoke', style: 'destructive',
+        onPress: async () => {
+          setRowBusyUid(row.uid);
+          try {
+            await call('/api/admin/revoke-pro', { uid: row.uid });
+            fetchRows();
+          } catch (e: any) {
+            Alert.alert('Revoke Failed', e?.message ?? 'Could not revoke Pro access.');
+          } finally {
+            setRowBusyUid(null);
           }
         },
       },
@@ -202,6 +257,54 @@ export default function AdminUsersScreen() {
             )}
           </View>
         )}
+
+        <View style={s.listHeaderRow}>
+          <ThemedText style={s.sectionTitle}>// GRANTED / PRO ACCESS ({rows.length})</ThemedText>
+          <Pressable onPress={fetchRows}>
+            <ThemedText style={[s.refreshText, { color: Brand.accent }]}>REFRESH</ThemedText>
+          </Pressable>
+        </View>
+
+        {rowsLoading && <ActivityIndicator color={Brand.accent} style={{ marginTop: Spacing.two }} />}
+        {!!rowsError && <ThemedText style={[s.errorText, { color: Brand.classified }]}>{rowsError}</ThemedText>}
+        {!rowsLoading && !rowsError && rows.length === 0 && (
+          <ThemedText style={[s.emptyText, { color: tc.textMuted }]}>No entitlement records yet.</ThemedText>
+        )}
+
+        {rows.map((row) => {
+          const expired = row.proExpiresAt ? new Date(row.proExpiresAt) < new Date() : true;
+          const active = row.status === 'pro' && !expired;
+          const statusColor = active ? Brand.tactical : '#6B7280';
+          return (
+            <View key={row.uid} style={[s.rowCard, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
+              <View style={s.rowTop}>
+                <ThemedText style={[s.rowEmail, { color: tc.textPrimary }]} numberOfLines={1}>
+                  {row.email ?? row.uid}
+                </ThemedText>
+                <View style={[s.statusPill, { backgroundColor: statusColor + '20', borderColor: statusColor + '50' }]}>
+                  <ThemedText style={[s.statusText, { color: statusColor }]}>
+                    {active ? 'ACTIVE' : expired ? 'EXPIRED' : 'FREE'}
+                  </ThemedText>
+                </View>
+              </View>
+              <ThemedText style={[s.rowMeta, { color: tc.textSecondary }]}>
+                {row.productId ?? 'unknown'} · {row.platform ?? 'unknown'}
+                {row.proExpiresAt ? ` · exp ${new Date(row.proExpiresAt).toLocaleDateString()}` : ''}
+              </ThemedText>
+              {!!row.note && <ThemedText style={[s.rowMeta, { color: tc.textMuted }]}>note: {row.note}</ThemedText>}
+              {active && (
+                <Pressable
+                  onPress={() => handleRowRevoke(row)}
+                  disabled={rowBusyUid !== null}
+                  style={[s.rowRevokeBtn, { borderColor: Brand.classified + '50' }, rowBusyUid === row.uid && { opacity: 0.6 }]}>
+                  {rowBusyUid === row.uid
+                    ? <ActivityIndicator color={Brand.classified} size="small" />
+                    : <ThemedText style={[s.rowRevokeText, { color: Brand.classified }]}>REVOKE</ThemedText>}
+                </Pressable>
+              )}
+            </View>
+          );
+        })}
       </ScrollView>
     </SafeAreaView>
   );
@@ -235,4 +338,19 @@ const s = StyleSheet.create({
 
   resultText: { fontSize: 13, fontWeight: '700' },
   resultSub: { fontSize: 11, marginTop: 2, fontFamily: 'monospace' },
+
+  listHeaderRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: Spacing.two },
+  sectionTitle: { fontSize: 10, fontWeight: '800', color: Brand.tactical, letterSpacing: 1 },
+  refreshText: { fontSize: 11, fontWeight: '700' },
+  errorText: { fontSize: 12, textAlign: 'center', marginTop: Spacing.two },
+  emptyText: { fontSize: 12, textAlign: 'center', paddingVertical: Spacing.three },
+
+  rowCard: { borderWidth: 1, borderRadius: 8, padding: Spacing.two + 2, gap: 2 },
+  rowTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: Spacing.two },
+  rowEmail: { fontSize: 13, fontWeight: '700', flex: 1 },
+  statusPill: { borderWidth: 1, borderRadius: 4, paddingHorizontal: 6, paddingVertical: 2 },
+  statusText: { fontSize: 8, fontWeight: '900', letterSpacing: 1 },
+  rowMeta: { fontSize: 10 },
+  rowRevokeBtn: { alignSelf: 'flex-start', borderWidth: 1, borderRadius: 4, paddingHorizontal: Spacing.two, paddingVertical: 4, marginTop: 4 },
+  rowRevokeText: { fontSize: 9, fontWeight: '800', letterSpacing: 0.5 },
 });
