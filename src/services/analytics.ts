@@ -3,6 +3,8 @@
  * All events are anonymous-safe; no PII is sent unless explicitly included.
  * Falls back gracefully when offline or unauthenticated.
  */
+import { Platform } from 'react-native';
+
 import { auth } from '@/services/firebase';
 
 const API_BASE = process.env.EXPO_PUBLIC_API_BASE_URL ?? 'http://localhost:3000';
@@ -48,10 +50,16 @@ async function flush() {
     // Native build — built manually instead (see src/services/iap.ts).
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 5000);
+    // platform rides along on every flush (not per-event — cheap, and the
+    // backend just upserts a single "lastKnownPlatform" record per account
+    // from whichever flush arrives). This is currently the ONLY thing that
+    // fills in the Admin > All Accounts screen's Platform column for a free
+    // member who's never purchased or been granted Pro (previously the only
+    // source, entitlements, only ever existed for paying/granted accounts).
     await fetch(`${API_BASE}/api/analytics/events`, {
       method: 'POST',
       headers,
-      body: JSON.stringify({ events: batch }),
+      body: JSON.stringify({ events: batch, platform: Platform.OS }),
       signal: controller.signal,
     }).finally(() => clearTimeout(timeoutId));
   } catch {

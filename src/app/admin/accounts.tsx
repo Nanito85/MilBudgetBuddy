@@ -112,10 +112,9 @@ export default function AdminAccountsScreen() {
         <View style={[s.noticeCard, { backgroundColor: tc.surface, borderColor: Brand.tactical + '40' }]}>
           <ThemedText style={[s.noticeText, { color: tc.textSecondary }]}>
             Every account that's ever signed up, Android or iOS — Firebase accounts aren't tied to which store they
-            were created through, so this is one combined list, not two separate ones. The PLATFORM column is only
-            known for members who've purchased or been granted Pro (that's the only place the app currently records
-            which platform someone's on) — everyone else shows "Unknown." This is a real gap, not a bug: nothing else
-            in the app logs platform per account today.
+            were created through, so this is one combined list, not two separate ones. PLATFORM updates every time a
+            signed-in member opens the app (as of 2026-08-21) — a row still showing "Unknown" means that member
+            hasn't reopened the app since then, not that platform tracking is broken.
           </ThemedText>
         </View>
 
