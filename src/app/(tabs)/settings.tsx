@@ -692,6 +692,16 @@ export default function SettingsScreen() {
               <ThemedText style={[settingsProStyles.chevron, { color: '#8B5CF6' }]}>›</ThemedText>
             </Pressable>
             <Pressable
+              onPress={() => router.push('/admin/accounts' as any)}
+              style={({ pressed }) => [settingsProStyles.upgradeCard, { backgroundColor: card, borderColor: '#8B5CF640' }, pressed && { opacity: 0.7 }]}>
+              <ThemedText style={settingsProStyles.proIcon}>📋</ThemedText>
+              <View style={{ flex: 1 }}>
+                <ThemedText style={[settingsProStyles.proTitle, { color: '#8B5CF6' }]}>ADMIN — ALL ACCOUNTS</ThemedText>
+                <ThemedText style={[settingsProStyles.proSub, { color: textDim }]}>Every signed-up member, Android or iOS.</ThemedText>
+              </View>
+              <ThemedText style={[settingsProStyles.chevron, { color: '#8B5CF6' }]}>›</ThemedText>
+            </Pressable>
+            <Pressable
               onPress={() => router.push('/admin/users' as any)}
               style={({ pressed }) => [settingsProStyles.upgradeCard, { backgroundColor: card, borderColor: '#8B5CF640' }, pressed && { opacity: 0.7 }]}>
               <ThemedText style={settingsProStyles.proIcon}>👤</ThemedText>
