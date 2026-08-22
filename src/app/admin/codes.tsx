@@ -286,6 +286,19 @@ export default function CodesScreen() {
       </View>
 
       <ScrollView contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
+        <View style={[s.card, { backgroundColor: tc.surface, borderColor: Brand.classified + '40' }]}>
+          <ThemedText style={[s.cardTitle, { color: Brand.classified }]}>// NO IN-APP REDEMPTION</ThemedText>
+          <ThemedText style={{ color: tc.textSecondary, fontSize: 12, lineHeight: 18 }}>
+            Codes created here have nowhere to be entered — the client-side redeem screen was removed per Apple
+            Guideline 3.1.1. This screen is for record-keeping / a manually-applied backend redeem only. To
+            actually give someone free Pro access, use{' '}
+            <ThemedText style={{ color: Brand.tactical, fontWeight: '800' }} onPress={() => router.push('/admin/users' as any)}>
+              Grant / Revoke Pro
+            </ThemedText>{' '}
+            instead — it works immediately with no code.
+          </ThemedText>
+        </View>
+
         <CreateCodeForm onCreated={fetchCodes} />
 
         <ThemedText style={s.sectionTitle}>// EXISTING CODES ({codes.length})</ThemedText>

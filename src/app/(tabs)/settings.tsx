@@ -692,12 +692,22 @@ export default function SettingsScreen() {
               <ThemedText style={[settingsProStyles.chevron, { color: '#8B5CF6' }]}>›</ThemedText>
             </Pressable>
             <Pressable
+              onPress={() => router.push('/admin/users' as any)}
+              style={({ pressed }) => [settingsProStyles.upgradeCard, { backgroundColor: card, borderColor: '#8B5CF640' }, pressed && { opacity: 0.7 }]}>
+              <ThemedText style={settingsProStyles.proIcon}>👤</ThemedText>
+              <View style={{ flex: 1 }}>
+                <ThemedText style={[settingsProStyles.proTitle, { color: '#8B5CF6' }]}>ADMIN — GRANT / REVOKE PRO</ThemedText>
+                <ThemedText style={[settingsProStyles.proSub, { color: textDim }]}>Comp a member's account directly by email — actually works.</ThemedText>
+              </View>
+              <ThemedText style={[settingsProStyles.chevron, { color: '#8B5CF6' }]}>›</ThemedText>
+            </Pressable>
+            <Pressable
               onPress={() => router.push('/admin/codes' as any)}
               style={({ pressed }) => [settingsProStyles.upgradeCard, { backgroundColor: card, borderColor: '#8B5CF640' }, pressed && { opacity: 0.7 }]}>
               <ThemedText style={settingsProStyles.proIcon}>🎟️</ThemedText>
               <View style={{ flex: 1 }}>
                 <ThemedText style={[settingsProStyles.proTitle, { color: '#8B5CF6' }]}>ADMIN — DISCOUNT CODES</ThemedText>
-                <ThemedText style={[settingsProStyles.proSub, { color: textDim }]}>Create and manage promo codes for Pro access.</ThemedText>
+                <ThemedText style={[settingsProStyles.proSub, { color: textDim }]}>Record-keeping only — no in-app way for a member to redeem one.</ThemedText>
               </View>
               <ThemedText style={[settingsProStyles.chevron, { color: '#8B5CF6' }]}>›</ThemedText>
             </Pressable>
