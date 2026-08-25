@@ -95,26 +95,39 @@ interface Category {
   label: string;
   eyebrow: string;
   color: string;
+  // Category colors double as text (header label/count/chevron), not just
+  // decoration. The original hex values were tuned for contrast on a white
+  // background only — several of them (e.g. resources' #1A237E indigo) are
+  // nearly unreadable as text on the app's near-black dark-mode surface,
+  // and a couple of the brighter ones (gold/amber) have the opposite
+  // problem on light mode. These optional overrides give each category a
+  // per-theme variant that's actually readable in both; `color` remains
+  // the light-mode default and is still used for the decorative dot/icon
+  // tint on individual tool cards.
+  colorDark?: string;
+  colorLight?: string;
   items: MenuItem[];
 }
 
 const CATEGORIES: Category[] = [
-  { id: 'pay',        label: 'PAY & ENTITLEMENTS',    eyebrow: '// MILITARY COMPENSATION',  color: '#00695C', items: PAY_ENTITLEMENTS },
-  { id: 'pcs',        label: 'PCS & TRAVEL',          eyebrow: '// MOVES & REIMBURSEMENTS', color: '#1565C0', items: PCS_TRAVEL },
-  { id: 'budget',     label: 'BUDGET & WEALTH',       eyebrow: '// PERSONAL FINANCE',       color: '#B71C1C', items: BUDGET_WEALTH },
-  { id: 'retirement', label: 'RETIREMENT & VETERANS', eyebrow: '// LONG-TERM READINESS',    color: '#C8A800', items: RETIREMENT_VA },
-  { id: 'deployment', label: 'DEPLOYMENT',            eyebrow: '// COMBAT ZONE FINANCE',    color: '#2E7D32', items: DEPLOYMENT },
-  { id: 'resources',  label: 'GUIDES & RESOURCES',    eyebrow: '// REFERENCE & EDUCATION',  color: '#1A237E', items: RESOURCES },
-  { id: 'command',    label: 'FINANCIAL COMMAND',     eyebrow: '// READINESS & OPERATIONS', color: Brand.accent, items: COMMAND_TOOLS },
+  { id: 'pay',        label: 'PAY & ENTITLEMENTS',    eyebrow: '// MILITARY COMPENSATION',  color: '#00695C', colorDark: '#2FD9BE', items: PAY_ENTITLEMENTS },
+  { id: 'pcs',        label: 'PCS & TRAVEL',          eyebrow: '// MOVES & REIMBURSEMENTS', color: '#1565C0', colorDark: '#5B9DFF', items: PCS_TRAVEL },
+  { id: 'budget',     label: 'BUDGET & WEALTH',       eyebrow: '// PERSONAL FINANCE',       color: '#B71C1C', colorDark: '#FF6E6E', items: BUDGET_WEALTH },
+  { id: 'retirement', label: 'RETIREMENT & VETERANS', eyebrow: '// LONG-TERM READINESS',    color: '#C8A800', colorLight: '#8A6D00', items: RETIREMENT_VA },
+  { id: 'deployment', label: 'DEPLOYMENT',            eyebrow: '// COMBAT ZONE FINANCE',    color: '#2E7D32', colorDark: '#5FD467', items: DEPLOYMENT },
+  { id: 'resources',  label: 'GUIDES & RESOURCES',    eyebrow: '// REFERENCE & EDUCATION',  color: '#1A237E', colorDark: '#8C9EFF', items: RESOURCES },
+  { id: 'command',    label: 'FINANCIAL COMMAND',     eyebrow: '// READINESS & OPERATIONS', color: Brand.accent, colorLight: '#8F5C00', items: COMMAND_TOOLS },
 ];
 
 // ── Quick Situations ────────────────────────────────────────────────────────────
 
+// Same per-theme readability issue as CATEGORIES above — colorDark/colorLight
+// give each situation title a variant that's actually readable in that theme.
 const SITUATIONS = [
-  { id: 'pcs',     icon: '🚚', title: 'Moving / PCS',       subtitle: 'Compare pay, housing & schools', route: '/pcs-calculator',     color: '#1565C0' },
-  { id: 'deploy',  icon: '🪖', title: 'Deploying',           subtitle: 'Extra pay, tax savings & goals', route: '/deployment-calculator', color: '#2E7D32' },
-  { id: 'ets',     icon: '🎖️', title: 'Getting Out',         subtitle: 'Separation checklist & leave',   route: '/ets-checklist',      color: '#C8A800' },
-  { id: 'housing', icon: '🏠', title: 'Housing Decision',    subtitle: 'BAH lookup, on vs off-base',     route: '/bah-guide',          color: '#00695C' },
+  { id: 'pcs',     icon: '🚚', title: 'Moving / PCS',       subtitle: 'Compare pay, housing & schools', route: '/pcs-calculator',     color: '#1565C0', colorDark: '#5B9DFF' },
+  { id: 'deploy',  icon: '🪖', title: 'Deploying',           subtitle: 'Extra pay, tax savings & goals', route: '/deployment-calculator', color: '#2E7D32', colorDark: '#5FD467' },
+  { id: 'ets',     icon: '🎖️', title: 'Getting Out',         subtitle: 'Separation checklist & leave',   route: '/ets-checklist',      color: '#C8A800', colorLight: '#8A6D00' },
+  { id: 'housing', icon: '🏠', title: 'Housing Decision',    subtitle: 'BAH lookup, on vs off-base',     route: '/bah-guide',          color: '#00695C', colorDark: '#2FD9BE' },
 ];
 
 // ── Components ─────────────────────────────────────────────────────────────────
@@ -153,16 +166,19 @@ function CategorySection({
 }) {
   const tc = useThemeColors();
   const [expanded, setExpanded] = useState(false);
+  // Pick the theme-appropriate readable variant (see the Category type
+  // comment) instead of always using the light-tuned base color.
+  const labelColor = (tc.isLight ? category.colorLight : category.colorDark) ?? category.color;
   return (
     <View style={[styles.categoryBlock, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
       <Pressable onPress={() => setExpanded(v => !v)} style={styles.categoryHeader} hitSlop={8}>
-        <View style={[styles.categoryDot, { backgroundColor: category.color }]} />
+        <View style={[styles.categoryDot, { backgroundColor: labelColor }]} />
         <View style={{ flex: 1 }}>
           <ThemedText style={[styles.categoryEyebrow, { color: tc.textMuted }]}>{category.eyebrow}</ThemedText>
-          <ThemedText style={[styles.categoryLabel, { color: category.color }]}>{category.label}</ThemedText>
+          <ThemedText style={[styles.categoryLabel, { color: labelColor }]}>{category.label}</ThemedText>
         </View>
-        <ThemedText style={[styles.categoryCount, { color: category.color }]}>{category.items.length}</ThemedText>
-        <ThemedText style={[styles.categoryChevron, { color: category.color }]}>{expanded ? '▲' : '▼'}</ThemedText>
+        <ThemedText style={[styles.categoryCount, { color: labelColor }]}>{category.items.length}</ThemedText>
+        <ThemedText style={[styles.categoryChevron, { color: labelColor }]}>{expanded ? '▲' : '▼'}</ThemedText>
       </Pressable>
       {expanded && (
         <View style={[styles.categoryItems, { borderTopColor: tc.borderColor }]}>
@@ -273,18 +289,21 @@ export default function ToolsScreen() {
               <View style={[styles.sectionLine, { backgroundColor: tc.borderColor }]} />
             </View>
             <View style={styles.situationGrid}>
-              {SITUATIONS.map((s) => (
-                <Pressable
-                  key={s.id}
-                  onPress={() => router.push(s.route as any)}
-                  style={({ pressed }) => [styles.situationCard, { backgroundColor: tc.surface, borderColor: s.color + '40' }, pressed && { opacity: 0.7 }]}>
-                  <View style={[styles.situationIconWrap, { backgroundColor: s.color + '20' }]}>
-                    <ThemedText style={styles.situationIcon}>{s.icon}</ThemedText>
-                  </View>
-                  <ThemedText style={[styles.situationTitle, { color: s.color }]}>{s.title.toUpperCase()}</ThemedText>
-                  <ThemedText type="small" style={[styles.situationSub, { color: tc.textSecondary }]}>{s.subtitle}</ThemedText>
-                </Pressable>
-              ))}
+              {SITUATIONS.map((s) => {
+                const titleColor = (tc.isLight ? s.colorLight : s.colorDark) ?? s.color;
+                return (
+                  <Pressable
+                    key={s.id}
+                    onPress={() => router.push(s.route as any)}
+                    style={({ pressed }) => [styles.situationCard, { backgroundColor: tc.surface, borderColor: s.color + '40' }, pressed && { opacity: 0.7 }]}>
+                    <View style={[styles.situationIconWrap, { backgroundColor: s.color + '20' }]}>
+                      <ThemedText style={styles.situationIcon}>{s.icon}</ThemedText>
+                    </View>
+                    <ThemedText style={[styles.situationTitle, { color: titleColor }]}>{s.title.toUpperCase()}</ThemedText>
+                    <ThemedText type="small" style={[styles.situationSub, { color: tc.textSecondary }]}>{s.subtitle}</ThemedText>
+                  </Pressable>
+                );
+              })}
             </View>
 
 
