@@ -366,6 +366,17 @@ export default function ReservesScreen() {
                   <ThemedText style={[styles.heroSub, { color: tc.textMuted }]}>Pre-tax</ThemedText>
                 </View>
               </View>
+              {/* Which of the two inputs above is actually driving this number
+                  isn't obvious — the estimate silently switches from "Good
+                  Years" to "Total Retirement Points" the moment points is
+                  non-zero, so editing Good Years after that point does
+                  nothing with no visual indication why. Name the active
+                  method so that's no longer silent. */}
+              <ThemedText style={[styles.heroMethodNote, { color: tc.textMuted }]}>
+                {retirementPoints > 0
+                  ? `Using Total Retirement Points (${retirementPoints.toLocaleString()}) — Good Years above is ignored while this is set above 0.`
+                  : `Using Good Years (${goodYears}) — enter Total Retirement Points above for a more precise estimate.`}
+              </ThemedText>
             </ThemedView>
 
             <ThemedView type="backgroundElement" style={styles.card}>
@@ -591,6 +602,7 @@ const styles = StyleSheet.create({
   heroLabel: { fontSize: 8, fontWeight: '800', letterSpacing: 1 },
   heroValue: { fontSize: 22, fontWeight: '900', fontFamily: Fonts.data },
   heroSub: { fontSize: 10 },
+  heroMethodNote: { fontSize: 10, textAlign: 'center', lineHeight: 14, marginTop: Spacing.two },
 
   gradeGroup: { gap: Spacing.one },
   gradeGroupLabel: { fontSize: 8, fontWeight: '700', letterSpacing: 0.8 },

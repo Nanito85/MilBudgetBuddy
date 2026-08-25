@@ -95,10 +95,13 @@ export function calcGiBill(inputs: GiBillInputs): GiBillResult {
   const monthsRemaining = Math.max(0, GI_BILL_TOTAL_MONTHS - monthsUsed);
   const pctUsed = monthsUsed / GI_BILL_TOTAL_MONTHS;
 
-  // BAH
+  // BAH — every Post-9/11 GI Bill amount (tuition, book stipend, and this)
+  // scales by the member's eligibility tier %, same as annualTuitionCoverage
+  // and annualBookStipend below. The online flat rate is no exception: a
+  // member at 50% eligibility gets 50% of $1,261, not the full flat rate.
   let rawBah: number;
   if (schoolType === 'online_only') {
-    rawBah = GI_BILL_BAH_ONLINE;
+    rawBah = GI_BILL_BAH_ONLINE * tierRate;
   } else {
     rawBah = monthlyBahAtSchool * tierRate;
   }
@@ -137,7 +140,12 @@ export function calcGiBill(inputs: GiBillInputs): GiBillResult {
     monthsUsed,
     pctUsed,
     monthlyBah,
-    monthlyBahDisplay: schoolType === 'online_only' ? `$${GI_BILL_BAH_ONLINE.toLocaleString()}/mo (flat online rate)` : `$${monthlyBah.toLocaleString()}/mo`,
+    // Was displaying the raw, unscaled GI_BILL_BAH_ONLINE constant here even
+    // though monthlyBah (used in monthlyTotalValue below) is correctly
+    // scaled by tier % and enrollment rate — a half-time student at 50%
+    // eligibility saw "$1,261/mo" on screen while only ~$315 was actually
+    // counted in their total. Show the real computed number instead.
+    monthlyBahDisplay: schoolType === 'online_only' ? `$${monthlyBah.toLocaleString()}/mo (online rate)` : `$${monthlyBah.toLocaleString()}/mo`,
     monthlyBookStipend,
     monthlyTuitionCoveredDisplay: monthlyTuitionDisplay,
     annualTuitionCoverage,

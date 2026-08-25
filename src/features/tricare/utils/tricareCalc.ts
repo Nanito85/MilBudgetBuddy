@@ -232,18 +232,24 @@ export function calcTricare(inputs: TricareInputs): TricareResult {
   const primeEnroll = primeEnrollmentFee(status, group, familySize);
   const primeCopays = copayTotal(PRIME_COPAYS[status], usage);
   const pCap = catCap(status, group, 'prime');
-  const primeTotal = Math.min(
-    primeEnroll + primeCopays + rx + dentalCostAnnual,
-    primeEnroll + pCap + dentalCostAnnual,
-  );
+  // The catastrophic cap applies to copays + pharmacy cost-shares combined
+  // (real TRICARE rule), not to copays alone. Scale both line items down by
+  // the same ratio when the cap binds, so what's shown on screen (copays +
+  // pharmacy) still sums to what's actually capped — previously only copays
+  // were capped for display while pharmacy always showed its full, uncapped
+  // cost, so the visible line items could add up to more than the total.
+  const primeCostShare = primeCopays + rx;
+  const primeCappedShare = Math.min(primeCostShare, pCap);
+  const primeScale = primeCostShare > 0 ? primeCappedShare / primeCostShare : 1;
+  const primeTotal = primeEnroll + primeCappedShare + dentalCostAnnual;
 
   const prime: PlanDetail = {
     name: status === 'active' ? 'TRICARE Prime' : status === 'reserve' ? 'TRICARE Prime Remote' : 'TRICARE Prime',
     tag: 'PRIME',
     annualEnrollment: primeEnroll,
     deductible: 0,
-    estimatedCopays: Math.min(primeCopays, pCap),
-    estimatedRx: rx,
+    estimatedCopays: primeCopays * primeScale,
+    estimatedRx: rx * primeScale,
     dentalCost: dentalCostAnnual,
     totalEstimate: primeTotal,
     catCap: pCap,
@@ -257,12 +263,16 @@ export function calcTricare(inputs: TricareInputs): TricareResult {
     : selectEnrollmentFee(status, group, familySize);
   const deductible = selectDeductible(status, group, gradeTier, familySize);
   const altCostShare = copayTotal(selectCopaySet(status, group), usage);
-  const altCopays = deductible + altCostShare;
   const aCap = catCap(status, group, 'select');
-  const altTotal = Math.min(
-    altEnroll + altCopays + rx + dentalCostAnnual,
-    altEnroll + aCap + dentalCostAnnual,
-  );
+  // Same fix as Prime above, plus the deductible: TRICARE's catastrophic cap
+  // covers the deductible + copays/cost-shares + pharmacy combined (premiums
+  // are the only thing excluded), so all three must scale down together when
+  // the cap binds — previously the deductible and pharmacy lines always
+  // showed their full uncapped cost even when the total was capped.
+  const altCostShareTotal = deductible + altCostShare + rx;
+  const altCappedShare = Math.min(altCostShareTotal, aCap);
+  const altScale = altCostShareTotal > 0 ? altCappedShare / altCostShareTotal : 1;
+  const altTotal = altEnroll + altCappedShare + dentalCostAnnual;
 
   const altName = status === 'reserve' ? 'TRICARE Reserve Select' : 'TRICARE Select';
   const altTag  = status === 'reserve' ? 'TRS' : 'SELECT';
@@ -271,9 +281,9 @@ export function calcTricare(inputs: TricareInputs): TricareResult {
     name: altName,
     tag: altTag,
     annualEnrollment: altEnroll,
-    deductible,
-    estimatedCopays: Math.min(altCostShare, aCap),
-    estimatedRx: rx,
+    deductible: deductible * altScale,
+    estimatedCopays: altCostShare * altScale,
+    estimatedRx: rx * altScale,
     dentalCost: dentalCostAnnual,
     totalEstimate: altTotal,
     catCap: aCap,

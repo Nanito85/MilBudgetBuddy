@@ -113,7 +113,13 @@ export default function SbpCalculatorScreen() {
   const spouseLE = 84;
   const estCollectYears = Math.max(0, spouseLE - spouseAgeAtClaim);
   const estAnnuityTotal = result.monthlyAnnuity * 12 * estCollectYears;
-  const estPremiumTotal = result.annualPremium * (estRetireeDeathAge - retireeAge);
+  // Premiums stop once SBP is "paid-up" (30 years of premiums — same cap the
+  // break-even card above assumes, and what the "What is SBP?" card states).
+  // Without this cap, a retiree who retires young at 38-45 (this screen's
+  // own age-input range) and lives to 78 would be charged 33-40 years of
+  // premiums here while every other card on this same screen assumes 30.
+  const premiumYears = Math.min(Math.max(0, estRetireeDeathAge - retireeAge), 30);
+  const estPremiumTotal = result.annualPremium * premiumYears;
   const estNetBenefit = estAnnuityTotal - estPremiumTotal;
 
   return (

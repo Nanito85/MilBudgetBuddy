@@ -69,6 +69,13 @@ const E9_MAX_PAY = getBasicPay('E9', 40);
 const IDP_MONTHLY = 225;
 const FSA_MONTHLY = 300;
 const SDP_APR = 0.10;
+// Same rate calcLES uses (src/features/home/utils/lesCalc.ts) — kept in sync
+// so "take-home" means the same thing here as it does on Home/Pay Chart/
+// Budget. CZTE exempts basic pay from federal INCOME tax only; FICA still
+// applies in a combat zone, so it can't be dropped from either side of this
+// comparison without both "take-home" figures below silently overstating
+// actual net pay by ~7.65% of basic pay.
+const FICA_RATE = 0.0765;
 
 export function calcDeployment(inputs: DeploymentInputs): DeploymentResult {
   const {
@@ -112,12 +119,13 @@ export function calcDeployment(inputs: DeploymentInputs): DeploymentResult {
   const federalTaxNormal = taxablePayNormal * rate;
   const federalTaxCzte = taxablePayCzte * rate;
   const czteSavings = federalTaxNormal - federalTaxCzte;
+  const fica = basicPay * FICA_RATE;
 
-  const netTotal = grossTotal - federalTaxCzte;
+  const netTotal = grossTotal - federalTaxCzte - fica;
 
   // Comparison: normal month at home (no deployment pays)
   const normalMonthGross = basicPay + bah + bas;
-  const normalMonthNet = normalMonthGross - federalTaxNormal;
+  const normalMonthNet = normalMonthGross - federalTaxNormal - fica;
 
   // Extra per month vs home
   const extraPerMonth = netTotal - normalMonthNet;
