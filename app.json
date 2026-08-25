@@ -65,12 +65,21 @@
         {
           "organization": "milbudgetbuddy",
           "project": "milbudgetbuddy",
-          "uploadSourceMaps": false
+          "uploadSourceMaps": true
         }
       ],
       "expo-secure-store",
       "expo-iap",
-      "expo-sharing"
+      "expo-sharing",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "enableProguardInReleaseBuilds": true,
+            "enableShrinkResourcesInReleaseBuilds": true
+          }
+        }
+      ]
     ],
     "updates": {
       "url": "https://u.expo.dev/efdc8b09-9740-4992-bd14-1200d6d0e133"

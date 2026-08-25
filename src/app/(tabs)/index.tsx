@@ -393,44 +393,6 @@ export default function DashboardScreen() {
           </View>
         )}
 
-        {/* ── MISSION READINESS SCORE ──────────────────────────────── */}
-        {readinessScore !== null && readinessLabel && (
-          <View style={[styles.readinessCard, { backgroundColor: tc.surface, borderColor: readinessLabel.color + '40' }]}>
-            {/* Score + bar */}
-            <View style={styles.readinessTop}>
-              <View style={styles.readinessLeft}>
-                <ThemedText style={[styles.readinessEyebrow, { color: tc.textMuted }]}>// FINANCIAL READINESS</ThemedText>
-                <View style={styles.readinessScoreRow}>
-                  <ThemedText style={[styles.readinessScore, { color: readinessLabel.color }]}>{readinessScore}</ThemedText>
-                  <ThemedText style={[styles.readinessScoreMax, { color: tc.textMuted }]}>/100</ThemedText>
-                </View>
-                <ThemedText style={[styles.readinessLabel, { color: readinessLabel.color }]}>{readinessLabel.text}</ThemedText>
-              </View>
-              <View style={styles.readinessBarWrap}>
-                <View style={[styles.readinessTrack, { backgroundColor: tc.surfaceInner }]}>
-                  <View style={[styles.readinessFill, { height: `${readinessScore}%` as any, backgroundColor: readinessLabel.color }]} />
-                </View>
-              </View>
-            </View>
-            {/* Steps to 100 — show uncompleted items */}
-            {readinessScore < 100 && (
-              <View style={[styles.readinessSteps, { borderTopColor: tc.borderColor }]}>
-                <ThemedText style={[styles.readinessStepsTitle, { color: tc.textMuted }]}>STEPS TO REACH 100</ThemedText>
-                {readinessChecks.filter((c) => !c.done).map((c) => (
-                  <Pressable
-                    key={c.label}
-                    onPress={() => router.push('/profile' as any)}
-                    style={styles.readinessStep}>
-                    <ThemedText style={[styles.readinessStepIcon, { color: tc.textMuted }]}>○</ThemedText>
-                    <ThemedText style={[styles.readinessStepLabel, { color: tc.textSecondary }]}>{c.label}</ThemedText>
-                    <ThemedText style={styles.readinessStepPts}>+{c.pts}</ThemedText>
-                  </Pressable>
-                ))}
-              </View>
-            )}
-          </View>
-        )}
-
         {/* ── BUDGET OPS ────────────────────────────────────────────── */}
         {breakdown && (
           <View style={styles.section}>
@@ -554,6 +516,44 @@ export default function DashboardScreen() {
             <TipCard tip={tip} />
           </Pressable>
         </View>
+
+        {/* ── MISSION READINESS SCORE ──────────────────────────────── */}
+        {readinessScore !== null && readinessLabel && (
+          <View style={[styles.readinessCard, { backgroundColor: tc.surface, borderColor: readinessLabel.color + '40' }]}>
+            {/* Score + bar */}
+            <View style={styles.readinessTop}>
+              <View style={styles.readinessLeft}>
+                <ThemedText style={[styles.readinessEyebrow, { color: tc.textMuted }]}>// FINANCIAL READINESS</ThemedText>
+                <View style={styles.readinessScoreRow}>
+                  <ThemedText style={[styles.readinessScore, { color: readinessLabel.color }]}>{readinessScore}</ThemedText>
+                  <ThemedText style={[styles.readinessScoreMax, { color: tc.textMuted }]}>/100</ThemedText>
+                </View>
+                <ThemedText style={[styles.readinessLabel, { color: readinessLabel.color }]}>{readinessLabel.text}</ThemedText>
+              </View>
+              <View style={styles.readinessBarWrap}>
+                <View style={[styles.readinessTrack, { backgroundColor: tc.surfaceInner }]}>
+                  <View style={[styles.readinessFill, { height: `${readinessScore}%` as any, backgroundColor: readinessLabel.color }]} />
+                </View>
+              </View>
+            </View>
+            {/* Steps to 100 — show uncompleted items */}
+            {readinessScore < 100 && (
+              <View style={[styles.readinessSteps, { borderTopColor: tc.borderColor }]}>
+                <ThemedText style={[styles.readinessStepsTitle, { color: tc.textMuted }]}>STEPS TO REACH 100</ThemedText>
+                {readinessChecks.filter((c) => !c.done).map((c) => (
+                  <Pressable
+                    key={c.label}
+                    onPress={() => router.push('/profile' as any)}
+                    style={styles.readinessStep}>
+                    <ThemedText style={[styles.readinessStepIcon, { color: tc.textMuted }]}>○</ThemedText>
+                    <ThemedText style={[styles.readinessStepLabel, { color: tc.textSecondary }]}>{c.label}</ThemedText>
+                    <ThemedText style={styles.readinessStepPts}>+{c.pts}</ThemedText>
+                  </Pressable>
+                ))}
+              </View>
+            )}
+          </View>
+        )}
 
       </ScrollView>
     </ThemedView>
