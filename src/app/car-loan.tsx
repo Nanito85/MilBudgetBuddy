@@ -7,7 +7,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Brand, Fonts, Spacing } from '@/constants/theme';
 import { PAY_GRADES, PayGrade } from '@/data/bah-rates';
-import { getBasicPay } from '@/data/basic-pay-rates';
+import { calcLES } from '@/features/home/utils/lesCalc';
 import { useThemeColors } from '@/hooks/use-theme';
 import { useUserStore } from '@/store/user.store';
 
@@ -55,8 +55,19 @@ export default function CarLoanScreen() {
   const insets = useSafeAreaInsets();
   const tc = useThemeColors();
 
-  const storeGrade = useUserStore((s) => s.payGrade);
-  const storeYos   = useUserStore((s) => s.yos);
+  const storeGrade      = useUserStore((s) => s.payGrade);
+  const storeYos        = useUserStore((s) => s.yos);
+  const mhaZip           = useUserStore((s) => s.mhaZip);
+  const dutyStationId    = useUserStore((s) => s.dutyStationId);
+  const hasSpouse        = useUserStore((s) => s.hasSpouse);
+  const housingStatus    = useUserStore((s) => s.housingStatus);
+  const specialPays      = useUserStore((s) => s.specialPays);
+  const tspContribPct    = useUserStore((s) => s.tspContribPct);
+  const rothTspPct       = useUserStore((s) => s.rothTspPct);
+  const hasDentalFamily  = useUserStore((s) => s.hasDentalFamily);
+  const sglOptOut        = useUserStore((s) => s.sglOptOut);
+  const stateResidence   = useUserStore((s) => s.stateResidence);
+  const lesOverrides     = useUserStore((s) => s.lesOverrides);
 
   const [grade, setGrade]       = useState<PayGrade>(storeGrade ?? 'E4');
   const [price, setPrice]       = useState(20000);
@@ -65,13 +76,37 @@ export default function CarLoanScreen() {
   const [aprInput, setAprInput] = useState('8.9');
   const [term, setTerm]         = useState(60);
 
-  const basePay    = useMemo(() => getBasicPay(grade, storeYos ?? 4), [grade, storeYos]);
-  // Rough net take-home: base pay * 0.78 (approx after taxes/FICA)
-  const takeHome   = Math.round(basePay * 0.78);
+  const specialPaysTotal = useMemo(
+    () => specialPays.reduce((sum, p) => sum + p.monthlyAmount, 0),
+    [specialPays],
+  );
+
+  // Use the same net-pay engine as Home/Pay Chart/Budget instead of a rough
+  // guess, so "take-home" here means the same thing it means everywhere else
+  // in the app. Only overrides basic pay's own overridden value + the
+  // selected grade — everything else (duty station BAH, dependents, TSP,
+  // taxes) comes from the member's actual profile, applied to whichever
+  // grade is selected above (lets them preview "what if I were an E6").
+  const breakdown = useMemo(
+    () =>
+      calcLES({
+        payGrade: grade,
+        yos: storeYos ?? 4,
+        mhaZip, dutyStationId, hasSpouse, housingStatus, specialPaysTotal,
+        tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence,
+        overrides: grade === storeGrade ? lesOverrides : undefined,
+      }),
+    [grade, storeYos, mhaZip, dutyStationId, hasSpouse, housingStatus, specialPaysTotal, tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence, lesOverrides, storeGrade],
+  );
+  const basePay    = breakdown.basePay;
+  const takeHome   = Math.round(breakdown.netPay);
   const principal  = Math.max(0, price - downPmt);
   const payment    = calcPayment(principal, apr, term);
   const totalPaid  = payment * term;
   const totalInt   = totalPaid - principal;
+  // Everything you actually pay for the car over its life: sticker price
+  // plus every dollar of interest (down payment is already inside `price`).
+  const totalCost  = price + totalInt;
   const pct        = takeHome > 0 ? payment / takeHome : 0;
 
   // TSP equivalent: if they invested the payment at 7% for 20 years
@@ -263,7 +298,7 @@ export default function CarLoanScreen() {
             { label: 'Down payment', val: `−${fmt(downPmt)}`, color: Brand.tactical },
             { label: 'Amount financed', val: fmt(principal), color: tc.textPrimary },
             { label: `Interest (${term} months @ ${apr}%)`, val: fmt(totalInt), color: Brand.danger },
-            { label: 'Total you pay', val: fmt(price - downPmt + totalInt + downPmt), color: Brand.accent },
+            { label: 'Total you pay', val: fmt(totalCost), color: Brand.accent },
           ].map((row) => (
             <View key={row.label} style={s.breakRow}>
               <ThemedText style={[s.breakLabel, { color: tc.textSecondary }]}>{row.label}</ThemedText>
@@ -279,7 +314,7 @@ export default function CarLoanScreen() {
             If you invested that {fmt(payment)}/mo into TSP at 7% for 20 years instead:
           </ThemedText>
           <ThemedText style={[s.bigNum, { color: Brand.accent, marginTop: Spacing.one }]}>{fmt(tspVal)}</ThemedText>
-          <ThemedText style={[s.cardHint, { color: tc.textMuted }]}>That car loan could cost you {fmt(tspVal - price)} in long-term wealth.</ThemedText>
+          <ThemedText style={[s.cardHint, { color: tc.textMuted }]}>That car loan could cost you {fmt(tspVal - totalCost)} in long-term wealth.</ThemedText>
         </ThemedView>
 
         {/* Grade benchmark */}
