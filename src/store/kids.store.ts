@@ -40,12 +40,27 @@ function weekStart(date: string): string {
   return d.toISOString().slice(0, 10);
 }
 
-function getCompletedDateInPeriod(dates: string[], frequency: ChoreFrequency): string | null {
+// Exported so every screen that needs "is this chore already done/pending
+// this period" (KidModeScreen, ChoresList) shares one implementation instead
+// of each reimplementing it — two of the three previously had, which had
+// silently diverged (see periodKey below and the git history of this file).
+export function getCompletedDateInPeriod(dates: string[], frequency: ChoreFrequency): string | null {
   const t = today();
   switch (frequency) {
     case 'daily': return dates.includes(t) ? t : null;
     case 'weekly': { const ws = weekStart(t); return dates.find((d) => weekStart(d) === ws) ?? null; }
     case 'monthly': return dates.find((d) => d.slice(0, 7) === t.slice(0, 7)) ?? null;
+  }
+}
+
+// Maps a date to the key identifying which period (day/week/month) it falls
+// in, for the given frequency — used to detect "already pending this period"
+// below, and reusable anywhere else that needs the same period grouping.
+function periodKey(date: string, frequency: ChoreFrequency): string {
+  switch (frequency) {
+    case 'daily': return date;
+    case 'weekly': return weekStart(date);
+    case 'monthly': return date.slice(0, 7);
   }
 }
 
@@ -114,7 +129,11 @@ export const useKidsStore = create<KidsState>((set, get) => ({
         ...k,
         goals: k.goals.map((g) =>
           g.id === goalId
-            ? { ...g, name, emoji, targetAmount, currentAmount: Math.min(currentAmount, targetAmount) }
+            // Was missing the lower-bound clamp updateGoalProgress already
+            // has above -- the Edit Goal form's "amount saved" field doesn't
+            // filter input, so a negative number here would produce a
+            // negative progress bar and an inflated "amount left to go".
+            ? { ...g, name, emoji, targetAmount, currentAmount: Math.min(Math.max(0, currentAmount), targetAmount) }
             : g,
         ),
       };
@@ -201,10 +220,21 @@ export const useKidsStore = create<KidsState>((set, get) => ({
       if (k.id !== kidId) return k;
       const chore = k.chores.find((c) => c.id === choreId);
       if (!chore) return k;
-      // Already pending or done this period — skip
-      const alreadyPending = (k.pendingCompletions ?? []).some((p) => p.choreId === choreId && p.submittedDate === date);
+      const freq = chore.frequency ?? 'daily';
+      // Already pending or done THIS PERIOD — skip. This used to only check
+      // submittedDate === today, which only blocked re-submitting on the
+      // same day. For a weekly/monthly chore, a kid could submit Monday
+      // (pending, unapproved), then submit again Tuesday, Wednesday... each
+      // creating a separate pending completion for the same chore instance.
+      // If a parent later approved more than one of those, the kid would be
+      // credited multiple times for a chore that should only pay out once
+      // per period.
+      const currentPeriod = periodKey(date, freq);
+      const alreadyPending = (k.pendingCompletions ?? []).some(
+        (p) => p.choreId === choreId && periodKey(p.submittedDate, freq) === currentPeriod,
+      );
       if (alreadyPending) return k;
-      if (getCompletedDateInPeriod(chore.completedDates, chore.frequency ?? 'daily') !== null) return k;
+      if (getCompletedDateInPeriod(chore.completedDates, freq) !== null) return k;
       const pending: PendingCompletion = {
         id: uid(),
         choreId,

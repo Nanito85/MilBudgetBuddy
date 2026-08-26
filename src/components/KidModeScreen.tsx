@@ -12,7 +12,7 @@ import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
 import { useThemeColors } from '@/hooks/use-theme';
 import { useKidModeStore } from '@/store/kid-mode.store';
-import { useKidsStore } from '@/store/kids.store';
+import { getCompletedDateInPeriod, useKidsStore } from '@/store/kids.store';
 import { Chore, getKidTheme, KidProfile } from '@/types/kids.types';
 
 // ── Kid Intel Brief tips ────────────────────────────────────────────────────────
@@ -256,11 +256,14 @@ function ChoreRow({
   pendingIds: Set<string>;
   theme: ReturnType<typeof getKidTheme>;
 }) {
-  const tc = useThemeColors();
   const submitChoreForApproval = useKidsStore((s) => s.submitChoreForApproval);
 
-  const todayStr = new Date().toISOString().slice(0, 10);
-  const done = chore.completedDates.includes(todayStr);
+  // Was `chore.completedDates.includes(todayStr)` — only correct for daily
+  // chores. A weekly chore completed on Monday would stop showing as "done"
+  // by Tuesday (today's exact date isn't in completedDates), re-enabling the
+  // button and letting the kid submit another pending completion for the
+  // same weekly/monthly chore instance mid-period.
+  const done = getCompletedDateInPeriod(chore.completedDates, chore.frequency ?? 'daily') !== null;
   const pending = pendingIds.has(chore.id);
 
   const handlePress = () => {
@@ -286,14 +289,14 @@ function ChoreRow({
         {pending && <ThemedText style={choreStyles.checkMark}>⏳</ThemedText>}
       </View>
       <View style={{ flex: 1 }}>
-        <ThemedText style={[choreStyles.name, { color: tc.textPrimary }, done && { textDecorationLine: 'line-through', color: tc.textSecondary }]}>
+        <ThemedText style={[choreStyles.name, done && { textDecorationLine: 'line-through', color: 'rgba(255,255,255,0.5)' }]}>
           {chore.name}
         </ThemedText>
         {pending && (
           <ThemedText style={choreStyles.pendingLabel}>Awaiting Commander approval</ThemedText>
         )}
       </View>
-      <ThemedText style={[choreStyles.value, { color: done || pending ? tc.textSecondary : theme.accent }]}>
+      <ThemedText style={[choreStyles.value, { color: done || pending ? 'rgba(255,255,255,0.5)' : theme.accent }]}>
         +${chore.value.toFixed(2)}
       </ThemedText>
     </Pressable>
@@ -318,7 +321,7 @@ const choreStyles = StyleSheet.create({
     justifyContent: 'center',
   },
   checkMark: { color: '#fff', fontSize: 13, fontWeight: '900' },
-  name: { fontSize: 14, fontWeight: '600' },
+  name: { fontSize: 14, fontWeight: '600', color: '#FFFFFF' },
   pendingLabel: { fontSize: 10, color: '#FFB300', fontWeight: '700', marginTop: 1 },
   value: { fontSize: 13, fontWeight: '800' },
 });
@@ -326,7 +329,6 @@ const choreStyles = StyleSheet.create({
 // ── Goal progress card ──────────────────────────────────────────────────────────
 
 function GoalCard({ goal, theme }: { goal: KidProfile['goals'][0]; theme: ReturnType<typeof getKidTheme> }) {
-  const tc = useThemeColors();
   const pct = goal.targetAmount > 0 ? Math.min(1, goal.currentAmount / goal.targetAmount) : 0;
   const done = pct >= 1;
 
@@ -343,7 +345,7 @@ function GoalCard({ goal, theme }: { goal: KidProfile['goals'][0]; theme: Return
         <View style={[goalStyles.track, { backgroundColor: theme.primary + '20' }]}>
           <View style={[goalStyles.fill, { width: `${pct * 100}%` as any, backgroundColor: done ? '#00B27A' : theme.primary }]} />
         </View>
-        <ThemedText style={[goalStyles.amounts, { color: tc.textSecondary }]}>
+        <ThemedText style={goalStyles.amounts}>
           ${goal.currentAmount.toFixed(2)} saved of ${goal.targetAmount.toFixed(2)}
         </ThemedText>
       </View>
@@ -358,7 +360,7 @@ const goalStyles = StyleSheet.create({
   pct: { fontSize: 13, fontWeight: '800' },
   track: { height: 8, borderRadius: 4, overflow: 'hidden' },
   fill: { height: '100%', borderRadius: 4 },
-  amounts: { fontSize: 11 },
+  amounts: { fontSize: 11, color: 'rgba(255,255,255,0.6)' },
 });
 
 // ── Main kid mode screen ────────────────────────────────────────────────────────
@@ -395,10 +397,14 @@ export function KidModeScreen() {
   }
 
   const theme = getKidTheme(kid.gender);
-  const todayStr = new Date().toISOString().slice(0, 10);
   const pendingCompletions = kid.pendingCompletions ?? [];
   const pendingIds = new Set(pendingCompletions.map((p) => p.choreId));
-  const doneCount = kid.chores.filter((c) => c.completedDates.includes(todayStr) || pendingIds.has(c.id)).length;
+  // Same period-aware fix as ChoreRow's `done` above — a straight
+  // completedDates.includes(todayStr) undercounts weekly/monthly chores
+  // completed earlier in their period.
+  const doneCount = kid.chores.filter(
+    (c) => getCompletedDateInPeriod(c.completedDates, c.frequency ?? 'daily') !== null || pendingIds.has(c.id),
+  ).length;
   const firstGoalId = kid.goals.find((g) => g.currentAmount < g.targetAmount)?.id ?? kid.goals[0]?.id ?? '';
   const tip = MONEY_TIPS[tipIdx];
 
@@ -439,7 +445,7 @@ export function KidModeScreen() {
 
             {kid.chores.length === 0 ? (
               <View style={[screen.emptyBox, { backgroundColor: theme.card, borderColor: theme.primary + '20' }]}>
-                <ThemedText style={[screen.emptyText, { color: tc.textSecondary }]}>No missions yet — ask your parent to add some!</ThemedText>
+                <ThemedText style={screen.emptyText}>No missions yet — ask your parent to add some!</ThemedText>
               </View>
             ) : (
               kid.chores.map((chore) => (
@@ -453,7 +459,7 @@ export function KidModeScreen() {
             <ThemedText style={[screen.sectionTitle, { color: theme.accent }]}>🎯 SAVINGS GOALS</ThemedText>
             {kid.goals.length === 0 ? (
               <View style={[screen.emptyBox, { backgroundColor: theme.card, borderColor: theme.primary + '20' }]}>
-                <ThemedText style={[screen.emptyText, { color: tc.textSecondary }]}>No goals yet — ask your parent to set one up!</ThemedText>
+                <ThemedText style={screen.emptyText}>No goals yet — ask your parent to set one up!</ThemedText>
               </View>
             ) : (
               kid.goals.map((goal) => (
@@ -472,7 +478,7 @@ export function KidModeScreen() {
                   hitSlop={10} style={screen.tipNavBtn}>
                   <ThemedText style={[screen.tipNavText, { color: theme.primary }]}>‹</ThemedText>
                 </Pressable>
-                <ThemedText style={[screen.tipCounter, { color: tc.textSecondary }]}>{tipIdx + 1}/{MONEY_TIPS.length}</ThemedText>
+                <ThemedText style={screen.tipCounter}>{tipIdx + 1}/{MONEY_TIPS.length}</ThemedText>
                 <Pressable
                   onPress={() => setTipIdx((i) => (i + 1) % MONEY_TIPS.length)}
                   hitSlop={10} style={screen.tipNavBtn}>
@@ -484,7 +490,7 @@ export function KidModeScreen() {
               <ThemedText style={screen.tipIcon}>{tip.icon}</ThemedText>
               <View style={{ flex: 1, gap: 4 }}>
                 <ThemedText style={[screen.tipTitle, { color: theme.primary }]}>{tip.title}</ThemedText>
-                <ThemedText style={[screen.tipText, { color: tc.textSecondary }]}>{tip.body}</ThemedText>
+                <ThemedText style={screen.tipText}>{tip.body}</ThemedText>
               </View>
             </View>
           </View>
@@ -537,7 +543,11 @@ const screen = StyleSheet.create({
   sectionBadge: { fontSize: 10, fontWeight: '800', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10 },
 
   emptyBox: { borderWidth: 1, borderRadius: 8, borderStyle: 'dashed', padding: Spacing.three, alignItems: 'center' },
-  emptyText: { fontSize: 12, textAlign: 'center' },
+  // Fixed color, not adaptive — this screen's background (theme.bg) is
+  // always dark regardless of the app's own light/dark setting, so a
+  // Light Mode parent glancing at Kid Mode previously saw dark-on-dark
+  // (near-invisible) text here and in the tip card below.
+  emptyText: { fontSize: 12, textAlign: 'center', color: 'rgba(255,255,255,0.6)' },
 
   tipCard: { borderWidth: 1, borderRadius: 10, padding: Spacing.three, gap: Spacing.two },
   tipHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
@@ -545,9 +555,9 @@ const screen = StyleSheet.create({
   tipNav: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   tipNavBtn: { padding: 4 },
   tipNavText: { fontSize: 20, fontWeight: '300' },
-  tipCounter: { fontSize: 11 },
+  tipCounter: { fontSize: 11, color: 'rgba(255,255,255,0.5)' },
   tipBody: { flexDirection: 'row', gap: Spacing.two, alignItems: 'flex-start' },
   tipIcon: { fontSize: 28, lineHeight: 34, marginTop: 2 },
   tipTitle: { fontSize: 14, fontWeight: '900' },
-  tipText: { fontSize: 12, lineHeight: 18 },
+  tipText: { fontSize: 12, lineHeight: 18, color: 'rgba(255,255,255,0.75)' },
 });

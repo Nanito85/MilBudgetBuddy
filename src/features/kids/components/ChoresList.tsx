@@ -3,8 +3,8 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
-import { useThemeColors } from '@/hooks/use-theme';
-import { Chore, ChoreFrequency, Goal } from '@/types/kids.types';
+import { getCompletedDateInPeriod } from '@/store/kids.store';
+import { Chore, Goal } from '@/types/kids.types';
 
 interface Props {
   chores: Chore[];
@@ -15,34 +15,13 @@ interface Props {
   onUncomplete: (choreId: string, goalId?: string) => void;
 }
 
-function today() {
-  return new Date().toISOString().slice(0, 10);
-}
-
-function weekStart(date: string): string {
-  const d = new Date(date + 'T00:00:00Z');
-  const day = d.getUTCDay();
-  d.setUTCDate(d.getUTCDate() - (day === 0 ? 6 : day - 1));
-  return d.toISOString().slice(0, 10);
-}
-
-function isDoneInPeriod(completedDates: string[], frequency: ChoreFrequency): boolean {
-  const t = today();
-  switch (frequency) {
-    case 'daily': return completedDates.includes(t);
-    case 'weekly': { const ws = weekStart(t); return completedDates.some((d) => weekStart(d) === ws); }
-    case 'monthly': return completedDates.some((d) => d.slice(0, 7) === t.slice(0, 7));
-  }
-}
-
 export function ChoresList({ chores, goals, accentColor, onComplete, onUncomplete }: Props) {
   const primaryGoal = goals[0];
-  const tc = useThemeColors();
 
   if (chores.length === 0) {
     return (
       <View style={styles.empty}>
-        <ThemedText style={[styles.emptyText, { color: tc.textSecondary }]}>
+        <ThemedText style={styles.emptyText}>
           No chores yet. Ask a parent to add some!
         </ThemedText>
       </View>
@@ -52,7 +31,7 @@ export function ChoresList({ chores, goals, accentColor, onComplete, onUncomplet
   return (
     <View style={styles.container}>
       {chores.map((chore) => {
-        const done = isDoneInPeriod(chore.completedDates, chore.frequency ?? 'daily');
+        const done = getCompletedDateInPeriod(chore.completedDates, chore.frequency ?? 'daily') !== null;
         return (
           <Pressable
             key={chore.id}
@@ -65,7 +44,7 @@ export function ChoresList({ chores, goals, accentColor, onComplete, onUncomplet
             }}
             style={({ pressed }) => [
               styles.row,
-              { backgroundColor: tc.surface + 'CC', borderColor: accentColor + '40' },
+              { borderColor: accentColor + '40' },
               done && styles.rowDone,
               pressed && styles.pressed,
             ]}>
@@ -73,7 +52,7 @@ export function ChoresList({ chores, goals, accentColor, onComplete, onUncomplet
               {done && <ThemedText style={styles.checkmark}>✓</ThemedText>}
             </View>
             <View style={styles.info}>
-              <ThemedText style={[styles.choreName, { color: tc.textPrimary }, done && styles.doneText]}>
+              <ThemedText style={[styles.choreName, done && styles.doneText]}>
                 {chore.name}
               </ThemedText>
             </View>
@@ -89,10 +68,17 @@ export function ChoresList({ chores, goals, accentColor, onComplete, onUncomplet
   );
 }
 
+// This list only ever renders on the Kids feature's fixed dark "space
+// command" background (kids/[id].tsx sets backgroundColor: theme.bg
+// regardless of the app's own light/dark setting) — so these colors are
+// intentionally fixed rather than pulled from useThemeColors(). Using the
+// adaptive theme here previously meant a parent in Light Mode saw a
+// near-white translucent row with dark-on-dark text floating on the fixed
+// dark kid background.
 const styles = StyleSheet.create({
   container: { gap: Spacing.two },
   empty: { alignItems: 'center', paddingVertical: Spacing.four },
-  emptyText: { fontSize: 14, textAlign: 'center' },
+  emptyText: { fontSize: 14, textAlign: 'center', color: 'rgba(255,255,255,0.5)' },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -100,6 +86,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: Spacing.two,
     padding: Spacing.two + 4,
+    backgroundColor: 'rgba(255,255,255,0.06)',
   },
   rowDone: { opacity: 0.6 },
   pressed: { opacity: 0.7 },
@@ -114,7 +101,7 @@ const styles = StyleSheet.create({
   },
   checkmark: { color: '#FFFFFF', fontSize: 14, fontWeight: '700' },
   info: { flex: 1 },
-  choreName: { fontSize: 15, fontWeight: '600' },
+  choreName: { fontSize: 15, fontWeight: '600', color: '#FFFFFF' },
   doneText: { textDecorationLine: 'line-through', opacity: 0.7 },
   badge: {
     borderWidth: 1.5,
