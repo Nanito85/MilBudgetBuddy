@@ -68,6 +68,15 @@ function yearsAgo(iso: string): number {
   return Math.floor((Date.now() - new Date(iso).getTime()) / (365.25 * 864e5));
 }
 
+// Years of service AS OF a fixed date (retirement), not as of today — a
+// retiree's YOS must stay frozen at whatever it was the day they retired,
+// since it directly drives their retired-pay percentage (see
+// retiredPayMultiplier in lesCalc.ts). Using yearsAgo() here would keep
+// inflating a retiree's pay every year they stay retired.
+function yearsBetween(startIso: string, endIso: string): number {
+  return Math.floor((new Date(endIso).getTime() - new Date(startIso).getTime()) / (365.25 * 864e5));
+}
+
 function fmtMonthYear(iso: string) {
   if (!iso || iso.length < 7) return '';
   const [y, m] = iso.split('-');
@@ -802,16 +811,33 @@ function RetiredServiceInfoStep({
   onNext,
 }: {
   branch?: MilitaryBranch;
-  onNext: (grade: PayGrade | undefined, lastName: string, nickname: string, retirementDate: string, vaDisabilityPercent: number) => void;
+  onNext: (grade: PayGrade | undefined, lastName: string, nickname: string, retirementDate: string, vaDisabilityPercent: number, yos: number, enlistDate: string) => void;
 }) {
   const [grade, setGrade]         = useState<PayGrade>('E7');
   const [rankVariant, setRankVariant] = useState<RankVariant>('default');
   const [lastName, setLastName]   = useState('');
   const [nickname, setNickname]   = useState('');
+  const [enlistDate, setEnlistDate] = useState('');
   const [retirementDate, setRetirementDate] = useState('');
   const [vaPercent, setVaPercent] = useState(0);
+  const [yos, setYos]             = useState(20); // 20 = the standard minimum-retirement point
+  const [yosManual, setYosManual] = useState(false); // true if user overrode auto-calc
+  const [showEnlistPicker, setShowEnlistPicker] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const tc = useThemeColors();
+
+  // Auto-calculate years of service AT RETIREMENT (frozen — not still
+  // counting up to today) from the two dates, unless manually overridden.
+  // This is what drives the retired-pay percentage shown on the Home
+  // screen (50% at 20 YOS, +2.5%/year after — see lesCalc.ts), so getting
+  // this right matters a lot more here than it does for an active-duty
+  // profile where an inaccurate YOS just skews one BAH/pay-grade lookup.
+  useEffect(() => {
+    if (enlistDate && retirementDate && !yosManual) {
+      const calculated = yearsBetween(enlistDate, retirementDate);
+      if (calculated >= 0 && calculated <= 40) setYos(calculated);
+    }
+  }, [enlistDate, retirementDate]);
 
   const variants = branch && grade ? getDualVariants(branch, grade) : null;
 
@@ -891,6 +917,19 @@ function RetiredServiceInfoStep({
         </ThemedView>
       </View>
 
+      {/* Date of Enlistment / Commission */}
+      <View style={styles.fieldBlock}>
+        <ThemedText type="smallBold" themeColor="textSecondary" style={styles.fieldLabel}>
+          DATE OF ENLISTMENT / COMMISSION
+        </ThemedText>
+        <Pressable onPress={() => setShowEnlistPicker(true)} style={styles.dateTrigger}>
+          <ThemedText style={[styles.dateValue, !enlistDate && styles.datePlaceholder]}>
+            {enlistDate ? fmtDate(enlistDate) : 'Tap to select date'}
+          </ThemedText>
+          <ThemedText style={styles.dateIcon}>📅</ThemedText>
+        </Pressable>
+      </View>
+
       {/* Month/Year of Retirement */}
       <View style={styles.fieldBlock}>
         <ThemedText type="smallBold" themeColor="textSecondary" style={styles.fieldLabel}>
@@ -902,6 +941,21 @@ function RetiredServiceInfoStep({
           </ThemedText>
           <ThemedText style={styles.dateIcon}>📅</ThemedText>
         </Pressable>
+      </View>
+
+      {/* Years of Service at Retirement — drives the retired-pay % shown on Home */}
+      <View style={styles.fieldBlock}>
+        <NumberStepper
+          label={enlistDate && retirementDate ? 'Years of Service at Retirement (auto-calculated — override if needed)' : 'Years of Service at Retirement'}
+          value={yos}
+          min={0}
+          max={40}
+          onChange={(v) => { setYos(v); setYosManual(true); }}
+          unit="yrs"
+        />
+        <ThemedText type="small" themeColor="textSecondary" style={{ lineHeight: 18, marginTop: 4 }}>
+          Determines your retired pay: 50% of your High-3 average base pay at 20 years, +2.5% for every year beyond that.
+        </ThemedText>
       </View>
 
       {/* VA Disability Percentage */}
@@ -928,12 +982,12 @@ function RetiredServiceInfoStep({
 
       <View style={styles.btnGroup}>
         <Pressable
-          onPress={() => onNext(grade, lastName, nickname, retirementDate, vaPercent)}
+          onPress={() => onNext(grade, lastName, nickname, retirementDate, vaPercent, yos, enlistDate)}
           style={({ pressed }) => [styles.primaryBtn, pressed && styles.btnPressed]}>
           <ThemedText style={styles.primaryBtnText}>Continue  →</ThemedText>
         </Pressable>
         <Pressable
-          onPress={() => onNext(undefined, '', '', '', 0)}
+          onPress={() => onNext(undefined, '', '', '', 0, 0, '')}
           hitSlop={8}
           style={styles.skipBtn}>
           <ThemedText type="small" themeColor="textSecondary">Skip for now</ThemedText>
@@ -941,6 +995,14 @@ function RetiredServiceInfoStep({
       </View>
 
     </ScrollView>
+
+    <DatePickerModal
+      visible={showEnlistPicker}
+      value={enlistDate}
+      title="Date of Enlistment / Commission"
+      onConfirm={(d) => { setEnlistDate(d); setShowEnlistPicker(false); }}
+      onCancel={() => setShowEnlistPicker(false)}
+    />
 
     <DatePickerModal
       visible={showDatePicker}
@@ -1274,9 +1336,16 @@ export function OnboardingFlow() {
     nickname: string,
     retirementDate: string,
     vaDisabilityPercent: number,
+    yos: number,
+    enlistDate: string,
   ) => {
     if (grade) {
-      setServiceInfo(grade, lastName, nickname, 0, undefined, undefined);
+      // yos here is years of service AS OF RETIREMENT (frozen), not years
+      // since enlistment to today — see yearsBetween's doc comment. This is
+      // what lesCalc.ts's retiredPayMultiplier uses to compute retired pay,
+      // so a retired member who skips this no longer silently gets yos=0
+      // (and therefore $0 retired pay) on the Home screen.
+      setServiceInfo(grade, lastName, nickname, yos, enlistDate || undefined, undefined);
     }
     setRetiredInfo(retirementDate || undefined, vaDisabilityPercent);
     setStep(5);

@@ -84,6 +84,17 @@ function yearsFromDate(iso: string | undefined): number | null {
   return Math.floor(ms / (365.25 * 24 * 3600 * 1000));
 }
 
+// Years between two fixed dates — used instead of yearsFromDate for a
+// retired member's YOS, which must stay frozen at whatever it was on their
+// retirement date, not keep climbing every year they stay retired. YOS
+// directly drives the retired-pay percentage on Home (see lesCalc.ts's
+// retiredPayMultiplier), so this matters for more than just display.
+function yearsBetweenDates(startIso: string | undefined, endIso: string | undefined): number | null {
+  if (!startIso || !endIso || !/^\d{4}-\d{2}-\d{2}$/.test(startIso) || !/^\d{4}-\d{2}(-\d{2})?$/.test(endIso)) return null;
+  const ms = new Date(endIso).getTime() - new Date(startIso).getTime();
+  return Math.floor(ms / (365.25 * 24 * 3600 * 1000));
+}
+
 const VA_PICKER_OPTIONS = [0, ...VALID_RATINGS];
 
 const STATUS_CHOICES: { value: ServiceStatus; label: string; emoji: string }[] = [
@@ -394,14 +405,20 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
   const [enlistDate, setEnlistDate] = useState(dateOfEnlist ?? '');
   const [rankDate, setRankDate]   = useState(dateOfRank ?? '');
 
-  // Auto-calc YOS from enlistment date unless manually overridden
+  // Auto-calc YOS from enlistment date unless manually overridden. For a
+  // retired member this must be frozen at their retirement date, not still
+  // counting up to today — see yearsBetweenDates's doc comment.
   useEffect(() => {
-    if (enlistDate && !yManual) {
-      const ms = Date.now() - new Date(enlistDate).getTime();
-      const calc = Math.floor(ms / (365.25 * 864e5));
-      if (calc >= 0 && calc <= 40) setY(calc);
+    if (!enlistDate || yManual) return;
+    if (isRetired) {
+      const calc = yearsBetweenDates(enlistDate, retirementDate);
+      if (calc !== null && calc >= 0 && calc <= 40) setY(calc);
+      return;
     }
-  }, [enlistDate]);
+    const ms = Date.now() - new Date(enlistDate).getTime();
+    const calc = Math.floor(ms / (365.25 * 864e5));
+    if (calc >= 0 && calc <= 40) setY(calc);
+  }, [enlistDate, retirementDate, isRetired]);
   const [gsGrade, setGsGrade]     = useState(storedGsGrade ?? 7);
   const [gsStep, setGsStep]       = useState(storedGsStep ?? 1);
   const [showStatePicker, setShowStatePicker]   = useState(false);
@@ -609,8 +626,11 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
               </ThemedText>
               <ThemedText style={{ fontSize: 18, paddingRight: 4 }}>📅</ThemedText>
             </Pressable>
-            {enlistDate && yearsFromDate(enlistDate) !== null && (
+            {enlistDate && !isRetired && yearsFromDate(enlistDate) !== null && (
               <ThemedText style={editStyles.dateHint}>↳ {yearsFromDate(enlistDate)} years of service (auto-calculated)</ThemedText>
+            )}
+            {enlistDate && isRetired && yearsBetweenDates(enlistDate, retirementDate) !== null && (
+              <ThemedText style={editStyles.dateHint}>↳ {yearsBetweenDates(enlistDate, retirementDate)} years of service at retirement (auto-calculated)</ThemedText>
             )}
 
             <ThemedText style={[editStyles.fieldLabel, { color: tc.textHint }]}>DATE OF CURRENT RANK</ThemedText>
@@ -627,13 +647,26 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
             )}
 
             <NumberStepper
-              label={enlistDate ? 'Years of Service (auto-calculated — tap to override)' : 'Years of Service'}
+              label={
+                isRetired
+                  ? enlistDate && retirementDate
+                    ? 'Years of Service at Retirement (auto-calculated — tap to override)'
+                    : 'Years of Service at Retirement'
+                  : enlistDate
+                    ? 'Years of Service (auto-calculated — tap to override)'
+                    : 'Years of Service'
+              }
               value={y}
               min={0}
               max={40}
               onChange={(v) => { setY(v); setYManual(true); }}
               unit="yrs"
             />
+            {isRetired && (
+              <ThemedText style={[editStyles.fieldHint, { color: tc.textHint, marginTop: -Spacing.two }]}>
+                Determines your retired pay: 50% of High-3 average base pay at 20 years, +2.5% for every year beyond that.
+              </ThemedText>
+            )}
 
             {/* Reserve/Guard — drills per month (drives drill pay) */}
             {isReserve && (
