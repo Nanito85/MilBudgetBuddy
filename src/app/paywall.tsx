@@ -150,12 +150,27 @@ export default function PaywallScreen() {
   // verifyPurchaseWithServer) — a signed-out member could still open the
   // store's buy sheet and pay, but the app could never verify or acknowledge
   // it afterward, landing them in exactly the "paid but not unlocked, and
-  // Google now blocks retrying" state this was built to prevent. Send them
-  // to sign in first instead of letting that happen.
-  const requireSignIn = (): boolean => {
-    if (authUser) return false;
-    router.push('/auth/sign-in' as any);
-    return true;
+  // Google now blocks retrying" state this was built to prevent.
+  //
+  // This USED to send the member to a full sign-up/sign-in screen first —
+  // Apple rejected that under Guideline 5.1.1(v): registration can't be
+  // required before purchasing an IAP that isn't itself account-based
+  // content. Fixed by getting a token silently instead: ensureSignedIn()
+  // (see auth.store.ts) creates an anonymous Firebase session with zero UI
+  // and zero personal info if nobody's signed in yet, which is enough for
+  // the backend to verify + grant the entitlement. Real sign-in stays
+  // available afterward (Settings) for anyone who wants the purchase to
+  // follow them across devices — exactly what Apple's own guidance
+  // suggests offering instead of forced registration.
+  const ensureAuthed = async (): Promise<boolean> => {
+    try {
+      await useAuthStore.getState().ensureSignedIn();
+      return true;
+    } catch (e: any) {
+      captureError(e, { stage: 'ensure-signed-in', platform: Platform.OS });
+      Alert.alert('Could Not Continue', withDebugInfo(e, 'Could not start checkout. Check your connection and try again.'));
+      return false;
+    }
   };
 
   // getAvailablePurchases() and getActiveSubscriptions() call two genuinely
@@ -271,7 +286,7 @@ export default function PaywallScreen() {
   };
 
   const purchase = async () => {
-    if (requireSignIn()) return;
+    if (!(await ensureAuthed())) return;
     setVerifying(true);
     try {
       if (await restoreIfAlreadyOwned()) return;
@@ -314,7 +329,7 @@ export default function PaywallScreen() {
   };
 
   const handleRestore = async () => {
-    if (requireSignIn()) return;
+    if (!(await ensureAuthed())) return;
     setVerifying(true);
     try {
       // restorePurchases() only triggers the native refresh (iOS sync /
@@ -418,10 +433,15 @@ export default function PaywallScreen() {
                 </Pressable>
               </View>
 
-              {!authUser && (
-                <ThemedText type="small" style={[styles.signInNotice, { color: Brand.tactical }]}>
-                  You'll need to sign in first — purchases are tied to your account so they sync
-                  across devices and can be verified.
+              {/* No sign-in required to purchase (Apple Guideline 5.1.1(v) —
+                  registration can't be required for an IAP that isn't itself
+                  account-based content). This is just an optional heads-up;
+                  ensureAuthed() silently creates an anonymous session behind
+                  the scenes regardless, so the purchase always proceeds. */}
+              {(!authUser || authUser.isAnonymous) && (
+                <ThemedText type="small" style={[styles.signInNotice, { color: tc.textSecondary }]}>
+                  No account needed to subscribe. Sign in anytime in Settings to carry your
+                  purchase over to your other devices.
                 </ThemedText>
               )}
 
@@ -430,9 +450,7 @@ export default function PaywallScreen() {
                 disabled={verifying}
                 style={({ pressed }) => [styles.ctaBtn, (pressed || verifying) && { opacity: 0.7 }]}>
                 {verifying ? <ActivityIndicator color="#04080F" /> : (
-                  <ThemedText style={styles.ctaBtnText}>
-                    {authUser ? 'START 7-DAY FREE TRIAL' : 'SIGN IN TO CONTINUE'}
-                  </ThemedText>
+                  <ThemedText style={styles.ctaBtnText}>START 7-DAY FREE TRIAL</ThemedText>
                 )}
               </Pressable>
 

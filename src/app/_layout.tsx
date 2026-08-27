@@ -58,10 +58,16 @@ export default function RootLayout() {
     };
   }, []);
 
-  // When a user signs in/out, sync data
+  // When a user signs in/out, sync data. Anonymous sessions (created
+  // silently by the paywall so a purchase never has to force a real
+  // sign-up screen first — see auth.store.ts's ensureSignedIn) are
+  // deliberately treated the same as signed-out here: they exist purely so
+  // IAP verification has a uid/ID token to call the backend with, and must
+  // NOT silently turn on full cloud sync for someone who never asked for an
+  // account. Only a real (non-anonymous) sign-in starts sync.
   useEffect(() => {
     if (!initialized) return;
-    if (user) {
+    if (user && !user.isAnonymous) {
       setUserContext(user.uid);
       trackEvent('user_signed_in');
       // Signed in — pull cloud data (if exists) then start real-time sync

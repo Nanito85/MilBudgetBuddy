@@ -166,7 +166,12 @@ export function FeedbackModal({ visible, onClose }: Props) {
                 <ThemedText style={[styles.autoItem, { color: tc.textHint }]}>Screen: {pathname}</ThemedText>
                 <ThemedText style={[styles.autoItem, { color: tc.textHint }]}>Version: {Constants.expoConfig?.version ?? '1.0.0'}</ThemedText>
                 <ThemedText style={[styles.autoItem, { color: tc.textHint }]}>Device: {Platform.OS}</ThemedText>
-                {user && <ThemedText style={[styles.autoItem, { color: tc.textHint }]}>Account: {user.email}</ThemedText>}
+                {/* user can now also be an anonymous Firebase session (created
+                    silently for IAP purchases — see auth.store.ts's
+                    ensureSignedIn) which has no email; showing "Account: "
+                    with nothing after it would look broken, so only show
+                    this line for a real signed-in account. */}
+                {user && !user.isAnonymous && <ThemedText style={[styles.autoItem, { color: tc.textHint }]}>Account: {user.email}</ThemedText>}
               </View>
 
               {/* Error */}

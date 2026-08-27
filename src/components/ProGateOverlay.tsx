@@ -6,7 +6,6 @@ import { ThemedText } from '@/components/themed-text';
 import { Brand, Spacing } from '@/constants/theme';
 import { useIsAdmin } from '@/hooks/use-admin';
 import { useIsPro } from '@/hooks/use-is-pro';
-import { useAuthStore } from '@/store/auth.store';
 
 // Master kill switch — flip to true and OTA-publish once the Pro subscription
 // (7-day trial via Google Play/App Store) has actually gone live in both
@@ -18,13 +17,14 @@ import { useAuthStore } from '@/store/auth.store';
 // works end to end on Android.
 const PRO_GATE_ENABLED = true;
 
-// iOS purchase verification is still stubbed server-side (milbudgetbuddy-api
-// src/routes/iap.ts returns 501 for platform: 'ios' — needs a .p8 signing
-// key + Key ID + Issuer ID from App Store Connect that don't exist yet). If
-// the gate applied to iOS now, an iOS member could pay Apple and STILL never
-// unlock — verification would 501 forever, worse than today's free access.
-// So the gate is Android-only until that backend gap is closed; flip this to
-// `true` (or drop the platform check) once iOS verification actually works.
+// iOS purchase verification IS implemented server-side now
+// (milbudgetbuddy-api's src/lib/apple-verify.ts cryptographically verifies
+// the signedTransaction JWS via Apple's official app-store-server-library —
+// no stub, no 501). This flag is just OFF because that path hasn't had a
+// real sandbox purchase test on iOS yet (see PRO_GATE_ENABLED's comment
+// above for what that looked like on Android before it was flipped on).
+// Flip to `true` once an iOS sandbox buy -> verify -> proExpiresAt unlock
+// has actually been exercised end to end.
 const IOS_GATE_ENABLED = false;
 const GATE_ACTIVE_ON_THIS_PLATFORM = Platform.OS === 'ios' ? IOS_GATE_ENABLED : PRO_GATE_ENABLED;
 
@@ -55,25 +55,20 @@ export function ProGateOverlay({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const isPro = useIsPro();
   const { isAdmin } = useIsAdmin();
-  const authUser = useAuthStore((s) => s.user);
 
   const allowed = ALWAYS_ALLOWED_PREFIXES.some((p) => pathname === p || pathname.startsWith(p + '/'));
   const gated = GATE_ACTIVE_ON_THIS_PLATFORM && !isPro && !isAdmin && !allowed;
 
   // The gate dims and disables pointerEvents on the ENTIRE app content below
   // — including the bottom tab bar, since that's rendered inside `children`
-  // too. That's fine for a signed-in member (the floating card routes them
-  // straight to checkout), but a signed-out member has no way to purchase
-  // (verification requires an auth token) and, before this fix, had no way
-  // to even REACH sign-in either — the only tappable thing left anywhere in
-  // the app was this card, which pushed straight to /paywall, and paywall
-  // itself has no sign-in UI. That's a hard lockout, not just an inconvenience.
-  // So: send a signed-out member to sign-in first, not straight to paywall.
-  const unlockRoute = authUser ? '/paywall' : '/auth/sign-in';
-  const unlockCopy = authUser
-    ? 'Start your 7-day free trial to unlock this screen — and everything else.'
-    : 'Sign in to start your 7-day free trial and unlock this screen — and everything else.';
-  const unlockBtnLabel = authUser ? 'UNLOCK NOW' : 'SIGN IN';
+  // too. This USED to send a signed-out member to /auth/sign-in first,
+  // before they could even reach the paywall — Apple rejected that under
+  // Guideline 5.1.1(v): registration can't be required before purchasing an
+  // IAP that isn't itself account-based content. Always go straight to
+  // /paywall now; paywall.tsx's own purchase flow silently creates an
+  // anonymous session as needed (see auth.store.ts's ensureSignedIn) rather
+  // than forcing a sign-in screen in front of the user.
+  const unlockCopy = 'Start your 7-day free trial to unlock this screen — and everything else.';
 
   return (
     <View style={{ flex: 1 }}>
@@ -83,12 +78,12 @@ export function ProGateOverlay({ children }: { children: React.ReactNode }) {
 
       {gated && (
         <View style={styles.overlay} pointerEvents="box-none">
-          <Pressable style={styles.card} onPress={() => router.push(unlockRoute as any)}>
+          <Pressable style={styles.card} onPress={() => router.push('/paywall' as any)}>
             <ThemedText style={styles.lockIcon}>🔒</ThemedText>
             <ThemedText style={styles.title}>MILBUDGETBUDDY PRO</ThemedText>
             <ThemedText style={styles.sub}>{unlockCopy}</ThemedText>
             <View style={styles.btn}>
-              <ThemedText style={styles.btnText}>{unlockBtnLabel}</ThemedText>
+              <ThemedText style={styles.btnText}>UNLOCK NOW</ThemedText>
             </View>
           </Pressable>
         </View>

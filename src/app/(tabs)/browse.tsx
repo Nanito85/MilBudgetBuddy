@@ -1,6 +1,7 @@
+import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useMemo, useState } from 'react';
-import { Alert, Image, Modal, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import { Alert, Modal, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
@@ -367,6 +368,12 @@ export default function KidsScreen() {
           </View>
         ) : (
           <View style={styles.emptyState}>
+            {/* expo-image (not core RN Image) so this decodes downsampled to
+                the 80x80 display size instead of full-resolution — icon.png
+                is the 1024x1536 App Store icon source (~2.2MB / ~6MB decoded
+                as a raw bitmap); RN's core Image has no native downsampling
+                on decode, so it would hold that full bitmap in memory just
+                to show an 80x80 icon every time this empty state mounts. */}
             <Image source={require('../../../assets/images/icon.png')} style={styles.emptyIcon} />
             <ThemedText style={[styles.emptyTitle, { color: tc.textSecondary }]}>NO CADETS ENROLLED</ThemedText>
             <ThemedText type="small" style={[styles.emptyBody, { color: tc.textSecondary }]}>

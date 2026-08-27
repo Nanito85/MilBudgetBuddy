@@ -1,8 +1,11 @@
 import {
   createUserWithEmailAndPassword,
   deleteUser,
+  EmailAuthProvider,
+  linkWithCredential,
   onAuthStateChanged,
   sendPasswordResetEmail,
+  signInAnonymously,
   signInWithEmailAndPassword,
   signOut,
   User,
@@ -24,6 +27,16 @@ interface AuthState {
   deleteAccount: () => Promise<void>;
   resetPassword: (email: string) => Promise<boolean>;
   clearError: () => void;
+  // Returns the current Firebase user, silently creating an anonymous one
+  // (no UI, no personal info collected) if nobody is signed in yet. Exists
+  // so purchase verification (which needs an ID token — see
+  // services/iap.ts) never has to force a real sign-up/sign-in screen in
+  // front of the user first — Apple Guideline 5.1.1(v) explicitly prohibits
+  // requiring registration before an IAP purchase that isn't itself
+  // account-based content. An anonymous session can be upgraded to a real
+  // account later (Settings > Sign In) without losing the same uid, which
+  // is what actually keeps the purchase's entitlement record intact.
+  ensureSignedIn: () => Promise<User>;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -42,7 +55,20 @@ export const useAuthStore = create<AuthState>((set) => ({
   signUp: async (email, password) => {
     set({ loading: true, error: null });
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
+      // If the current session is an anonymous one (created silently by the
+      // paywall for a no-registration-required purchase — see
+      // ensureSignedIn), LINK the new email/password credential to it
+      // instead of creating an unrelated account. Linking keeps the same
+      // uid, which is what the purchase's entitlement record (see
+      // milbudgetbuddy-api's /api/iap/verify) is actually keyed to — a
+      // plain createUserWithEmailAndPassword here would silently orphan
+      // that purchase on the old anonymous uid, exactly the "lost my
+      // purchase after signing up" failure this whole flow exists to avoid.
+      if (auth.currentUser?.isAnonymous) {
+        await linkWithCredential(auth.currentUser, EmailAuthProvider.credential(email, password));
+      } else {
+        await createUserWithEmailAndPassword(auth, email, password);
+      }
     } catch (e: any) {
       set({ error: friendlyError(e.code) });
     } finally {
@@ -89,6 +115,16 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   clearError: () => set({ error: null }),
+
+  ensureSignedIn: async () => {
+    if (auth.currentUser) return auth.currentUser;
+    const cred = await signInAnonymously(auth);
+    // onAuthStateChanged (init(), above) will also fire and set this, but
+    // that's async on its own timer — set it here too so a caller awaiting
+    // ensureSignedIn() can immediately trust useAuthStore.getState().user.
+    set({ user: cred.user });
+    return cred.user;
+  },
 }));
 
 function friendlyError(code: string): string {

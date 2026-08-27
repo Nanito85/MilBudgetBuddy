@@ -432,7 +432,14 @@ export default function SettingsScreen() {
           <ThemedText style={[styles.sectionTitle, { color: text }]}>ACCOUNT</ThemedText>
         </View>
 
-        {user ? (
+        {/* user can now also be an anonymous Firebase session (created
+            silently by the paywall so a purchase never has to force a real
+            sign-in first — see auth.store.ts's ensureSignedIn). That's
+            deliberately NOT synced (see _layout.tsx's sync-trigger effect),
+            so it must fall through to the "SIGN IN TO SYNC" card below like
+            any other signed-out state — showing "SYNCED" here for an
+            anonymous session would be a flatly false claim. */}
+        {user && !user.isAnonymous ? (
           <View style={[settingsProStyles.statusCard, { backgroundColor: card, borderColor: Brand.tactical + '40' }]}>
             <ThemedText style={settingsProStyles.proIcon}>☁️</ThemedText>
             <View style={{ flex: 1 }}>
