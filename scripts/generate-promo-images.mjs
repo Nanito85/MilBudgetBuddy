@@ -2,11 +2,22 @@
  * Generates the two App Store Connect promotional images for the Pro
  * subscription in-app purchases (mbb_pro_monthly / mbb_pro_annual).
  *
- * Apple rejected the submission (Guideline 2.3.2) because the promotional
- * image was identical to the app icon, and because the two IAP products
- * shared the same image. These are deliberately distinct from the icon
- * (marketing copy, plan-specific pricing/badge) and from each other
- * (different headline, badge, and accent color per plan).
+ * Round 1 rejection (Guideline 2.3.2): the promotional image was identical
+ * to the app icon, and the two IAP products shared the same image. Fixed by
+ * making these distinct from the icon (marketing copy, plan-specific
+ * pricing/badge) and from each other (different headline, badge, and accent
+ * color per plan).
+ *
+ * Round 2 rejection (Guideline 2.3.2, again): "promotional image includes
+ * text that is small or otherwise hard to read." Apple displays this image
+ * quite small in the App Store UI (thumbnail-sized, not full 1024px), so
+ * anything under roughly 60-70px at this canvas size reads as illegible
+ * once scaled down. The previous version had FIVE text elements, two of
+ * them small and low-contrast (a 34px letter-spaced eyebrow in muted
+ * blue-gray, and a 28px medium-weight subtitle in light gray) — both almost
+ * certainly what got flagged. Fixed by cutting to THREE elements (badge,
+ * plan name, price), each large, bold, and high-contrast, so there's
+ * nothing left in the image that's small enough to be a problem.
  *
  * Spec: 1024×1024, PNG, no alpha channel (flattened to the bg color).
  * Requires: sharp   (npm install --save-dev sharp)
@@ -34,7 +45,7 @@ const HELMET_MARK = (fill, accent) => `
       font-weight="900" font-size="188" fill="${accent}">$</text>
   </g>`;
 
-function promoSvg({ badge, badgeColor, headline, price, sub, accent }) {
+function promoSvg({ badge, badgeColor, headline, price, accent }) {
   return `
 <svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
   <rect width="1024" height="1024" fill="${BG}"/>
@@ -42,30 +53,30 @@ function promoSvg({ badge, badgeColor, headline, price, sub, accent }) {
 
   ${HELMET_MARK(accent, '#04080F')}
 
-  <text x="512" y="380" text-anchor="middle" font-family="Arial, sans-serif"
-    font-weight="800" font-size="34" letter-spacing="4" fill="#8FA3B8">MILBUDGETBUDDY PRO</text>
+  <rect x="312" y="410" width="400" height="88" rx="44" fill="${badgeColor}"/>
+  <text x="512" y="466" text-anchor="middle" font-family="Arial Black, Arial, sans-serif"
+    font-weight="900" font-size="42" letter-spacing="1" fill="#04080F">${badge}</text>
 
-  <rect x="362" y="420" width="300" height="64" rx="32" fill="${badgeColor}"/>
-  <text x="512" y="462" text-anchor="middle" font-family="Arial Black, Arial, sans-serif"
-    font-weight="900" font-size="30" letter-spacing="1" fill="#04080F">${badge}</text>
+  <text x="512" y="660" text-anchor="middle" font-family="Arial Black, Arial, sans-serif"
+    font-weight="900" font-size="108" fill="#FFFFFF">${headline}</text>
 
-  <text x="512" y="600" text-anchor="middle" font-family="Arial Black, Arial, sans-serif"
-    font-weight="900" font-size="88" fill="#FFFFFF">${headline}</text>
-
-  <text x="512" y="670" text-anchor="middle" font-family="Arial, sans-serif"
-    font-weight="700" font-size="40" fill="${accent}">${price}</text>
-
-  <text x="512" y="760" text-anchor="middle" font-family="Arial, sans-serif"
-    font-weight="500" font-size="28" fill="#C7D2DD">${sub}</text>
+  <text x="512" y="760" text-anchor="middle" font-family="Arial Black, Arial, sans-serif"
+    font-weight="900" font-size="64" fill="${accent}">${price}</text>
 </svg>`.trim();
 }
 
+// Cut from five text elements to three (badge, plan name, price), each
+// large/bold/high-contrast -- the dropped "MILBUDGETBUDDY PRO" eyebrow and
+// benefit-summary subtitle were the two smallest, lowest-contrast lines and
+// the most likely source of the "hard to read" rejection. Nothing here is
+// load-bearing for App Store policy: the app name is already shown
+// elsewhere on the product page, and the benefit summary was marketing
+// flavor text, not a required disclosure.
 const monthlySvg = promoSvg({
   badge: '7 DAYS FREE',
   badgeColor: TEAL,
   headline: 'PRO MONTHLY',
-  price: '$4.99 / month',
-  sub: 'Full pay, budget and benefits suite',
+  price: '$4.99/mo',
   accent: TEAL,
 });
 
@@ -73,8 +84,7 @@ const annualSvg = promoSvg({
   badge: 'BEST VALUE',
   badgeColor: AMBER,
   headline: 'PRO ANNUAL',
-  price: '$49.99 / year',
-  sub: 'Save vs. paying monthly',
+  price: '$49.99/yr',
   accent: AMBER,
 });
 
