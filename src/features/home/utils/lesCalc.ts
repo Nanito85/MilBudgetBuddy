@@ -1,9 +1,9 @@
 import { BAH_PARTIAL, getBahRate, PayGrade } from '@/data/bah-rates';
 import { getBAS } from '@/data/bas-rates';
-import { getBasicPay } from '@/data/basic-pay-rates';
+import { getBasicPay, getHigh3Average } from '@/data/basic-pay-rates';
 import { getOhaAreaForInstallation, getOhaRate } from '@/data/oha-rates';
 import { getStateTaxRate } from '@/data/state-tax';
-import { HousingStatus, LESOverrides } from '@/types/user.types';
+import { HousingStatus, LESOverrides, ServiceStatus } from '@/types/user.types';
 
 // SGLI: $0.05/month per $1,000 × $500,000 coverage = $25.00 + $1.00 TSGLI = $26.00
 // Source: DFAS SGLI rates — dfas.mil/MilitaryMembers/payentitlements/SGLI
@@ -78,6 +78,11 @@ export interface LESBreakdown {
   // BAH-eligible mhaZip). Lets the UI relabel the line item accordingly.
   isOha: boolean;
   ohaApproximate: boolean;
+  // True when `basePay` is retired pay (High-3 legacy formula) rather than
+  // active-duty basic pay — lets the UI relabel "BASE PAY" and hide the
+  // (always-zero, unless overridden) BAH/BAS rows for a retired member.
+  isRetiredPay: boolean;
+  retiredPayPct: number; // 0-100, e.g. 50 at exactly 20 YOS — for display only
 }
 
 export interface LESInputs {
@@ -94,6 +99,11 @@ export interface LESInputs {
   sglOptOut: boolean;
   stateResidence?: string;
   overrides?: LESOverrides;
+  // 'retired' switches basePay from active-duty basic pay to retired pay
+  // (see retiredPayMultiplier) and zeroes BAH/BAS/FICA — a retiree draws a
+  // pension, not an active-duty paycheck. Omitted/other statuses behave
+  // exactly as before.
+  serviceStatus?: ServiceStatus;
 }
 
 interface HousingResult {
@@ -134,13 +144,35 @@ function resolveHousing(
   return { amount: rate.rentCeilingUSD + rate.utilityAllowanceUSD, isOha: true, approximate: area.approximate };
 }
 
-export function calcLES(inputs: LESInputs): LESBreakdown {
-  const { payGrade, yos, mhaZip, dutyStationId, hasSpouse, housingStatus = 'off_base', specialPaysTotal, tspContribPct, rothTspPct = 0, hasDentalFamily, sglOptOut, stateResidence, overrides } = inputs;
+/**
+ * Legacy High-3 retired-pay multiplier: 2.5% of the High-3 average basic pay
+ * per year of service — exactly 50% at the 20-year minimum-retirement point,
+ * +2.5% for every year served beyond that (e.g. 30 YOS = 75%). Clamped to
+ * [0, 1] since DoD never pays out more than 100% of High-3 pay.
+ */
+export function retiredPayMultiplier(yos: number): number {
+  return Math.min(1, Math.max(0, yos * 0.025));
+}
 
-  const calcBasePay = getBasicPay(payGrade as any, yos);
-  const housing = resolveHousing(mhaZip, dutyStationId, payGrade, hasSpouse, housingStatus);
+export function calcLES(inputs: LESInputs): LESBreakdown {
+  const { payGrade, yos, mhaZip, dutyStationId, hasSpouse, housingStatus = 'off_base', specialPaysTotal, tspContribPct, rothTspPct = 0, hasDentalFamily, sglOptOut, stateResidence, overrides, serviceStatus } = inputs;
+
+  const isRetired = serviceStatus === 'retired';
+  const retiredPct = isRetired ? retiredPayMultiplier(yos) : 0;
+
+  // A retiree draws retired pay (a percentage of High-3 average basic pay),
+  // not an active-duty paycheck — no BAH, no BAS, and retired pay isn't
+  // subject to FICA (it's a pension, not wages). VA disability compensation
+  // is handled entirely separately (see monthlyCompensation in va-disability
+  // utils) and is unaffected by any of this.
+  const calcBasePay = isRetired
+    ? getHigh3Average(payGrade as PayGrade, yos) * retiredPct
+    : getBasicPay(payGrade as any, yos);
+  const housing = isRetired
+    ? { amount: 0, isOha: false, approximate: false }
+    : resolveHousing(mhaZip, dutyStationId, payGrade, hasSpouse, housingStatus);
   const calcBah = housing.amount;
-  const calcBas = getBAS(payGrade);
+  const calcBas = isRetired ? 0 : getBAS(payGrade);
 
   const basePay = overrides?.basePayOverride ?? calcBasePay;
   const bah     = overrides?.bahOverride     ?? calcBah;
@@ -153,7 +185,7 @@ export function calcLES(inputs: LESInputs): LESBreakdown {
 
   const grossPay = basePay + bah + bas + specialPaysTotal + extraIncome;
 
-  const fica           = basePay * 0.0765;
+  const fica           = isRetired ? 0 : basePay * 0.0765;
   const fedTax         = estimateFedTax(basePay * 12, hasSpouse);
   const stateRate      = getStateTaxRate(stateResidence);
   const stateTax       = basePay * stateRate;
@@ -179,6 +211,8 @@ export function calcLES(inputs: LESInputs): LESBreakdown {
     extraDeductionItems,
     isOha: housing.isOha,
     ohaApproximate: housing.approximate,
+    isRetiredPay: isRetired,
+    retiredPayPct: Math.round(retiredPct * 100),
   };
 }
 

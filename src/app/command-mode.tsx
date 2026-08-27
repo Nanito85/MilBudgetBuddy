@@ -111,6 +111,7 @@ export default function CommandModeScreen() {
   const specialPays  = useUserStore((s) => s.specialPays);
   const lesOverrides    = useUserStore((s) => s.lesOverrides);
   const setLesOverrides = useUserStore((s) => s.setLesOverrides);
+  const serviceStatus   = useUserStore((s) => s.serviceStatus);
   const spouseIncome = useUserStore((s) => s.spouseMonthlyIncome);
 
   // Add custom item state
@@ -175,9 +176,9 @@ export default function CommandModeScreen() {
     return calcLES({
       payGrade, yos, mhaZip, dutyStationId, hasSpouse, housingStatus, specialPaysTotal,
       tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence,
-      overrides: lesOverrides,
+      overrides: lesOverrides, serviceStatus,
     });
-  }, [payGrade, yos, mhaZip, dutyStationId, hasSpouse, housingStatus, specialPaysTotal, tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence, lesOverrides]);
+  }, [payGrade, yos, mhaZip, dutyStationId, hasSpouse, housingStatus, specialPaysTotal, tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence, lesOverrides, serviceStatus]);
 
   const totalBudgeted = useMemo(
     () => budgetCategories.reduce((s, c) => s + c.monthlyBudget, 0),

@@ -799,12 +799,13 @@ function EditPayModal({ visible, onClose }: { visible: boolean; onClose: () => v
   const hasSpouse        = useUserStore((s) => s.hasSpouse);
   const housingStatus    = useUserStore((s) => s.housingStatus);
   const stateResidence   = useUserStore((s) => s.stateResidence);
+  const serviceStatus    = useUserStore((s) => s.serviceStatus);
 
   const specialPaysTotal = specialPays.reduce((s, p) => s + p.monthlyAmount, 0);
   const calculated = payGrade
     ? calcLES({
         payGrade, yos, mhaZip, dutyStationId, hasSpouse, housingStatus, specialPaysTotal,
-        tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence,
+        tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence, serviceStatus,
       })
     : null;
 

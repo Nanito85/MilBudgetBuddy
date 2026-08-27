@@ -208,9 +208,9 @@ export default function DashboardScreen() {
     return calcLES({
       payGrade, yos, mhaZip, dutyStationId, hasSpouse, housingStatus, specialPaysTotal,
       tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence,
-      overrides: lesOverrides,
+      overrides: lesOverrides, serviceStatus,
     });
-  }, [payGrade, yos, mhaZip, dutyStationId, hasSpouse, housingStatus, specialPaysTotal, tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence, lesOverrides]);
+  }, [payGrade, yos, mhaZip, dutyStationId, hasSpouse, housingStatus, specialPaysTotal, tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence, lesOverrides, serviceStatus]);
 
   // ── Mission Readiness Score (0-100) ─────────────────────────────────────────
   const readinessChecks = useMemo(() => {
@@ -327,7 +327,7 @@ export default function DashboardScreen() {
         {/* ── PAY STATEMENT ─────────────────────────────────────────── */}
         <View style={styles.section}>
           <SectionHeader
-            label="PAY STATEMENT"
+            label={breakdown?.isRetiredPay ? 'RETIRED PAY' : 'PAY STATEMENT'}
             accentColor={Brand.accent}
             route="/pay-chart"
             routeLabel="PAY CHART"

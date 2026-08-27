@@ -825,6 +825,7 @@ export default function BudgetScreen() {
   const rothTspPct    = useUserStore((s) => s.rothTspPct);
   const hasDentalFamily = useUserStore((s) => s.hasDentalFamily);
   const sglOptOut = useUserStore((s) => s.sglOptOut);
+  const serviceStatus = useUserStore((s) => s.serviceStatus);
 
   useEffect(() => {
     useBudgetStore.getState().hydrate();
@@ -847,8 +848,9 @@ export default function BudgetScreen() {
       rothTspPct,
       hasDentalFamily,
       sglOptOut,
+      serviceStatus,
     }).netPay;
-  }, [payGrade, yos, mhaZip, dutyStationId, hasSpouse, housingStatus, specialPays, tspContribPct, rothTspPct, hasDentalFamily, sglOptOut]);
+  }, [payGrade, yos, mhaZip, dutyStationId, hasSpouse, housingStatus, specialPays, tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, serviceStatus]);
 
   const remaining = netPay - totalBudgeted;
   const overBudget = remaining < 0;

@@ -684,9 +684,20 @@ export function PaySummaryCard({ breakdown }: Props) {
           <View style={[styles.divider, { backgroundColor: tc.borderColor }]} />
 
           <ThemedText type="label" style={styles.sectionHead}>// ENTITLEMENTS (MONTHLY)</ThemedText>
-          <Row label="BASE PAY"     value={fmtPay(breakdown.basePay)}    indent positive overridden={breakdown.basePayOverridden} />
-          <Row label={bahLabel}     value={fmtPay(breakdown.bah)}         indent positive overridden={breakdown.bahOverridden} />
-          <Row label="BAS"          value={fmtPay(breakdown.bas)}         indent positive overridden={breakdown.basOverridden} />
+          <Row
+            label={breakdown.isRetiredPay ? `RETIRED PAY (${breakdown.retiredPayPct}% OF HIGH-3)` : 'BASE PAY'}
+            value={fmtPay(breakdown.basePay)} indent positive overridden={breakdown.basePayOverridden}
+          />
+          {/* A retiree draws no BAH/BAS (no active-duty housing/subsistence
+              allowance) — hide these rows entirely unless manually overridden,
+              rather than showing a confusing "$0" for something that
+              structurally doesn't apply anymore. */}
+          {(!breakdown.isRetiredPay || breakdown.bahOverridden) && (
+            <Row label={bahLabel} value={fmtPay(breakdown.bah)} indent positive overridden={breakdown.bahOverridden} />
+          )}
+          {(!breakdown.isRetiredPay || breakdown.basOverridden) && (
+            <Row label="BAS" value={fmtPay(breakdown.bas)} indent positive overridden={breakdown.basOverridden} />
+          )}
           {breakdown.specialPays > 0 && (
             <Row label="SPECIAL PAYS" value={fmtPay(breakdown.specialPays)} indent positive />
           )}
@@ -731,7 +742,9 @@ export function PaySummaryCard({ breakdown }: Props) {
 
           <ThemedText type="label" style={[styles.disclaimer, { color: tc.textMuted }]}>
             * ESTIMATE ONLY — VERIFY AT MYPAY.DFAS.MIL{'\n'}
-            {hasOverrides ? '✎ SOME VALUES MANUALLY ADJUSTED FROM LES' : 'SET HOME STATE IN PROFILE FOR STATE TAX ESTIMATE'}
+            {breakdown.isRetiredPay
+              ? 'RETIRED PAY EXCLUDES BAH/BAS (NOT PAID TO RETIREES). SEE VA DISABILITY BELOW FOR COMPENSATION.'
+              : hasOverrides ? '✎ SOME VALUES MANUALLY ADJUSTED FROM LES' : 'SET HOME STATE IN PROFILE FOR STATE TAX ESTIMATE'}
           </ThemedText>
         </View>
       )}

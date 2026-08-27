@@ -68,6 +68,7 @@ export default function CarLoanScreen() {
   const sglOptOut        = useUserStore((s) => s.sglOptOut);
   const stateResidence   = useUserStore((s) => s.stateResidence);
   const lesOverrides     = useUserStore((s) => s.lesOverrides);
+  const serviceStatus    = useUserStore((s) => s.serviceStatus);
 
   const [grade, setGrade]       = useState<PayGrade>(storeGrade ?? 'E4');
   const [price, setPrice]       = useState(20000);
@@ -95,8 +96,9 @@ export default function CarLoanScreen() {
         mhaZip, dutyStationId, hasSpouse, housingStatus, specialPaysTotal,
         tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence,
         overrides: grade === storeGrade ? lesOverrides : undefined,
+        serviceStatus,
       }),
-    [grade, storeYos, mhaZip, dutyStationId, hasSpouse, housingStatus, specialPaysTotal, tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence, lesOverrides, storeGrade],
+    [grade, storeYos, mhaZip, dutyStationId, hasSpouse, housingStatus, specialPaysTotal, tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence, lesOverrides, storeGrade, serviceStatus],
   );
   const basePay    = breakdown.basePay;
   const takeHome   = Math.round(breakdown.netPay);
