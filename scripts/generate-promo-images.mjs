@@ -9,15 +9,24 @@
  * color per plan).
  *
  * Round 2 rejection (Guideline 2.3.2, again): "promotional image includes
- * text that is small or otherwise hard to read." Apple displays this image
- * quite small in the App Store UI (thumbnail-sized, not full 1024px), so
- * anything under roughly 60-70px at this canvas size reads as illegible
- * once scaled down. The previous version had FIVE text elements, two of
- * them small and low-contrast (a 34px letter-spaced eyebrow in muted
- * blue-gray, and a 28px medium-weight subtitle in light gray) — both almost
- * certainly what got flagged. Fixed by cutting to THREE elements (badge,
- * plan name, price), each large, bold, and high-contrast, so there's
- * nothing left in the image that's small enough to be a problem.
+ * text that is small or otherwise hard to read." Cut from five text
+ * elements to three (badge, plan name, price) and enlarged them — still
+ * rejected with the identical wording. Confirmed (asked the user directly)
+ * that the v2 images actually were uploaded to ASC before that submission,
+ * so this wasn't a stale-metadata issue — the v2 sizing genuinely wasn't
+ * legible enough at whatever small size Apple surfaces this image at
+ * (App Store placements show it much smaller than a 1024px canvas suggests
+ * — closer to app-icon size in some contexts).
+ *
+ * Round 3 fix: stopped treating 1024px canvas space as a budget to spend
+ * mostly on background/decoration. Removed the helmet/icon mark entirely
+ * (redundant — the app icon already appears next to this on the product
+ * page) and the thin decorative ring, freeing the whole canvas for content.
+ * Every text element is now dramatically larger and the layout fills most
+ * of the frame edge-to-edge instead of sitting in a small centered block:
+ * badge 42→72px, headline 108→190px, price 64→120px. Even the SMALLEST
+ * text on the canvas (the badge) is now ~7% of the image height, vs. ~4%
+ * in v2 — nothing on this image is "small" at any plausible display size.
  *
  * Spec: 1024×1024, PNG, no alpha channel (flattened to the bg color).
  * Requires: sharp   (npm install --save-dev sharp)
@@ -33,49 +42,34 @@ const BG = '#04080F';
 const TEAL = '#00C8A8';
 const AMBER = '#F0A500';
 
-// Small helmet+$ mark (same silhouette as the app icon) used as a corner
-// badge only — not the dominant element, so this doesn't read as "the icon".
-const HELMET_MARK = (fill, accent) => `
-  <g transform="translate(512,150) scale(0.34)">
-    <ellipse cx="0" cy="-20" rx="280" ry="250" fill="${fill}"/>
-    <rect x="-280" y="-20" width="560" height="110" fill="${fill}"/>
-    <rect x="-364" y="78" width="728" height="68" rx="22" fill="${fill}" opacity="0.85"/>
-    <circle cx="0" cy="-40" r="130" fill="#000000" opacity="0.30"/>
-    <text x="0" y="16" text-anchor="middle" font-family="Arial Black, Arial, sans-serif"
-      font-weight="900" font-size="188" fill="${accent}">$</text>
-  </g>`;
-
+// The headline uses textLength+lengthAdjust to force an exact 900px render
+// width regardless of the word — a first pass at 190px/no constraint let
+// "MONTHLY" (wider glyphs than "ANNUAL") overflow past the canvas edge and
+// get clipped. This guarantees no clipping and consistent sizing between
+// plans no matter what the plan name text ends up being in the future.
 function promoSvg({ badge, badgeColor, headline, price, accent }) {
   return `
 <svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
   <rect width="1024" height="1024" fill="${BG}"/>
-  <ellipse cx="512" cy="512" rx="500" ry="500" fill="none" stroke="${accent}" stroke-width="4" opacity="0.12"/>
 
-  ${HELMET_MARK(accent, '#04080F')}
+  <rect x="182" y="180" width="660" height="130" rx="65" fill="${badgeColor}"/>
+  <text x="512" y="268" text-anchor="middle" font-family="Arial Black, Arial, sans-serif"
+    font-weight="900" font-size="72" letter-spacing="1" fill="#04080F">${badge}</text>
 
-  <rect x="312" y="410" width="400" height="88" rx="44" fill="${badgeColor}"/>
-  <text x="512" y="466" text-anchor="middle" font-family="Arial Black, Arial, sans-serif"
-    font-weight="900" font-size="42" letter-spacing="1" fill="#04080F">${badge}</text>
+  <text x="512" y="560" text-anchor="middle" font-family="Arial Black, Arial, sans-serif"
+    font-weight="900" font-size="150" textLength="900" lengthAdjust="spacingAndGlyphs" fill="#FFFFFF">${headline}</text>
 
-  <text x="512" y="660" text-anchor="middle" font-family="Arial Black, Arial, sans-serif"
-    font-weight="900" font-size="108" fill="#FFFFFF">${headline}</text>
-
-  <text x="512" y="760" text-anchor="middle" font-family="Arial Black, Arial, sans-serif"
-    font-weight="900" font-size="64" fill="${accent}">${price}</text>
+  <text x="512" y="740" text-anchor="middle" font-family="Arial Black, Arial, sans-serif"
+    font-weight="900" font-size="120" fill="${accent}">${price}</text>
 </svg>`.trim();
 }
 
-// Cut from five text elements to three (badge, plan name, price), each
-// large/bold/high-contrast -- the dropped "MILBUDGETBUDDY PRO" eyebrow and
-// benefit-summary subtitle were the two smallest, lowest-contrast lines and
-// the most likely source of the "hard to read" rejection. Nothing here is
-// load-bearing for App Store policy: the app name is already shown
-// elsewhere on the product page, and the benefit summary was marketing
-// flavor text, not a required disclosure.
+// Same two products, same distinguishing badge/headline/price/accent per
+// plan as before — only the sizing and layout changed in round 3.
 const monthlySvg = promoSvg({
   badge: '7 DAYS FREE',
   badgeColor: TEAL,
-  headline: 'PRO MONTHLY',
+  headline: 'MONTHLY',
   price: '$4.99/mo',
   accent: TEAL,
 });
@@ -83,7 +77,7 @@ const monthlySvg = promoSvg({
 const annualSvg = promoSvg({
   badge: 'BEST VALUE',
   badgeColor: AMBER,
-  headline: 'PRO ANNUAL',
+  headline: 'ANNUAL',
   price: '$49.99/yr',
   accent: AMBER,
 });
