@@ -51,6 +51,68 @@ const MALT_RATE = 0.205; // CY2026, $/mile per vehicle (PDTATAC MAP-CAP 73-25(I)
 
 const fmt = (n: number) => `$${Math.round(n).toLocaleString()}`;
 
+// ── PCS Tips (lesser-known entitlements/practices, not the obvious stuff) ────
+type Tab = 'calculator' | 'tips';
+const TABS: { id: Tab; label: string }[] = [
+  { id: 'calculator', label: 'CALCULATOR' },
+  { id: 'tips', label: 'TIPS' },
+];
+
+interface PcsTip { icon: string; title: string; body: string; }
+
+const PCS_TIPS: PcsTip[] = [
+  {
+    icon: '✈️',
+    title: 'Book your own flight — and pocket what you save',
+    body: "If driving isn't mandatory, you don't have to fly on a government-booked ticket. You can buy your own commercial ticket and get reimbursed for what you actually paid, up to the government's contracted \"city-pair\" fare for that route. Check the city-pair rate with your transportation office (or the DTMO city-pair search) before booking — if your ticket comes in under that ceiling, you're reimbursed in full and never have to justify skipping the official booking.",
+  },
+  {
+    icon: '💵',
+    title: 'DLA is flat and receipt-free — spend less, keep the rest',
+    body: "Dislocation Allowance is paid at a fixed amount for your grade and dependency status to help offset move-in costs. It's not tied to what you actually spend and no receipts are required — if your real move-in costs come in under the DLA amount, nothing is clawed back.",
+  },
+  {
+    icon: '🚚',
+    title: 'A PPM (DITY) move can pay you more than it costs you',
+    body: "A Personally Procured Move pays based on the government's estimated cost to move your household goods weight — not your actual receipts. Move efficiently (right-sized truck, help from friends, pack light) and the gap between that payment and your real costs is money in your pocket.",
+  },
+  {
+    icon: '🍽️',
+    title: "TLE/TLA's meal money is a flat rate, not a reimbursement",
+    body: "Lodging during Temporary Lodging Expense/Allowance is reimbursed against actual receipts up to a cap — but the Meals & Incidentals (M&IE) portion is paid as a flat daily rate regardless of what you actually spend on food. Cook cheap during TLE/TLA and the difference is yours.",
+  },
+  {
+    icon: '⚖️',
+    title: 'Get your own weight tickets — don’t just trust the movers',
+    body: "Every pay grade and dependency status has a published household goods weight allowance, and going even slightly over means YOU pay the excess-cost overage, not the government. Insist on an empty-truck and full-truck weight ticket for a PPM instead of relying on the mover's estimate.",
+  },
+  {
+    icon: '📚',
+    title: 'Uniforms, tools, and reference materials have their own weight limit',
+    body: "Professional Books, Papers & Equipment (PBP&E) — uniforms, technical manuals, tools of your trade — ships on a separate weight allowance that doesn't count against your regular household goods limit. Ask your move counselor to inventory these separately so they don't eat into your HHG weight.",
+  },
+  {
+    icon: '🔀',
+    title: "You don't have to choose all-or-nothing on your move",
+    body: 'A Partial PPM lets you ship the bulk of your household goods with the government-contracted mover while personally moving the rest — and you still get PPM incentive pay on whatever portion you move yourself.',
+  },
+  {
+    icon: '🏠',
+    title: 'TLE covers both ends of the move, not just after you arrive',
+    body: "Temporary Lodging Expense applies at your losing station (packing out, final out-processing) as well as your gaining station (house-hunting on arrival) — most people only think to use it after arrival and leave departure-side days on the table. This calculator's TLE/TLA section already splits departure and gaining days for exactly this reason.",
+  },
+  {
+    icon: '💳',
+    title: 'Ask finance for an advance before you move, not after',
+    body: "Most members wait to file a travel voucher after they arrive and end up floating move costs on a credit card. You can request an advance on your travel pay and DLA at your losing installation's finance office before you go.",
+  },
+  {
+    icon: '🧾',
+    title: "Keep every receipt — even the ones that feel too small to matter",
+    body: 'Parking, tolls, pet lodging, storage unit fees — travel voucher processors can delay or reject a claim over missing documentation for expenses you assumed were too minor to need a receipt.',
+  },
+];
+
 function Stepper({ label, value, min, max, onChange }: {
   label: string; value: number; min: number; max: number; onChange: (v: number) => void;
 }) {
@@ -76,6 +138,8 @@ export default function PCSCalculatorScreen() {
   const tc = useThemeColors();
 
   const { payGrade: profileGrade, hasSpouse: profileHasSpouse, mhaZip: profileZip, hydrated } = useUserStore();
+
+  const [activeTab, setActiveTab] = useState<Tab>('calculator');
 
   const [grade, setGrade] = useState<PayGrade>(profileGrade ?? 'E5');
   const [withDep, setWithDep] = useState(profileGrade ? profileHasSpouse : true);
@@ -194,6 +258,49 @@ export default function PCSCalculatorScreen() {
         </View>
       </View>
 
+      {/* ── Tab bar ────────────────────────────────────────────────────────── */}
+      <View style={styles.tabBar}>
+        {TABS.map((t) => (
+          <Pressable key={t.id} onPress={() => setActiveTab(t.id)} style={styles.tabItem}>
+            <ThemedText style={[styles.tabLabel, { color: tc.textMuted }, activeTab === t.id && styles.tabLabelActive]}>
+              {t.label}
+            </ThemedText>
+            {activeTab === t.id && <View style={styles.tabUnderline} />}
+          </Pressable>
+        ))}
+      </View>
+
+      {/* ══ TIPS TAB ═══════════════════════════════════════════════════════════ */}
+      {activeTab === 'tips' && (
+        <ScrollView
+          contentContainerStyle={[styles.content, { paddingBottom: BottomTabInset + Spacing.five }]}
+          showsVerticalScrollIndicator={false}>
+          <ThemedText type="small" themeColor="textSecondary" style={styles.tipsIntro}>
+            Lesser-known PCS moves that can put real money back in your pocket — none of this replaces
+            your installation PCS counselor, but each of these is worth asking about by name.
+          </ThemedText>
+          {PCS_TIPS.map((tip, i) => (
+            <ThemedView key={tip.title} type="backgroundElement" style={styles.tipCard}>
+              <View style={styles.tipHeaderRow}>
+                <ThemedText style={styles.tipIcon}>{tip.icon}</ThemedText>
+                <View style={{ flex: 1 }}>
+                  <ThemedText type="small" themeColor="textSecondary" style={styles.tipNumber}>TIP {i + 1}</ThemedText>
+                  <ThemedText style={styles.tipTitle}>{tip.title}</ThemedText>
+                </View>
+              </View>
+              <ThemedText type="small" themeColor="textSecondary" style={styles.tipBody}>{tip.body}</ThemedText>
+            </ThemedView>
+          ))}
+          <ThemedText type="small" themeColor="textSecondary" style={styles.disclaimer}>
+            General information only, not official guidance — entitlements, weight allowances, and advance-pay
+            policy can vary by service branch and situation. Always confirm specifics with your installation
+            finance office or PCS/transportation counselor before relying on any of these.
+          </ThemedText>
+        </ScrollView>
+      )}
+
+      {/* ══ CALCULATOR TAB ═════════════════════════════════════════════════════ */}
+      {activeTab === 'calculator' && (
       <ScrollView
         contentContainerStyle={[styles.content, { paddingBottom: BottomTabInset + Spacing.five }]}
         showsVerticalScrollIndicator={false}
@@ -636,6 +743,7 @@ export default function PCSCalculatorScreen() {
           BAH rates: {BAH_DATA_YEAR}. OHA rates: Q2 2026 (approx.). DLA: FY2026 (JTR). MALT: ${MALT_RATE.toFixed(2)}/mile FY2026. TLE/TLA uses the same JTR family-percentage table as the dedicated TLE/TLA calculator: lodging and M&IE are each calculated separately, then combined — for TLE (CONUS) that combined total is capped at ${TLE_DAILY_CAP}/day per JTR par. 050601 (PDTATAC MAP 66-24(R), effective 01 OCT 2025 for FY2026); TLA (OCONUS) has no flat-dollar cap. OHA and unmatched OCONUS TLA rates are approximate — verify current rates at DTMO before signing a lease. Verify all entitlements with your installation finance office.
         </ThemedText>
       </ScrollView>
+      )}
     </ThemedView>
     </KeyboardAvoidingView>
   );
@@ -662,6 +770,28 @@ const styles = StyleSheet.create({
   eyebrow: { fontSize: 11, letterSpacing: 1, fontWeight: '600' },
   title: { fontSize: 22, fontWeight: '700', lineHeight: 26 },
   pressed: { opacity: 0.6 },
+
+  tabBar: {
+    flexDirection: 'row',
+    paddingHorizontal: Spacing.three,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: 'rgba(128,128,128,0.2)',
+  },
+  tabItem: { flex: 1, alignItems: 'center', paddingVertical: Spacing.two, position: 'relative' },
+  tabLabel: { fontSize: 13, fontWeight: '700', letterSpacing: 0.6 },
+  tabLabelActive: { color: Brand.accent },
+  tabUnderline: {
+    position: 'absolute', bottom: 0, left: 8, right: 8,
+    height: 2, borderRadius: 1, backgroundColor: Brand.accent,
+  },
+
+  tipsIntro: { lineHeight: 18, paddingHorizontal: Spacing.one, paddingTop: Spacing.one },
+  tipCard: { borderRadius: Spacing.three, padding: Spacing.three, gap: Spacing.two },
+  tipHeaderRow: { flexDirection: 'row', alignItems: 'flex-start', gap: Spacing.two },
+  tipIcon: { fontSize: 24, lineHeight: 28 },
+  tipNumber: { fontSize: 10, fontWeight: '700', letterSpacing: 0.8, marginBottom: 2 },
+  tipTitle: { fontSize: 15, fontWeight: '700', lineHeight: 20 },
+  tipBody: { lineHeight: 19 },
 
   content: { paddingHorizontal: Spacing.three, gap: Spacing.three },
   section: { gap: Spacing.two },
