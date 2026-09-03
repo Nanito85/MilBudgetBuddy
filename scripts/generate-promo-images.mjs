@@ -1,4 +1,17 @@
 /**
+ * NOT CURRENTLY USED — the promotional images this script generates were
+ * REMOVED from both IAP products in App Store Connect (Sept 2026) rather
+ * than fixed a 4th time. Round 3 fixed the "small/hard to read text"
+ * complaint (Guideline 2.3.2), but Apple's actual follow-up rejection
+ * revealed the real issue all along: the image displayed the price
+ * ($4.99/mo, $49.99/yr), which Apple doesn't allow in this metadata since
+ * pricing can vary by country/territory and is already shown on the
+ * product page. Apple's own rejection explicitly names "delete the
+ * promotional image" as a valid resolution when there's no active plan to
+ * promote the product — that's the path taken here. Left in the repo in
+ * case promotion is revisited later, but DO NOT price-reference the image
+ * again if it's ever regenerated and re-uploaded.
+ *
  * Generates the two App Store Connect promotional images for the Pro
  * subscription in-app purchases (mbb_pro_monthly / mbb_pro_annual).
  *
