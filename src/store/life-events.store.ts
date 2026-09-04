@@ -20,7 +20,6 @@ interface LifeEventsState {
   dismissEvent: (type: LifeEventType) => void;
   toggleItem: (type: LifeEventType, itemId: string) => void;
   removeEvent: (type: LifeEventType) => void;
-  activeCount: () => number;
   resetAll: () => void;
 }
 
@@ -89,9 +88,6 @@ export const useLifeEventsStore = create<LifeEventsState>((set, get) => ({
     set({ events });
     persist(events);
   },
-
-  activeCount: () =>
-    get().events.filter((e) => !e.dismissed).length,
 
   resetAll: () => {
     set({ events: [] });

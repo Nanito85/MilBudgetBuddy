@@ -13,9 +13,10 @@ interface Props {
   accentColor: string;
   onComplete: (choreId: string, goalId: string) => void;
   onUncomplete: (choreId: string, goalId?: string) => void;
+  onDelete: (choreId: string) => void;
 }
 
-export function ChoresList({ chores, goals, accentColor, onComplete, onUncomplete }: Props) {
+export function ChoresList({ chores, goals, accentColor, onComplete, onUncomplete, onDelete }: Props) {
   const primaryGoal = goals[0];
 
   if (chores.length === 0) {
@@ -33,35 +34,44 @@ export function ChoresList({ chores, goals, accentColor, onComplete, onUncomplet
       {chores.map((chore) => {
         const done = getCompletedDateInPeriod(chore.completedDates, chore.frequency ?? 'daily') !== null;
         return (
-          <Pressable
+          <View
             key={chore.id}
-            onPress={() => {
-              if (done) {
-                onUncomplete(chore.id, primaryGoal?.id);
-              } else if (primaryGoal) {
-                onComplete(chore.id, primaryGoal.id);
-              }
-            }}
-            style={({ pressed }) => [
+            style={[
               styles.row,
               { borderColor: accentColor + '40' },
               done && styles.rowDone,
-              pressed && styles.pressed,
             ]}>
-            <View style={[styles.checkbox, { borderColor: accentColor }, done && { backgroundColor: accentColor }]}>
-              {done && <ThemedText style={styles.checkmark}>✓</ThemedText>}
-            </View>
-            <View style={styles.info}>
-              <ThemedText style={[styles.choreName, done && styles.doneText]}>
-                {chore.name}
-              </ThemedText>
-            </View>
-            <View style={[styles.badge, { borderColor: accentColor, backgroundColor: accentColor + '20' }]}>
-              <ThemedText style={[styles.badgeText, { color: accentColor }]}>
-                +${chore.value.toFixed(2)}
-              </ThemedText>
-            </View>
-          </Pressable>
+            {/* Complete/uncomplete tap target — kept as a separate Pressable
+                from the delete button below rather than making the whole
+                row one Pressable, so the two touch targets don't fight each
+                other. */}
+            <Pressable
+              onPress={() => {
+                if (done) {
+                  onUncomplete(chore.id, primaryGoal?.id);
+                } else if (primaryGoal) {
+                  onComplete(chore.id, primaryGoal.id);
+                }
+              }}
+              style={({ pressed }) => [styles.completeArea, pressed && styles.pressed]}>
+              <View style={[styles.checkbox, { borderColor: accentColor }, done && { backgroundColor: accentColor }]}>
+                {done && <ThemedText style={styles.checkmark}>✓</ThemedText>}
+              </View>
+              <View style={styles.info}>
+                <ThemedText style={[styles.choreName, done && styles.doneText]}>
+                  {chore.name}
+                </ThemedText>
+              </View>
+              <View style={[styles.badge, { borderColor: accentColor, backgroundColor: accentColor + '20' }]}>
+                <ThemedText style={[styles.badgeText, { color: accentColor }]}>
+                  +${chore.value.toFixed(2)}
+                </ThemedText>
+              </View>
+            </Pressable>
+            <Pressable onPress={() => onDelete(chore.id)} hitSlop={8} style={styles.deleteBtn}>
+              <ThemedText style={styles.deleteBtnText}>✕</ThemedText>
+            </Pressable>
+          </View>
         );
       })}
     </View>
@@ -82,14 +92,19 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: Spacing.two,
+    gap: Spacing.one,
     borderWidth: 1,
     borderRadius: Spacing.two,
-    padding: Spacing.two + 4,
+    paddingVertical: Spacing.two + 4,
+    paddingLeft: Spacing.two + 4,
+    paddingRight: Spacing.one,
     backgroundColor: 'rgba(255,255,255,0.06)',
   },
   rowDone: { opacity: 0.6 },
+  completeArea: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
   pressed: { opacity: 0.7 },
+  deleteBtn: { padding: Spacing.two },
+  deleteBtnText: { fontSize: 14, fontWeight: '700', color: 'rgba(255,255,255,0.5)' },
   checkbox: {
     width: 26,
     height: 26,

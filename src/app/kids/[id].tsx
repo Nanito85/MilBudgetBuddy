@@ -486,6 +486,7 @@ export default function KidScreen() {
   const kids         = useKidsStore((s) => s.kids);
   const completeChore   = useKidsStore((s) => s.completeChore);
   const uncompleteChore = useKidsStore((s) => s.uncompleteChore);
+  const removeChore     = useKidsStore((s) => s.removeChore);
   const addGoal      = useKidsStore((s) => s.addGoal);
   const updateGoal   = useKidsStore((s) => s.updateGoal);
   const removeGoal   = useKidsStore((s) => s.removeGoal);
@@ -515,6 +516,13 @@ export default function KidScreen() {
     .flatMap((c) => c.completedDates.map((d) => ({ name: c.name, date: d, value: c.value })))
     .sort((a, b) => b.date.localeCompare(a.date))
     .slice(0, 15);
+
+  const handleDeleteChore = (choreId: string) => {
+    Alert.alert('Remove Chore', 'Remove this chore? Its completion history will be lost.', [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Remove', style: 'destructive', onPress: () => removeChore(kid.id, choreId) },
+    ]);
+  };
 
   const openAddChore = (freq: ChoreFrequency) => { setAddChoreFreq(freq); setShowAddChore(true); };
 
@@ -599,6 +607,7 @@ export default function KidScreen() {
             accentColor={theme.accent}
             onComplete={(choreId, goalId) => completeChore(kid.id, choreId, goalId)}
             onUncomplete={(choreId, goalId) => uncompleteChore(kid.id, choreId, goalId)}
+            onDelete={handleDeleteChore}
           />
         </View>
 
@@ -618,6 +627,7 @@ export default function KidScreen() {
               accentColor={theme.accent}
               onComplete={(choreId, goalId) => completeChore(kid.id, choreId, goalId)}
               onUncomplete={(choreId, goalId) => uncompleteChore(kid.id, choreId, goalId)}
+              onDelete={handleDeleteChore}
             />
           ) : (
             <Pressable onPress={() => openAddChore('weekly')} style={[styles.freqEmptyRow, { borderColor: theme.accent + '40' }]}>
@@ -644,6 +654,7 @@ export default function KidScreen() {
               accentColor={theme.accent}
               onComplete={(choreId, goalId) => completeChore(kid.id, choreId, goalId)}
               onUncomplete={(choreId, goalId) => uncompleteChore(kid.id, choreId, goalId)}
+              onDelete={handleDeleteChore}
             />
           ) : (
             <Pressable onPress={() => openAddChore('monthly')} style={[styles.freqEmptyRow, { borderColor: theme.accent + '40' }]}>

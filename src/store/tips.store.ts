@@ -8,7 +8,6 @@ interface TipsState {
   hydrated: boolean;
   hydrate: () => Promise<void>;
   toggleSave: (tipId: string) => void;
-  isSaved: (tipId: string) => boolean;
   resetAll: () => void;
 }
 
@@ -34,8 +33,6 @@ export const useTipsStore = create<TipsState>((set, get) => ({
     set({ savedTipIds: next });
     AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next));
   },
-
-  isSaved: (tipId) => get().savedTipIds.includes(tipId),
 
   resetAll: () => {
     set({ savedTipIds: [] });

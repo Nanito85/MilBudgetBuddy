@@ -68,7 +68,6 @@ interface UserState extends UserPreferences {
   setReserveInfo: (drillsPerMonth: number) => void;
   setRetiredInfo: (retirementDate: string | undefined, vaDisabilityPercent: number) => void;
   setLocationFamily: (mhaZip: string, hasSpouse: boolean, numChildren: number, housingStatus: HousingStatus, installationName?: string, dutyStationId?: string) => void;
-  setPaySetup: (tspContribPct: number, rothTspPct: number, hasDentalFamily: boolean, sglOptOut: boolean) => void;
   setPersonalDetails: (params: { payGrade: PayGrade; lastName: string; nickname: string; yos: number; mhaZip: string; installationName: string; dutyStationId?: string; hasSpouse: boolean; numChildren: number; housingStatus: HousingStatus; stateResidence: string; dateOfEnlistment: string; dateOfRank: string; rankVariant: RankVariant }) => void;
   setPayDetails: (params: { tspContribPct: number; rothTspPct: number; hasDentalFamily: boolean; sglOptOut: boolean; spouseMonthlyIncome: number; bahOverride?: number; basOverride?: number; basePayOverride?: number }) => void;
   setStateResidence: (stateCode: string) => void;
@@ -247,11 +246,6 @@ export const useUserStore = create<UserState>((set, get) => ({
     };
     set(update);
     save({ ...snapshot(get), ...update });
-  },
-
-  setPaySetup: (tspContribPct, rothTspPct, hasDentalFamily, sglOptOut) => {
-    set({ tspContribPct, rothTspPct, hasDentalFamily, sglOptOut });
-    save({ ...snapshot(get), tspContribPct, rothTspPct, hasDentalFamily, sglOptOut });
   },
 
   setStateResidence: (stateResidence) => {

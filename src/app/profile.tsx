@@ -275,6 +275,71 @@ const stateStyles = StyleSheet.create({
   check: { color: Brand.accent, fontSize: 16, width: 20, textAlign: 'center' },
 });
 
+// ── Notification Time Picker ────────────────────────────────────────────────────
+// Preset times rather than a full hour/minute wheel — this only controls a
+// once-a-week tip reminder, so minute-level precision isn't meaningful and a
+// short list of common times is faster to pick from.
+const TIME_PRESETS: { hour: number; minute: number }[] = [
+  { hour: 6, minute: 0 }, { hour: 7, minute: 0 }, { hour: 8, minute: 0 },
+  { hour: 9, minute: 0 }, { hour: 10, minute: 0 }, { hour: 12, minute: 0 },
+  { hour: 15, minute: 0 }, { hour: 18, minute: 0 }, { hour: 20, minute: 0 },
+  { hour: 21, minute: 0 },
+];
+
+function TimePickerModal({ visible, selectedHour, selectedMinute, onSelect, onClose }: {
+  visible: boolean;
+  selectedHour: number;
+  selectedMinute: number;
+  onSelect: (hour: number, minute: number) => void;
+  onClose: () => void;
+}) {
+  const tc = useThemeColors();
+  return (
+    <Modal visible={visible} animationType="slide" presentationStyle="pageSheet">
+      <View style={[stateStyles.bg, { backgroundColor: tc.background }]}>
+        <SafeAreaView style={stateStyles.safe}>
+          <View style={stateStyles.header}>
+            <ThemedText style={[stateStyles.title, { color: tc.textPrimary }]}>// REMINDER TIME</ThemedText>
+            <Pressable onPress={onClose}>
+              <ThemedText style={stateStyles.cancel}>DONE</ThemedText>
+            </Pressable>
+          </View>
+          <ThemedText type="small" themeColor="textSecondary" style={timeStyles.hint}>
+            Every Monday, at:
+          </ThemedText>
+          <View style={timeStyles.grid}>
+            {TIME_PRESETS.map((t) => {
+              const isSelected = selectedHour === t.hour && selectedMinute === t.minute;
+              return (
+                <Pressable
+                  key={`${t.hour}-${t.minute}`}
+                  onPress={() => onSelect(t.hour, t.minute)}
+                  style={[timeStyles.chip, { borderColor: tc.borderColor }, isSelected && timeStyles.chipActive]}>
+                  <ThemedText style={[timeStyles.chipText, { color: tc.textHint }, isSelected && timeStyles.chipTextActive]}>
+                    {formatTime(t.hour, t.minute)}
+                  </ThemedText>
+                </Pressable>
+              );
+            })}
+          </View>
+        </SafeAreaView>
+      </View>
+    </Modal>
+  );
+}
+
+const timeStyles = StyleSheet.create({
+  hint: { paddingHorizontal: 2, marginBottom: Spacing.two },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two },
+  chip: {
+    borderWidth: 1, borderRadius: 8,
+    paddingHorizontal: Spacing.three, paddingVertical: Spacing.two + 2,
+  },
+  chipActive: { borderColor: Brand.accent, backgroundColor: Brand.accent + '15' },
+  chipText: { fontSize: 14, fontWeight: '700' },
+  chipTextActive: { color: Brand.accent },
+});
+
 // ── Special Pay Type Picker ────────────────────────────────────────────────────
 
 const PAY_TYPE_ICONS: Record<SpecialPayType, string> = {
@@ -1193,10 +1258,12 @@ export default function ProfileScreen() {
   const lesOverrides   = useUserStore((s) => s.lesOverrides);
   const dateOfEnlist   = useUserStore((s) => s.dateOfEnlistment);
   const setNotifications = useUserStore((s) => s.setNotifications);
+  const setNotificationTime = useUserStore((s) => s.setNotificationTime);
 
   const [showEditPersonal, setShowEditPersonal] = useState(false);
   const [showEditPay, setShowEditPay]           = useState(false);
   const [showAddKid, setShowAddKid]             = useState(false);
+  const [showTimePicker, setShowTimePicker]     = useState(false);
 
   const savedTipIds = useTipsStore((s) => s.savedTipIds);
   // Was previously a bare setState({ savedTipIds: [] }) that only cleared
@@ -1234,6 +1301,16 @@ export default function ProfileScreen() {
       cancelWeeklyTip();
       cancelPayDayReminders();
     }
+  };
+
+  // Re-schedules immediately if notifications are currently on, so the new
+  // time takes effect right away rather than waiting for the next
+  // toggle-off/toggle-on (scheduleWeeklyTip cancels and re-registers the
+  // existing scheduled notification under the hood).
+  const handleTimeChange = (hour: number, minute: number) => {
+    setNotificationTime(hour, minute);
+    setShowTimePicker(false);
+    if (notificationsEnabled) scheduleWeeklyTip(hour, minute);
   };
 
   const handleResetApp = () => {
@@ -1465,15 +1542,26 @@ export default function ProfileScreen() {
         <SectionLabel text="PREFERENCES" accentColor={Brand.primary} />
         <TacticalCard accentColor={Brand.primary} style={styles.sectionCard}>
           <View style={styles.prefRow}>
-            <View style={{ flex: 1, gap: 2 }}>
+            <Pressable
+              disabled={!notificationsEnabled}
+              onPress={() => setShowTimePicker(true)}
+              style={{ flex: 1, gap: 2 }}>
               <ThemedText style={[styles.prefLabel, { color: tc.textPrimary }]}>Weekly Tip Reminder</ThemedText>
               <ThemedText type="small" themeColor="textHint" style={styles.prefValue}>
-                {notificationsEnabled ? `Mondays at ${formatTime(notificationHour, notificationMinute)}` : 'Off'}
+                {notificationsEnabled ? `Mondays at ${formatTime(notificationHour, notificationMinute)} — tap to change` : 'Off'}
               </ThemedText>
-            </View>
+            </Pressable>
             <Switch value={notificationsEnabled} onValueChange={handleNotificationToggle} trackColor={{ true: Brand.accent }} thumbColor="#FFF" />
           </View>
         </TacticalCard>
+
+        <TimePickerModal
+          visible={showTimePicker}
+          selectedHour={notificationHour}
+          selectedMinute={notificationMinute}
+          onSelect={handleTimeChange}
+          onClose={() => setShowTimePicker(false)}
+        />
 
         {/* ── Stats ──────────────────────────────────────────────────── */}
         <SectionLabel text="INTEL STATS" accentColor={Brand.accent} />
