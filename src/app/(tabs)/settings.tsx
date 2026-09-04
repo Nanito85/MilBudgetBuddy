@@ -4,7 +4,7 @@ import { deepLinkToSubscriptions } from 'expo-iap';
 import { useRouter } from 'expo-router';
 import * as Updates from 'expo-updates';
 import React, { useState } from 'react';
-import { Alert, Linking, Modal, Platform, Pressable, ScrollView, Share, StyleSheet, TextInput, View } from 'react-native';
+import { Alert, Linking, Modal, Platform, Pressable, ScrollView, Share, StyleSheet, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { FeedbackModal } from '@/components/FeedbackModal';

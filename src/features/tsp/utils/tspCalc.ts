@@ -195,7 +195,6 @@ export function calcTspProjection(
   const memberMonthly = monthlyPay * rate;
   const govtRate = govtMatchRate(rate);
   const govtMonthly = monthlyPay * govtRate;
-  const totalMonthly = memberMonthly + govtMonthly;
 
   const limit = annualLimit(age);
   const annualContrib = memberMonthly * 12;
@@ -207,7 +206,6 @@ export function calcTspProjection(
   const maxGovt = monthlyPay * govtMatchRate(0.05);
   const matchLeftOnTable = Math.max(0, maxGovt - govtMonthly);
 
-  const months = yearsToGrow * 12;
   const points: TspProjectionPoint[] = [];
 
   for (let y = 0; y <= yearsToGrow; y++) {

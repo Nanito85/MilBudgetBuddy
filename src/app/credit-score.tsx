@@ -112,7 +112,6 @@ function SectionLabel({ number, text }: { number: number; text: string }) {
 }
 
 function SectionIntro({ text }: { text: string }) {
-  const tc = useThemeColors();
   return (
     <ThemedText type="small" themeColor="textSecondary" style={ss.sectionIntro}>
       {text}

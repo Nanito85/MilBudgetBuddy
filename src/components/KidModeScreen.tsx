@@ -62,7 +62,6 @@ function PINKeypad({
 }) {
   const tc = useThemeColors();
   const [digits, setDigits] = useState('');
-  const [shake, setShake] = useState(false);
 
   const press = (d: string) => {
     if (digits.length >= 4) return;

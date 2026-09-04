@@ -3,7 +3,7 @@ import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { Brand, Spacing } from '@/constants/theme';
-import { PAY_GRADES, PayGrade } from '@/data/bah-rates';
+import { PayGrade } from '@/data/bah-rates';
 import { useThemeColors } from '@/hooks/use-theme';
 
 interface Props {

@@ -6,8 +6,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { SourceBanner } from '@/components/SourceBanner';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { PAY_GRADES, PayGrade } from '@/data/bah-rates';
-import { BASIC_PAY, BASIC_PAY_DATA_YEAR, getBasicPay } from '@/data/basic-pay-rates';
+import { PayGrade } from '@/data/bah-rates';
+import { BASIC_PAY_DATA_YEAR, getBasicPay } from '@/data/basic-pay-rates';
 import { Brand, Spacing } from '@/constants/theme';
 import { useThemeColors } from '@/hooks/use-theme';
 import { useUserStore } from '@/store/user.store';
@@ -40,7 +40,6 @@ export default function PayChartScreen() {
   const annualPay  = monthlyPay * 12;
 
   // Build full YOS row for the selected grade
-  const brackets = BASIC_PAY[selectedGrade];
   const tableRows = ALL_YOS.map((yos) => ({
     yos,
     pay: getBasicPay(selectedGrade, yos),

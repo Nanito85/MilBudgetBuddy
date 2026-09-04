@@ -30,12 +30,6 @@ export interface InstallationSchoolInfo {
   notes?: string;
 }
 
-// Installations with no DoDEA but strong local districts
-const LOCAL: Omit<InstallationSchoolInfo, 'hasDoDEA' | 'dodea'> & { hasDoDEA?: false } = {
-  installationId: '',
-  localDistrict: '',
-};
-
 export const SCHOOL_DATA: InstallationSchoolInfo[] = [
   // ── ARMY — CONUS ───────────────────────────────────────────────────────────
   {

@@ -9,7 +9,6 @@ import { KidModeScreen } from '@/components/KidModeScreen';
 import { OfflineBanner } from '@/components/OfflineBanner';
 import { ProGateOverlay } from '@/components/ProGateOverlay';
 import { OnboardingFlow } from '@/features/profile/components/OnboardingFlow';
-import { Brand } from '@/constants/theme';
 import { useAppTheme } from '@/hooks/use-theme';
 import { useAuthStore } from '@/store/auth.store';
 import { useKidModeStore } from '@/store/kid-mode.store';

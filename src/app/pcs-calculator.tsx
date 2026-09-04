@@ -238,8 +238,6 @@ export default function PCSCalculatorScreen() {
   const totalOneTime = dla + malt + tleTotal;
   const monthlyChange = result.monthlyDiff ?? 0;
 
-  const showEntitlements = miles > 0 || tleDepartDays > 0 || tleGainDays > 0;
-
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
     <ThemedView style={styles.container}>

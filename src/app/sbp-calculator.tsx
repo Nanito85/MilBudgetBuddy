@@ -13,14 +13,9 @@ import { useUserStore } from '@/store/user.store';
 // SBP constants (FY2026)
 const SBP_ANNUITY_PCT   = 0.55;   // spouse receives 55% of covered base
 const SBP_PREMIUM_PCT   = 0.065;  // 6.5% of covered base
-const SBP_MAX_BASE_PCT  = 1.0;    // covered base up to 100% of retirement pay
 
 function fmtDollar(n: number) {
   return '$' + Math.round(n).toLocaleString('en-US');
-}
-
-function fmtPct(n: number) {
-  return (n * 100).toFixed(1) + '%';
 }
 
 interface SbpResult {

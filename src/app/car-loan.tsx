@@ -6,7 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Brand, Fonts, Spacing } from '@/constants/theme';
-import { PAY_GRADES, PayGrade } from '@/data/bah-rates';
+import { PayGrade } from '@/data/bah-rates';
 import { calcLES } from '@/features/home/utils/lesCalc';
 import { useThemeColors } from '@/hooks/use-theme';
 import { useUserStore } from '@/store/user.store';
@@ -31,10 +31,6 @@ function calcPayment(principal: number, annualRate: number, months: number): num
 
 function fmt(n: number) {
   return '$' + Math.round(n).toLocaleString('en-US');
-}
-
-function fmtD(n: number) {
-  return '$' + n.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
 }
 
 // Benchmark max car price by grade (≈ 25% of gross annual pay)
@@ -100,7 +96,6 @@ export default function CarLoanScreen() {
       }),
     [grade, storeYos, mhaZip, dutyStationId, hasSpouse, housingStatus, specialPaysTotal, tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence, lesOverrides, storeGrade, serviceStatus],
   );
-  const basePay    = breakdown.basePay;
   const takeHome   = Math.round(breakdown.netPay);
   const principal  = Math.max(0, price - downPmt);
   const payment    = calcPayment(principal, apr, term);

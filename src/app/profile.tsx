@@ -21,7 +21,7 @@ import { TacticalCard } from '@/components/TacticalCard';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { BottomTabInset, Brand, Fonts, Spacing } from '@/constants/theme';
-import { getStateTaxInfo, US_STATES } from '@/data/state-tax';
+import { US_STATES } from '@/data/state-tax';
 import { TIPS } from '@/data/tips';
 import { GradePicker } from '@/features/pcs/components/GradePicker';
 import { NumberStepper } from '@/features/retirement/components/NumberStepper';
@@ -1200,7 +1200,6 @@ export default function ProfileScreen() {
   const specialPays    = useUserStore((s) => s.specialPays);
   const lesOverrides   = useUserStore((s) => s.lesOverrides);
   const dateOfEnlist   = useUserStore((s) => s.dateOfEnlistment);
-  const dateOfRank     = useUserStore((s) => s.dateOfRank);
   const setNotifications = useUserStore((s) => s.setNotifications);
   const resetAll       = useUserStore((s) => s.resetAll);
 
@@ -1221,7 +1220,6 @@ export default function ProfileScreen() {
 
   const rankAbbrev    = getRankAbbrev(branch, payGrade, rankVariant);
   const displayName   = nickname || lastName?.toUpperCase() || 'UNNAMED';
-  const stateInfo     = getStateTaxInfo(stateResidence);
   const totalSpecialPay = specialPays.reduce((s, p) => s + p.monthlyAmount, 0);
   const enlistYears   = yearsFromDate(dateOfEnlist);
 

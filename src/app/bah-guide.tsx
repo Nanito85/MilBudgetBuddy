@@ -15,7 +15,7 @@ import { BranchRegNote } from '@/components/BranchRegNote';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Brand, Spacing } from '@/constants/theme';
-import { BAH_PARTIAL, getBahRate, hasBahData, PAY_GRADES, PayGrade } from '@/data/bah-rates';
+import { BAH_PARTIAL, getBahRate, hasBahData, PayGrade } from '@/data/bah-rates';
 import { Installation, getInstallationByZip, searchInstallations } from '@/data/installations';
 import { OhaLocation, searchOhaLocations } from '@/data/oha-locations';
 import { getOhaLocationRates, getOhaRate, getOhaTotalCeiling, isOhaDataStale, OHA_DATA_QUARTER } from '@/data/oha-rates';
@@ -26,7 +26,6 @@ import { useUserStore } from '@/store/user.store';
 const ENLISTED: PayGrade[] = ['E1','E2','E3','E4','E5','E6','E7','E8','E9'];
 const WARRANT:  PayGrade[] = ['W1','W2','W3','W4','W5'];
 const OFFICER:  PayGrade[] = ['O1','O2','O3','O4','O5','O6','O7','O8','O9','O10'];
-const ALL_GRADES: PayGrade[] = [...ENLISTED, ...WARRANT, ...OFFICER];
 
 type DepStatus = 'without' | 'with';
 type TabMode   = 'bah' | 'oha';

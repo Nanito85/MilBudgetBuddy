@@ -74,7 +74,6 @@ export default function RothIraScreen() {
   const [balance, setBalance]  = useState(5000);
   const [monthly, setMonthly]  = useState(ROTH_MONTHLY_LIMIT);
   const [age, setAge]          = useState(22);
-  const currentYear = new Date().getFullYear();
 
   const yearsTo20  = Math.max(0, 20);
   const yearsTo30  = Math.max(0, 30);

@@ -250,7 +250,6 @@ export default function NetWorthScreen() {
 
   // Net worth change since earliest snapshot
   const firstSnap = snapshots[0];
-  const lastSnap = snapshots[snapshots.length - 1];
   const totalChange = snapshots.length >= 2 ? netWorth - firstSnap.netWorth : null;
 
   return (

@@ -17,7 +17,6 @@ type Tab = 'calc' | 'funds' | 'brs';
 
 const RETURN_STEPS = [3, 4, 5, 6, 7, 8, 9, 10];
 const YEARS_STEPS  = [5, 10, 15, 20, 25, 30];
-const AGE_STEPS    = [20, 22, 25, 28, 30, 32, 35, 38, 40, 45, 50, 55, 60, 63, 65];
 
 function fmtM(n: number): string {
   if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(2)}M`;

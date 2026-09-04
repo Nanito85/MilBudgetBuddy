@@ -1,5 +1,5 @@
 ﻿import { useRouter } from 'expo-router';
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Switch, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -80,7 +80,6 @@ export default function DeploymentSavingsScreen() {
   // annualized at months/12 of deployment
   const sdpPrincipal = Math.min(10000, totalSavings);
   const sdpInterest  = sdpPrincipal * SDP_RATE * (months / 12);
-  const sdpReturn    = sdpPrincipal + sdpInterest;
 
   const totalWithSdp = totalSavings + sdpInterest + taxSavings * months;
   const goalPct = goal > 0 ? Math.min(1, totalWithSdp / goal) : 0;
