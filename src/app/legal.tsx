@@ -7,8 +7,8 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Brand, Spacing } from '@/constants/theme';
 import { useThemeColors } from '@/hooks/use-theme';
+import { resetAllLocalData } from '@/services/reset-local-data';
 import { useAuthStore } from '@/store/auth.store';
-import { useUserStore } from '@/store/user.store';
 
 const SUPPORT_EMAIL = 'support@milbudgetbuddy.com';
 const PRIVACY_URL = 'https://nanito85.github.io/MilBudgetBuddy/privacy-policy.html';
@@ -22,7 +22,6 @@ export default function LegalScreen() {
   const [expanded, setExpanded] = useState<Section>(null);
   const [deleting, setDeleting] = useState(false);
   const { user, deleteAccount } = useAuthStore();
-  const resetAll = useUserStore((s) => s.resetAll);
 
   const toggle = (section: Section) =>
     setExpanded((prev) => (prev === section ? null : section));
@@ -43,7 +42,13 @@ export default function LegalScreen() {
           onPress: async () => {
             setDeleting(true);
             try {
+              // Cloud data + the Firebase auth user first — only wipe local
+              // data once that's confirmed to succeed, so a failed cloud
+              // deletion (e.g. needs re-auth) never leaves the device wiped
+              // while the account/cloud data still exists remotely.
               await deleteAccount();
+              await resetAllLocalData();
+              router.replace('/');
             } catch {
               Alert.alert('Error', 'Could not delete account. You may need to sign out and sign back in first, then try again.');
             } finally {

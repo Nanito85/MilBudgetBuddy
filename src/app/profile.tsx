@@ -1,4 +1,3 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
@@ -35,15 +34,8 @@ import {
   scheduleWeeklyTip,
   schedulePayDayReminders,
 } from '@/services/notifications';
-import { useBudgetStore } from '@/store/budget.store';
-import { useDebtStore } from '@/store/debt.store';
-import { useExpensesStore } from '@/store/expenses.store';
-import { useKidModeStore } from '@/store/kid-mode.store';
+import { resetAllLocalData } from '@/services/reset-local-data';
 import { useKidsStore } from '@/store/kids.store';
-import { useLifeEventsStore } from '@/store/life-events.store';
-import { useNetWorthStore } from '@/store/networth.store';
-import { useNwSnapshotsStore } from '@/store/networth-snapshots.store';
-import { useSavingsGoalsStore } from '@/store/savings-goals.store';
 import { useTipsStore } from '@/store/tips.store';
 import { useUserStore } from '@/store/user.store';
 import { KidGender, KidProfile, PendingCompletion } from '@/types/kids.types';
@@ -1201,14 +1193,16 @@ export default function ProfileScreen() {
   const lesOverrides   = useUserStore((s) => s.lesOverrides);
   const dateOfEnlist   = useUserStore((s) => s.dateOfEnlistment);
   const setNotifications = useUserStore((s) => s.setNotifications);
-  const resetAll       = useUserStore((s) => s.resetAll);
 
   const [showEditPersonal, setShowEditPersonal] = useState(false);
   const [showEditPay, setShowEditPay]           = useState(false);
   const [showAddKid, setShowAddKid]             = useState(false);
 
   const savedTipIds = useTipsStore((s) => s.savedTipIds);
-  const clearSaved  = () => useTipsStore.setState({ savedTipIds: [] }, false);
+  // Was previously a bare setState({ savedTipIds: [] }) that only cleared
+  // in-memory state, never AsyncStorage — cleared tips silently came back
+  // on next app launch. tips.store's own resetAll() now clears both.
+  const clearSaved  = () => useTipsStore.getState().resetAll();
 
   const kids        = useKidsStore((s) => s.kids);
   const addKid      = useKidsStore((s) => s.addKid);
@@ -1249,17 +1243,7 @@ export default function ProfileScreen() {
         Alert.alert('Final Confirmation', 'Are you absolutely sure? All data will be erased.', [
           { text: 'Go Back', style: 'cancel' },
           { text: 'Erase All Data', style: 'destructive', onPress: async () => {
-            resetAll(); clearSaved();
-            useBudgetStore.getState().resetAll();
-            useDebtStore.getState().resetAll();
-            useNetWorthStore.getState().resetAll();
-            useNwSnapshotsStore.getState().clearHistory();
-            useSavingsGoalsStore.getState().resetAll();
-            useExpensesStore.getState().resetAll();
-            useKidsStore.getState().resetAll();
-            useLifeEventsStore.getState().resetAll();
-            await useKidModeStore.getState().resetAll();
-            await AsyncStorage.clear();
+            await resetAllLocalData();
             router.replace('/');
           }},
         ]);

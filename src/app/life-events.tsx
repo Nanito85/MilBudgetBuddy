@@ -110,6 +110,9 @@ export default function LifeEventsScreen() {
                             {done}/{total} tasks complete
                           </ThemedText>
                         </View>
+                        <Pressable onPress={() => dismissEvent(activeEvent.type)} style={styles.dismissBtn}>
+                          <ThemedText style={[styles.dismissBtnText, { color: tc.textSecondary }]}>Dismiss</ThemedText>
+                        </Pressable>
                         <Pressable onPress={() => handleRemove(activeEvent.type)} style={styles.removeBtn}>
                           <ThemedText style={[styles.removeBtnText, { color: tc.textSecondary }]}>✕</ThemedText>
                         </Pressable>
@@ -306,6 +309,8 @@ const styles = StyleSheet.create({
   eventProgress: { fontSize: 11, marginTop: 2 },
   removeBtn: { padding: 6 },
   removeBtnText: { fontSize: 14, fontWeight: '700' },
+  dismissBtn: { paddingHorizontal: 8, paddingVertical: 6 },
+  dismissBtnText: { fontSize: 11, fontWeight: '700', letterSpacing: 0.3 },
 
   progressTrack: {
     height: 3,

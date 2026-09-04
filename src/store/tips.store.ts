@@ -9,6 +9,7 @@ interface TipsState {
   hydrate: () => Promise<void>;
   toggleSave: (tipId: string) => void;
   isSaved: (tipId: string) => boolean;
+  resetAll: () => void;
 }
 
 export const useTipsStore = create<TipsState>((set, get) => ({
@@ -35,4 +36,9 @@ export const useTipsStore = create<TipsState>((set, get) => ({
   },
 
   isSaved: (tipId) => get().savedTipIds.includes(tipId),
+
+  resetAll: () => {
+    set({ savedTipIds: [] });
+    AsyncStorage.removeItem(STORAGE_KEY);
+  },
 }));
