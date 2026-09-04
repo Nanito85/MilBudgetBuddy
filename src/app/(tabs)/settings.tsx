@@ -1,4 +1,3 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import Constants from 'expo-constants';
 import { deepLinkToSubscriptions } from 'expo-iap';
 import { useRouter } from 'expo-router';
@@ -16,18 +15,10 @@ import { ALL_QUICK_ACTIONS } from '@/data/quick-actions';
 import { useThemeColors } from '@/hooks/use-theme';
 import { useIsAdmin } from '@/hooks/use-admin';
 import { useIsPro } from '@/hooks/use-is-pro';
+import { resetAllLocalData } from '@/services/reset-local-data';
 import { ANDROID_PRODUCT_ID } from '@/services/iap';
 import { useAuthStore } from '@/store/auth.store';
-import { useBudgetStore } from '@/store/budget.store';
-import { useDebtStore } from '@/store/debt.store';
-import { useExpensesStore } from '@/store/expenses.store';
 import { useKidModeStore } from '@/store/kid-mode.store';
-import { useKidsStore } from '@/store/kids.store';
-import { useLifeEventsStore } from '@/store/life-events.store';
-import { useNetWorthStore } from '@/store/networth.store';
-import { useNwSnapshotsStore } from '@/store/networth-snapshots.store';
-import { useSavingsGoalsStore } from '@/store/savings-goals.store';
-import { useTipsStore } from '@/store/tips.store';
 import { useUserStore } from '@/store/user.store';
 
 const MAX_TILES = 4;
@@ -192,7 +183,6 @@ export default function SettingsScreen() {
   const tc = useThemeColors();
 
   const savedIds      = useUserStore((s) => s.quickAccessIds);
-  const resetAll      = useUserStore((s) => s.resetAll);
   const fontScale     = useUserStore((s) => s.fontScale ?? 1.0);
   const appTheme      = useUserStore((s) => s.appTheme ?? 'dark');
   const setQuickAccessIds = useUserStore((s) => s.setQuickAccessIds);
@@ -622,18 +612,7 @@ export default function SettingsScreen() {
                   text: 'Reset Everything',
                   style: 'destructive',
                   onPress: async () => {
-                    resetAll();
-                    useTipsStore.setState({ savedTipIds: [] }, false);
-                    useBudgetStore.getState().resetAll();
-                    useDebtStore.getState().resetAll();
-                    useNetWorthStore.getState().resetAll();
-                    useNwSnapshotsStore.getState().clearHistory();
-                    useSavingsGoalsStore.getState().resetAll();
-                    useExpensesStore.getState().resetAll();
-                    useKidsStore.getState().resetAll();
-                    useLifeEventsStore.getState().resetAll();
-                    await useKidModeStore.getState().resetAll();
-                    await AsyncStorage.clear();
+                    await resetAllLocalData();
                     router.replace('/' as any);
                   },
                 },
