@@ -1,6 +1,7 @@
 import { BAH_PARTIAL, getBahRate, PayGrade } from '@/data/bah-rates';
 import { getBAS } from '@/data/bas-rates';
 import { getBasicPay, getHigh3Average } from '@/data/basic-pay-rates';
+import { estimateAnnualFedTax, FICA_RATE } from '@/data/federal-tax';
 import { getOhaAreaForInstallation, getOhaRate } from '@/data/oha-rates';
 import { getStateTaxRate } from '@/data/state-tax';
 import { HousingStatus, LESOverrides, ServiceStatus } from '@/types/user.types';
@@ -10,41 +11,12 @@ import { HousingStatus, LESOverrides, ServiceStatus } from '@/types/user.types';
 export const SGLI_MONTHLY = 26;      // $500k coverage (effective July 1, 2025 rate)
 export const DENTAL_FAMILY = 30.47;  // TDP family (2+ dependents), E5+ sponsor rate, Mar 2026-Feb 2027
 
-// Federal income tax estimate — base pay only (allowances not taxable)
-// FY2026 brackets (inflation-adjusted); filing status: 'single' | 'married'
+// Federal income tax estimate — base pay only (allowances not taxable).
+// Bracket table lives in data/federal-tax.ts (single source of truth —
+// see that file's header for why this used to be its own hand-maintained
+// copy of the brackets).
 function estimateFedTax(annualBasePay: number, married: boolean): number {
-  const stdDeduction = married ? 32200 : 16100;
-  const taxable = Math.max(0, annualBasePay - stdDeduction);
-
-  const brackets = married
-    ? [
-        [24800, 0.10],
-        [100800, 0.12],
-        [211400, 0.22],
-        [403550, 0.24],
-        [512450, 0.32],
-        [768700, 0.35],
-        [Infinity, 0.37],
-      ]
-    : [
-        [12400, 0.10],
-        [50400, 0.12],
-        [105700, 0.22],
-        [201775, 0.24],
-        [256225, 0.32],
-        [640600, 0.35],
-        [Infinity, 0.37],
-      ];
-
-  let tax = 0;
-  let prev = 0;
-  for (const [ceiling, rate] of brackets) {
-    if (taxable <= prev) break;
-    const slice = Math.min(taxable, ceiling as number) - prev;
-    tax += slice * (rate as number);
-    prev = ceiling as number;
-  }
-  return tax / 12;
+  return estimateAnnualFedTax(annualBasePay, married) / 12;
 }
 
 export interface LESBreakdown {
@@ -185,7 +157,7 @@ export function calcLES(inputs: LESInputs): LESBreakdown {
 
   const grossPay = basePay + bah + bas + specialPaysTotal + extraIncome;
 
-  const fica           = isRetired ? 0 : basePay * 0.0765;
+  const fica           = isRetired ? 0 : basePay * FICA_RATE;
   const fedTax         = estimateFedTax(basePay * 12, hasSpouse);
   const stateRate      = getStateTaxRate(stateResidence);
   const stateTax       = basePay * stateRate;

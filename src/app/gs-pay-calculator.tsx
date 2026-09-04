@@ -13,6 +13,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Brand, Spacing } from '@/constants/theme';
+import { estimateAnnualFedTax, FICA_RATE } from '@/data/federal-tax';
 import {
   GS_LOCALITIES,
   GS_MILITARY_EQUIV,
@@ -27,23 +28,12 @@ const STEPS  = Array.from({ length: 10 }, (_, i) => i + 1);
 
 const fmt  = (n: number) => '$' + Math.round(n).toLocaleString();
 
-// Rough federal tax estimate for display only
+// Rough federal tax estimate for display only. Bracket table lives in
+// data/federal-tax.ts (single source of truth, shared with lesCalc.ts) —
+// single-filer only, matching this screen's own disclaimer below.
 function estimateAnnualNet(annual: number): number {
-  const std = 16100;
-  const taxable = Math.max(0, annual - std);
-  const brackets: [number, number][] = [
-    [12400, 0.10], [50400, 0.12], [105700, 0.22],
-    [201775, 0.24], [256225, 0.32], [640600, 0.35], [Infinity, 0.37],
-  ];
-  let tax = 0;
-  let prev = 0;
-  for (const [ceil, rate] of brackets) {
-    if (taxable <= prev) break;
-    const slice = Math.min(taxable, ceil) - prev;
-    tax += slice * rate;
-    prev = ceil;
-  }
-  const fica = annual * 0.0765;
+  const tax = estimateAnnualFedTax(annual, false);
+  const fica = annual * FICA_RATE;
   return Math.round(annual - tax - fica);
 }
 
