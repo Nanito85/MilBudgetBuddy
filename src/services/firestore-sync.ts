@@ -15,6 +15,7 @@ import { useExpensesStore } from '@/store/expenses.store';
 import { useKidsStore } from '@/store/kids.store';
 import { useSavingsGoalsStore } from '@/store/savings-goals.store';
 import { useNetWorthStore } from '@/store/networth.store';
+import { useNwSnapshotsStore } from '@/store/networth-snapshots.store';
 import { useLifeEventsStore } from '@/store/life-events.store';
 
 // One active set of listeners per session (remote → local)
@@ -32,7 +33,7 @@ function userDoc(uid: string, collection: string) {
 }
 
 const ALL_COLLECTIONS = [
-  'profile', 'budget', 'debt', 'expenses', 'kids', 'goals', 'networth', 'lifeEvents',
+  'profile', 'budget', 'debt', 'expenses', 'kids', 'goals', 'networth', 'nwSnapshots', 'lifeEvents',
 ] as const;
 
 // Permanently deletes every synced document for this user. Call this — and
@@ -54,6 +55,7 @@ export async function pushToCloud(uid: string) {
     setDoc(userDoc(uid, 'kids'),        { kids: useKidsStore.getState().kids },                          { merge: true }),
     setDoc(userDoc(uid, 'goals'),       { goals: useSavingsGoalsStore.getState().goals },                { merge: true }),
     setDoc(userDoc(uid, 'networth'),    { entries: useNetWorthStore.getState().entries }, { merge: true }),
+    setDoc(userDoc(uid, 'nwSnapshots'), { snapshots: useNwSnapshotsStore.getState().snapshots }, { merge: true }),
     setDoc(userDoc(uid, 'lifeEvents'),  { events: useLifeEventsStore.getState().events }, { merge: true }),
   ];
   await Promise.all(writes);
@@ -65,7 +67,7 @@ export async function pullFromCloud(uid: string): Promise<boolean> {
   const snap = await getDoc(userDoc(uid, 'profile'));
   if (!snap.exists()) return false; // No cloud data yet — first-ever login
 
-  const [profile, budget, debt, expenses, kids, goals, networth, lifeEvents] = await Promise.all([
+  const [profile, budget, debt, expenses, kids, goals, networth, nwSnapshots, lifeEvents] = await Promise.all([
     getDoc(userDoc(uid, 'profile')),
     getDoc(userDoc(uid, 'budget')),
     getDoc(userDoc(uid, 'debt')),
@@ -73,6 +75,7 @@ export async function pullFromCloud(uid: string): Promise<boolean> {
     getDoc(userDoc(uid, 'kids')),
     getDoc(userDoc(uid, 'goals')),
     getDoc(userDoc(uid, 'networth')),
+    getDoc(userDoc(uid, 'nwSnapshots')),
     getDoc(userDoc(uid, 'lifeEvents')),
   ]);
 
@@ -83,6 +86,7 @@ export async function pullFromCloud(uid: string): Promise<boolean> {
   if (kids.exists())        applyRemote('kids',       () => useKidsStore.setState({ kids: kids.data()?.kids ?? [] }));
   if (goals.exists())       applyRemote('goals',      () => useSavingsGoalsStore.setState({ goals: goals.data()?.goals ?? [] }));
   if (networth.exists())    applyRemote('networth',   () => useNetWorthStore.setState({ entries: networth.data()?.entries ?? [] }));
+  if (nwSnapshots.exists()) applyRemote('nwSnapshots', () => useNwSnapshotsStore.setState({ snapshots: nwSnapshots.data()?.snapshots ?? [] }));
   if (lifeEvents.exists())  applyRemote('lifeEvents', () => useLifeEventsStore.setState({ events: lifeEvents.data()?.events ?? [] }));
 
   return true;
@@ -101,6 +105,7 @@ export function startSync(uid: string) {
     { key: 'kids',       apply: (d) => useKidsStore.setState({ kids: d.kids ?? [] }) },
     { key: 'goals',      apply: (d) => useSavingsGoalsStore.setState({ goals: d.goals ?? [] }) },
     { key: 'networth',   apply: (d) => useNetWorthStore.setState({ entries: d.entries ?? [] }) },
+    { key: 'nwSnapshots', apply: (d) => useNwSnapshotsStore.setState({ snapshots: d.snapshots ?? [] }) },
     { key: 'lifeEvents', apply: (d) => useLifeEventsStore.setState({ events: d.events ?? [] }) },
   ];
 
@@ -164,6 +169,11 @@ function startAutoPush(uid: string) {
     useNetWorthStore.subscribe((state, prev) => {
       if (state.entries !== prev.entries && !applyingRemote.has('networth')) {
         syncCollection(uid, 'networth');
+      }
+    }),
+    useNwSnapshotsStore.subscribe((state, prev) => {
+      if (state.snapshots !== prev.snapshots && !applyingRemote.has('nwSnapshots')) {
+        syncCollection(uid, 'nwSnapshots');
       }
     }),
     useLifeEventsStore.subscribe((state, prev) => {
@@ -260,6 +270,9 @@ export function syncCollection(uid: string | null, collection: string) {
       break;
     case 'networth':
       setDoc(userDoc(uid, 'networth'), { entries: useNetWorthStore.getState().entries }, { merge: true }).catch(() => {});
+      break;
+    case 'nwSnapshots':
+      setDoc(userDoc(uid, 'nwSnapshots'), { snapshots: useNwSnapshotsStore.getState().snapshots }, { merge: true }).catch(() => {});
       break;
     case 'lifeEvents':
       setDoc(userDoc(uid, 'lifeEvents'), { events: useLifeEventsStore.getState().events }, { merge: true }).catch(() => {});
