@@ -18,7 +18,7 @@ import { Brand, Spacing } from '@/constants/theme';
 import { BAH_PARTIAL, getBahRate, hasBahData, PAY_GRADES, PayGrade } from '@/data/bah-rates';
 import { Installation, getInstallationByZip, searchInstallations } from '@/data/installations';
 import { OhaLocation, searchOhaLocations } from '@/data/oha-locations';
-import { getOhaRate, getOhaTotalCeiling, isOhaDataStale, OHA_DATA_QUARTER } from '@/data/oha-rates';
+import { getOhaLocationRates, getOhaRate, getOhaTotalCeiling, isOhaDataStale, OHA_DATA_QUARTER } from '@/data/oha-rates';
 import { useThemeColors } from '@/hooks/use-theme';
 import { useUserStore } from '@/store/user.store';
 
@@ -656,8 +656,16 @@ export default function BahGuideScreen() {
 
               {/* Live rates for selected location */}
               {selectedOha && (() => {
-                const ohaRates = getOhaRate(selectedOha.label, grade);
-                const totalCeiling = getOhaTotalCeiling(selectedOha.label, grade);
+                // rateLabel (not label) — label is this file's search-friendly
+                // display name, which several entries don't share verbatim
+                // with the DTMO rate-table key (see OhaLocation's doc comment
+                // in data/oha-locations.ts). Looking these up by `label`
+                // silently returned nothing for ~1 in 4 locations, including
+                // Camp Foster.
+                const ohaRates = getOhaRate(selectedOha.rateLabel, grade);
+                const totalCeiling = getOhaTotalCeiling(selectedOha.rateLabel, grade);
+                const locationData = getOhaLocationRates(selectedOha.rateLabel);
+                const miha = locationData?.miha ?? 0;
                 return ohaRates ? (
                   <ThemedView type="backgroundElement" style={styles.card}>
                     <ThemedText style={styles.cardLabel}>YOUR OHA ESTIMATE — {OHA_DATA_QUARTER}</ThemedText>
@@ -673,6 +681,12 @@ export default function BahGuideScreen() {
                     <View style={styles.dataRow}>
                       <ThemedText style={[styles.dataLabel, { color: tc.textHint }]}>Utility allowance</ThemedText>
                       <ThemedText style={[styles.dataValue, { color: Brand.accent }]}>${ohaRates.utilityAllowanceUSD.toLocaleString()}/mo</ThemedText>
+                    </View>
+                    <View style={styles.dataRow}>
+                      <ThemedText style={[styles.dataLabel, { color: tc.textHint }]}>MIHA (move-in, one-time)</ThemedText>
+                      <ThemedText style={[styles.dataValue, { color: Brand.tactical }]}>
+                        {miha > 0 ? `$${miha.toLocaleString()}` : 'N/A'}
+                      </ThemedText>
                     </View>
                     <ThemedText style={[styles.cardHint, { marginTop: Spacing.two, color: Brand.warning + 'CC' }]}>
                       Rates are approximate — OHA fluctuates with exchange rates. Verify at dtmo.mil.
