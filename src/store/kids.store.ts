@@ -208,7 +208,18 @@ export const useKidsStore = create<KidsState>((set, get) => ({
 
   removeChore: (kidId, choreId) => {
     const kids = get().kids.map((k) =>
-      k.id === kidId ? { ...k, chores: k.chores.filter((c) => c.id !== choreId) } : k,
+      k.id === kidId
+        ? {
+            ...k,
+            chores: k.chores.filter((c) => c.id !== choreId),
+            // Also drop any pending approval requests for this chore —
+            // approveCompletion treats these as stale and no longer pays
+            // out for them, but leaving them in the queue would still show
+            // a parent a confusing "approve this" entry for a chore that no
+            // longer exists.
+            pendingCompletions: (k.pendingCompletions ?? []).filter((p) => p.choreId !== choreId),
+          }
+        : k,
     );
     set({ kids });
     saveKids(kids);
@@ -255,6 +266,28 @@ export const useKidsStore = create<KidsState>((set, get) => ({
       if (k.id !== kidId) return k;
       const pending = (k.pendingCompletions ?? []).find((p) => p.id === completionId);
       if (!pending) return k;
+
+      const chore = k.chores.find((c) => c.id === pending.choreId);
+      // Two ways this pending request can go stale before it's approved:
+      // (1) the chore was already completed for this period through the
+      // OTHER completion path (a parent directly completing it on the kid
+      // detail screen) — completeChore and submitChoreForApproval both
+      // already guard against double-completion within the same period,
+      // but this method never had that same check, so approving it would
+      // pay the kid a second time for the same chore instance; (2) the
+      // chore itself was deleted (removeChore) while this request sat
+      // unapproved — PendingCompletion snapshots choreName/choreValue at
+      // submit time specifically so the approval queue keeps displaying
+      // something sensible, which means a parent would have no visual cue
+      // the chore is gone and could approve a payout for a chore that no
+      // longer exists. Both cases: clear the stale request instead of
+      // crediting.
+      const stale = !chore
+        || getCompletedDateInPeriod(chore.completedDates, chore.frequency ?? 'daily') !== null;
+      if (stale) {
+        return { ...k, pendingCompletions: (k.pendingCompletions ?? []).filter((p) => p.id !== completionId) };
+      }
+
       // Mark chore as complete
       const updatedChores = k.chores.map((c) =>
         c.id === pending.choreId ? { ...c, completedDates: [...c.completedDates, date] } : c,
