@@ -20,7 +20,7 @@ import { TacticalCard } from '@/components/TacticalCard';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { BottomTabInset, Brand, Fonts, Spacing } from '@/constants/theme';
-import { US_STATES } from '@/data/state-tax';
+import { RETIREMENT_TAX_EXEMPT_STATES, US_STATES } from '@/data/state-tax';
 import { TIPS } from '@/data/tips';
 import { GradePicker } from '@/features/pcs/components/GradePicker';
 import { NumberStepper } from '@/features/retirement/components/NumberStepper';
@@ -189,11 +189,17 @@ const modalStyles = StyleSheet.create({
 
 // ── State Picker Modal ─────────────────────────────────────────────────────────
 
-function StatePickerModal({ visible, selected, onSelect, onClose }: {
+function StatePickerModal({ visible, selected, onSelect, onClose, retired = false }: {
   visible: boolean;
   selected: string | undefined;
   onSelect: (code: string) => void;
   onClose: () => void;
+  // Military retirement pay exemptions are a different, generally more
+  // generous list than active-duty exemptions (see state-tax.ts) — e.g.
+  // Kansas and Utah fully tax active-duty pay but fully exempt retirement
+  // pay. Without this, a retiree picking their state saw the active-duty
+  // "NO TAX" badge / rate, which doesn't reflect what they'll actually pay.
+  retired?: boolean;
 }) {
   const tc = useThemeColors();
   const [query, setQuery] = useState('');
@@ -234,7 +240,7 @@ function StatePickerModal({ visible, selected, onSelect, onClose }: {
                     <ThemedText style={[stateStyles.name, { color: tc.textHint }, isSelected && { color: tc.textPrimary }]}>{s.name}</ThemedText>
                   </View>
                   <View style={stateStyles.rowRight}>
-                    {s.militaryExempt ? (
+                    {(retired ? RETIREMENT_TAX_EXEMPT_STATES.has(s.code) : s.militaryExempt) ? (
                       <View style={stateStyles.exemptBadge}>
                         <ThemedText type="label" style={[stateStyles.exemptText, { color: tc.tactical }]}>NO TAX</ThemedText>
                       </View>
@@ -785,7 +791,9 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
             </Pressable>
             {stateInfo && (
               <ThemedText style={[editStyles.dateHint, { color: tc.tactical }]}>
-                {stateInfo.militaryExempt ? '✓ Military pay exempt' : `~${(stateInfo.effectiveRate * 100).toFixed(1)}% est. effective rate`}
+                {(isRetired ? RETIREMENT_TAX_EXEMPT_STATES.has(stateInfo.code) : stateInfo.militaryExempt)
+                  ? `✓ Military ${isRetired ? 'retirement ' : ''}pay exempt`
+                  : `~${(stateInfo.effectiveRate * 100).toFixed(1)}% est. effective rate`}
               </ThemedText>
             )}
 
@@ -836,6 +844,7 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
         selected={state}
         onSelect={setState}
         onClose={() => setShowStatePicker(false)}
+        retired={isRetired}
       />
       <DatePickerModal
         visible={showEnlistPicker}

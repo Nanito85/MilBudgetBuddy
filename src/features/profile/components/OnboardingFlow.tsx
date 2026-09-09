@@ -19,7 +19,7 @@ import { ThemedView } from '@/components/themed-view';
 import { Brand, Spacing } from '@/constants/theme';
 import { useThemeColors } from '@/hooks/use-theme';
 import { PayGrade } from '@/data/bah-rates';
-import { US_STATES } from '@/data/state-tax';
+import { RETIREMENT_TAX_EXEMPT_STATES, US_STATES } from '@/data/state-tax';
 import { GradePicker } from '@/features/pcs/components/GradePicker';
 import { StationPicker } from '@/features/pcs/components/StationPicker';
 import { NumberStepper } from '@/features/retirement/components/NumberStepper';
@@ -1019,8 +1019,16 @@ function RetiredServiceInfoStep({
 
 function LocationFamilyStep({
   onNext,
+  retired = false,
 }: {
   onNext: (mhaZip: string, installName: string, hasSpouse: boolean, numChildren: number, stateCode: string, housingStatus: HousingStatus, dutyStationId: string) => void;
+  // Military retirement pay exemptions are a different, generally more
+  // generous list than active-duty exemptions (see state-tax.ts) — without
+  // this, a retiring member picking their state saw the active-duty "NO
+  // TAX" badge, which doesn't reflect what they'll actually pay in
+  // retirement (e.g. Kansas fully taxes active-duty pay but fully exempts
+  // retirement pay).
+  retired?: boolean;
 }) {
   const [station, setStation]         = useState<Installation | null>(null);
   const [hasSpouse, setHasSpouse]     = useState(false);
@@ -1087,7 +1095,7 @@ function LocationFamilyStep({
                     style={styles.stateOption}>
                     <ThemedText style={styles.stateOptionCode}>{s.code}</ThemedText>
                     <ThemedText type="small" themeColor="textSecondary">{s.name}</ThemedText>
-                    {s.militaryExempt && (
+                    {(retired ? RETIREMENT_TAX_EXEMPT_STATES.has(s.code) : s.militaryExempt) && (
                       <ThemedText type="small" style={{ color: Brand.primary, marginLeft: 'auto' as any }}>NO TAX</ThemedText>
                     )}
                   </Pressable>
@@ -1401,7 +1409,7 @@ export function OnboardingFlow() {
               ? <RetiredServiceInfoStep branch={pendingBranch} onNext={handleRetiredInfo} />
               : <ServiceInfoStep branch={pendingBranch} status={pendingStatus} onNext={handleServiceInfo} />
           )}
-          {step === 5 && <LocationFamilyStep onNext={handleLocationFamily} />}
+          {step === 5 && <LocationFamilyStep onNext={handleLocationFamily} retired={pendingStatus === 'retired'} />}
           {step === 6 && <FinancialGoalStep onNext={handleFinancialGoal} />}
           {step === 7 && <NotificationsStep onFinish={setOnboarded} />}
         </SafeAreaView>
