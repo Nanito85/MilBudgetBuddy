@@ -66,8 +66,18 @@ const RATE_GRADES = [
   { min: 50, max: 100, label: 'FIRE MODE',  colorKey: 'success'  as const, color: Brand.success,  desc: 'Financial independence in under 17 years.' },
 ];
 
+// RATE_GRADES brackets are all exclusive on their upper bound, including
+// the last one's max:100 — so a savings rate of exactly 100% (possible
+// with $0 monthly expenses) matched no bracket via .find() and silently
+// fell back to RATE_GRADES[0], labeling perfect savings "CRITICAL" in
+// red. Walking ascending and keeping the last bracket whose min qualifies
+// makes the top bracket effectively open-ended, so 100% lands in FIRE MODE.
 function getRateGrade(pct: number) {
-  return RATE_GRADES.find((g) => pct >= g.min && pct < g.max) ?? RATE_GRADES[0];
+  let match = RATE_GRADES[0];
+  for (const g of RATE_GRADES) {
+    if (pct >= g.min) match = g;
+  }
+  return match;
 }
 
 export default function SavingsRateScreen() {
