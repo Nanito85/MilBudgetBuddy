@@ -3,7 +3,7 @@ import { getBAS } from '@/data/bas-rates';
 import { getBasicPay, getHigh3Average } from '@/data/basic-pay-rates';
 import { estimateAnnualFedTax, FICA_RATE } from '@/data/federal-tax';
 import { getOhaAreaForInstallation, getOhaRate } from '@/data/oha-rates';
-import { getStateTaxRate } from '@/data/state-tax';
+import { getRetirementStateTaxRate, getStateTaxRate } from '@/data/state-tax';
 import { HousingStatus, LESOverrides, ServiceStatus } from '@/types/user.types';
 
 // SGLI: $0.05/month per $1,000 × $500,000 coverage = $25.00 + $1.00 TSGLI = $26.00
@@ -172,7 +172,12 @@ export function calcLES(inputs: LESInputs): LESBreakdown {
 
   const fica           = isRetired ? 0 : basePay * FICA_RATE;
   const fedTax         = estimateFedTax(basePay * 12, hasSpouse);
-  const stateRate      = getStateTaxRate(stateResidence);
+  // Military retirement pay exemptions are a materially different (and
+  // generally more generous) list than active-duty exemptions — see
+  // getRetirementStateTaxRate's own comment in data/state-tax.ts. Using the
+  // active-duty table here would show retirees in e.g. Kansas or Utah a
+  // state tax deduction on their pension that doesn't actually apply.
+  const stateRate      = isRetired ? getRetirementStateTaxRate(stateResidence) : getStateTaxRate(stateResidence);
   const stateTax       = basePay * stateRate;
   const traditionalTsp = basePay * (tspContribPct / 100);
   const rothTsp        = basePay * (rothTspPct / 100);

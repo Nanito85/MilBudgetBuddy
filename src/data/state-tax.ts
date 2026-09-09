@@ -75,3 +75,39 @@ export function getStateTaxInfo(code: string | undefined): StateTaxInfo | undefi
 export function getStateTaxRate(code: string | undefined): number {
   return getStateTaxInfo(code)?.effectiveRate ?? 0;
 }
+
+/**
+ * States that fully, unconditionally exempt MILITARY RETIREMENT PAY (the
+ * pension) from state income tax — a materially different, and generally
+ * far more generous, list than `militaryExempt` above (which is scoped to
+ * active-duty pay only, per this file's own header). calcLES() was reusing
+ * the active-duty US_STATES table for retirees too, so a retiree living in,
+ * say, Kansas or Utah — both of which fully exempt retirement pay but tax
+ * active-duty pay — was shown a state tax deduction on their pension that
+ * doesn't actually apply. Verified against themilitarywallet.com's 2026
+ * state-by-state breakdown, cross-checked against a second source for KS/UT.
+ *
+ * Only unconditional, uncapped exemptions are marked true here — states with
+ * an income cap, AGI phase-out, or age gate (e.g. CO, DE, GA, ID, KY, MD,
+ * MT, NM, OR, VT, VA) are left false/taxed at this file's existing
+ * effectiveRate, same "don't model partial exemptions as full" principle
+ * used for the active-duty table. Utah's mechanism is technically a
+ * nonrefundable tax credit (retired pay × 4.85%) rather than an income
+ * exclusion, but since Utah's flat rate is also 4.85% the credit fully
+ * offsets the tax for virtually every retiree — treated as exempt here to
+ * reflect that real-world net effect.
+ */
+export const RETIREMENT_TAX_EXEMPT_STATES = new Set([
+  // No state income tax at all
+  'AK', 'FL', 'NV', 'NH', 'SD', 'TN', 'TX', 'WA', 'WY',
+  // Fully, unconditionally exempt military retirement pay
+  'AL', 'AZ', 'AR', 'CT', 'HI', 'IL', 'IN', 'IA', 'KS', 'LA', 'ME', 'MA',
+  'MI', 'MN', 'MS', 'MO', 'NE', 'NJ', 'NY', 'NC', 'ND', 'OH', 'OK', 'PA',
+  'RI', 'SC', 'UT', 'WV', 'WI',
+]);
+
+export function getRetirementStateTaxRate(code: string | undefined): number {
+  if (!code) return 0;
+  if (RETIREMENT_TAX_EXEMPT_STATES.has(code)) return 0;
+  return getStateTaxRate(code);
+}
