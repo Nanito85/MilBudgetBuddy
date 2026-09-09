@@ -86,6 +86,7 @@ export default function SavingsRateScreen() {
   const hasDentalFamily = useUserStore((s) => s.hasDentalFamily);
   const sglOptOut = useUserStore((s) => s.sglOptOut);
   const stateResidence = useUserStore((s) => s.stateResidence);
+  const lesOverrides = useUserStore((s) => s.lesOverrides);
   const specialPays = useUserStore((s) => s.specialPays);
   const serviceStatus = useUserStore((s) => s.serviceStatus);
   const budgetCategories = useBudgetStore((s) => s.categories);
@@ -95,10 +96,14 @@ export default function SavingsRateScreen() {
     [specialPays],
   );
 
+  // Was missing `overrides` — the identical calcLES call on Home (index.tsx)
+  // includes it, so this screen's pre-filled "monthly income" silently
+  // ignored any manual LES correction the member entered in Profile > Pay,
+  // diverging from what Home shows for the same person.
   const breakdown = useMemo(() => {
     if (!payGrade) return null;
-    return calcLES({ payGrade, yos, mhaZip, dutyStationId, hasSpouse, housingStatus, specialPaysTotal, tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence, serviceStatus });
-  }, [payGrade, yos, mhaZip, dutyStationId, hasSpouse, housingStatus, specialPaysTotal, tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence, serviceStatus]);
+    return calcLES({ payGrade, yos, mhaZip, dutyStationId, hasSpouse, housingStatus, specialPaysTotal, tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence, overrides: lesOverrides, serviceStatus });
+  }, [payGrade, yos, mhaZip, dutyStationId, hasSpouse, housingStatus, specialPaysTotal, tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence, lesOverrides, serviceStatus]);
 
   const netPayFromStore = breakdown?.netPay ?? 0;
   const budgetTotal = useMemo(

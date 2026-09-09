@@ -828,6 +828,8 @@ export default function BudgetScreen() {
   const hasDentalFamily = useUserStore((s) => s.hasDentalFamily);
   const sglOptOut = useUserStore((s) => s.sglOptOut);
   const serviceStatus = useUserStore((s) => s.serviceStatus);
+  const stateResidence = useUserStore((s) => s.stateResidence);
+  const lesOverrides = useUserStore((s) => s.lesOverrides);
 
   useEffect(() => {
     useBudgetStore.getState().hydrate();
@@ -835,6 +837,12 @@ export default function BudgetScreen() {
     useSavingsGoalsStore.getState().hydrate();
   }, []);
 
+  // Was missing `overrides` and `stateResidence` — both of which the
+  // identical calcLES call on Home (index.tsx) already includes. Without
+  // them, Budget's net pay silently ignored any manual LES corrections the
+  // member entered in Profile > Pay (an actual-vs-estimated BAH/BAS/base pay
+  // fix), and never subtracted state income tax at all — a real, sometimes
+  // large discrepancy from what Home shows for the exact same person.
   const netPay = React.useMemo(() => {
     if (!payGrade) return 0;
     const specialPaysTotal = specialPays.reduce((s: number, p: any) => s + p.monthlyAmount, 0);
@@ -850,9 +858,11 @@ export default function BudgetScreen() {
       rothTspPct,
       hasDentalFamily,
       sglOptOut,
+      stateResidence,
+      overrides: lesOverrides,
       serviceStatus,
     }).netPay;
-  }, [payGrade, yos, mhaZip, dutyStationId, hasSpouse, housingStatus, specialPays, tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, serviceStatus]);
+  }, [payGrade, yos, mhaZip, dutyStationId, hasSpouse, housingStatus, specialPays, tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence, lesOverrides, serviceStatus]);
 
   const remaining = netPay - totalBudgeted;
   const overBudget = remaining < 0;
