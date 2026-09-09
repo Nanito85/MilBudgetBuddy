@@ -2,7 +2,7 @@ import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { getActiveSubscriptions, getAvailablePurchases, useIAP } from 'expo-iap';
+import { getActiveSubscriptions, getAvailablePurchases, isEligibleForIntroOfferIOS, useIAP } from 'expo-iap';
 import type { Purchase } from 'expo-iap';
 
 import { ThemedText } from '@/components/themed-text';
@@ -146,6 +146,58 @@ export default function PaywallScreen() {
   const headingPrice = selected === 'monthly'
     ? `${monthlyDisplayPrice ?? '$4.99'}/mo`
     : `${annualDisplayPrice ?? '$49.99'}/yr`;
+
+  // A real user reported being charged the full price immediately with no
+  // free trial. The purchase itself was a genuine subscription (the backend
+  // — see apple-verify.ts — rejects any transaction without a subscription
+  // expiresDate, so it can't have silently granted access for a one-time
+  // IAP), which means the trial simply wasn't applied: either no
+  // introductory offer is configured on this product in App Store Connect
+  // at all, or this specific Apple ID isn't eligible for one (already used
+  // a trial for this subscription group before — including via TestFlight/
+  // sandbox — or is a Family Sharing member covered by another's trial).
+  // Either way, this screen was promising "7 days free" unconditionally
+  // regardless of whether the App Store checkout sheet would actually honor
+  // it — a real mismatch between what we say and what Apple charges, not
+  // just this one user's bad luck. Check both conditions for real before
+  // showing trial copy, so nobody sees a promise the purchase sheet won't
+  // keep. iOS only: introductory-offer presence/eligibility is an
+  // Apple-specific concept; Android's own Play purchase sheet always shows
+  // the true terms just before charging regardless of what we say here.
+  const selectedIosProduct = selected === 'monthly' ? iosMonthly : iosAnnual;
+  const introOfferConfigured = Platform.OS === 'ios'
+    ? Boolean(
+        selectedIosProduct?.subscriptionOffers?.some(
+          (o) => o.type === 'introductory' && o.paymentMode === 'free-trial',
+        ),
+      )
+    : true; // not evaluated on Android — see comment above
+  const introOfferGroupId = (selectedIosProduct as any)?.subscriptionInfoIOS?.subscriptionGroupId as string | undefined;
+
+  const [introEligibleIOS, setIntroEligibleIOS] = useState<boolean | null>(null);
+  useEffect(() => {
+    if (Platform.OS !== 'ios' || !introOfferConfigured || !introOfferGroupId) {
+      setIntroEligibleIOS(null);
+      return;
+    }
+    let cancelled = false;
+    isEligibleForIntroOfferIOS(introOfferGroupId)
+      .then((eligible) => { if (!cancelled) setIntroEligibleIOS(eligible); })
+      .catch((e) => {
+        captureError(e, { stage: 'intro-offer-eligibility-check', platform: Platform.OS });
+        if (!cancelled) setIntroEligibleIOS(null); // unknown — treat as not-yet-confirmed, not eligible
+      });
+    return () => { cancelled = true; };
+  }, [introOfferConfigured, introOfferGroupId]);
+
+  // True only once we've positively confirmed a trial will actually apply.
+  // While eligibility is still loading (introEligibleIOS === null) this
+  // stays false, matching the "don't promise it until we know" principle —
+  // the CTA/heading below fall back to accurate non-trial copy rather than
+  // showing a trial claim that flips to a real charge a moment later.
+  const willGetTrial = Platform.OS === 'ios'
+    ? (introOfferConfigured && introEligibleIOS === true)
+    : true;
 
   // Appends a truncated stack trace to an error message so a failure is
   // diagnosable directly from the on-screen Alert even for a member who
@@ -435,7 +487,9 @@ export default function PaywallScreen() {
           ) : (
             <>
               <ThemedText style={[styles.eyebrow, { color: tc.tactical }]}>// UNLOCK EVERYTHING</ThemedText>
-              <ThemedText style={[styles.heading, { color: tc.textPrimary }]}>7 days free, then {headingPrice}</ThemedText>
+              <ThemedText style={[styles.heading, { color: tc.textPrimary }]}>
+                {willGetTrial ? `7 days free, then ${headingPrice}` : headingPrice}
+              </ThemedText>
 
               <View style={styles.featureList}>
                 {FEATURES.map((f) => (
@@ -483,14 +537,19 @@ export default function PaywallScreen() {
                 disabled={purchaseDisabled}
                 style={({ pressed }) => [styles.ctaBtn, (pressed || purchaseDisabled) && { opacity: 0.7 }]}>
                 {verifying || (!productsReady && !productsTimedOut) ? <ActivityIndicator color="#04080F" /> : (
-                  <ThemedText style={styles.ctaBtnText}>START 7-DAY FREE TRIAL</ThemedText>
+                  <ThemedText style={styles.ctaBtnText}>
+                    {willGetTrial ? 'START 7-DAY FREE TRIAL' : `SUBSCRIBE — ${headingPrice}`}
+                  </ThemedText>
                 )}
               </Pressable>
 
               <ThemedText type="small" themeColor="textSecondary" style={styles.legalNote}>
-                7-day free trial, then billed at the price shown above. Cancel anytime in your
+                {willGetTrial
+                  ? "7-day free trial, then billed at the price shown above."
+                  : "Billed immediately at the price shown above — no free trial is available on this account (an introductory offer is normally limited to once per Apple ID / subscription group)."}
+                {' '}Cancel anytime in your
                 {' '}{Platform.OS === 'ios' ? 'App Store' : 'Google Play'} account settings —
-                you keep access through the end of the period you've already paid for.
+                you keep access through the end of the period you&apos;ve already paid for.
               </ThemedText>
 
               <Pressable onPress={handleRestore} disabled={verifying} style={styles.restoreBtn}>
