@@ -68,7 +68,8 @@ export default function PrivacyCenterScreen() {
           <Row icon="☁️" label="Cloud Sync (if signed in)" value="Your data is synced to your personal Firebase account. Only you can access it." />
           <Row icon="🪪" label="Account Info" value="Email address only, if you create an account. Used for sync and account recovery." />
           <Row icon="📊" label="Anonymous Analytics" value="App opens and feature usage — no names, no pay data, no PII. Used to improve the app." />
-          <Row icon="❌" label="What We Never Collect" value="Your LES data, actual pay amounts, SSN, bank info, or any sensitive military information." />
+          <Row icon="💵" label="Optional LES Overrides" value="If you enter your actual base pay, BAH, or BAS to correct an estimate, that figure is stored the same way as everything else — locally, and in your own private cloud account if signed in. It is never shared, sold, or used for anything but showing your numbers back to you." />
+          <Row icon="❌" label="What We Never Collect" value="Your SSN, bank account or routing numbers, or any government ID. We also never see your real LES document — only whatever numbers you choose to type in." />
         </Section>
 
         <Section title="HOW YOUR DATA IS PROTECTED">
