@@ -20,5 +20,10 @@ export function getPayComponent(grade: string): PayComponent {
 
 export function getBAS(grade: string): number {
   const comp = getPayComponent(grade);
-  return comp === 'officer' ? BAS_OFFICER : BAS_ENLISTED;
+  // Warrant officers are classified as officers for BAS purposes (DFAS) and
+  // draw the officer rate, not the enlisted rate — getPayComponent() already
+  // distinguishes 'warrant' from 'enlisted', but this ternary was treating
+  // anything non-'officer' (including 'warrant') as enlisted, overstating
+  // every warrant officer's BAS by the enlisted/officer rate gap (~$148/mo).
+  return comp === 'enlisted' ? BAS_ENLISTED : BAS_OFFICER;
 }
