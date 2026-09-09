@@ -721,7 +721,16 @@ export default function SettingsScreen() {
         )}
 
         {/* ── DELETE ACCOUNT (bottom) ─────────────────────────────────── */}
-        {user && (
+        {/* Excludes an anonymous session (see the SYNC card's comment above)
+            — those are created silently by the paywall and the member never
+            knowingly "signed up," so showing them a Danger Zone / Delete
+            Account button here would be confusing at best. Worse, their
+            Pro purchase entitlement can be linked to that anonymous uid
+            (see auth.store.ts signUp's linkWithCredential comment) — tapping
+            delete on an "account" they don't know they have could silently
+            orphan a purchase they paid for, with no warning this button has
+            anything to do with it. */}
+        {user && !user.isAnonymous && (
           <>
             <View style={styles.section}>
               <ThemedText type="label" style={[styles.eyebrow, { color: tc.tactical }]}>// DANGER ZONE</ThemedText>

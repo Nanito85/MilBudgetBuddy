@@ -26,7 +26,14 @@ export default function LegalScreen() {
     setExpanded((prev) => (prev === section ? null : section));
 
   const handleDeleteAccount = () => {
-    if (!user) {
+    // An anonymous session (silently created by the paywall so a purchase
+    // never has to force a real sign-in first) still populates `user`, so
+    // the plain !user check let it fall through into the real delete flow
+    // below — a member who never knowingly "signed up" could delete an
+    // account they didn't know existed, and it can be the very uid their
+    // Pro purchase entitlement is linked to. Matches settings.tsx's own
+    // Delete Account gating.
+    if (!user || user.isAnonymous) {
       Alert.alert('Not Signed In', 'You need to be signed in to delete your account.');
       return;
     }
