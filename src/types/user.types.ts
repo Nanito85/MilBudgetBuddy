@@ -39,6 +39,10 @@ export const RANK_ABBREV: Record<MilitaryBranch, Partial<Record<PayGrade, string
   },
   navy: {
     E1:'SR', E2:'SA', E3:'SN', E4:'PO3', E5:'PO2', E6:'PO1', E7:'CPO', E8:'SCPO', E9:'MCPO',
+    // WO1: Navy discontinued new WO1 accessions in 1975; briefly reinstated for
+    // the cyber warrant program in 2018, but per 2025 guidance no new WO1s are
+    // selected FY2027+ (entry reverts to CWO2). Kept here for members who still
+    // hold the WO1 grade under existing promotion guidance.
     W1:'WO1', W2:'CWO2', W3:'CWO3', W4:'CWO4', W5:'CWO5',
     O1:'ENS', O2:'LTJG', O3:'LT', O4:'LCDR', O5:'CDR', O6:'CAPT', O7:'RDML', O8:'RADM', O9:'VADM', O10:'ADM',
   },
