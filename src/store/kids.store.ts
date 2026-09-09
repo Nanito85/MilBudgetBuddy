@@ -16,7 +16,7 @@ interface KidsState {
   removeGoal: (kidId: string, goalId: string) => void;
   updateGoal: (kidId: string, goalId: string, name: string, emoji: string, targetAmount: number, currentAmount: number) => void;
   addChore: (kidId: string, name: string, value: number, frequency: ChoreFrequency) => void;
-  completeChore: (kidId: string, choreId: string, goalId: string) => void;
+  completeChore: (kidId: string, choreId: string, goalId?: string) => void;
   uncompleteChore: (kidId: string, choreId: string, goalId?: string) => void;
   removeChore: (kidId: string, choreId: string) => void;
   submitChoreForApproval: (kidId: string, choreId: string, goalId?: string) => void;

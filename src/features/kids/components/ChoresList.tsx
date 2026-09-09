@@ -11,7 +11,7 @@ interface Props {
   goals: Goal[];
   kidId: string;
   accentColor: string;
-  onComplete: (choreId: string, goalId: string) => void;
+  onComplete: (choreId: string, goalId?: string) => void;
   onUncomplete: (choreId: string, goalId?: string) => void;
   onDelete: (choreId: string) => void;
 }
@@ -47,10 +47,17 @@ export function ChoresList({ chores, goals, accentColor, onComplete, onUncomplet
                 other. */}
             <Pressable
               onPress={() => {
+                // Complete/uncomplete regardless of whether a goal exists yet —
+                // a kid with no savings goal set up should still be able to get
+                // credit for a chore (it just won't have anywhere to allocate
+                // the money until a goal is added). Previously this only fired
+                // when primaryGoal existed, so the checkbox silently did
+                // nothing for any kid who had chores added before their first
+                // goal — a very natural order for a parent to set things up in.
                 if (done) {
                   onUncomplete(chore.id, primaryGoal?.id);
-                } else if (primaryGoal) {
-                  onComplete(chore.id, primaryGoal.id);
+                } else {
+                  onComplete(chore.id, primaryGoal?.id);
                 }
               }}
               style={({ pressed }) => [styles.completeArea, pressed && styles.pressed]}>
