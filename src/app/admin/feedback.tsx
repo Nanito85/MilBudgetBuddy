@@ -171,14 +171,22 @@ export default function AdminFeedbackScreen() {
   const [search, setSearch]          = useState('');
   const [selected, setSelected]      = useState<FeedbackRow | null>(null);
 
+  // adminFeedback.length must be in the dependency array — without it, this
+  // closure freezes on whatever the length was when catFilter/statusFilter/
+  // search last changed (typically 0, since that's before the reset fetch
+  // even resolves). Every subsequent "load more" (onEndReached) would then
+  // keep computing the SAME stale offset, re-fetching and re-appending the
+  // same first page over and over instead of advancing — duplicate rows
+  // piling up on every scroll rather than genuinely new ones loading.
   const load = useCallback((reset = false) => {
     fetchFeedback({
       category: catFilter !== 'All' ? catFilter : undefined,
       status:   statusFilter !== 'All' ? statusFilter : undefined,
       search:   search.trim() || undefined,
       offset:   reset ? 0 : adminFeedback.length,
+      append:   !reset,
     });
-  }, [catFilter, statusFilter, search]);
+  }, [catFilter, statusFilter, search, adminFeedback.length]);
 
   useEffect(() => { load(true); }, [catFilter, statusFilter]);
 

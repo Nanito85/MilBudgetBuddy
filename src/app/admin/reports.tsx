@@ -63,7 +63,13 @@ function ReportDetailModal({ report, onClose }: { report: ReportRow; onClose: ()
           </Pressable>
           <ThemedText style={[modal.title, { color: tc.textPrimary }]}>{data.report_type.toUpperCase()} REPORT</ThemedText>
           <Pressable onPress={shareSummary} hitSlop={12}>
-            <ThemedText style={[modal.share, { color: tc.accent }]}>COPY</ThemedText>
+            {/* Was labeled "COPY" but shareSummary() calls Share.share(), which
+                opens the native OS share sheet (Messages/Mail/etc.), not the
+                clipboard — a real mismatch between what the button says and
+                what it does. Relabeled to match the actual behavior rather
+                than changing the (perfectly reasonable, richer) behavior to
+                match a wrong label. */}
+            <ThemedText style={[modal.share, { color: tc.accent }]}>SHARE</ThemedText>
           </Pressable>
         </View>
 

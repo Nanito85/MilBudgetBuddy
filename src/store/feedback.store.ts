@@ -71,7 +71,7 @@ interface FeedbackState {
   // Actions
   submitFeedback: (params: SubmitFeedbackParams) => Promise<boolean>;
   resetSubmit: () => void;
-  fetchFeedback: (filters?: { category?: string; status?: string; search?: string; offset?: number }) => Promise<void>;
+  fetchFeedback: (filters?: { category?: string; status?: string; search?: string; offset?: number; append?: boolean }) => Promise<void>;
   updateFeedback: (id: string, updates: { status?: string; admin_notes?: string }) => Promise<boolean>;
   fetchReports: () => Promise<void>;
   generateReport: (type: 'daily' | 'weekly') => Promise<ReportRow | null>;
@@ -146,7 +146,16 @@ export const useFeedbackStore = create<FeedbackState>((set, get) => ({
 
       if (!res.ok) { set({ adminError: 'Failed to load feedback', adminLoading: false }); return; }
       const { count, rows } = await res.json();
-      set({ adminFeedback: rows ?? [], adminTotal: count ?? 0, adminLoading: false });
+      // "Load more" (onEndReached, admin/feedback.tsx) calls this with
+      // append:true and offset:adminFeedback.length to fetch the next page —
+      // this used to always overwrite adminFeedback with just that page, so
+      // scrolling to the bottom made the list visibly jump to show only the
+      // newly-fetched batch instead of growing to include it.
+      set((s) => ({
+        adminFeedback: filters.append ? [...s.adminFeedback, ...(rows ?? [])] : (rows ?? []),
+        adminTotal: count ?? 0,
+        adminLoading: false,
+      }));
     } catch {
       set({ adminError: 'Network error', adminLoading: false });
     }
