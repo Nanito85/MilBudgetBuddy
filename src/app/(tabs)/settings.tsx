@@ -739,6 +739,14 @@ export default function SettingsScreen() {
                       onPress: async () => {
                         try {
                           await deleteAccount();
+                          // Explicit confirmation of what just happened (and
+                          // what didn't) rather than silently doing nothing
+                          // visible — matches legal.tsx's own Delete Account
+                          // flow, which has the same follow-up.
+                          Alert.alert(
+                            'Account Deleted',
+                            'Your account and all cloud-synced data have been permanently deleted. Data stored on this device was not affected — use Reset All Data above if you want to clear that too.',
+                          );
                         } catch {
                           Alert.alert('Error', 'Could not delete account. You may need to sign out and sign back in first, then try again.');
                         }

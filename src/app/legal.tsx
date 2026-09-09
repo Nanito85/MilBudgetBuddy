@@ -7,7 +7,6 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Brand, Spacing } from '@/constants/theme';
 import { useThemeColors } from '@/hooks/use-theme';
-import { resetAllLocalData } from '@/services/reset-local-data';
 import { useAuthStore } from '@/store/auth.store';
 
 const SUPPORT_EMAIL = 'support@milbudgetbuddy.com';
@@ -33,7 +32,16 @@ export default function LegalScreen() {
     }
     Alert.alert(
       'Delete Account',
-      'This will immediately and permanently delete your account and all synced data. This cannot be undone.',
+      // Matches settings.tsx's own Delete Account button (that screen keeps
+      // "delete account" and "reset device data" as two deliberately
+      // separate actions — Reset All Data is its own button) rather than
+      // wiping local data as part of account deletion, which is what this
+      // screen briefly did instead (see git history) before being reverted
+      // to stay consistent with Settings. Local data intentionally
+      // survives so a member doesn't lose their budget/profile/etc. just
+      // because they deleted their account — Settings' own Reset All Data
+      // button is the explicit, separate way to clear that.
+      'This permanently deletes your account and all cloud-synced data. Data stored only on this device — budget, profile, and everything else — is not affected and will remain until you use Reset All Data in Settings. This cannot be undone.',
       [
         { text: 'Cancel', style: 'cancel' },
         {
@@ -42,13 +50,17 @@ export default function LegalScreen() {
           onPress: async () => {
             setDeleting(true);
             try {
-              // Cloud data + the Firebase auth user first — only wipe local
-              // data once that's confirmed to succeed, so a failed cloud
-              // deletion (e.g. needs re-auth) never leaves the device wiped
-              // while the account/cloud data still exists remotely.
               await deleteAccount();
-              await resetAllLocalData();
-              router.replace('/');
+              // Explicit confirmation of what just happened (and, just as
+              // importantly, what DIDN'T) rather than silently navigating
+              // away — a member who just deleted their account should not
+              // have to guess whether their on-device budget/profile data
+              // survived or wonder if something went wrong.
+              Alert.alert(
+                'Account Deleted',
+                'Your account and all cloud-synced data have been permanently deleted. Data stored on this device — budget, profile, and everything else — was not affected. Use Reset All Data in Settings if you want to clear that too.',
+                [{ text: 'OK', onPress: () => router.replace('/') }],
+              );
             } catch {
               Alert.alert('Error', 'Could not delete account. You may need to sign out and sign back in first, then try again.');
             } finally {
@@ -156,7 +168,7 @@ export default function LegalScreen() {
             <ThemedText style={[styles.sectionTitle, { color: tc.textPrimary }]}>Data & Account Deletion</ThemedText>
             <ThemedText style={[styles.supportBody, { color: tc.textSecondary }]}>
               You may delete your account and all associated cloud data at any time. Deletion is immediate and
-              permanent.
+              permanent. Data stored only on this device is not affected — use Reset All Data in Settings to clear that separately.
             </ThemedText>
             <Pressable onPress={handleDeleteAccount} disabled={deleting} style={styles.deleteBtn}>
               {deleting ? (
