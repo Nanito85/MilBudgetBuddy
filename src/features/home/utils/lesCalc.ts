@@ -9,7 +9,20 @@ import { HousingStatus, LESOverrides, ServiceStatus } from '@/types/user.types';
 // SGLI: $0.05/month per $1,000 × $500,000 coverage = $25.00 + $1.00 TSGLI = $26.00
 // Source: DFAS SGLI rates — dfas.mil/MilitaryMembers/payentitlements/SGLI
 export const SGLI_MONTHLY = 26;      // $500k coverage (effective July 1, 2025 rate)
-export const DENTAL_FAMILY = 30.47;  // TDP family (2+ dependents), E5+ sponsor rate, Mar 2026-Feb 2027
+
+// TDP (TRICARE Dental Program) family premium — TDP has just two sponsor
+// tiers, E4-and-below vs E5-and-above (which includes warrant officers and
+// officers). This used to be a single flat E5+ number applied to every
+// grade, overstating the deduction by ~$7.62/mo (33%) for E1-E4 sponsors —
+// exactly the population this app's benchmarks elsewhere are most careful
+// about. Source: tricare.mil/Costs/DentalCosts/TDP/Premiums, Mar 2026-Feb 2027.
+export const DENTAL_FAMILY_E4_BELOW = 22.85;
+export const DENTAL_FAMILY_E5_ABOVE = 30.47;
+const DENTAL_LOWER_TIER_GRADES = new Set(['E1', 'E2', 'E3', 'E4']);
+
+export function dentalFamilyRate(grade: string): number {
+  return DENTAL_LOWER_TIER_GRADES.has(grade) ? DENTAL_FAMILY_E4_BELOW : DENTAL_FAMILY_E5_ABOVE;
+}
 
 // Federal income tax estimate — base pay only (allowances not taxable).
 // Bracket table lives in data/federal-tax.ts (single source of truth —
@@ -165,7 +178,7 @@ export function calcLES(inputs: LESInputs): LESBreakdown {
   const rothTsp        = basePay * (rothTspPct / 100);
   const tsp            = traditionalTsp + rothTsp;
   const sgli           = sglOptOut ? 0 : SGLI_MONTHLY;
-  const dental   = hasDentalFamily ? DENTAL_FAMILY : 0;
+  const dental   = hasDentalFamily ? dentalFamilyRate(payGrade) : 0;
 
   const totalDeductions = fica + fedTax + stateTax + tsp + sgli + dental + extraDeductions;
   const netPay = grossPay - totalDeductions;

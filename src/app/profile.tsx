@@ -54,7 +54,7 @@ import {
   getRankAbbrev,
 } from '@/types/user.types';
 import { VALID_RATINGS, monthlyCompensation } from '@/features/va/utils/vaDisabilityCalc';
-import { calcLES, getDrillPay, fmtPay } from '@/features/home/utils/lesCalc';
+import { calcLES, dentalFamilyRate, getDrillPay, fmtPay } from '@/features/home/utils/lesCalc';
 
 const HOUSING_STATUS_ORDER: HousingStatus[] = ['off_base', 'barracks', 'on_base_family_housing'];
 import { PayGrade } from '@/data/bah-rates';
@@ -1128,7 +1128,9 @@ function EditPayModal({ visible, onClose }: { visible: boolean; onClose: () => v
             <View style={editStyles.toggleRow}>
               <View style={{ flex: 1, gap: 2 }}>
                 <ThemedText style={[editStyles.toggleLabel, { color: tc.textPrimary }]}>Family Dental Plan</ThemedText>
-                <ThemedText style={[editStyles.toggleSub, { color: tc.textHint }]}>-$30.47/mo deduction</ThemedText>
+                <ThemedText style={[editStyles.toggleSub, { color: tc.textHint }]}>
+                  -${dentalFamilyRate(payGrade ?? 'E5').toFixed(2)}/mo deduction
+                </ThemedText>
               </View>
               <Switch value={dental} onValueChange={setDental} trackColor={{ true: Brand.accent }} thumbColor="#FFF" />
             </View>
@@ -1257,6 +1259,7 @@ export default function ProfileScreen() {
   const specialPays    = useUserStore((s) => s.specialPays);
   const lesOverrides   = useUserStore((s) => s.lesOverrides);
   const dateOfEnlist   = useUserStore((s) => s.dateOfEnlistment);
+  const serviceStatus  = useUserStore((s) => s.serviceStatus);
   const setNotifications = useUserStore((s) => s.setNotifications);
   const setNotificationTime = useUserStore((s) => s.setNotificationTime);
 
@@ -1282,7 +1285,13 @@ export default function ProfileScreen() {
   const rankAbbrev    = getRankAbbrev(branch, payGrade, rankVariant);
   const displayName   = nickname || lastName?.toUpperCase() || 'UNNAMED';
   const totalSpecialPay = specialPays.reduce((s, p) => s + p.monthlyAmount, 0);
-  const enlistYears   = yearsFromDate(dateOfEnlist);
+  // For a retired member this must NOT keep climbing every year they stay
+  // retired — same reasoning as yearsBetweenDates above (used by the Personal
+  // Info edit modal). `yos` is already frozen at retirement date and is what
+  // actually drives the retired-pay calculation everywhere else in the app,
+  // so fall back to it here instead of a continuously-recomputed enlistment
+  // age that would silently disagree with the stat driving their own pay.
+  const enlistYears   = serviceStatus === 'retired' ? null : yearsFromDate(dateOfEnlist);
 
   // All pending completions across all kids
   const allPending: Array<{ kid: KidProfile; completion: PendingCompletion }> = kids.flatMap((kid) =>

@@ -28,8 +28,9 @@ export default function RetirementCalculatorScreen() {
   const insets = useSafeAreaInsets();
   const tc = useThemeColors();
 
-  const profilePayGrade = useUserStore((s) => s.payGrade);
-  const profileYos      = useUserStore((s) => s.yos);
+  const profilePayGrade  = useUserStore((s) => s.payGrade);
+  const profileYos       = useUserStore((s) => s.yos);
+  const profileDateOfRank = useUserStore((s) => s.dateOfRank);
 
   const [grade, setGrade] = useState<PayGrade>('E7');
   // Grade the member holds today — distinct from "grade" (grade at retirement)
@@ -39,7 +40,15 @@ export default function RetirementCalculatorScreen() {
   const [currentGrade, setCurrentGrade] = useState<PayGrade>(profilePayGrade ?? 'E5');
   const [currentAge, setCurrentAge] = useState(30);
   const [currentYOS, setCurrentYOS] = useState(profileYos || 10);
-  const [yearsAtGrade, setYearsAtGrade] = useState(3);
+  // Pre-fill from the profile's "Date of Current Rank" (same field Profile ›
+  // Personal Info collects and labels "Used for High-3 calculator") instead
+  // of always defaulting to a generic 3 — that label was previously false,
+  // since nothing actually read dateOfRank anywhere in the app.
+  const [yearsAtGrade, setYearsAtGrade] = useState(() => {
+    if (!profileDateOfRank || !/^\d{4}-\d{2}-\d{2}$/.test(profileDateOfRank)) return 3;
+    const years = Math.floor((Date.now() - new Date(profileDateOfRank).getTime()) / (365.25 * 24 * 3600 * 1000));
+    return years >= 0 ? Math.min(years, profileYos || 10) : 3;
+  });
   const [retirementYOS, setRetirementYOS] = useState(20);
   const [system, setSystem] = useState<RetirementSystem>('both');
   const [tspContribIdx, setTspContribIdx] = useState(4);  // 5%
