@@ -113,6 +113,17 @@ export default function PaywallScreen() {
   const monthlyDisplayPrice = Platform.OS === 'ios' ? iosMonthly?.displayPrice : androidMonthlyOffer?.displayPrice;
   const annualDisplayPrice  = Platform.OS === 'ios' ? iosAnnual?.displayPrice  : androidAnnualOffer?.displayPrice;
 
+  // The big heading used to be a hardcoded "7 days free, then $4.99/mo" —
+  // always the monthly price, regardless of which plan is actually
+  // selected. Since "annual" is the default selection (see useState above),
+  // every fresh visitor saw a $4.99/mo headline while the already-highlighted,
+  // pre-selected card below it read $49.99/yr — a real pricing mismatch on
+  // an IAP paywall, exactly the kind of thing App Store review flags. Now
+  // tracks the selected plan and its live store price.
+  const headingPrice = selected === 'monthly'
+    ? `${monthlyDisplayPrice ?? '$4.99'}/mo`
+    : `${annualDisplayPrice ?? '$49.99'}/yr`;
+
   // Appends a truncated stack trace to an error message so a failure is
   // diagnosable directly from the on-screen Alert — Sentry is currently a
   // no-op in this build (EXPO_PUBLIC_SENTRY_DSN unset in EAS env), so a bare
@@ -402,7 +413,7 @@ export default function PaywallScreen() {
           ) : (
             <>
               <ThemedText style={[styles.eyebrow, { color: tc.tactical }]}>// UNLOCK EVERYTHING</ThemedText>
-              <ThemedText style={[styles.heading, { color: tc.textPrimary }]}>7 days free, then $4.99/mo</ThemedText>
+              <ThemedText style={[styles.heading, { color: tc.textPrimary }]}>7 days free, then {headingPrice}</ThemedText>
 
               <View style={styles.featureList}>
                 {FEATURES.map((f) => (
