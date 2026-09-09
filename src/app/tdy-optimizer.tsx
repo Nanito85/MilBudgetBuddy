@@ -103,11 +103,23 @@ export default function TdyOptimizerScreen() {
   const authorizedMie     = selected.meals;
   const authorizedTotal   = selected.total;
 
+  // Lodging under standard (non-flat-rate, <30-day) CONUS/OCONUS per diem is
+  // reimbursed at ACTUAL cost, not to exceed the authorized max — spending
+  // less on a hotel just means a smaller reimbursement, not money you get
+  // to keep. Only M&IE is paid as a true flat rate regardless of actual
+  // spending, so it's the only genuinely "pocketable" savings here. This
+  // screen previously counted underspent lodging the same as M&IE savings
+  // and told every user "you keep the difference" on the whole per diem —
+  // that's real JTR-contradicting financial misinformation on a real
+  // financial-planning screen, not a rounding quirk. (Members on a 30+ day
+  // TDY under an approved flat-rate per diem ARE paid lodging as a flat
+  // amount and can keep a lodging underspend — but that's the exception,
+  // not the default this screen was applying to every trip length.)
   const enteredLodging  = parseFloat(lodgingInput) || 0;
   const effectiveLodging = enteredLodging > 0 ? enteredLodging : authorizedLodging;
-  const lodgingSavings   = Math.max(0, authorizedLodging - effectiveLodging);
+  const lodgingUnderspend = Math.max(0, authorizedLodging - effectiveLodging);
   const mieSavings       = kitchenette ? KITCHENETTE_SAVINGS : 0;
-  const dailySavings     = lodgingSavings + mieSavings;
+  const dailySavings     = mieSavings;
   const totalSavings     = dailySavings * days;
   const totalAuthorized  = authorizedTotal * days;
   const pocketPct        = authorizedTotal > 0 ? (dailySavings / authorizedTotal) * 100 : 0;
@@ -147,7 +159,7 @@ export default function TdyOptimizerScreen() {
           <ThemedText style={[styles.heroEyebrow, { color: tc.accent }]}>TDY OPTIMIZER</ThemedText>
           <ThemedText style={[styles.heroTitle, { color: tc.textPrimary }]}>Per Diem Pocket Calculator</ThemedText>
           <ThemedText style={[styles.heroBody, { color: tc.textHint }]}>
-            You keep the difference. If you spend less than your authorized per diem, the savings are yours to pocket. Covers all 42,000+ US ZIP codes + 80+ overseas locations.
+            M&IE is a flat rate — spend less on food and the difference is yours to keep. Lodging is reimbursed at your actual cost (up to the authorized max), so a cheaper hotel isn&apos;t extra pay, just a smaller reimbursement. Covers all 42,000+ US ZIP codes + 80+ overseas locations.
           </ThemedText>
         </ThemedView>
 
@@ -341,10 +353,10 @@ export default function TdyOptimizerScreen() {
             <ThemedText style={[styles.dataLabel, { color: tc.textHint }]}>Authorized per diem ({days} days)</ThemedText>
             <ThemedText style={[styles.dataValue, { color: tc.textSecondary }]}>{fmt(totalAuthorized)}</ThemedText>
           </View>
-          {lodgingSavings > 0 && (
+          {lodgingUnderspend > 0 && (
             <View style={styles.dataRow}>
-              <ThemedText style={[styles.dataLabel, { color: tc.textHint }]}>Lodging savings/day</ThemedText>
-              <ThemedText style={[styles.dataValue, { color: tc.success }]}>+{fmtDay(lodgingSavings)}/day</ThemedText>
+              <ThemedText style={[styles.dataLabel, { color: tc.textHint }]}>Lodging under cap/day (reimbursed at actual cost — not pocketed)</ThemedText>
+              <ThemedText style={[styles.dataValue, { color: tc.textSecondary }]}>−{fmtDay(lodgingUnderspend)}/day reimbursement</ThemedText>
             </View>
           )}
           {kitchenette && (
@@ -363,8 +375,8 @@ export default function TdyOptimizerScreen() {
         <ThemedView type="backgroundElement" style={styles.card}>
           <ThemedText style={[styles.cardLabel, { color: tc.tactical }]}>PER DIEM OPTIMIZATION TIPS</ThemedText>
           {[
-            'Cook in your room: hotel kitchenettes or grocery runs reduce M&IE by 40–60%.',
-            'Find off-post housing: AirBnB or weekly rentals near base often beat lodging rates.',
+            'Cook in your room: hotel kitchenettes or grocery runs reduce M&IE by 40–60% — and M&IE is flat-rate, so that difference is genuinely yours to keep.',
+            'Cheaper lodging lowers your out-of-pocket cost, but doesn\'t pad your paycheck — you\'re reimbursed actual lodging expense (up to the authorized max), not a flat amount.',
             'Day 1 and last day of TDY: you receive 75% of M&IE on travel days.',
             'Government card: use it for lodging to avoid out-of-pocket float.',
             'Look up any US ZIP code — this app covers all 42,000+ US ZIP codes.',

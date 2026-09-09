@@ -57,7 +57,7 @@ const ENROLLMENT_RATE: Record<EnrollmentStatus, number> = {
 };
 
 export interface GiBillInputs {
-  eligibilityPct: number;           // 40, 60, 80, or 100
+  eligibilityPct: number;           // 50, 60, 70, 80, 90, or 100 — see ELIGIBILITY_TIERS
   schoolType: SchoolType;
   enrollment: EnrollmentStatus;
   monthlyBahAtSchool: number;       // E5-w/dep BAH for school's ZIP
