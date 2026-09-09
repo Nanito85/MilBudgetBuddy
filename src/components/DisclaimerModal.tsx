@@ -82,8 +82,17 @@ function getDailyQuote(branchKey: string): { text: string; author: string } {
 
 export function DisclaimerModal() {
   const tc = useThemeColors();
-  const [acknowledged, setAcknowledged] = useState(false);
   const branch = useUserStore((s) => s.branch);
+  // Was `useState(false)` — a fresh local flag on every mount that never
+  // consulted the store's own disclaimerAcknowledged field (which exists
+  // specifically to remember this permanently, gets synced to Firestore,
+  // and already gates the tutorial modal in index.tsx). The result: this
+  // blocking legal notice reappeared on literally every app launch, for
+  // every user, forever, even someone who'd already tapped "I UNDERSTAND"
+  // a hundred times before — the acknowledgment was recorded but never
+  // actually read back to skip showing the modal again.
+  const alreadyAcknowledged = useUserStore((s) => s.disclaimerAcknowledged);
+  const [acknowledged, setAcknowledged] = useState(alreadyAcknowledged);
   const setDisclaimerAcknowledged = useUserStore((s) => s.setDisclaimerAcknowledged);
 
   const quote = useMemo(() => {
