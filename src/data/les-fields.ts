@@ -190,7 +190,7 @@ export const LES_FIELDS: LESField[] = [
     plainName: 'Thrift Savings Plan Contribution',
     section: 'deductions',
     summary: 'Your elected TSP contribution — taken from basic pay before or after tax.',
-    detail: 'TSP is the military\'s retirement investment account, similar to a 401(k). You can contribute traditional (pre-tax) or Roth (post-tax). The 2026 IRS limit is $24,500/year ($32,500 if 50+). Under BRS, the government matches up to 4% of basic pay after year 2. The match does not appear as a deduction — it shows as a separate entitlement on your LES.',
+    detail: 'TSP is the military\'s retirement investment account, similar to a 401(k). You can contribute traditional (pre-tax) or Roth (post-tax). The 2026 IRS limit is $24,500/year ($32,500 if 50+). Under BRS, the government contributes up to 5% of basic pay after year 2 — a 1% automatic contribution plus up to 4% in matching (dollar-for-dollar on your first 3%, 50 cents on the dollar on the next 2%). The match does not appear as a deduction — it shows as a separate entitlement on your LES.',
     formula: 'Basic Pay × your elected contribution %',
     tip: 'Under BRS, if you are not contributing at least 5% you are leaving government match money on the table. The first 3% is matched dollar-for-dollar; the next 2% is matched 50 cents on the dollar.',
   },
