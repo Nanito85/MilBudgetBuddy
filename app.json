@@ -2,7 +2,7 @@
   "expo": {
     "name": "MilBudgetBuddy",
     "slug": "MilBudgetBuddy",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "milbudgetbuddy",
@@ -10,7 +10,6 @@
     "ios": {
       "icon": "./assets/images/icon.png",
       "bundleIdentifier": "com.nanito85.MilBudgetBuddy",
-      "buildNumber": "1",
       "supportsTablet": false,
       "deploymentTarget": "16.0",
       "infoPlist": {
@@ -26,7 +25,6 @@
       },
       "predictiveBackGestureEnabled": false,
       "package": "com.nanito85.MilBudgetBuddy",
-      "versionCode": 1,
       "permissions": [
         "android.permission.RECEIVE_BOOT_COMPLETED",
         "android.permission.SCHEDULE_EXACT_ALARM",
