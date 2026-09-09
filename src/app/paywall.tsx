@@ -99,6 +99,24 @@ export default function PaywallScreen() {
     if (connected) fetchProducts({ skus: PRO_SKUS, type: 'subs' });
   }, [connected]);
 
+  // Sentry issue 41cc5c8f (2026-09-09, iOS): a real user hit
+  // notAvailable()'s "IAP product not loaded at purchase time" error — the
+  // CTA below was only disabled while `verifying`, never while the store
+  // connection + fetchProducts() were still in flight, so tapping it in
+  // that window (very plausible right after IOS_GATE_ENABLED went live —
+  // a newly-gated member is exactly who taps the CTA fastest) hit this
+  // exact race. productsReady + the 8s timeout close that window: the
+  // button is disabled with a loading state until real product data has
+  // actually loaded, but still guaranteed to become tappable within 8s
+  // even on a genuine failure (misconfigured product, network issue) so
+  // nobody gets stuck with a permanently dead button — that case still
+  // falls through to notAvailable()'s existing diagnostic alert.
+  const [productsTimedOut, setProductsTimedOut] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setProductsTimedOut(true), 8000);
+    return () => clearTimeout(t);
+  }, []);
+
   // Android: one product ("mbb_pro_monthly") with two base-plan offers under it.
   const androidProduct = subscriptions.find((s) => s.id === ANDROID_PRODUCT_ID) as
     | (typeof subscriptions[number] & { subscriptionOffers?: { basePlanIdAndroid?: string | null; offerTokenAndroid?: string | null; displayPrice?: string }[] })
@@ -113,6 +131,11 @@ export default function PaywallScreen() {
   const monthlyDisplayPrice = Platform.OS === 'ios' ? iosMonthly?.displayPrice : androidMonthlyOffer?.displayPrice;
   const annualDisplayPrice  = Platform.OS === 'ios' ? iosAnnual?.displayPrice  : androidAnnualOffer?.displayPrice;
 
+  const productsReady = Platform.OS === 'ios'
+    ? Boolean(iosMonthly || iosAnnual)
+    : Boolean(androidProduct);
+  const purchaseDisabled = verifying || (!productsReady && !productsTimedOut);
+
   // The big heading used to be a hardcoded "7 days free, then $4.99/mo" —
   // always the monthly price, regardless of which plan is actually
   // selected. Since "annual" is the default selection (see useState above),
@@ -125,11 +148,11 @@ export default function PaywallScreen() {
     : `${annualDisplayPrice ?? '$49.99'}/yr`;
 
   // Appends a truncated stack trace to an error message so a failure is
-  // diagnosable directly from the on-screen Alert — Sentry is currently a
-  // no-op in this build (EXPO_PUBLIC_SENTRY_DSN unset in EAS env), so a bare
-  // "undefined is not a function" with no file/line info has proven
-  // impossible to actually pin down across several rounds of otherwise-solid
-  // fixes. Grab this text and share it verbatim; it names the real culprit.
+  // diagnosable directly from the on-screen Alert even for a member who
+  // never reports it — Sentry (see captureError calls throughout this file)
+  // IS live in production (confirmed 2026-09-09 via a real reported issue,
+  // 41cc5c8f), but that only helps once someone notices and reports it.
+  // Grab this text and share it verbatim; it names the real culprit.
   const withDebugInfo = (e: any, fallback: string): string => {
     const base = e?.message || fallback;
     const stack = typeof e?.stack === 'string' ? e.stack.split('\n').slice(0, 4).join('\n') : null;
@@ -192,9 +215,8 @@ export default function PaywallScreen() {
   // library update can reference a native method that predates the last
   // actual app-store build), the other may still work. Try the richer one
   // first, fall back to the other, and only give up if BOTH fail — and even
-  // then, surface real diagnostics instead of the raw, undiagnosable error,
-  // since Sentry (captureError) is currently a no-op in this build
-  // (EXPO_PUBLIC_SENTRY_DSN isn't set in EAS env).
+  // then, surface real diagnostics instead of the raw, undiagnosable error
+  // (Sentry does get these too, but only helps if the member also reports it).
   //
   // finishTransaction() on Android only actually reads purchase.purchaseToken
   // (confirmed from source) — the minimal shape below is genuinely enough
@@ -458,9 +480,9 @@ export default function PaywallScreen() {
 
               <Pressable
                 onPress={purchase}
-                disabled={verifying}
-                style={({ pressed }) => [styles.ctaBtn, (pressed || verifying) && { opacity: 0.7 }]}>
-                {verifying ? <ActivityIndicator color="#04080F" /> : (
+                disabled={purchaseDisabled}
+                style={({ pressed }) => [styles.ctaBtn, (pressed || purchaseDisabled) && { opacity: 0.7 }]}>
+                {verifying || (!productsReady && !productsTimedOut) ? <ActivityIndicator color="#04080F" /> : (
                   <ThemedText style={styles.ctaBtnText}>START 7-DAY FREE TRIAL</ThemedText>
                 )}
               </Pressable>
