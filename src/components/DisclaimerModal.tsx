@@ -100,14 +100,14 @@ export function DisclaimerModal() {
           <View style={styles.accentBar} />
           <ScrollView style={styles.scrollArea} contentContainerStyle={styles.bodyContent}>
 
-            <ThemedText style={styles.title}>IMPORTANT NOTICE</ThemedText>
+            <ThemedText style={[styles.title, { color: tc.tactical }]}>IMPORTANT NOTICE</ThemedText>
 
             <View style={styles.eduBanner}>
-              <ThemedText style={styles.eduText}>FOR EDUCATIONAL PURPOSES ONLY</ThemedText>
+              <ThemedText style={[styles.eduText, { color: tc.accent }]}>FOR EDUCATIONAL PURPOSES ONLY</ThemedText>
               <ThemedText style={styles.eduSig}>~Elo</ThemedText>
             </View>
 
-            <ThemedText style={styles.section}>Not Financial Advice</ThemedText>
+            <ThemedText style={[styles.section, { color: tc.accent }]}>Not Financial Advice</ThemedText>
             <ThemedText style={[styles.body2, { color: tc.textSecondary }]}>
               MilBudgetBuddy provides educational tools and estimates only. Pay calculations,
               BAH amounts, TRICARE cost estimates, retirement projections, and all other
@@ -115,7 +115,7 @@ export function DisclaimerModal() {
               actual entitlements or costs.
             </ThemedText>
 
-            <ThemedText style={styles.section}>Branch Regulations Apply</ThemedText>
+            <ThemedText style={[styles.section, { color: tc.accent }]}>Branch Regulations Apply</ThemedText>
             <ThemedText style={[styles.body2, { color: tc.textSecondary }]}>
               While the Joint Travel Regulation (JTR) establishes baseline DoD policies,
               each branch of service maintains its own regulations that may differ. Always
@@ -123,14 +123,14 @@ export function DisclaimerModal() {
               making decisions based on this app.
             </ThemedText>
 
-            <ThemedText style={styles.section}>Official Sources</ThemedText>
+            <ThemedText style={[styles.section, { color: tc.accent }]}>Official Sources</ThemedText>
             <ThemedText style={[styles.body2, { color: tc.textSecondary }]}>
               Verify your pay and benefits with your finance office, MyPay (dfas.mil),
               milConnect, or the appropriate military personnel system. Tax guidance should
               come from a qualified tax professional or MilTax (via Military OneSource).
             </ThemedText>
 
-            <ThemedText style={styles.section}>No Liability</ThemedText>
+            <ThemedText style={[styles.section, { color: tc.accent }]}>No Liability</ThemedText>
             <ThemedText style={[styles.body2, { color: tc.textSecondary }]}>
               The developer assumes no responsibility for financial decisions made based on
               information provided by this app. Investment and insurance choices should be
@@ -190,7 +190,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '800',
     letterSpacing: 2,
-    color: Brand.tactical,
     marginBottom: 8,
   },
   eduBanner: {
@@ -209,7 +208,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '900',
     letterSpacing: 1.5,
-    color: Brand.accent,
   },
   eduSig: {
     fontSize: 12,
@@ -222,7 +220,6 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '700',
     letterSpacing: 1.5,
-    color: Brand.accent,
     marginTop: 8,
   },
   body2: {

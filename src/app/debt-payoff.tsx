@@ -162,7 +162,7 @@ function DebtCard({
             <ThemedText
               style={[
                 styles.debtApr,
-                debt.apr >= 20 ? styles.highApr : debt.apr >= 10 ? styles.midApr : styles.lowApr,
+                debt.apr >= 20 ? styles.highApr : debt.apr >= 10 ? { color: tc.warning } : { color: tc.tactical },
               ]}>
               {debt.apr}%
             </ThemedText>
@@ -313,7 +313,7 @@ export default function DebtPayoffScreen() {
                   <ThemedText style={[styles.stratLabel, { color: tc.textHint }, strategy === 'avalanche' && { color: tc.textPrimary }]}>
                     ❄️ Avalanche
                   </ThemedText>
-                  <ThemedText style={[styles.stratSub, { color: tc.textMuted }, strategy === 'avalanche' && { color: Brand.tactical }]}>
+                  <ThemedText style={[styles.stratSub, { color: tc.textMuted }, strategy === 'avalanche' && { color: tc.tactical }]}>
                     Highest APR first · saves most interest
                   </ThemedText>
                 </Pressable>
@@ -323,7 +323,7 @@ export default function DebtPayoffScreen() {
                   <ThemedText style={[styles.stratLabel, { color: tc.textHint }, strategy === 'snowball' && { color: tc.textPrimary }]}>
                     ⛄ Snowball
                   </ThemedText>
-                  <ThemedText style={[styles.stratSub, { color: tc.textMuted }, strategy === 'snowball' && { color: Brand.accent }]}>
+                  <ThemedText style={[styles.stratSub, { color: tc.textMuted }, strategy === 'snowball' && { color: tc.accent }]}>
                     Smallest balance first · best momentum
                   </ThemedText>
                 </Pressable>
@@ -332,17 +332,17 @@ export default function DebtPayoffScreen() {
               {/* Avalanche vs Snowball comparison */}
               {showCompare && avalanche && snowball && (
                 <ThemedView type="backgroundElement" style={[styles.compareBox, { borderLeftColor: Brand.tactical }]}>
-                  <ThemedText style={styles.compareTitle}>❄️ AVALANCHE SAVES MORE</ThemedText>
+                  <ThemedText style={[styles.compareTitle, { color: tc.tactical }]}>❄️ AVALANCHE SAVES MORE</ThemedText>
                   <View style={styles.compareRow}>
                     <ThemedText style={[styles.compareLabel, { color: tc.textHint }]}>Interest saved vs Snowball</ThemedText>
-                    <ThemedText style={[styles.compareVal, { color: Brand.tactical }]}>
+                    <ThemedText style={[styles.compareVal, { color: tc.tactical }]}>
                       {fmtDollar(interestSaved)}
                     </ThemedText>
                   </View>
                   {monthsSaved > 0 && (
                     <View style={styles.compareRow}>
                       <ThemedText style={[styles.compareLabel, { color: tc.textHint }]}>Paid off sooner</ThemedText>
-                      <ThemedText style={[styles.compareVal, { color: Brand.tactical }]}>
+                      <ThemedText style={[styles.compareVal, { color: tc.tactical }]}>
                         {fmtMonths(monthsSaved)} faster
                       </ThemedText>
                     </View>
@@ -377,7 +377,7 @@ export default function DebtPayoffScreen() {
                     <View style={styles.resultRows}>
                       <View style={styles.resultRow}>
                         <ThemedText style={[styles.resultLabel, { color: tc.textHint }]}>Total interest paid</ThemedText>
-                        <ThemedText style={[styles.resultVal, { color: Brand.warning }]}>
+                        <ThemedText style={[styles.resultVal, { color: tc.warning }]}>
                           {fmtDollar(activeResult.totalInterest)}
                         </ThemedText>
                       </View>
@@ -404,7 +404,7 @@ export default function DebtPayoffScreen() {
                         </View>
                       </View>
                       <View style={styles.rowRight}>
-                        <ThemedText style={styles.rowInterest}>+{fmtDollar(row.totalInterest)} interest</ThemedText>
+                        <ThemedText style={[styles.rowInterest, { color: tc.warning }]}>+{fmtDollar(row.totalInterest)} interest</ThemedText>
                         <ThemedText style={[styles.rowMonths, { color: tc.textHint }]}>{fmtMonths(row.monthsToPayoff)}</ThemedText>
                       </View>
                     </ThemedView>
@@ -480,8 +480,6 @@ const styles = StyleSheet.create({
   debtActions: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
   debtApr: { fontSize: 10, fontWeight: '700' },
   highApr: { color: Brand.danger },
-  midApr:  { color: Brand.warning },
-  lowApr:  { color: Brand.tactical },
   editBtn: {
     paddingHorizontal: 7, paddingVertical: 3,
     borderRadius: 3, borderWidth: 1, borderColor: Brand.primary + '60',
@@ -518,7 +516,7 @@ const styles = StyleSheet.create({
   stratSub:   { fontSize: 9,  lineHeight: 13 },
 
   compareBox: { borderRadius: 4, padding: Spacing.three, gap: Spacing.one, borderLeftWidth: 3 },
-  compareTitle: { fontSize: 9, fontWeight: '800', color: Brand.tactical, letterSpacing: 1, marginBottom: 4 },
+  compareTitle: { fontSize: 9, fontWeight: '800', letterSpacing: 1, marginBottom: 4 },
   compareRow: { flexDirection: 'row', justifyContent: 'space-between' },
   compareLabel: { fontSize: 12 },
   compareVal: { fontSize: 12, fontWeight: '700' },
@@ -541,7 +539,7 @@ const styles = StyleSheet.create({
   rowName: { fontSize: 13, fontWeight: '700' },
   rowDate: { fontSize: 10 },
   rowRight: { alignItems: 'flex-end', gap: 2 },
-  rowInterest: { fontSize: 11, color: Brand.warning, fontWeight: '600' },
+  rowInterest: { fontSize: 11, fontWeight: '600' },
   rowMonths: { fontSize: 11 },
 
   noteCard: { borderRadius: 4, padding: Spacing.three },

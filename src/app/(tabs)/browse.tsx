@@ -77,7 +77,7 @@ function AddKidModal({ visible, onClose, onAdd }: {
           <Pressable
             onPress={submit}
             style={[modalStyles.addBtn, !nickname.trim() && { opacity: 0.4 }]}>
-            <ThemedText style={modalStyles.addBtnText}>ACTIVATE PROFILE →</ThemedText>
+            <ThemedText style={[modalStyles.addBtnText, { color: tc.tactical }]}>ACTIVATE PROFILE →</ThemedText>
           </Pressable>
         </SafeAreaView>
       </View>
@@ -346,7 +346,7 @@ export default function KidsScreen() {
               <ThemedText style={styles.logoEmoji}>🐷💰</ThemedText>
             </View>
             <View style={{ flex: 1 }}>
-              <ThemedText type="label" style={styles.eyebrow}>// FAMILY COMMAND</ThemedText>
+              <ThemedText type="label" style={[styles.eyebrow, { color: tc.tactical }]}>// FAMILY COMMAND</ThemedText>
               <ThemedText style={[styles.heading, { color: tc.textPrimary }]}>CADET HQ</ThemedText>
               <ThemedText type="label" style={[styles.subhead, { color: tc.textMuted }]}>GOALS · CHORES · SAVINGS</ThemedText>
             </View>
@@ -386,7 +386,7 @@ export default function KidsScreen() {
         <Pressable
           onPress={() => setShowAdd(true)}
           style={({ pressed }) => [styles.addBtn, { backgroundColor: tc.surface }, pressed && { opacity: 0.7 }]}>
-          <ThemedText style={styles.addBtnText}>+ ENROLL NEW CADET</ThemedText>
+          <ThemedText style={[styles.addBtnText, { color: tc.tactical }]}>+ ENROLL NEW CADET</ThemedText>
         </Pressable>
 
         {/* Info card */}
@@ -394,7 +394,7 @@ export default function KidsScreen() {
           <View style={styles.infoRow}>
             <ThemedText style={styles.infoEmoji}>🎯</ThemedText>
             <View style={{ flex: 1, gap: 2 }}>
-              <ThemedText type="label" style={styles.infoTitle}>HOW IT WORKS</ThemedText>
+              <ThemedText type="label" style={[styles.infoTitle, { color: tc.accent }]}>HOW IT WORKS</ThemedText>
               <ThemedText type="small" style={[styles.infoBody, { color: tc.textSecondary }]}>
                 Kids set savings goals like a new bike or game. Parents add chores with dollar values. Every chore completed moves the bar forward — teaching real money skills.
               </ThemedText>
@@ -403,7 +403,7 @@ export default function KidsScreen() {
           <View style={styles.infoRow}>
             <ThemedText style={styles.infoEmoji}>💡</ThemedText>
             <View style={{ flex: 1, gap: 2 }}>
-              <ThemedText type="label" style={styles.infoTitle}>PARENT TIP</ThemedText>
+              <ThemedText type="label" style={[styles.infoTitle, { color: tc.accent }]}>PARENT TIP</ThemedText>
               <ThemedText type="small" style={[styles.infoBody, { color: tc.textSecondary }]}>
                 Long-press a cadet card to remove it. Tap to view goals, chores, and daily finance tips written just for kids.
               </ThemedText>
@@ -443,7 +443,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   logoEmoji: { fontSize: 22, lineHeight: 28 },
-  eyebrow: { color: Brand.tactical, fontSize: 9 },
+  eyebrow: { fontSize: 9 },
   heading: { fontSize: 22, fontWeight: '900', letterSpacing: 1, marginTop: 2 },
   subhead: { fontSize: 9, marginTop: 2 },
   kidsList: { gap: Spacing.two },
@@ -458,7 +458,7 @@ const styles = StyleSheet.create({
     padding: Spacing.three,
     alignItems: 'center',
   },
-  addBtnText: { color: Brand.tactical, fontSize: 12, fontWeight: '800', letterSpacing: 1.5 },
+  addBtnText: { fontSize: 12, fontWeight: '800', letterSpacing: 1.5 },
   infoCard: {
     borderWidth: StyleSheet.hairlineWidth,
     borderRadius: 4,
@@ -467,6 +467,6 @@ const styles = StyleSheet.create({
   },
   infoRow: { flexDirection: 'row', gap: Spacing.two, alignItems: 'flex-start' },
   infoEmoji: { fontSize: 18, width: 28, textAlign: 'center' },
-  infoTitle: { color: Brand.accent, fontSize: 10, marginBottom: 2 },
+  infoTitle: { fontSize: 10, marginBottom: 2 },
   infoBody: { fontSize: 14, lineHeight: 20 },
 });

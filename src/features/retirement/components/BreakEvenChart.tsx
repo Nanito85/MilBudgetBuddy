@@ -4,6 +4,7 @@ import { StyleSheet, View } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Brand, Spacing } from '@/constants/theme';
+import { useThemeColors } from '@/hooks/use-theme';
 
 interface Props {
   retirementAge: number;
@@ -14,6 +15,7 @@ interface Props {
 const CHART_END_AGE = 90;
 
 export function BreakEvenChart({ retirementAge, breakEvenAge, breakEvenYears }: Props) {
+  const tc = useThemeColors();
   if (breakEvenAge == null || breakEvenYears == null) return null;
 
   const span = CHART_END_AGE - retirementAge;
@@ -76,7 +78,7 @@ export function BreakEvenChart({ retirementAge, breakEvenAge, breakEvenYears }: 
 
           {/* Break-even callout */}
           <View style={[styles.callout, { borderColor: Brand.accent }]}>
-            <ThemedText style={[styles.calloutAge, { color: Brand.accent }]}>
+            <ThemedText style={[styles.calloutAge, { color: tc.accent }]}>
               Age {breakEvenAge}
             </ThemedText>
             <ThemedText type="small" themeColor="textSecondary" style={styles.calloutBody}>

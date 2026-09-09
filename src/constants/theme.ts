@@ -93,3 +93,21 @@ export const Brand = {
   border: '#1A3A5C',
   borderBright: '#2A5A8C',
 } as const;
+
+// Light-mode-safe TEXT/ICON variants of the brand accent colors above.
+// tactical/accent/success/warning were tuned bright specifically for
+// legibility on the near-black dark-mode background (Colors.dark.background,
+// #04080F) — measured contrast there is excellent. Used as literal text/icon
+// color on a LIGHT background, though, they measure 2.0-2.8:1 against WCAG's
+// 4.5:1 (text) / 3:1 (large text/icons) minimum — a washed-out, hard-to-read
+// pastel rather than a real accent color. These are darker shades of the
+// same hues, each verified >=4.5:1 against both light-mode background colors
+// (#F2F5F9 and #FFFFFF). Only for TEXT/ICON color — decorative background
+// tints (`Brand.tactical + '20'` etc.) don't carry the same contrast
+// requirement and are left using the bright brand hue in both modes.
+export const BrandLightText = {
+  tactical: '#00695C',
+  accent:   '#8F5C00',
+  success:  '#046A46',
+  warning:  '#8A5A00',
+} as const;

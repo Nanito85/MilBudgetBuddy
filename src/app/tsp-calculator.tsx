@@ -47,7 +47,8 @@ function MiniBar({ pct, color }: { pct: number; color: string }) {
 }
 
 function SectionLabel({ children }: { children: string }) {
-  return <ThemedText style={styles.sectionLabel}>{children}</ThemedText>;
+  const tc = useThemeColors();
+  return <ThemedText style={[styles.sectionLabel, { color: tc.tactical }]}>{children}</ThemedText>;
 }
 
 export default function TspCalculatorScreen() {
@@ -126,14 +127,14 @@ export default function TspCalculatorScreen() {
               />
               {!atMaxMatch && (
                 <View style={[styles.warningBox, { backgroundColor: Brand.warning + '18', borderColor: Brand.warning + '60' }]}>
-                  <ThemedText style={[styles.warningText, { color: Brand.warning }]}>
+                  <ThemedText style={[styles.warningText, { color: tc.warning }]}>
                     ⚠  Contributing less than 5% — you're leaving ${Math.round(result.matchLeftOnTable).toLocaleString()}/mo in free match on the table.
                   </ThemedText>
                 </View>
               )}
               {atMaxMatch && (
                 <View style={[styles.successBox, { backgroundColor: Brand.success + '18', borderColor: Brand.success + '60' }]}>
-                  <ThemedText style={[styles.successText, { color: Brand.success }]}>
+                  <ThemedText style={[styles.successText, { color: tc.success }]}>
                     ✓  Capturing full government match
                   </ThemedText>
                 </View>
@@ -159,8 +160,8 @@ export default function TspCalculatorScreen() {
 
             {/* Result */}
             <ThemedView type="backgroundElement" style={[styles.resultCard, { borderLeftColor: Brand.tactical }]}>
-              <ThemedText style={styles.resultEyebrow}>PROJECTED BALANCE IN {years} YEARS</ThemedText>
-              <ThemedText style={styles.resultBig}>{fmtM(result.finalBalance)}</ThemedText>
+              <ThemedText style={[styles.resultEyebrow, { color: tc.tactical }]}>PROJECTED BALANCE IN {years} YEARS</ThemedText>
+              <ThemedText style={[styles.resultBig, { color: tc.tactical }]}>{fmtM(result.finalBalance)}</ThemedText>
 
               <View style={[styles.resultDivider, { backgroundColor: tc.borderColor }]} />
 
@@ -171,7 +172,7 @@ export default function TspCalculatorScreen() {
                 </View>
                 <View style={styles.resultRow}>
                   <ThemedText style={[styles.resultLabel, { color: tc.textSecondary }]}>Government match</ThemedText>
-                  <ThemedText style={[styles.resultVal, { color: Brand.tactical }]}>${Math.round(result.govtMatchMonthly).toLocaleString()}/mo</ThemedText>
+                  <ThemedText style={[styles.resultVal, { color: tc.tactical }]}>${Math.round(result.govtMatchMonthly).toLocaleString()}/mo</ThemedText>
                 </View>
                 <View style={styles.resultRow}>
                   <ThemedText style={[styles.resultLabel, { color: tc.textSecondary }]}>Annual contribution</ThemedText>
@@ -179,7 +180,7 @@ export default function TspCalculatorScreen() {
                 </View>
                 <View style={styles.resultRow}>
                   <ThemedText style={[styles.resultLabel, { color: tc.textSecondary }]}>Annual IRS limit (age {age})</ThemedText>
-                  <ThemedText style={[styles.resultVal, result.atLimit && { color: Brand.warning }]}>
+                  <ThemedText style={[styles.resultVal, result.atLimit && { color: tc.warning }]}>
                     ${limit.toLocaleString()}{result.atLimit ? ' ✓' : ''}
                   </ThemedText>
                 </View>
@@ -197,7 +198,7 @@ export default function TspCalculatorScreen() {
                     <View style={styles.chartBarArea}>
                       <MiniBar pct={p.totalBalance / result.finalBalance} color={Brand.tactical} />
                     </View>
-                    <ThemedText style={styles.chartAmt}>{fmtM(p.totalBalance)}</ThemedText>
+                    <ThemedText style={[styles.chartAmt, { color: tc.tactical }]}>{fmtM(p.totalBalance)}</ThemedText>
                   </View>
                 ))}
             </ThemedView>
@@ -247,7 +248,7 @@ export default function TspCalculatorScreen() {
                 <ThemedText style={[styles.fundDesc, { color: tc.textSecondary }]}>{fund.description}</ThemedText>
 
                 <View style={[styles.fundBestFor, { backgroundColor: tc.surfaceInner, borderColor: tc.borderColor }]}>
-                  <ThemedText style={[styles.fundBestForLabel, { color: Brand.tactical }]}>BEST FOR</ThemedText>
+                  <ThemedText style={[styles.fundBestForLabel, { color: tc.tactical }]}>BEST FOR</ThemedText>
                   <ThemedText style={[styles.fundBestForText, { color: tc.textPrimary }]}>{fund.bestFor}</ThemedText>
                 </View>
               </ThemedView>
@@ -263,7 +264,7 @@ export default function TspCalculatorScreen() {
             {L_FUNDS.map((lf) => (
               <ThemedView key={lf.id} type="backgroundElement" style={styles.lFundCard}>
                 <View style={styles.lFundHeader}>
-                  <ThemedText style={[styles.lFundId, { color: Brand.accent }]}>{lf.id}</ThemedText>
+                  <ThemedText style={[styles.lFundId, { color: tc.accent }]}>{lf.id}</ThemedText>
                   <ThemedText style={[styles.lFundTarget, { color: tc.textSecondary }]}>{lf.targetDate}</ThemedText>
                 </View>
                 <ThemedText style={[styles.lFundDesc, { color: tc.textSecondary }]}>{lf.description}</ThemedText>
@@ -288,7 +289,7 @@ export default function TspCalculatorScreen() {
         {tab === 'brs' && (
           <>
             <ThemedView type="backgroundElement" style={[styles.card, { borderLeftWidth: 3, borderLeftColor: Brand.tactical }]}>
-              <ThemedText style={styles.heroEyebrow}>BRS GOVERNMENT MATCH</ThemedText>
+              <ThemedText style={[styles.heroEyebrow, { color: tc.tactical }]}>BRS GOVERNMENT MATCH</ThemedText>
               <ThemedText style={styles.heroTitle}>Don&apos;t leave free money behind</ThemedText>
               <ThemedText style={[styles.heroBody, { color: tc.textSecondary }]}>
                 Under the Blended Retirement System, the government automatically contributes 1% of your basic pay to your TSP. They then match your contributions dollar-for-dollar up to 3%, and 50 cents per dollar on the next 2%. Contribute at least 5% to capture the full match.
@@ -327,7 +328,7 @@ export default function TspCalculatorScreen() {
                       <ThemedText style={[
                         styles.matchPctText,
                         { color: isOptimal ? Brand.tactical : tc.textPrimary },
-                        isCurrent && { color: Brand.tactical },
+                        isCurrent && { color: tc.tactical },
                       ]}>
                         {pct}%
                       </ThemedText>
@@ -339,15 +340,15 @@ export default function TspCalculatorScreen() {
                       </View>
                       <View style={styles.matchDetailRow}>
                         <ThemedText style={[styles.matchDetailLabel, { color: tc.textSecondary }]}>Govt match</ThemedText>
-                        <ThemedText style={[styles.matchDetailVal, { color: Brand.tactical }]}>${Math.round(r2.govtMatchMonthly).toLocaleString()}/mo</ThemedText>
+                        <ThemedText style={[styles.matchDetailVal, { color: tc.tactical }]}>${Math.round(r2.govtMatchMonthly).toLocaleString()}/mo</ThemedText>
                       </View>
                       <View style={[styles.matchDivider, { backgroundColor: tc.borderColor }]} />
                       {pct < 5 ? (
-                        <ThemedText style={[styles.matchNote, { color: Brand.warning }]}>
+                        <ThemedText style={[styles.matchNote, { color: tc.warning }]}>
                           💸  Forfeiting ${Math.round(r2.matchLeftOnTable).toLocaleString()}/mo · ~{fmtM(maxR.finalBalance - r2.finalBalance)} over 20 yrs
                         </ThemedText>
                       ) : (
-                        <ThemedText style={[styles.matchNote, { color: Brand.success }]}>
+                        <ThemedText style={[styles.matchNote, { color: tc.success }]}>
                           ✓  Full match captured
                         </ThemedText>
                       )}
@@ -390,7 +391,7 @@ const styles = StyleSheet.create({
   content: { paddingHorizontal: Spacing.three, gap: Spacing.two + 2 },
 
   // Section labels
-  sectionLabel: { fontSize: 11, fontWeight: '800', color: Brand.tactical, letterSpacing: 1.5, textTransform: 'uppercase' },
+  sectionLabel: { fontSize: 11, fontWeight: '800', letterSpacing: 1.5, textTransform: 'uppercase' },
   subLabel: { fontSize: 12, lineHeight: 17, marginTop: -Spacing.one },
 
   card: { borderRadius: 6, padding: Spacing.three, gap: Spacing.two + 2 },
@@ -403,8 +404,8 @@ const styles = StyleSheet.create({
 
   // Result card
   resultCard: { borderRadius: 6, padding: Spacing.three, gap: Spacing.two, borderLeftWidth: 3 },
-  resultEyebrow: { fontSize: 10, fontWeight: '800', color: Brand.tactical, letterSpacing: 1.5 },
-  resultBig: { fontSize: 36, fontWeight: '900', color: Brand.tactical, lineHeight: 40 },
+  resultEyebrow: { fontSize: 10, fontWeight: '800', letterSpacing: 1.5 },
+  resultBig: { fontSize: 36, fontWeight: '900', lineHeight: 40 },
   resultDivider: { height: 1, marginVertical: Spacing.one },
   resultRows: { gap: Spacing.one + 2 },
   resultRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
@@ -415,7 +416,7 @@ const styles = StyleSheet.create({
   chartRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
   chartYear: { fontSize: 12, width: 40 },
   chartBarArea: { flex: 1 },
-  chartAmt: { fontSize: 12, fontWeight: '700', color: Brand.tactical, width: 64, textAlign: 'right' },
+  chartAmt: { fontSize: 12, fontWeight: '700', width: 64, textAlign: 'right' },
   miniBarTrack: { height: 6, borderRadius: 3, overflow: 'hidden' },
   miniBarFill: { height: '100%', borderRadius: 3 },
 
@@ -453,7 +454,7 @@ const styles = StyleSheet.create({
   lAllocBar: { width: '100%', borderRadius: 2 },
 
   // BRS match hero
-  heroEyebrow: { fontSize: 10, fontWeight: '800', color: Brand.tactical, letterSpacing: 1.5 },
+  heroEyebrow: { fontSize: 10, fontWeight: '800', letterSpacing: 1.5 },
   heroTitle: { fontSize: 20, fontWeight: '900' },
   heroBody: { fontSize: 13, lineHeight: 20 },
 

@@ -190,7 +190,7 @@ export default function SbpCalculatorScreen() {
 
         {/* Results */}
         <ThemedView type="backgroundElement" style={[styles.resultCard, { borderLeftColor: Brand.tactical }]}>
-          <ThemedText style={styles.resultEyebrow}>MONTHLY BREAKDOWN</ThemedText>
+          <ThemedText style={[styles.resultEyebrow, { color: tc.tactical }]}>MONTHLY BREAKDOWN</ThemedText>
           <View style={styles.resultRow}>
             <ThemedText style={[styles.resultLabel, { color: tc.textSecondary }]}>Covered base</ThemedText>
             <ThemedText style={[styles.resultValue, { color: tc.textPrimary }]}>{fmtDollar(result.coveredBase)}/mo</ThemedText>
@@ -200,8 +200,8 @@ export default function SbpCalculatorScreen() {
             <ThemedText style={[styles.resultValue, { color: Brand.danger }]}>−{fmtDollar(result.monthlyPremium)}/mo</ThemedText>
           </View>
           <View style={[styles.resultRow, styles.resultRowHighlight]}>
-            <ThemedText style={[styles.resultLabel, { color: Brand.tactical }]}>Spouse annuity (55%)</ThemedText>
-            <ThemedText style={[styles.resultValue, { color: Brand.tactical }]}>{fmtDollar(result.monthlyAnnuity)}/mo</ThemedText>
+            <ThemedText style={[styles.resultLabel, { color: tc.tactical }]}>Spouse annuity (55%)</ThemedText>
+            <ThemedText style={[styles.resultValue, { color: tc.tactical }]}>{fmtDollar(result.monthlyAnnuity)}/mo</ThemedText>
           </View>
           <View style={styles.resultRow}>
             <ThemedText style={[styles.resultLabel, { color: tc.textSecondary }]}>Annual premium</ThemedText>
@@ -241,7 +241,7 @@ export default function SbpCalculatorScreen() {
           </View>
           <View style={styles.resultRow}>
             <ThemedText style={[styles.resultLabel, { color: tc.textSecondary }]}>Spouse collects (~{estCollectYears} yrs)</ThemedText>
-            <ThemedText style={[styles.resultValue, { color: Brand.tactical }]}>{fmtDollar(estAnnuityTotal)}</ThemedText>
+            <ThemedText style={[styles.resultValue, { color: tc.tactical }]}>{fmtDollar(estAnnuityTotal)}</ThemedText>
           </View>
           <View style={[styles.resultRow, styles.resultRowHighlight]}>
             <ThemedText style={[styles.resultLabel, { color: tc.textSecondary, fontWeight: '700' }]}>Net benefit to family</ThemedText>
@@ -304,7 +304,7 @@ const styles = StyleSheet.create({
   chipTextActive: { color: '#000' },
 
   resultCard: { borderRadius: 4, padding: Spacing.three, gap: Spacing.one + 2, borderLeftWidth: 3 },
-  resultEyebrow: { fontSize: 9, fontWeight: '800', color: Brand.tactical, letterSpacing: 1.5 },
+  resultEyebrow: { fontSize: 9, fontWeight: '800', letterSpacing: 1.5 },
   resultRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 4 },
   resultRowHighlight: {
     backgroundColor: Brand.tactical + '12',

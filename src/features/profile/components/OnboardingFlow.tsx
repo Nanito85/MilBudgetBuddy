@@ -582,7 +582,7 @@ function ServiceInfoStep({
           <ThemedText style={styles.dateIcon}>📅</ThemedText>
         </Pressable>
         {enlistDate && (
-          <ThemedText style={styles.dateHint}>↳ {yearsAgo(enlistDate)} years of service</ThemedText>
+          <ThemedText style={[styles.dateHint, { color: tc.tactical }]}>↳ {yearsAgo(enlistDate)} years of service</ThemedText>
         )}
       </View>
 
@@ -598,7 +598,7 @@ function ServiceInfoStep({
           <ThemedText style={styles.dateIcon}>📅</ThemedText>
         </Pressable>
         {rankDate && (
-          <ThemedText style={styles.dateHint}>↳ {yearsAgo(rankDate)} years in grade</ThemedText>
+          <ThemedText style={[styles.dateHint, { color: tc.tactical }]}>↳ {yearsAgo(rankDate)} years in grade</ThemedText>
         )}
       </View>
 
@@ -769,7 +769,7 @@ function CivilianServiceInfoStep({
           <ThemedText style={styles.dateIcon}>📅</ThemedText>
         </Pressable>
         {startDate && (
-          <ThemedText style={styles.dateHint}>
+          <ThemedText style={[styles.dateHint, { color: tc.tactical }]}>
             ↳ {yearsAgo(startDate)} years of federal service
           </ThemedText>
         )}
@@ -1479,7 +1479,7 @@ const styles = StyleSheet.create({
   housingOptionActive: { borderColor: Brand.primary, backgroundColor: `${Brand.primary}12` },
   housingLabel: { fontSize: 14, fontWeight: '600' },
   dateIcon: { fontSize: 18 },
-  dateHint: { color: Brand.tactical, fontSize: 11, marginTop: -Spacing.one },
+  dateHint: { fontSize: 11, marginTop: -Spacing.one },
 
   chipGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.one },
   gradeChip: {

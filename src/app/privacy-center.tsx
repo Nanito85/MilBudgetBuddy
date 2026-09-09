@@ -11,9 +11,10 @@ import { useThemeColors } from '@/hooks/use-theme';
 const PRIVACY_URL = 'https://nanito85.github.io/MilBudgetBuddy/privacy-policy.html';
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  const tc = useThemeColors();
   return (
     <View style={s.section}>
-      <ThemedText style={s.sectionTitle}>{title}</ThemedText>
+      <ThemedText style={[s.sectionTitle, { color: tc.accent }]}>{title}</ThemedText>
       {children}
     </View>
   );
@@ -42,7 +43,7 @@ export default function PrivacyCenterScreen() {
       <SafeAreaView edges={['top']}>
         <View style={[s.header, { borderBottomColor: tc.borderColor }]}>
           <Pressable onPress={() => router.back()} style={s.backBtn}>
-            <ThemedText style={s.backText}>‹ Back</ThemedText>
+            <ThemedText style={[s.backText, { color: tc.tactical }]}>‹ Back</ThemedText>
           </Pressable>
           <ThemedText style={[s.title, { color: tc.textPrimary }]}>PRIVACY CENTER</ThemedText>
           <View style={s.backBtn} />
@@ -121,7 +122,7 @@ const s = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   backBtn: { width: 60 },
-  backText: { fontSize: 16, fontWeight: '600', color: Brand.tactical },
+  backText: { fontSize: 16, fontWeight: '600' },
   title: { flex: 1, textAlign: 'center', fontSize: 13, fontWeight: '900', letterSpacing: 1 },
 
   content: { paddingHorizontal: Spacing.three, paddingTop: Spacing.three, gap: Spacing.three },
@@ -136,7 +137,7 @@ const s = StyleSheet.create({
   heroSub: { fontSize: 12, textAlign: 'center', lineHeight: 18 },
 
   section: { gap: Spacing.two },
-  sectionTitle: { fontSize: 11, fontWeight: '900', color: Brand.accent, letterSpacing: 1 },
+  sectionTitle: { fontSize: 11, fontWeight: '900', letterSpacing: 1 },
   row: {
     flexDirection: 'row', alignItems: 'flex-start', gap: Spacing.two,
     borderRadius: 8, padding: Spacing.two + 2,

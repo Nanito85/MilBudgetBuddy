@@ -120,7 +120,7 @@ export default function SchoolsFinderScreen() {
               style={[
                 styles.tabLabel,
                 { color: tc.textMuted },
-                activeTab === t.id && styles.tabLabelActive,
+                activeTab === t.id && [styles.tabLabelActive, { color: tc.accent }],
               ]}>
               {t.label}
             </ThemedText>
@@ -138,7 +138,7 @@ export default function SchoolsFinderScreen() {
         {activeTab === 'search' && (
           <>
             <ThemedView type="backgroundElement" style={styles.blufBox}>
-              <ThemedText style={styles.blufTitle}>BLUF</ThemedText>
+              <ThemedText style={[styles.blufTitle, { color: tc.accent }]}>BLUF</ThemedText>
               <ThemedText type="small" style={{ lineHeight: 18 }}>
                 Search any installation to see DoDEA on-post schools or the local public
                 school district. OCONUS installations use DoDEA exclusively. CONUS
@@ -262,7 +262,7 @@ export default function SchoolsFinderScreen() {
         {activeTab === 'guide' && (
           <>
             <ThemedView type="backgroundElement" style={styles.blufBox}>
-              <ThemedText style={styles.blufTitle}>PCS WITH KIDS</ThemedText>
+              <ThemedText style={[styles.blufTitle, { color: tc.accent }]}>PCS WITH KIDS</ThemedText>
               <ThemedText type="small" style={{ lineHeight: 18 }}>
                 School transitions are one of the hardest parts of PCS for military families.
                 Follow this checklist to protect your kids' academic progress and keep
@@ -307,7 +307,7 @@ export default function SchoolsFinderScreen() {
         {activeTab === 'rights' && (
           <>
             <ThemedView type="backgroundElement" style={styles.blufBox}>
-              <ThemedText style={styles.blufTitle}>KNOW YOUR RIGHTS</ThemedText>
+              <ThemedText style={[styles.blufTitle, { color: tc.accent }]}>KNOW YOUR RIGHTS</ThemedText>
               <ThemedText type="small" style={{ lineHeight: 18 }}>
                 Federal law and interstate compacts protect military children from losing
                 ground during PCS transitions. Schools that refuse these protections are
@@ -381,7 +381,7 @@ const styles = StyleSheet.create({
   },
   tabItem: { flex: 1, alignItems: 'center', paddingVertical: Spacing.two, position: 'relative' },
   tabLabel: { fontSize: 10, fontWeight: '700', letterSpacing: 0.6 },
-  tabLabelActive: { color: Brand.accent },
+  tabLabelActive: {},
   tabUnderline: {
     position: 'absolute',
     bottom: 0,
@@ -398,7 +398,7 @@ const styles = StyleSheet.create({
   card: { borderRadius: Spacing.three, overflow: 'hidden' },
   cardPadded: { padding: Spacing.three, gap: Spacing.two },
   blufBox: { borderRadius: Spacing.three, padding: Spacing.three, gap: Spacing.one },
-  blufTitle: { fontSize: 13, fontWeight: '800', letterSpacing: 1, color: Brand.accent },
+  blufTitle: { fontSize: 13, fontWeight: '800', letterSpacing: 1 },
 
   // Results
   resultHeader: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two, paddingHorizontal: Spacing.one },

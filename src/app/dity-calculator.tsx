@@ -101,7 +101,7 @@ export default function DITYCalculatorScreen() {
 
         {/* BLUF */}
         <ThemedView type="backgroundElement" style={styles.blufBox}>
-          <ThemedText style={styles.blufTitle}>BLUF</ThemedText>
+          <ThemedText style={[styles.blufTitle, { color: tc.accent }]}>BLUF</ThemedText>
           <ThemedText type="small" style={{ lineHeight: 18 }}>
             When you move yourself (PPM), the government pays you 100% of what it would have paid
             a commercial mover. If your actual moving costs are less than that amount, you keep the
@@ -215,7 +215,7 @@ export default function DITYCalculatorScreen() {
             <ThemedView type="backgroundElement" style={styles.distanceChip}>
               <ThemedText style={styles.distanceChipIcon}>📍</ThemedText>
               <ThemedText type="small" style={styles.distanceChipText}>
-                Est. driving distance: <ThemedText style={{ fontWeight: '700', color: Brand.accent }}>{distanceMiles} miles</ThemedText>
+                Est. driving distance: <ThemedText style={{ fontWeight: '700', color: tc.accent }}>{distanceMiles} miles</ThemedText>
                 {' '}({fromStation.name} → {toStation.name})
               </ThemedText>
             </ThemedView>
@@ -386,7 +386,7 @@ export default function DITYCalculatorScreen() {
                 <ThemedText type="small" themeColor="textSecondary" style={styles.fieldLabel}>
                   CASH AT SETTLEMENT
                 </ThemedText>
-                <ThemedText style={[styles.bigValue, { color: Brand.accent }]}>
+                <ThemedText style={[styles.bigValue, { color: tc.accent }]}>
                   {fmtMoney(result.cashAtSettlement)}
                 </ThemedText>
               </View>
@@ -439,7 +439,7 @@ export default function DITYCalculatorScreen() {
 
             {/* Deductible expenses reference */}
             <View style={[styles.tipsBox, { backgroundColor: `${Brand.success}10` }]}>
-              <ThemedText type="small" style={[styles.tipTitle, { color: Brand.success }]}>
+              <ThemedText type="small" style={[styles.tipTitle, { color: tc.success }]}>
                 ✓ Deductible PPM expenses (Form 3903)
               </ThemedText>
               <ThemedText type="small" style={styles.tipItem}>
@@ -460,7 +460,7 @@ export default function DITYCalculatorScreen() {
 
             {/* Tips */}
             <View style={[styles.tipsBox, { backgroundColor: `${Brand.accent}10` }]}>
-              <ThemedText type="small" style={[styles.tipTitle, { color: Brand.accent }]}>
+              <ThemedText type="small" style={[styles.tipTitle, { color: tc.accent }]}>
                 Tips to maximize your incentive
               </ThemedText>
               <ThemedText type="small" style={styles.tipItem}>
@@ -505,6 +505,7 @@ function ResultRow({
 }: {
   label: string; value: string; negative?: boolean; bold?: boolean; accent?: boolean;
 }) {
+  const tc = useThemeColors();
   return (
     <View style={rrStyles.row}>
       <ThemedText themeColor={bold ? 'text' : 'textSecondary'} style={[rrStyles.label, bold && rrStyles.labelBold]}>
@@ -514,7 +515,7 @@ function ResultRow({
         style={[
           rrStyles.value,
           negative && { color: Brand.danger },
-          accent && { color: Brand.success },
+          accent && { color: tc.success },
           bold && rrStyles.valueBold,
         ]}>
         {value}
@@ -554,7 +555,7 @@ const styles = StyleSheet.create({
     borderLeftWidth: 4,
     borderLeftColor: Brand.accent,
   },
-  blufTitle: { fontSize: 11, fontWeight: '800', color: Brand.accent, letterSpacing: 0.8 },
+  blufTitle: { fontSize: 11, fontWeight: '800', letterSpacing: 0.8 },
   section: { gap: Spacing.two },
   sectionHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: Spacing.one },
   sectionLabel: { letterSpacing: 0.8 },

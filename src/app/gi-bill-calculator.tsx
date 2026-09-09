@@ -126,7 +126,7 @@ export default function GiBillCalculatorScreen() {
                 key={t.id}
                 onPress={() => setTierPct(t.pct)}
                 style={[styles.tierChip, { borderColor: tc.borderColor }, tierPct === t.pct && styles.tierChipActive]}>
-                <ThemedText style={[styles.tierPct, { color: tc.textPrimary }, tierPct === t.pct && styles.tierPctActive]}>{t.label}</ThemedText>
+                <ThemedText style={[styles.tierPct, { color: tc.textPrimary }, tierPct === t.pct && [styles.tierPctActive, { color: tc.tactical }]]}>{t.label}</ThemedText>
                 <ThemedText style={[styles.tierDesc, { color: tc.textHint }, tierPct === t.pct && { color: '#fff' }]}>{t.description}</ThemedText>
               </Pressable>
             ))}
@@ -139,7 +139,7 @@ export default function GiBillCalculatorScreen() {
           <View style={[styles.monthsTrack, { backgroundColor: tc.borderColor }]}>
             <View style={[styles.monthsFill, { width: `${(monthsUsed / 36) * 100}%` as any }]} />
           </View>
-          <ThemedText style={styles.monthsRemaining}>
+          <ThemedText style={[styles.monthsRemaining, { color: tc.tactical }]}>
             {monthsRemaining} months remaining ({Math.round(pctRemaining * 100)}%)
           </ThemedText>
         </ThemedView>
@@ -200,9 +200,9 @@ export default function GiBillCalculatorScreen() {
               {zipLookup !== null ? (
                 <View style={styles.zipResult}>
                   {zipLookup.exact ? (
-                    <ThemedText style={styles.zipFound}>✓ {fmtDollar(zipLookup.rate)}/mo</ThemedText>
+                    <ThemedText style={[styles.zipFound, { color: tc.tactical }]}>✓ {fmtDollar(zipLookup.rate)}/mo</ThemedText>
                   ) : (
-                    <ThemedText style={styles.zipApprox}>≈ {fmtDollar(zipLookup.rate)}/mo (approx. by ZIP)</ThemedText>
+                    <ThemedText style={[styles.zipApprox, { color: tc.warning }]}>≈ {fmtDollar(zipLookup.rate)}/mo (approx. by ZIP)</ThemedText>
                   )}
                 </View>
               ) : null}
@@ -231,7 +231,7 @@ export default function GiBillCalculatorScreen() {
         <SectionLabel text="YOUR MONTHLY BENEFITS" tc={tc} />
 
         <ThemedView type="backgroundElement" style={[styles.resultCard, { borderLeftColor: Brand.tactical }]}>
-          <ThemedText style={styles.resultEyebrow}>EST. MONTHLY VALUE (AY{GI_BILL_DATA_YEAR})</ThemedText>
+          <ThemedText style={[styles.resultEyebrow, { color: tc.tactical }]}>EST. MONTHLY VALUE (AY{GI_BILL_DATA_YEAR})</ThemedText>
           <ThemedText style={[styles.resultBig, { color: tc.textPrimary }]}>{fmtDollar(result.monthlyTotalValue)}/mo</ThemedText>
 
           <View style={styles.breakdown}>
@@ -270,8 +270,8 @@ export default function GiBillCalculatorScreen() {
             </View>
             {result.annualTuitionOut > 0 && (
               <View style={styles.annualRow}>
-                <ThemedText style={[styles.annualKey, { color: Brand.warning }]}>Out-of-pocket tuition</ThemedText>
-                <ThemedText style={[styles.annualVal, { color: Brand.warning }]}>{fmtDollar(result.annualTuitionOut)}</ThemedText>
+                <ThemedText style={[styles.annualKey, { color: tc.warning }]}>Out-of-pocket tuition</ThemedText>
+                <ThemedText style={[styles.annualVal, { color: tc.warning }]}>{fmtDollar(result.annualTuitionOut)}</ThemedText>
               </View>
             )}
             <View style={styles.annualRow}>
@@ -339,7 +339,7 @@ const styles = StyleSheet.create({
   },
   tierChipActive: { backgroundColor: Brand.tactical + '20', borderColor: Brand.tactical },
   tierPct: { fontSize: 14, fontWeight: '800' },
-  tierPctActive: { color: Brand.tactical },
+  tierPctActive: {},
   tierDesc: { fontSize: 10 },
 
   optionRow: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.one },
@@ -351,7 +351,7 @@ const styles = StyleSheet.create({
   monthsTrack: { height: 6, borderRadius: 3, overflow: 'hidden' },
   monthsFill: { height: '100%', backgroundColor: Brand.warning, borderRadius: 3 },
   monthsFillGreen: { height: '100%', backgroundColor: Brand.tactical, borderRadius: 3 },
-  monthsRemaining: { fontSize: 11, color: Brand.tactical, fontWeight: '700' },
+  monthsRemaining: { fontSize: 11, fontWeight: '700' },
   monthsLabelRow: { flexDirection: 'row', justifyContent: 'space-between' },
   monthsLabel: { fontSize: 10 },
 
@@ -361,15 +361,15 @@ const styles = StyleSheet.create({
     borderBottomWidth: 2, borderBottomColor: Brand.primary, paddingVertical: 4,
   },
   zipResult: {},
-  zipFound: { fontSize: 13, color: Brand.tactical, fontWeight: '700' },
-  zipApprox: { fontSize: 12, color: Brand.warning, fontWeight: '700', flex: 1 },
+  zipFound: { fontSize: 13, fontWeight: '700' },
+  zipApprox: { fontSize: 12, fontWeight: '700', flex: 1 },
   manualInput: {
     fontSize: 16, fontWeight: '700',
     borderBottomWidth: 2, borderBottomColor: Brand.primary, paddingVertical: 4, width: 120,
   },
 
   resultCard: { borderRadius: 4, padding: Spacing.three, gap: Spacing.two, borderLeftWidth: 3 },
-  resultEyebrow: { fontSize: 8, fontWeight: '800', color: Brand.tactical, letterSpacing: 1.5 },
+  resultEyebrow: { fontSize: 8, fontWeight: '800', letterSpacing: 1.5 },
   resultBig: { fontSize: 26, lineHeight: 32, fontWeight: '900' },
 
   breakdown: { gap: Spacing.one + 2 },

@@ -1,4 +1,4 @@
-import { Brand, Colors } from '@/constants/theme';
+import { Brand, BrandLightText, Colors } from '@/constants/theme';
 import { useUserStore } from '@/store/user.store';
 
 export function useTheme() {
@@ -31,13 +31,18 @@ export function useThemeColors() {
     // Borders
     borderColor:   c.border,
     borderStrong:  c.borderStrong,
-    // Brand (same in both modes)
-    accent:        Brand.accent,
-    tactical:      Brand.tactical,
+    // Brand — primary/danger/classified measure fine as text on light
+    // backgrounds as-is (>=4.5:1); tactical/accent/success/warning were
+    // tuned bright for the dark-mode background and fail badly as light-mode
+    // TEXT color (2.0-2.8:1) — see BrandLightText's comment in
+    // constants/theme.ts. Swap those four to their darker light-safe
+    // variant in light mode; everything else stays the shared brand hue.
+    accent:        isLight ? BrandLightText.accent   : Brand.accent,
+    tactical:      isLight ? BrandLightText.tactical : Brand.tactical,
     primary:       Brand.primary,
     danger:        Brand.danger,
-    success:       Brand.success,
-    warning:       Brand.warning,
+    success:       isLight ? BrandLightText.success  : Brand.success,
+    warning:       isLight ? BrandLightText.warning  : Brand.warning,
     classified:    Brand.classified,
   };
 }

@@ -31,9 +31,9 @@ export function BudgetCard({ netPay }: Props) {
         <View style={styles.headerBar}>
           <View style={styles.headerLeft}>
             <View style={[styles.dot, { backgroundColor: Brand.tactical }]} />
-            <ThemedText type="label" style={styles.headerLabel}>BUDGET OPS // MONTHLY</ThemedText>
+            <ThemedText type="label" style={[styles.headerLabel, { color: tc.tactical }]}>BUDGET OPS // MONTHLY</ThemedText>
           </View>
-          <ThemedText type="label" style={styles.chevron}>›</ThemedText>
+          <ThemedText type="label" style={[styles.chevron, { color: tc.tactical }]}>›</ThemedText>
         </View>
 
         {hasData ? (
@@ -41,7 +41,7 @@ export function BudgetCard({ netPay }: Props) {
             <View style={styles.amountRow}>
               <View>
                 <ThemedText type="label" style={[styles.subLabel, { color: tc.textMuted }]}>ALLOCATED</ThemedText>
-                <ThemedText style={[styles.amount, { color: Brand.tactical }]}>{fmtPay(totalBudgeted)}</ThemedText>
+                <ThemedText style={[styles.amount, { color: tc.tactical }]}>{fmtPay(totalBudgeted)}</ThemedText>
               </View>
               <View style={[styles.sep, { backgroundColor: tc.borderColor }]} />
               <View>
@@ -86,8 +86,8 @@ const styles = StyleSheet.create({
   },
   headerLeft: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   dot: { width: 6, height: 6, borderRadius: 1 },
-  headerLabel: { color: Brand.tactical, fontSize: 9 },
-  chevron: { color: Brand.tactical, fontSize: 14 },
+  headerLabel: { fontSize: 9 },
+  chevron: { fontSize: 14 },
   body: { padding: Spacing.three, gap: Spacing.two },
   amountRow: { flexDirection: 'row', alignItems: 'center', gap: 0 },
   subLabel: { fontSize: 8, marginBottom: 3 },

@@ -39,11 +39,11 @@ function Stepper({ label, value, step, min, max, onChange }: {
       <ThemedText style={[styles.stepperLabel, { color: tc.textHint }]}>{label}</ThemedText>
       <View style={styles.stepperControls}>
         <Pressable style={[styles.stepBtn, { borderColor: tc.borderColor, backgroundColor: tc.background }]} onPress={() => onChange(Math.max(min, value - step))}>
-          <ThemedText style={styles.stepBtnText}>−</ThemedText>
+          <ThemedText style={[styles.stepBtnText, { color: tc.tactical }]}>−</ThemedText>
         </Pressable>
         <ThemedText style={[styles.stepperValue, { color: tc.textPrimary }]}>{fmt(value)}</ThemedText>
         <Pressable style={[styles.stepBtn, { borderColor: tc.borderColor, backgroundColor: tc.background }]} onPress={() => onChange(Math.min(max, value + step))}>
-          <ThemedText style={styles.stepBtnText}>+</ThemedText>
+          <ThemedText style={[styles.stepBtnText, { color: tc.tactical }]}>+</ThemedText>
         </Pressable>
       </View>
     </View>
@@ -120,7 +120,7 @@ export default function RothIraScreen() {
 
         {/* Inputs */}
         <ThemedView type="backgroundElement" style={styles.card}>
-          <ThemedText style={styles.cardLabel}>YOUR NUMBERS</ThemedText>
+          <ThemedText style={[styles.cardLabel, { color: tc.tactical }]}>YOUR NUMBERS</ThemedText>
           <Stepper label="Current Roth IRA balance" value={balance} step={500} min={0} max={100000} onChange={setBalance} />
           <Stepper label="Monthly contribution" value={monthly} step={50} min={0} max={ROTH_MONTHLY_LIMIT} onChange={setMonthly} />
           <Stepper label="Your age" value={age} step={1} min={17} max={55} onChange={(v) => setAge(v)} />
@@ -128,7 +128,7 @@ export default function RothIraScreen() {
 
         {/* Headroom */}
         <ThemedView type="backgroundElement" style={styles.card}>
-          <ThemedText style={styles.cardLabel}>2026 CONTRIBUTION HEADROOM</ThemedText>
+          <ThemedText style={[styles.cardLabel, { color: tc.tactical }]}>2026 CONTRIBUTION HEADROOM</ThemedText>
           <View style={styles.headroomRow}>
             <View style={styles.headroomItem}>
               <ThemedText style={[styles.headroomItemLabel, { color: tc.textMuted }]}>LIMIT</ThemedText>
@@ -152,13 +152,13 @@ export default function RothIraScreen() {
             }]} />
           </View>
           {headroom <= 0 && (
-            <ThemedText style={styles.maxedText}>🎖️ MAXED OUT — outstanding execution.</ThemedText>
+            <ThemedText style={[styles.maxedText, { color: tc.success }]}>🎖️ MAXED OUT — outstanding execution.</ThemedText>
           )}
         </ThemedView>
 
         {/* Projections */}
         <ThemedView type="backgroundElement" style={styles.card}>
-          <ThemedText style={styles.cardLabel}>TAX-FREE GROWTH PROJECTIONS (7% avg)</ThemedText>
+          <ThemedText style={[styles.cardLabel, { color: tc.tactical }]}>TAX-FREE GROWTH PROJECTIONS (7% avg)</ThemedText>
           <ProjectionBar label="20 years" value={v20} max={maxVal} color={Brand.primary} />
           <ProjectionBar label="30 years" value={v30} max={maxVal} color={Brand.tactical} />
           <ProjectionBar label={`Age 59.5 (${yearsTo595} yrs)`} value={v595} max={maxVal} color={Brand.accent} />
@@ -166,7 +166,7 @@ export default function RothIraScreen() {
 
         {/* Roth vs Traditional */}
         <ThemedView type="backgroundElement" style={styles.card}>
-          <ThemedText style={styles.cardLabel}>ROTH VS TRADITIONAL (SAME CONTRIBUTION)</ThemedText>
+          <ThemedText style={[styles.cardLabel, { color: tc.tactical }]}>ROTH VS TRADITIONAL (SAME CONTRIBUTION)</ThemedText>
           <ThemedText style={[styles.compareNote, { color: tc.textHint }]}>
             Traditional TSP/IRA: taxed at withdrawal. Estimate assumes 22% effective rate at retirement.
           </ThemedText>
@@ -183,7 +183,7 @@ export default function RothIraScreen() {
             ].map((row) => (
               <View key={row.label} style={styles.compareRow}>
                 <ThemedText style={[styles.compareRowLabel, { color: tc.textHint }]}>{row.label}</ThemedText>
-                <ThemedText style={[styles.compareValue, { color: Brand.tactical }]}>{fmt(row.roth)}</ThemedText>
+                <ThemedText style={[styles.compareValue, { color: tc.tactical }]}>{fmt(row.roth)}</ThemedText>
                 <ThemedText style={[styles.compareValue, { color: tc.textHint }]}>{fmt(row.trad)}</ThemedText>
               </View>
             ))}
@@ -192,7 +192,7 @@ export default function RothIraScreen() {
 
         {/* Tips */}
         <ThemedView type="backgroundElement" style={styles.card}>
-          <ThemedText style={styles.cardLabel}>ROTH IRA RULES & TIPS</ThemedText>
+          <ThemedText style={[styles.cardLabel, { color: tc.tactical }]}>ROTH IRA RULES & TIPS</ThemedText>
           {[
             '2026 limit: $7,500/yr ($625/mo). Age 50+ can contribute $8,600 (includes a $1,100 catch-up).',
             'Phase-out range for 2026: $153K–$168K MAGI (single). Most junior enlisted are well under.',
@@ -246,7 +246,7 @@ const styles = StyleSheet.create({
   heroBody: { fontSize: 12, lineHeight: 18, marginTop: 4 },
 
   card: { borderRadius: 4, padding: Spacing.three, gap: Spacing.two },
-  cardLabel: { fontSize: 9, fontWeight: '800', letterSpacing: 1.2, color: Brand.tactical, marginBottom: 2 },
+  cardLabel: { fontSize: 9, fontWeight: '800', letterSpacing: 1.2, marginBottom: 2 },
 
   stepperRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   stepperLabel: { fontSize: 12, flex: 1 },
@@ -259,7 +259,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  stepBtnText: { fontSize: 18, fontWeight: '300', color: Brand.tactical },
+  stepBtnText: { fontSize: 18, fontWeight: '300' },
   stepperValue: { fontSize: 13, fontWeight: '700', width: 80, textAlign: 'center', fontFamily: 'Courier New' },
 
   headroomRow: { flexDirection: 'row', gap: Spacing.two },
@@ -268,7 +268,7 @@ const styles = StyleSheet.create({
   headroomItemValue: { fontSize: 13, fontWeight: '700', fontFamily: 'Courier New' },
   headroomTrack: { height: 6, borderRadius: 3, overflow: 'hidden', marginTop: 4 },
   headroomFill: { height: '100%', borderRadius: 3 },
-  maxedText: { fontSize: 12, color: Brand.success, fontWeight: '700', textAlign: 'center' },
+  maxedText: { fontSize: 12, fontWeight: '700', textAlign: 'center' },
 
   projRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
   projLabel: { fontSize: 11, width: 80 },

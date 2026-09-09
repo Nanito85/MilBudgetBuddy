@@ -96,11 +96,11 @@ export default function AdminUsageScreen() {
     <SafeAreaView style={[s.safe, { backgroundColor: tc.background }]} edges={['top']}>
       <View style={[s.header, { borderColor: tc.borderColor }]}>
         <Pressable onPress={() => router.back()} style={s.back}>
-          <ThemedText style={s.backText}>‹ Admin</ThemedText>
+          <ThemedText style={[s.backText, { color: tc.tactical }]}>‹ Admin</ThemedText>
         </Pressable>
         <ThemedText style={[s.headerTitle, { color: tc.textPrimary }]}>📊 TOOL USAGE</ThemedText>
         <Pressable onPress={() => fetchUsage(days)} style={s.back}>
-          <ThemedText style={s.refreshText}>REFRESH</ThemedText>
+          <ThemedText style={[s.refreshText, { color: tc.accent }]}>REFRESH</ThemedText>
         </Pressable>
       </View>
 
@@ -148,8 +148,8 @@ const s = StyleSheet.create({
   safe: { flex: 1 },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: Spacing.three, paddingVertical: Spacing.two, borderBottomWidth: StyleSheet.hairlineWidth },
   back: { minWidth: 60 },
-  backText: { color: Brand.tactical, fontSize: 14, fontWeight: '700' },
-  refreshText: { color: Brand.accent, fontSize: 11, fontWeight: '700', textAlign: 'right' },
+  backText: { fontSize: 14, fontWeight: '700' },
+  refreshText: { fontSize: 11, fontWeight: '700', textAlign: 'right' },
   headerTitle: { fontSize: 13, fontWeight: '900', letterSpacing: 0.5 },
 
   windowRow: { flexDirection: 'row', gap: Spacing.two, paddingHorizontal: Spacing.three, paddingTop: Spacing.three },

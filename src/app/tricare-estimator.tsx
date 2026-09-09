@@ -41,7 +41,7 @@ function ChipRow<T extends string>({
             key={o.value}
             onPress={() => onSelect(o.value)}
             style={[styles.chip, { borderColor: tc.borderColor }, active && styles.chipActive]}>
-            <ThemedText style={[styles.chipText, { color: tc.textSecondary }, active && styles.chipTextActive]}>
+            <ThemedText style={[styles.chipText, { color: tc.textSecondary }, active && [styles.chipTextActive, { color: tc.accent }]]}>
               {o.label}
             </ThemedText>
             {o.sub && (
@@ -76,7 +76,7 @@ function CostRow({ label, value, accent, dimmed }: { label: string; value: strin
   return (
     <View style={styles.costRow}>
       <ThemedText style={[styles.costLabel, { color: tc.textSecondary }, dimmed && { color: tc.textMuted }]}>{label}</ThemedText>
-      <ThemedText style={[styles.costVal, { color: tc.textPrimary }, accent && { color: Brand.tactical }, dimmed && { color: tc.textMuted }]}>
+      <ThemedText style={[styles.costVal, { color: tc.textPrimary }, accent && { color: tc.tactical }, dimmed && { color: tc.textMuted }]}>
         {value}
       </ThemedText>
     </View>
@@ -171,7 +171,7 @@ function PharmacyTable() {
       {rows.map((r) => (
         <View key={r.fill} style={[styles.rxRow, { borderColor: tc.borderColor }]}>
           <ThemedText style={[styles.rxCell, { flex: 2, color: tc.textPrimary }]}>{r.fill}</ThemedText>
-          <ThemedText style={[styles.rxCell, { color: Brand.tactical }]}>{r.mtf}</ThemedText>
+          <ThemedText style={[styles.rxCell, { color: tc.tactical }]}>{r.mtf}</ThemedText>
           <ThemedText style={[styles.rxCell, { color: tc.textSecondary }]}>{r.mail}</ThemedText>
           <ThemedText style={[styles.rxCell, { color: tc.textSecondary }]}>{r.retail}</ThemedText>
         </View>
@@ -209,9 +209,9 @@ export default function TricareEstimatorScreen() {
         {/* Header */}
         <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
           <Pressable onPress={() => router.back()} style={styles.backBtn}>
-            <ThemedText style={styles.backText}>‹ BACK</ThemedText>
+            <ThemedText style={[styles.backText, { color: tc.tactical }]}>‹ BACK</ThemedText>
           </Pressable>
-          <ThemedText type="label" style={styles.eyebrow}>// MEDICAL BENEFITS</ThemedText>
+          <ThemedText type="label" style={[styles.eyebrow, { color: tc.tactical }]}>// MEDICAL BENEFITS</ThemedText>
           <ThemedText style={[styles.heading, { color: tc.textPrimary }]}>TRICARE ESTIMATOR</ThemedText>
           <ThemedText type="label" style={[styles.subhead, { color: tc.textMuted }]}>PRIME · SELECT · DENTAL · PHARMACY</ThemedText>
         </View>
@@ -380,7 +380,7 @@ export default function TricareEstimatorScreen() {
                 Retirees are not covered by TDP. FEDVIP is available during open season (Nov–Dec) with premiums varying by plan and location — typically $25–$55/month for family dental coverage. Enroll at benefeds.com.
               </ThemedText>
               <View style={styles.dentalNoteRow}>
-                <ThemedText style={styles.dentalNoteStat}>$25–$55/mo</ThemedText>
+                <ThemedText style={[styles.dentalNoteStat, { color: tc.tactical }]}>$25–$55/mo</ThemedText>
                 <ThemedText style={[styles.dentalNoteStatLabel, { color: tc.textSecondary }]}>typical FEDVIP family premium</ThemedText>
               </View>
             </View>
@@ -399,7 +399,7 @@ export default function TricareEstimatorScreen() {
             <View key={d.title} style={styles.decisionRow}>
               <ThemedText style={styles.decisionIcon}>{d.icon}</ThemedText>
               <View style={{ flex: 1, gap: 3 }}>
-                <ThemedText style={styles.decisionTitle}>{d.title}</ThemedText>
+                <ThemedText style={[styles.decisionTitle, { color: tc.accent }]}>{d.title}</ThemedText>
                 <ThemedText style={[styles.decisionBody, { color: tc.textSecondary }]}>{d.body}</ThemedText>
               </View>
             </View>
@@ -422,8 +422,8 @@ const styles = StyleSheet.create({
 
   header: { gap: 4, paddingBottom: Spacing.two },
   backBtn: { marginBottom: Spacing.two },
-  backText: { color: Brand.tactical, fontSize: 12, fontWeight: '700', letterSpacing: 1, lineHeight: 17 },
-  eyebrow:  { color: Brand.tactical, fontSize: 9 },
+  backText: { fontSize: 12, fontWeight: '700', letterSpacing: 1, lineHeight: 17 },
+  eyebrow: { fontSize: 9 },
   heading:  { fontSize: 28, fontWeight: '900', letterSpacing: 1, marginTop: 2 },
   subhead:  { fontSize: 9 },
 
@@ -451,7 +451,7 @@ const styles = StyleSheet.create({
   },
   chipActive:       { backgroundColor: Brand.accent + '20', borderColor: Brand.accent },
   chipText:         { fontSize: 12, fontWeight: '700' },
-  chipTextActive:   { color: Brand.accent },
+  chipTextActive: {},
   chipSub:          { fontSize: 8 },
   chipSubActive:    { color: Brand.accent + 'AA' },
 
@@ -531,7 +531,7 @@ const styles = StyleSheet.create({
   dentalNoteTitle: { fontSize: 12, fontWeight: '800', letterSpacing: 0.3 },
   dentalNoteBody:  { fontSize: 11, lineHeight: 17 },
   dentalNoteRow:   { flexDirection: 'row', alignItems: 'center', gap: Spacing.two, paddingTop: Spacing.one },
-  dentalNoteStat:  { fontSize: 18, fontWeight: '800', color: Brand.tactical },
+  dentalNoteStat: { fontSize: 18, fontWeight: '800' },
   dentalNoteStatLabel: { fontSize: 9 },
 
   decisionsCard: {
@@ -542,7 +542,7 @@ const styles = StyleSheet.create({
   },
   decisionRow:   { flexDirection: 'row', gap: Spacing.two, alignItems: 'flex-start' },
   decisionIcon:  { fontSize: 18, width: 28, textAlign: 'center' },
-  decisionTitle: { fontSize: 10, fontWeight: '800', letterSpacing: 0.5, color: Brand.accent },
+  decisionTitle: { fontSize: 10, fontWeight: '800', letterSpacing: 0.5 },
   decisionBody:  { fontSize: 10, lineHeight: 15 },
 
   disclaimer: { fontSize: 8, textAlign: 'center', lineHeight: 13, paddingHorizontal: Spacing.two },

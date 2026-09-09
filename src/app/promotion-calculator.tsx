@@ -68,7 +68,7 @@ export default function PromotionCalculatorScreen() {
       <SafeAreaView edges={['top']}>
         <View style={[s.header, { borderBottomColor: tc.borderColor }]}>
           <Pressable onPress={() => router.back()} style={s.backBtn}>
-            <ThemedText style={s.backText}>‹ Back</ThemedText>
+            <ThemedText style={[s.backText, { color: tc.tactical }]}>‹ Back</ThemedText>
           </Pressable>
           <ThemedText style={[s.title, { color: tc.textPrimary }]}>PROMOTION PAY PREDICTOR</ThemedText>
           <View style={s.backBtn} />
@@ -80,12 +80,12 @@ export default function PromotionCalculatorScreen() {
         showsVerticalScrollIndicator={false}>
 
         <View style={s.sourceBar}>
-          <ThemedText style={s.sourceText}>🟢 FY2026 DFAS Official Rates · militarypay.defense.gov</ThemedText>
+          <ThemedText style={[s.sourceText, { color: tc.success }]}>🟢 FY2026 DFAS Official Rates · militarypay.defense.gov</ThemedText>
         </View>
 
         {/* Current Grade */}
         <View style={[s.card, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
-          <ThemedText style={s.sectionEyebrow}>// CURRENT RANK</ThemedText>
+          <ThemedText style={[s.sectionEyebrow, { color: tc.tactical }]}>// CURRENT RANK</ThemedText>
           <GradePicker selected={currentGrade} onSelect={setCurrentGrade} />
           <NumberStepper label="Current Years of Service" value={yos} min={0} max={40} onChange={setYos} unit="yrs" />
           <View style={s.payRow}>
@@ -96,7 +96,7 @@ export default function PromotionCalculatorScreen() {
 
         {/* Target Grade */}
         <View style={[s.card, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
-          <ThemedText style={s.sectionEyebrow}>// PROMOTION TARGET</ThemedText>
+          <ThemedText style={[s.sectionEyebrow, { color: tc.tactical }]}>// PROMOTION TARGET</ThemedText>
           <GradePicker selected={targetGrade} onSelect={setTargetGrade} />
           {TYPICAL_YOS[targetGrade] && (
             <ThemedText style={[s.hint, { color: tc.textHint }]}>Typical promotion to {targetGrade}: ~{TYPICAL_YOS[targetGrade]}</ThemedText>
@@ -104,7 +104,7 @@ export default function PromotionCalculatorScreen() {
           <NumberStepper label="Projected YOS at Promotion" value={projYos} min={0} max={40} onChange={setProjYos} unit="yrs" />
           <View style={s.payRow}>
             <ThemedText style={[s.payLabel, { color: tc.textSecondary }]}>Projected Monthly Base Pay</ThemedText>
-            <ThemedText style={[s.payValue, { color: Brand.tactical }]}>{fmt(targetPay)}</ThemedText>
+            <ThemedText style={[s.payValue, { color: tc.tactical }]}>{fmt(targetPay)}</ThemedText>
           </View>
         </View>
 
@@ -131,7 +131,7 @@ export default function PromotionCalculatorScreen() {
             <ThemedText style={[s.resultLabel, { color: tc.textSecondary }]}>
               Estimated Pension Impact (20-yr {retirementSystem === 'high3' ? 'High-3' : 'BRS'})
             </ThemedText>
-            <ThemedText style={[s.resultValue, { color: Brand.accent }]}>{fmtSign(pensionImpact)}/mo</ThemedText>
+            <ThemedText style={[s.resultValue, { color: tc.accent }]}>{fmtSign(pensionImpact)}/mo</ThemedText>
           </View>
           <View style={s.retirementToggleRow}>
             {(['brs', 'high3'] as const).map((sys) => (
@@ -143,7 +143,7 @@ export default function PromotionCalculatorScreen() {
                   { borderColor: tc.borderColor },
                   retirementSystem === sys && { backgroundColor: Brand.accent + '20', borderColor: Brand.accent },
                 ]}>
-                <ThemedText style={[s.retirementToggleText, { color: tc.textHint }, retirementSystem === sys && { color: Brand.accent }]}>
+                <ThemedText style={[s.retirementToggleText, { color: tc.textHint }, retirementSystem === sys && { color: tc.accent }]}>
                   {sys === 'brs' ? 'BRS (2.0%/yr)' : 'High-3 (2.5%/yr)'}
                 </ThemedText>
               </Pressable>
@@ -180,7 +180,7 @@ const s = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   backBtn: { width: 60 },
-  backText: { fontSize: 16, fontWeight: '600', color: Brand.tactical },
+  backText: { fontSize: 16, fontWeight: '600' },
   title: { flex: 1, textAlign: 'center', fontSize: 12, fontWeight: '900', letterSpacing: 1 },
 
   content: { paddingHorizontal: Spacing.three, paddingTop: Spacing.three, gap: Spacing.three },
@@ -189,13 +189,13 @@ const s = StyleSheet.create({
     backgroundColor: Brand.success + '10', borderWidth: 1,
     borderColor: Brand.success + '30', borderRadius: 6, padding: Spacing.two,
   },
-  sourceText: { fontSize: 10, color: Brand.success, fontWeight: '700' },
+  sourceText: { fontSize: 10, fontWeight: '700' },
 
   card: {
     borderWidth: StyleSheet.hairlineWidth, borderRadius: 8,
     padding: Spacing.three, gap: Spacing.three,
   },
-  sectionEyebrow: { fontSize: 9, fontWeight: '800', color: Brand.tactical, letterSpacing: 1 },
+  sectionEyebrow: { fontSize: 9, fontWeight: '800', letterSpacing: 1 },
   hint: { fontSize: 10, marginTop: -Spacing.one },
   payRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   payLabel: { fontSize: 12 },

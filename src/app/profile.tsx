@@ -154,7 +154,7 @@ function AddKidModal({ visible, onClose, onAdd }: {
                 onPress={() => setGender(g)}
                 style={[modalStyles.genderBtn, { borderColor: tc.borderColor }, gender === g && modalStyles.genderBtnActive]}>
                 <ThemedText style={modalStyles.genderEmoji}>{g === 'boy' ? '🪖' : '⭐'}</ThemedText>
-                <ThemedText type="label" style={[modalStyles.genderLabel, { color: tc.textMuted }, gender === g && { color: Brand.accent }]}>
+                <ThemedText type="label" style={[modalStyles.genderLabel, { color: tc.textMuted }, gender === g && { color: tc.accent }]}>
                   {g === 'boy' ? 'NAVY / OLIVE' : 'NAVY / PURPLE'}
                 </ThemedText>
               </Pressable>
@@ -209,7 +209,7 @@ function StatePickerModal({ visible, selected, onSelect, onClose }: {
           <View style={stateStyles.header}>
             <ThemedText style={[stateStyles.title, { color: tc.textPrimary }]}>// SELECT STATE</ThemedText>
             <Pressable onPress={onClose}>
-              <ThemedText style={stateStyles.cancel}>DONE</ThemedText>
+              <ThemedText style={[stateStyles.cancel, { color: tc.tactical }]}>DONE</ThemedText>
             </Pressable>
           </View>
           <View style={[stateStyles.searchWrap, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
@@ -230,20 +230,20 @@ function StatePickerModal({ visible, selected, onSelect, onClose }: {
                   onPress={() => { onSelect(s.code); onClose(); }}
                   style={[stateStyles.row, { borderColor: tc.borderColor }, isSelected && stateStyles.rowSelected]}>
                   <View style={stateStyles.rowLeft}>
-                    <ThemedText style={[stateStyles.code, { color: tc.textMuted }, isSelected && { color: Brand.accent }]}>{s.code}</ThemedText>
+                    <ThemedText style={[stateStyles.code, { color: tc.textMuted }, isSelected && { color: tc.accent }]}>{s.code}</ThemedText>
                     <ThemedText style={[stateStyles.name, { color: tc.textHint }, isSelected && { color: tc.textPrimary }]}>{s.name}</ThemedText>
                   </View>
                   <View style={stateStyles.rowRight}>
                     {s.militaryExempt ? (
                       <View style={stateStyles.exemptBadge}>
-                        <ThemedText type="label" style={stateStyles.exemptText}>NO TAX</ThemedText>
+                        <ThemedText type="label" style={[stateStyles.exemptText, { color: tc.tactical }]}>NO TAX</ThemedText>
                       </View>
                     ) : (
                       <ThemedText style={[stateStyles.rate, { color: tc.textMuted, fontFamily: Fonts.data }]}>
                         ~{(s.effectiveRate * 100).toFixed(1)}%
                       </ThemedText>
                     )}
-                    {isSelected && <ThemedText style={stateStyles.check}>✓</ThemedText>}
+                    {isSelected && <ThemedText style={[stateStyles.check, { color: tc.accent }]}>✓</ThemedText>}
                   </View>
                 </Pressable>
               );
@@ -260,7 +260,7 @@ const stateStyles = StyleSheet.create({
   safe: { flex: 1, paddingHorizontal: Spacing.three, paddingTop: Spacing.three },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: Spacing.two },
   title: { fontSize: 14, fontWeight: '800', letterSpacing: 1 },
-  cancel: { fontSize: 12, fontWeight: '700', color: Brand.tactical, letterSpacing: 1 },
+  cancel: { fontSize: 12, fontWeight: '700', letterSpacing: 1 },
   searchWrap: { borderWidth: 1, borderRadius: 4, paddingHorizontal: Spacing.two, marginBottom: Spacing.two },
   search: { fontSize: 14, paddingVertical: Spacing.two },
   row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: Spacing.two + 2, borderBottomWidth: StyleSheet.hairlineWidth },
@@ -270,9 +270,9 @@ const stateStyles = StyleSheet.create({
   name: { fontSize: 13 },
   rowRight: { flexDirection: 'row', alignItems: 'center', gap: Spacing.one },
   exemptBadge: { backgroundColor: Brand.tactical + '20', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 2 },
-  exemptText: { color: Brand.tactical, fontSize: 7 },
+  exemptText: { fontSize: 7 },
   rate: { fontSize: 12 },
-  check: { color: Brand.accent, fontSize: 16, width: 20, textAlign: 'center' },
+  check: { fontSize: 16, width: 20, textAlign: 'center' },
 });
 
 // ── Notification Time Picker ────────────────────────────────────────────────────
@@ -301,7 +301,7 @@ function TimePickerModal({ visible, selectedHour, selectedMinute, onSelect, onCl
           <View style={stateStyles.header}>
             <ThemedText style={[stateStyles.title, { color: tc.textPrimary }]}>// REMINDER TIME</ThemedText>
             <Pressable onPress={onClose}>
-              <ThemedText style={stateStyles.cancel}>DONE</ThemedText>
+              <ThemedText style={[stateStyles.cancel, { color: tc.tactical }]}>DONE</ThemedText>
             </Pressable>
           </View>
           <ThemedText type="small" themeColor="textSecondary" style={timeStyles.hint}>
@@ -315,7 +315,7 @@ function TimePickerModal({ visible, selectedHour, selectedMinute, onSelect, onCl
                   key={`${t.hour}-${t.minute}`}
                   onPress={() => onSelect(t.hour, t.minute)}
                   style={[timeStyles.chip, { borderColor: tc.borderColor }, isSelected && timeStyles.chipActive]}>
-                  <ThemedText style={[timeStyles.chipText, { color: tc.textHint }, isSelected && timeStyles.chipTextActive]}>
+                  <ThemedText style={[timeStyles.chipText, { color: tc.textHint }, isSelected && [timeStyles.chipTextActive, { color: tc.accent }]]}>
                     {formatTime(t.hour, t.minute)}
                   </ThemedText>
                 </Pressable>
@@ -337,7 +337,7 @@ const timeStyles = StyleSheet.create({
   },
   chipActive: { borderColor: Brand.accent, backgroundColor: Brand.accent + '15' },
   chipText: { fontSize: 14, fontWeight: '700' },
-  chipTextActive: { color: Brand.accent },
+  chipTextActive: {},
 });
 
 // ── Special Pay Type Picker ────────────────────────────────────────────────────
@@ -363,7 +363,7 @@ function PayTypePickerModal({ visible, selected, onSelect, onClose }: {
         <SafeAreaView style={ptStyles.safe}>
           <View style={ptStyles.header}>
             <ThemedText style={[ptStyles.title, { color: tc.textPrimary }]}>// SELECT PAY TYPE</ThemedText>
-            <Pressable onPress={onClose}><ThemedText style={ptStyles.done}>DONE</ThemedText></Pressable>
+            <Pressable onPress={onClose}><ThemedText style={[ptStyles.done, { color: tc.tactical }]}>DONE</ThemedText></Pressable>
           </View>
           <ScrollView showsVerticalScrollIndicator={false}>
             {ALL_TYPES.map((type) => {
@@ -375,10 +375,10 @@ function PayTypePickerModal({ visible, selected, onSelect, onClose }: {
                   style={[ptStyles.row, { borderColor: tc.borderColor }, isSelected && ptStyles.rowSelected]}>
                   <ThemedText style={ptStyles.icon}>{PAY_TYPE_ICONS[type]}</ThemedText>
                   <View style={ptStyles.rowText}>
-                    <ThemedText style={[ptStyles.label, { color: tc.textPrimary }, isSelected && { color: Brand.accent }]}>{SPECIAL_PAY_LABELS[type]}</ThemedText>
+                    <ThemedText style={[ptStyles.label, { color: tc.textPrimary }, isSelected && { color: tc.accent }]}>{SPECIAL_PAY_LABELS[type]}</ThemedText>
                     <ThemedText type="label" style={[ptStyles.range, { color: tc.textMuted }]}>Typical: {SPECIAL_PAY_RANGES[type]}</ThemedText>
                   </View>
-                  {isSelected && <ThemedText style={ptStyles.check}>✓</ThemedText>}
+                  {isSelected && <ThemedText style={[ptStyles.check, { color: tc.accent }]}>✓</ThemedText>}
                 </Pressable>
               );
             })}
@@ -394,14 +394,14 @@ const ptStyles = StyleSheet.create({
   safe: { flex: 1, paddingHorizontal: Spacing.three, paddingTop: Spacing.three },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: Spacing.two },
   title: { fontSize: 14, fontWeight: '800', letterSpacing: 1 },
-  done: { fontSize: 12, fontWeight: '700', color: Brand.tactical, letterSpacing: 1 },
+  done: { fontSize: 12, fontWeight: '700', letterSpacing: 1 },
   row: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two, paddingVertical: Spacing.two + 2, borderBottomWidth: StyleSheet.hairlineWidth },
   rowSelected: { backgroundColor: Brand.accent + '10' },
   icon: { fontSize: 22, width: 32, textAlign: 'center', lineHeight: 28 },
   rowText: { flex: 1, gap: 2 },
   label: { fontSize: 14, fontWeight: '600' },
   range: { fontSize: 10 },
-  check: { color: Brand.accent, fontSize: 18 },
+  check: { fontSize: 18 },
 });
 
 // ── Edit Personal Modal ────────────────────────────────────────────────────────
@@ -561,7 +561,7 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
               <ThemedText style={[editStyles.cancel, { color: tc.textMuted }]}>CANCEL</ThemedText>
             </Pressable>
             <ThemedText style={[editStyles.title, { color: tc.textPrimary }]}>🪖 PERSONAL INFO</ThemedText>
-            <Pressable onPress={save}><ThemedText style={editStyles.save}>SAVE</ThemedText></Pressable>
+            <Pressable onPress={save}><ThemedText style={[editStyles.save, { color: tc.tactical }]}>SAVE</ThemedText></Pressable>
           </View>
 
           <ScrollView
@@ -582,7 +582,7 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
                     onPress={() => setStatus(opt.value)}
                     style={[editStyles.statusChip, { borderColor: tc.borderColor, backgroundColor: tc.surface }, active && editStyles.statusChipActive]}>
                     <ThemedText style={editStyles.statusChipEmoji}>{opt.emoji}</ThemedText>
-                    <ThemedText style={[editStyles.statusChipText, { color: tc.textHint }, active && { color: Brand.accent }]}>
+                    <ThemedText style={[editStyles.statusChipText, { color: tc.textHint }, active && { color: tc.accent }]}>
                       {opt.label}
                     </ThemedText>
                   </Pressable>
@@ -612,7 +612,7 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
                       key={g}
                       onPress={() => setGsGrade(g)}
                       style={[editStyles.gsChip, { borderColor: tc.borderColor, backgroundColor: tc.surface }, gsGrade === g && editStyles.gsChipActive]}>
-                      <ThemedText style={[editStyles.gsChipText, { color: tc.textHint }, gsGrade === g && { color: Brand.accent }]}>
+                      <ThemedText style={[editStyles.gsChipText, { color: tc.textHint }, gsGrade === g && { color: tc.accent }]}>
                         {g}
                       </ThemedText>
                     </Pressable>
@@ -626,7 +626,7 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
                       key={s}
                       onPress={() => setGsStep(s)}
                       style={[editStyles.gsChip, { borderColor: tc.borderColor, backgroundColor: tc.surface }, gsStep === s && editStyles.gsChipActive]}>
-                      <ThemedText style={[editStyles.gsChipText, { color: tc.textHint }, gsStep === s && { color: Brand.accent }]}>
+                      <ThemedText style={[editStyles.gsChipText, { color: tc.textHint }, gsStep === s && { color: tc.accent }]}>
                         {s}
                       </ThemedText>
                     </Pressable>
@@ -650,7 +650,7 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
                           key={opt.variant}
                           onPress={() => setRankVariant(opt.variant)}
                           style={[editStyles.variantChip, { borderColor: tc.borderColor }, active && editStyles.variantChipActive]}>
-                          <ThemedText style={[editStyles.variantAbbrev, { color: tc.textHint }, active && { color: Brand.accent }]}>{opt.abbrev}</ThemedText>
+                          <ThemedText style={[editStyles.variantAbbrev, { color: tc.textHint }, active && { color: tc.accent }]}>{opt.abbrev}</ThemedText>
                           <ThemedText style={[editStyles.variantName, { color: tc.textHint }, active && { color: tc.textPrimary }]}>{opt.fullName}</ThemedText>
                         </Pressable>
                       );
@@ -684,10 +684,10 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
               <ThemedText style={{ fontSize: 18, paddingRight: 4 }}>📅</ThemedText>
             </Pressable>
             {enlistDate && !isRetired && yearsFromDate(enlistDate) !== null && (
-              <ThemedText style={editStyles.dateHint}>↳ {yearsFromDate(enlistDate)} years of service (auto-calculated)</ThemedText>
+              <ThemedText style={[editStyles.dateHint, { color: tc.tactical }]}>↳ {yearsFromDate(enlistDate)} years of service (auto-calculated)</ThemedText>
             )}
             {enlistDate && isRetired && yearsBetweenDates(enlistDate, retirementDate) !== null && (
-              <ThemedText style={editStyles.dateHint}>↳ {yearsBetweenDates(enlistDate, retirementDate)} years of service at retirement (auto-calculated)</ThemedText>
+              <ThemedText style={[editStyles.dateHint, { color: tc.tactical }]}>↳ {yearsBetweenDates(enlistDate, retirementDate)} years of service at retirement (auto-calculated)</ThemedText>
             )}
 
             <ThemedText style={[editStyles.fieldLabel, { color: tc.textHint }]}>DATE OF CURRENT RANK</ThemedText>
@@ -700,7 +700,7 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
               <ThemedText style={{ fontSize: 18, paddingRight: 4 }}>📅</ThemedText>
             </Pressable>
             {rankDate && yearsFromDate(rankDate) !== null && (
-              <ThemedText style={editStyles.dateHint}>↳ {yearsFromDate(rankDate)} years in grade · Used for High-3 calculator</ThemedText>
+              <ThemedText style={[editStyles.dateHint, { color: tc.tactical }]}>↳ {yearsFromDate(rankDate)} years in grade · Used for High-3 calculator</ThemedText>
             )}
 
             <NumberStepper
@@ -733,7 +733,7 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
                   One battle assembly weekend = 4 drills. Used to estimate your monthly drill pay.
                 </ThemedText>
                 <NumberStepper label="Drills" value={drillsPerMonth} min={0} max={20} onChange={setDrillsPerMonth} unit="drills" />
-                <ThemedText style={editStyles.dateHint}>
+                <ThemedText style={[editStyles.dateHint, { color: tc.tactical }]}>
                   ↳ Est. drill pay: {fmtPay(getDrillPay(grade, y, drillsPerMonth))}/mo
                 </ThemedText>
               </>
@@ -759,13 +759,13 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
                       key={p}
                       onPress={() => setVaPercent(p)}
                       style={[editStyles.gsChip, { width: 52, borderColor: tc.borderColor, backgroundColor: tc.surface }, vaPercent === p && editStyles.gsChipActive]}>
-                      <ThemedText style={[editStyles.gsChipText, { color: tc.textHint }, vaPercent === p && { color: Brand.accent }]}>
+                      <ThemedText style={[editStyles.gsChipText, { color: tc.textHint }, vaPercent === p && { color: tc.accent }]}>
                         {p}%
                       </ThemedText>
                     </Pressable>
                   ))}
                 </View>
-                <ThemedText style={editStyles.dateHint}>
+                <ThemedText style={[editStyles.dateHint, { color: tc.tactical }]}>
                   ↳ Est. VA compensation: {fmtPay(monthlyCompensation(vaPercent, spouse, children))}/mo
                 </ThemedText>
               </>
@@ -781,10 +781,10 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
               <ThemedText style={[editStyles.input, { color: state ? tc.textPrimary : placeholder, flex: 1, paddingVertical: Spacing.two + 4 }]}>
                 {stateInfo ? `${stateInfo.name} (${stateInfo.code})` : 'Tap to select state'}
               </ThemedText>
-              <ThemedText style={{ color: Brand.accent, fontSize: 18, paddingRight: 4 }}>›</ThemedText>
+              <ThemedText style={{ color: tc.accent, fontSize: 18, paddingRight: 4 }}>›</ThemedText>
             </Pressable>
             {stateInfo && (
-              <ThemedText style={editStyles.dateHint}>
+              <ThemedText style={[editStyles.dateHint, { color: tc.tactical }]}>
                 {stateInfo.militaryExempt ? '✓ Military pay exempt' : `~${(stateInfo.effectiveRate * 100).toFixed(1)}% est. effective rate`}
               </ThemedText>
             )}
@@ -987,7 +987,7 @@ function EditPayModal({ visible, onClose }: { visible: boolean; onClose: () => v
               <ThemedText style={[editStyles.cancel, { color: tc.textMuted }]}>CANCEL</ThemedText>
             </Pressable>
             <ThemedText style={[editStyles.title, { color: tc.textPrimary }]}>💰 PAY & DEDUCTIONS</ThemedText>
-            <Pressable onPress={save}><ThemedText style={editStyles.save}>SAVE</ThemedText></Pressable>
+            <Pressable onPress={save}><ThemedText style={[editStyles.save, { color: tc.tactical }]}>SAVE</ThemedText></Pressable>
           </View>
 
           <ScrollView
@@ -1066,7 +1066,7 @@ function EditPayModal({ visible, onClose }: { visible: boolean; onClose: () => v
                 <ThemedText style={editStyles.payIcon}>{PAY_TYPE_ICONS[pay.type]}</ThemedText>
                 <View style={{ flex: 1, gap: 2 }}>
                   <ThemedText style={[editStyles.payLabel, { color: tc.textPrimary }]}>{pay.customLabel ?? SPECIAL_PAY_LABELS[pay.type]}</ThemedText>
-                  <ThemedText style={editStyles.payAmt}>${pay.monthlyAmount.toFixed(0)}/mo</ThemedText>
+                  <ThemedText style={[editStyles.payAmt, { color: tc.tactical }]}>${pay.monthlyAmount.toFixed(0)}/mo</ThemedText>
                 </View>
                 <Pressable onPress={() => handleRemoveSpecialPay(pay.id, pay.customLabel ?? SPECIAL_PAY_LABELS[pay.type])} style={editStyles.removeBtn}>
                   <ThemedText style={editStyles.removeBtnText}>✕</ThemedText>
@@ -1077,7 +1077,7 @@ function EditPayModal({ visible, onClose }: { visible: boolean; onClose: () => v
             {specialPays.length > 0 && (
               <View style={editStyles.totalRow}>
                 <ThemedText style={[editStyles.totalLabel, { color: tc.textHint }]}>TOTAL SPECIAL PAY</ThemedText>
-                <ThemedText style={[editStyles.totalAmt, { fontFamily: Fonts.data }]}>${totalSpecialPay}/mo</ThemedText>
+                <ThemedText style={[editStyles.totalAmt, { color: tc.tactical }, { fontFamily: Fonts.data }]}>${totalSpecialPay}/mo</ThemedText>
               </View>
             )}
 
@@ -1089,7 +1089,7 @@ function EditPayModal({ visible, onClose }: { visible: boolean; onClose: () => v
                     <ThemedText style={[editStyles.payTypeDropdownLabel, { color: tc.textPrimary }]}>{SPECIAL_PAY_LABELS[selectedPayType]}</ThemedText>
                     <ThemedText type="label" style={[editStyles.payTypeDropdownRange, { color: tc.textMuted }]}>Typical: {SPECIAL_PAY_RANGES[selectedPayType]}</ThemedText>
                   </View>
-                  <ThemedText style={editStyles.payTypeDropdownChevron}>▼</ThemedText>
+                  <ThemedText style={[editStyles.payTypeDropdownChevron, { color: tc.accent }]}>▼</ThemedText>
                 </Pressable>
                 <ThemedText style={[editStyles.fieldLabel, { color: tc.textHint, marginTop: Spacing.two }]}>MONTHLY AMOUNT ($)</ThemedText>
                 <View style={editStyles.numpadGrid}>
@@ -1104,7 +1104,7 @@ function EditPayModal({ visible, onClose }: { visible: boolean; onClose: () => v
                     </Pressable>
                   ))}
                 </View>
-                <ThemedText style={editStyles.amountDisplay}>${payAmountInput || '0'}/mo</ThemedText>
+                <ThemedText style={[editStyles.amountDisplay, { color: tc.accent }]}>${payAmountInput || '0'}/mo</ThemedText>
                 <View style={editStyles.formButtons}>
                   <Pressable style={[editStyles.formBtnCancel, { borderColor: tc.borderColor }]} onPress={() => { setShowAddPay(false); setPayAmountInput(''); }}>
                     <ThemedText type="label" style={{ color: tc.textMuted }}>CANCEL</ThemedText>
@@ -1116,7 +1116,7 @@ function EditPayModal({ visible, onClose }: { visible: boolean; onClose: () => v
               </View>
             ) : (
               <Pressable onPress={() => setShowAddPay(true)} style={editStyles.addRowBtn}>
-                <ThemedText style={editStyles.addRowBtnText}>+ ADD SPECIAL PAY</ThemedText>
+                <ThemedText style={[editStyles.addRowBtnText, { color: tc.tactical }]}>+ ADD SPECIAL PAY</ThemedText>
               </Pressable>
             )}
 
@@ -1163,11 +1163,11 @@ const editStyles = StyleSheet.create({
   },
   title: { fontSize: 13, fontWeight: '800', letterSpacing: 0.8 },
   cancel: { fontSize: 13, fontWeight: '700', letterSpacing: 0.5 },
-  save: { fontSize: 13, color: Brand.tactical, fontWeight: '800', letterSpacing: 0.5 },
+  save: { fontSize: 13, fontWeight: '800', letterSpacing: 0.5 },
   content: { paddingHorizontal: Spacing.three, paddingTop: Spacing.three, paddingBottom: Spacing.six, gap: Spacing.three },
   fieldLabel: { fontSize: 11, fontWeight: '700', letterSpacing: 1 },
   fieldHint: { fontSize: 10, lineHeight: 14 },
-  dateHint: { color: Brand.tactical, fontSize: 10, marginTop: -Spacing.two },
+  dateHint: { fontSize: 10, marginTop: -Spacing.two },
   emptyHint: { fontSize: 11, textAlign: 'center', paddingVertical: Spacing.two },
   inputWrap: { borderWidth: 1, borderRadius: 6, paddingHorizontal: Spacing.three },
   input: { fontSize: 16, fontWeight: '600', paddingVertical: Spacing.two + 4 },
@@ -1182,28 +1182,28 @@ const editStyles = StyleSheet.create({
   payRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two, paddingVertical: Spacing.one },
   payIcon: { fontSize: 20, width: 28, textAlign: 'center' },
   payLabel: { fontSize: 14, fontWeight: '600' },
-  payAmt: { color: Brand.tactical, fontSize: 10 },
+  payAmt: { fontSize: 10 },
   removeBtn: { width: 28, height: 28, borderRadius: 14, backgroundColor: Brand.classified + '20', alignItems: 'center', justifyContent: 'center' },
   removeBtnText: { color: Brand.classified, fontSize: 13, fontWeight: '700' },
   totalRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: Spacing.one },
   totalLabel: { fontSize: 10 },
-  totalAmt: { fontSize: 16, fontWeight: '700', color: Brand.tactical },
+  totalAmt: { fontSize: 16, fontWeight: '700' },
 
   addPayForm: { gap: Spacing.two },
   payTypeDropdown: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderRadius: 6, paddingHorizontal: Spacing.two + 2, paddingVertical: Spacing.two, gap: Spacing.two },
   payTypeDropdownLabel: { fontSize: 14, fontWeight: '600' },
   payTypeDropdownRange: { fontSize: 9, marginTop: 2 },
-  payTypeDropdownChevron: { fontSize: 12, color: Brand.accent },
+  payTypeDropdownChevron: { fontSize: 12 },
   numpadGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.one },
   numpadKey: { width: '30.5%', paddingVertical: Spacing.two, alignItems: 'center', borderRadius: 4, backgroundColor: 'rgba(255,255,255,0.05)' },
   numpadKeyBlank: { backgroundColor: 'transparent' },
   numpadKeyText: { fontSize: 20, fontWeight: '500' },
-  amountDisplay: { fontSize: 28, fontWeight: '800', color: Brand.accent, fontFamily: Fonts.data, textAlign: 'center' },
+  amountDisplay: { fontSize: 28, fontWeight: '800', fontFamily: Fonts.data, textAlign: 'center' },
   formButtons: { flexDirection: 'row', gap: Spacing.two },
   formBtnCancel: { flex: 1, borderWidth: 1, borderRadius: 4, padding: Spacing.two, alignItems: 'center' },
   formBtnAdd: { flex: 1, backgroundColor: Brand.accent, borderRadius: 4, padding: Spacing.two, alignItems: 'center' },
   addRowBtn: { paddingVertical: Spacing.two, alignItems: 'center' },
-  addRowBtnText: { color: Brand.tactical, fontSize: 10, fontWeight: '700', letterSpacing: 0.5 },
+  addRowBtnText: { fontSize: 10, fontWeight: '700', letterSpacing: 0.5 },
 
   variantRow: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.one + 2 },
   variantChip: { flexBasis: '48%', flex: 1, borderWidth: 1.5, borderRadius: 8, padding: Spacing.two, gap: 2, alignItems: 'center' },
@@ -1338,10 +1338,10 @@ export default function ProfileScreen() {
         <SafeAreaView>
           {router.canGoBack() && (
             <Pressable onPress={() => router.back()} hitSlop={12} style={styles.backBtn}>
-              <ThemedText style={[styles.backText, { color: Brand.tactical }]}>‹ Back</ThemedText>
+              <ThemedText style={[styles.backText, { color: tc.tactical }]}>‹ Back</ThemedText>
             </Pressable>
           )}
-          <ThemedText type="label" style={styles.eyebrow}>// PERSONNEL FILE</ThemedText>
+          <ThemedText type="label" style={[styles.eyebrow, { color: tc.tactical }]}>// PERSONNEL FILE</ThemedText>
           <ThemedText style={[styles.heading, { color: tc.textPrimary }]}>PROFILE</ThemedText>
           <ThemedText type="small" themeColor="textSecondary" style={styles.headingSub}>
             Your service record, pay setup, and app preferences.
@@ -1352,7 +1352,7 @@ export default function ProfileScreen() {
         <TacticalCard accentColor={Brand.accent} style={styles.identityCard}>
           <View style={styles.identityTop}>
             <View style={styles.identityLeft}>
-              <ThemedText type="label" style={styles.identityRank}>{rankAbbrev || '—'}</ThemedText>
+              <ThemedText type="label" style={[styles.identityRank, { color: tc.accent }]}>{rankAbbrev || '—'}</ThemedText>
               <ThemedText style={[styles.identityName, { color: tc.textPrimary }]}>{displayName}</ThemedText>
               <ThemedText type="label" style={[styles.identityBranch, { color: tc.textMuted }]}>
                 {branch ? BRANCH_LABELS[branch].toUpperCase() : 'BRANCH NOT SET'}
@@ -1392,7 +1392,7 @@ export default function ProfileScreen() {
             onPress={() => setShowEditPersonal(true)}
             style={({ pressed }) => [styles.editTile, { borderColor: Brand.accent + '60', backgroundColor: Brand.accent + '08' }, pressed && { opacity: 0.7 }]}>
             <ThemedText style={styles.tileIcon}>🪖</ThemedText>
-            <ThemedText style={[styles.tileTitle, { color: Brand.accent }]}>PERSONAL</ThemedText>
+            <ThemedText style={[styles.tileTitle, { color: tc.accent }]}>PERSONAL</ThemedText>
             <View style={styles.tileSummary}>
               {payGrade && <ThemedText style={[styles.tileSummaryLine, { color: tc.textSecondary }]}>{payGrade} · {lastName?.toUpperCase() || 'NAME NOT SET'}</ThemedText>}
               {installName ? <ThemedText style={[styles.tileSummaryLine, { color: tc.textSecondary }]} numberOfLines={1}>{installName}</ThemedText> : mhaZip ? <ThemedText style={[styles.tileSummaryLine, { color: tc.textSecondary }]}>ZIP {mhaZip}</ThemedText> : null}
@@ -1400,7 +1400,7 @@ export default function ProfileScreen() {
               {dateOfEnlist && <ThemedText style={[styles.tileSummaryLine, { color: tc.textSecondary }]}>Enl: {dateOfEnlist}</ThemedText>}
             </View>
             <View style={[styles.tileEditBtn, { borderTopColor: tc.borderColor }]}>
-              <ThemedText style={[styles.tileEditBtnText, { color: Brand.accent }]}>EDIT PERSONAL ›</ThemedText>
+              <ThemedText style={[styles.tileEditBtnText, { color: tc.accent }]}>EDIT PERSONAL ›</ThemedText>
             </View>
           </Pressable>
 
@@ -1409,7 +1409,7 @@ export default function ProfileScreen() {
             onPress={() => setShowEditPay(true)}
             style={({ pressed }) => [styles.editTile, { borderColor: Brand.tactical + '60', backgroundColor: Brand.tactical + '08' }, pressed && { opacity: 0.7 }]}>
             <ThemedText style={styles.tileIcon}>💰</ThemedText>
-            <ThemedText style={[styles.tileTitle, { color: Brand.tactical }]}>PAY</ThemedText>
+            <ThemedText style={[styles.tileTitle, { color: tc.tactical }]}>PAY</ThemedText>
             <View style={styles.tileSummary}>
               {tspContribPct > 0 && <ThemedText style={[styles.tileSummaryLine, { color: tc.textSecondary }]}>Trad TSP {tspContribPct}%</ThemedText>}
               {rothTspPct > 0 && <ThemedText style={[styles.tileSummaryLine, { color: tc.textSecondary }]}>Roth TSP {rothTspPct}%</ThemedText>}
@@ -1423,7 +1423,7 @@ export default function ProfileScreen() {
               )}
             </View>
             <View style={[styles.tileEditBtn, { borderTopColor: tc.borderColor }]}>
-              <ThemedText style={[styles.tileEditBtnText, { color: Brand.tactical }]}>EDIT PAY ›</ThemedText>
+              <ThemedText style={[styles.tileEditBtnText, { color: tc.tactical }]}>EDIT PAY ›</ThemedText>
             </View>
           </Pressable>
         </View>
@@ -1441,10 +1441,10 @@ export default function ProfileScreen() {
               return (
                 <Pressable key={style} onPress={() => setGreetingStyle(style)}
                   style={[styles.greetingBtn, { borderColor: tc.borderColor }, active && { borderColor: Brand.accent, backgroundColor: Brand.accent + '15' }]}>
-                  <ThemedText style={[styles.greetingBtnLabel, { color: tc.textHint }, active && { color: Brand.accent }]}>
+                  <ThemedText style={[styles.greetingBtnLabel, { color: tc.textHint }, active && { color: tc.accent }]}>
                     {style === 'nickname' ? '😎 NICKNAME' : '🪖 RANK'}
                   </ThemedText>
-                  <ThemedText style={[styles.greetingBtnValue, { color: tc.textPrimary }, active && { color: Brand.accent }]} numberOfLines={1}>{label}</ThemedText>
+                  <ThemedText style={[styles.greetingBtnValue, { color: tc.textPrimary }, active && { color: tc.accent }]} numberOfLines={1}>{label}</ThemedText>
                 </Pressable>
               );
             })}
@@ -1534,7 +1534,7 @@ export default function ProfileScreen() {
           })}
           <View style={[styles.divider, { backgroundColor: tc.borderColor }]} />
           <Pressable onPress={() => setShowAddKid(true)} style={styles.addRowBtn}>
-            <ThemedText type="label" style={styles.addRowBtnText}>+ ENROLL NEW CADET</ThemedText>
+            <ThemedText type="label" style={[styles.addRowBtnText, { color: tc.tactical }]}>+ ENROLL NEW CADET</ThemedText>
           </Pressable>
         </TacticalCard>
 
@@ -1576,12 +1576,12 @@ export default function ProfileScreen() {
               { val: 6, label: 'CATEGORIES' },
             ].map((s) => (
               <TacticalCard key={s.label} accentColor={Brand.accent} style={styles.statCard}>
-                <ThemedText style={[styles.statVal, { fontFamily: Fonts.data }]}>{s.val}</ThemedText>
+                <ThemedText style={[styles.statVal, { color: tc.accent }, { fontFamily: Fonts.data }]}>{s.val}</ThemedText>
                 <ThemedText type="label" style={[styles.statLabel, { color: tc.textSecondary }]}>{s.label}</ThemedText>
               </TacticalCard>
             ))}
           </View>
-          <ThemedText style={[styles.intelViewAll, { color: Brand.accent }]}>VIEW TIP LIBRARY ›</ThemedText>
+          <ThemedText style={[styles.intelViewAll, { color: tc.accent }]}>VIEW TIP LIBRARY ›</ThemedText>
         </Pressable>
 
         {/* ── About ──────────────────────────────────────────────────── */}
@@ -1593,8 +1593,8 @@ export default function ProfileScreen() {
           </View>
           <View style={[styles.divider, { backgroundColor: tc.borderColor }]} />
           <Pressable onPress={() => router.push('/legal' as any)} style={styles.aboutLinkRow}>
-            <ThemedText type="label" style={styles.aboutLinkText}>PRIVACY POLICY & TERMS</ThemedText>
-            <ThemedText style={styles.aboutChevron}>›</ThemedText>
+            <ThemedText type="label" style={[styles.aboutLinkText, { color: tc.tactical }]}>PRIVACY POLICY & TERMS</ThemedText>
+            <ThemedText style={[styles.aboutChevron, { color: tc.tactical }]}>›</ThemedText>
           </Pressable>
           <View style={[styles.divider, { backgroundColor: tc.borderColor }]} />
           <Pressable onPress={() => Alert.alert('Clear Saved Tips', 'Remove all saved tips?', [{ text: 'Cancel', style: 'cancel' }, { text: 'Clear', style: 'destructive', onPress: clearSaved }])} style={styles.dangerRow}>
@@ -1623,7 +1623,7 @@ const styles = StyleSheet.create({
   content: { paddingHorizontal: Spacing.three, gap: Spacing.four },
   backBtn: { alignSelf: 'flex-start', paddingVertical: Spacing.one, marginTop: Spacing.two },
   backText: { fontSize: 15, fontWeight: '600' },
-  eyebrow: { color: Brand.tactical, fontSize: 11, marginTop: Spacing.three, letterSpacing: 1 },
+  eyebrow: { fontSize: 11, marginTop: Spacing.three, letterSpacing: 1 },
   heading: { fontSize: 28, fontWeight: '900', letterSpacing: 1, marginTop: 6, marginBottom: 4 },
   headingSub: { lineHeight: 19, marginBottom: Spacing.one },
 
@@ -1635,7 +1635,7 @@ const styles = StyleSheet.create({
   identityCard: { gap: Spacing.three },
   identityTop: { flexDirection: 'row', alignItems: 'center' },
   identityLeft: { flex: 1, gap: 4 },
-  identityRank: { color: Brand.accent, fontSize: 11, letterSpacing: 0.5 },
+  identityRank: { fontSize: 11, letterSpacing: 0.5 },
   identityName: { fontSize: 24, fontWeight: '900', letterSpacing: 0.5 },
   identityBranch: { fontSize: 11, letterSpacing: 0.3 },
   identityStats: { flexDirection: 'row', alignItems: 'center', borderRadius: 8, paddingVertical: Spacing.two },
@@ -1698,12 +1698,12 @@ const styles = StyleSheet.create({
   intelStatsCaption: { lineHeight: 19 },
   statsRow: { flexDirection: 'row', gap: Spacing.two },
   statCard: { flex: 1, alignItems: 'center', gap: 5 },
-  statVal: { fontSize: 24, fontWeight: '800', color: Brand.accent },
+  statVal: { fontSize: 24, fontWeight: '800' },
   statLabel: { fontSize: 11 },
   intelViewAll: { fontSize: 12, fontWeight: '800', letterSpacing: 0.5, textAlign: 'center', marginTop: Spacing.two },
 
   addRowBtn: { paddingVertical: Spacing.two, alignItems: 'center' },
-  addRowBtnText: { color: Brand.tactical, fontSize: 11 },
+  addRowBtnText: { fontSize: 11 },
 
   aboutRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   aboutLabel: { fontSize: 11 },
@@ -1711,8 +1711,8 @@ const styles = StyleSheet.create({
   dangerRow: { paddingVertical: Spacing.two, alignItems: 'center' },
   dangerText: { color: Brand.classified, fontSize: 11 },
   aboutLinkRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: Spacing.two, paddingHorizontal: Spacing.one },
-  aboutLinkText: { flex: 1, color: Brand.tactical, fontSize: 11 },
-  aboutChevron: { color: Brand.tactical, fontSize: 16, lineHeight: 22 },
+  aboutLinkText: { flex: 1, fontSize: 11 },
+  aboutChevron: { fontSize: 16, lineHeight: 22 },
 
   disclaimer: { textAlign: 'center', lineHeight: 16, paddingHorizontal: Spacing.two, paddingVertical: Spacing.two },
 });

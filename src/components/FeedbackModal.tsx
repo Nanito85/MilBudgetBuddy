@@ -113,7 +113,7 @@ export function FeedbackModal({ visible, onClose }: Props) {
               showsVerticalScrollIndicator={false}>
 
               {/* Eyebrow */}
-              <ThemedText style={styles.eyebrow}>// MILBUDGETBUDDY</ThemedText>
+              <ThemedText style={[styles.eyebrow, { color: tc.tactical }]}>// MILBUDGETBUDDY</ThemedText>
               <ThemedText style={[styles.sub, { color: tc.textSecondary }]}>
                 What's on your mind? We read every submission.
               </ThemedText>
@@ -135,7 +135,7 @@ export function FeedbackModal({ visible, onClose }: Props) {
                         { borderColor: tc.borderColor, backgroundColor: tc.surface },
                         active && styles.chipActive,
                       ]}>
-                      <ThemedText style={[styles.chipText, { color: tc.textSecondary }, active && styles.chipTextActive]}>
+                      <ThemedText style={[styles.chipText, { color: tc.textSecondary }, active && [styles.chipTextActive, { color: tc.tactical }]]}>
                         {CATEGORY_EMOJI[cat]} {cat}
                       </ThemedText>
                     </Pressable>
@@ -223,7 +223,7 @@ const styles = StyleSheet.create({
 
   body: { paddingHorizontal: Spacing.three, paddingVertical: Spacing.four, gap: Spacing.two },
 
-  eyebrow: { color: Brand.tactical, fontSize: 10, fontWeight: '700', letterSpacing: 1.5 },
+  eyebrow: { fontSize: 10, fontWeight: '700', letterSpacing: 1.5 },
   sub: { fontSize: 13, lineHeight: 19 },
 
   fieldLabel: { fontSize: 11, fontWeight: '600', letterSpacing: 0.5 },
@@ -238,7 +238,7 @@ const styles = StyleSheet.create({
   },
   chipActive: { borderColor: Brand.tactical, backgroundColor: Brand.tactical + '20' },
   chipText: { fontSize: 12, fontWeight: '600' },
-  chipTextActive: { color: Brand.tactical },
+  chipTextActive: {},
 
   messageInput: {
     borderWidth: 1,

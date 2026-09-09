@@ -51,9 +51,9 @@ export default function LifeEventsScreen() {
 
         <View style={styles.header}>
           <Pressable onPress={() => router.back()} style={styles.backBtn}>
-            <ThemedText style={styles.backText}>‹ Back</ThemedText>
+            <ThemedText style={[styles.backText, { color: tc.tactical }]}>‹ Back</ThemedText>
           </Pressable>
-          <ThemedText style={styles.eyebrow}>// MILBUDGETBUDDY</ThemedText>
+          <ThemedText style={[styles.eyebrow, { color: tc.tactical }]}>// MILBUDGETBUDDY</ThemedText>
           <ThemedText style={[styles.pageTitle, { color: tc.textPrimary }]}>LIFE EVENTS</ThemedText>
           <ThemedText style={[styles.pageSub, { color: tc.textSecondary }]}>
             Track military life milestones and never miss a critical financial or admin task.
@@ -65,14 +65,14 @@ export default function LifeEventsScreen() {
           <Pressable
             style={[styles.tab, tab === 'active' && styles.tabActive]}
             onPress={() => setTab('active')}>
-            <ThemedText style={[styles.tabText, { color: tc.textMuted }, tab === 'active' && styles.tabTextActive]}>
+            <ThemedText style={[styles.tabText, { color: tc.textMuted }, tab === 'active' && [styles.tabTextActive, { color: tc.accent }]]}>
               ACTIVE {activeEvents.length > 0 ? `(${activeEvents.length})` : ''}
             </ThemedText>
           </Pressable>
           <Pressable
             style={[styles.tab, tab === 'browse' && styles.tabActive]}
             onPress={() => setTab('browse')}>
-            <ThemedText style={[styles.tabText, { color: tc.textMuted }, tab === 'browse' && styles.tabTextActive]}>
+            <ThemedText style={[styles.tabText, { color: tc.textMuted }, tab === 'browse' && [styles.tabTextActive, { color: tc.accent }]]}>
               BROWSE ALL
             </ThemedText>
           </Pressable>
@@ -181,7 +181,7 @@ export default function LifeEventsScreen() {
                         onPress={() => activateEvent(e.type)}>
                         <ThemedText style={styles.dismissedIcon}>{meta.icon}</ThemedText>
                         <ThemedText style={[styles.dismissedTitle, { color: tc.textMuted }]}>{meta.title}</ThemedText>
-                        <ThemedText style={styles.reactivateText}>Reactivate</ThemedText>
+                        <ThemedText style={[styles.reactivateText, { color: tc.accent }]}>Reactivate</ThemedText>
                       </Pressable>
                     );
                   })}
@@ -262,8 +262,8 @@ const styles = StyleSheet.create({
 
   header: { paddingHorizontal: Spacing.three, paddingTop: Spacing.two, paddingBottom: Spacing.two },
   backBtn: { paddingVertical: Spacing.two, alignSelf: 'flex-start' },
-  backText: { fontSize: 16, fontWeight: '600', color: Brand.tactical, lineHeight: 22 },
-  eyebrow: { color: Brand.tactical, fontSize: 10, fontWeight: '700', letterSpacing: 1 },
+  backText: { fontSize: 16, fontWeight: '600', lineHeight: 22 },
+  eyebrow: { fontSize: 10, fontWeight: '700', letterSpacing: 1 },
   pageTitle: { fontSize: 24, fontWeight: '900', letterSpacing: 1, marginTop: 2 },
   pageSub: { fontSize: 12, marginTop: 4, lineHeight: 17 },
 
@@ -275,7 +275,7 @@ const styles = StyleSheet.create({
   tab: { flex: 1, alignItems: 'center', paddingVertical: Spacing.two },
   tabActive: { borderBottomWidth: 2, borderBottomColor: Brand.accent },
   tabText: { fontSize: 11, fontWeight: '700', letterSpacing: 1 },
-  tabTextActive: { color: Brand.accent },
+  tabTextActive: {},
 
   content: { padding: Spacing.three, gap: Spacing.three, paddingBottom: 40 },
 
@@ -374,7 +374,7 @@ const styles = StyleSheet.create({
   },
   dismissedIcon: { fontSize: 18, lineHeight: 24 },
   dismissedTitle: { flex: 1, fontSize: 12 },
-  reactivateText: { fontSize: 11, color: Brand.accent, fontWeight: '700' },
+  reactivateText: { fontSize: 11, fontWeight: '700' },
 
   browseCard: {
     borderWidth: StyleSheet.hairlineWidth,

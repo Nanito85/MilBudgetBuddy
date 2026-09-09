@@ -103,7 +103,7 @@ function LocalityModal({
       <View style={modal.overlay}>
         <ThemedView style={[modal.sheet, { backgroundColor: tc.background, paddingBottom: insets.bottom + Spacing.three }]}>
           <View style={[modal.handle, { backgroundColor: tc.borderColor }]} />
-          <ThemedText style={modal.title}>SELECT LOCALITY AREA</ThemedText>
+          <ThemedText style={[modal.title, { color: tc.tactical }]}>SELECT LOCALITY AREA</ThemedText>
           <ScrollView showsVerticalScrollIndicator={false}>
             {GS_LOCALITIES.map((loc) => (
               <TouchableOpacity
@@ -143,7 +143,7 @@ const modal = StyleSheet.create({
     alignSelf: 'center',
     marginBottom: Spacing.two,
   },
-  title: { fontSize: 11, fontWeight: '800', letterSpacing: 1, color: Brand.tactical, marginBottom: Spacing.two },
+  title: { fontSize: 11, fontWeight: '800', letterSpacing: 1, marginBottom: Spacing.two },
   row: {
     flexDirection: 'row', alignItems: 'center',
     paddingVertical: 12, borderBottomWidth: StyleSheet.hairlineWidth,
@@ -188,7 +188,7 @@ export default function GSPayCalculatorScreen() {
         <Pressable onPress={() => router.back()} style={styles.back}>
           <ThemedText style={styles.backChevron}>‹</ThemedText>
         </Pressable>
-        <ThemedText style={styles.title}>GS Pay Calculator</ThemedText>
+        <ThemedText style={[styles.title, { color: tc.tactical }]}>GS Pay Calculator</ThemedText>
         <View style={{ width: 40 }} />
       </View>
 
@@ -198,7 +198,7 @@ export default function GSPayCalculatorScreen() {
 
         {/* Hero banner */}
         <ThemedView type="backgroundElement" style={styles.heroBanner}>
-          <ThemedText style={styles.heroEyebrow}>FEDERAL CIVILIAN</ThemedText>
+          <ThemedText style={[styles.heroEyebrow, { color: tc.tactical }]}>FEDERAL CIVILIAN</ThemedText>
           <ThemedText style={[styles.heroTitle, { color: tc.textPrimary }]}>General Schedule Pay</ThemedText>
           <ThemedText style={[styles.heroBody, { color: tc.textSecondary }]}>
             FY2026 GS pay table — base pay plus locality adjustment for your duty area.
@@ -207,7 +207,7 @@ export default function GSPayCalculatorScreen() {
 
         {/* Grade selector */}
         <ThemedView type="backgroundElement" style={styles.card}>
-          <ThemedText style={styles.cardLabel}>GS GRADE</ThemedText>
+          <ThemedText style={[styles.cardLabel, { color: tc.tactical }]}>GS GRADE</ThemedText>
           <GradePicker value={grade} onChange={setGrade} />
           <ThemedText style={[styles.cardHint, { color: tc.textSecondary }]}>
             {milEquiv ? `≈ Military equivalent: ${milEquiv}` : ''}
@@ -216,7 +216,7 @@ export default function GSPayCalculatorScreen() {
 
         {/* Step selector */}
         <ThemedView type="backgroundElement" style={styles.card}>
-          <ThemedText style={styles.cardLabel}>WITHIN-GRADE STEP</ThemedText>
+          <ThemedText style={[styles.cardLabel, { color: tc.tactical }]}>WITHIN-GRADE STEP</ThemedText>
           <StepPicker value={step} onChange={setStep} />
           {nextStepDelta !== null && (
             <ThemedText style={[styles.cardHint, { color: tc.textSecondary }]}>
@@ -227,7 +227,7 @@ export default function GSPayCalculatorScreen() {
 
         {/* Locality selector */}
         <ThemedView type="backgroundElement" style={styles.card}>
-          <ThemedText style={styles.cardLabel}>LOCALITY PAY AREA</ThemedText>
+          <ThemedText style={[styles.cardLabel, { color: tc.tactical }]}>LOCALITY PAY AREA</ThemedText>
           <Pressable
             onPress={() => setShowLocModal(true)}
             style={[styles.localityBtn, { backgroundColor: tc.background, borderColor: tc.borderColor }]}>
@@ -238,15 +238,15 @@ export default function GSPayCalculatorScreen() {
               )}
             </View>
             <View style={styles.localityBtnRate}>
-              <ThemedText style={styles.localityBtnRateText}>+{(locality.rate * 100).toFixed(2)}%</ThemedText>
+              <ThemedText style={[styles.localityBtnRateText, { color: tc.tactical }]}>+{(locality.rate * 100).toFixed(2)}%</ThemedText>
             </View>
-            <ThemedText style={styles.localityChevron}>›</ThemedText>
+            <ThemedText style={[styles.localityChevron, { color: tc.tactical }]}>›</ThemedText>
           </Pressable>
         </ThemedView>
 
         {/* Pay result */}
         <ThemedView type="backgroundElement" style={[styles.card, styles.resultCard]}>
-          <ThemedText style={styles.resultGrade}>GS-{grade} STEP {step}</ThemedText>
+          <ThemedText style={[styles.resultGrade, { color: tc.tactical }]}>GS-{grade} STEP {step}</ThemedText>
           <ThemedText style={[styles.resultAnnual, { color: tc.textPrimary }]}>{fmt(annualPay)}/yr</ThemedText>
           <ThemedText style={[styles.resultMonthly, { color: tc.textSecondary }]}>{fmt(monthlyPay)}/mo gross</ThemedText>
 
@@ -259,7 +259,7 @@ export default function GSPayCalculatorScreen() {
             </View>
             <View style={styles.resultCol}>
               <ThemedText style={[styles.resultColLabel, { color: tc.textMuted }]}>EST. NET MONTHLY</ThemedText>
-              <ThemedText style={[styles.resultColValue, { color: Brand.success }]}>{fmt(monthlyNet)}</ThemedText>
+              <ThemedText style={[styles.resultColValue, { color: tc.success }]}>{fmt(monthlyNet)}</ThemedText>
             </View>
           </View>
 
@@ -275,7 +275,7 @@ export default function GSPayCalculatorScreen() {
 
         {/* All steps for this grade */}
         <ThemedView type="backgroundElement" style={styles.card}>
-          <ThemedText style={styles.cardLabel}>GS-{grade} ALL STEPS — {locality.label.split('/')[0].trim()}</ThemedText>
+          <ThemedText style={[styles.cardLabel, { color: tc.tactical }]}>GS-{grade} ALL STEPS — {locality.label.split('/')[0].trim()}</ThemedText>
           <View style={styles.stepsTable}>
             <View style={[styles.stepsHeader, { borderBottomColor: tc.borderColor }]}>
               <ThemedText style={[styles.stepsCell, styles.stepsCellLabel, { color: tc.textSecondary }]}>STEP</ThemedText>
@@ -297,7 +297,7 @@ export default function GSPayCalculatorScreen() {
                   <ThemedText style={[styles.stepsCell, styles.stepsCellValue, { color: tc.textSecondary }, isSelected && { color: tc.textPrimary }]}>
                     {fmt(ann)}
                   </ThemedText>
-                  <ThemedText style={[styles.stepsCell, styles.stepsCellValue, { color: tc.textSecondary }, isSelected && { color: Brand.success }]}>
+                  <ThemedText style={[styles.stepsCell, styles.stepsCellValue, { color: tc.textSecondary }, isSelected && { color: tc.success }]}>
                     {fmt(mon)}
                   </ThemedText>
                 </Pressable>
@@ -308,7 +308,7 @@ export default function GSPayCalculatorScreen() {
 
         {/* Federal benefits info */}
         <ThemedView type="backgroundElement" style={styles.card}>
-          <ThemedText style={styles.cardLabel}>FEDERAL EMPLOYEE BENEFITS</ThemedText>
+          <ThemedText style={[styles.cardLabel, { color: tc.tactical }]}>FEDERAL EMPLOYEE BENEFITS</ThemedText>
           {[
             { icon: '🏥', label: 'FEHB (Health)', value: 'Multiple plans; avg employee cost ~$200–500/mo' },
             { icon: '🦷', label: 'FEDVIP (Dental/Vision)', value: 'Opt-in; avg ~$25–60/mo dental' },
@@ -330,7 +330,7 @@ export default function GSPayCalculatorScreen() {
 
         {/* Military comparison */}
         <ThemedView type="backgroundElement" style={styles.card}>
-          <ThemedText style={styles.cardLabel}>MILITARY vs. GS COMPARISON</ThemedText>
+          <ThemedText style={[styles.cardLabel, { color: tc.tactical }]}>MILITARY vs. GS COMPARISON</ThemedText>
           <ThemedText style={[styles.compareNote, { color: tc.textSecondary }]}>
             GS pay does NOT include tax-free allowances (BAH/BAS). Military total compensation is typically 30–50% higher than base pay alone. Compare your military LES net pay against the GS net estimate above — not gross vs. gross.
           </ThemedText>
@@ -338,7 +338,7 @@ export default function GSPayCalculatorScreen() {
             <View style={styles.compareCol}>
               <ThemedText style={[styles.compareColTitle, { color: tc.textPrimary }]}>GS-{grade} STEP {step}</ThemedText>
               <ThemedText style={[styles.compareColSub, { color: tc.textMuted }]}>{locality.label.split('/')[0].trim()}</ThemedText>
-              <ThemedText style={[styles.compareColValue, { color: Brand.tactical }]}>{fmt(monthlyNet)}/mo net</ThemedText>
+              <ThemedText style={[styles.compareColValue, { color: tc.tactical }]}>{fmt(monthlyNet)}/mo net</ThemedText>
             </View>
             <ThemedText style={[styles.compareVs, { color: tc.textMuted }]}>vs.</ThemedText>
             <View style={styles.compareCol}>
@@ -388,12 +388,12 @@ const styles = StyleSheet.create({
     borderRadius: 4, padding: Spacing.three,
     borderLeftWidth: 3, borderLeftColor: Brand.tactical, gap: 4,
   },
-  heroEyebrow: { fontSize: 9, fontWeight: '800', letterSpacing: 1.5, color: Brand.tactical },
+  heroEyebrow: { fontSize: 9, fontWeight: '800', letterSpacing: 1.5 },
   heroTitle:   { fontSize: 20, fontWeight: '900' },
   heroBody:    { fontSize: 12, lineHeight: 18, marginTop: 4 },
 
   card: { borderRadius: 4, padding: Spacing.three, gap: Spacing.two },
-  cardLabel: { fontSize: 9, fontWeight: '800', letterSpacing: 1.2, color: Brand.tactical, marginBottom: 2 },
+  cardLabel: { fontSize: 9, fontWeight: '800', letterSpacing: 1.2, marginBottom: 2 },
   cardHint: { fontSize: 10, lineHeight: 15 },
 
   localityBtn: {
@@ -408,11 +408,11 @@ const styles = StyleSheet.create({
   localityBtnLabel: { fontSize: 13, fontWeight: '600' },
   localityBtnNote:  { fontSize: 10, marginTop: 1 },
   localityBtnRate:  { backgroundColor: Brand.tactical + '20', borderRadius: 3, paddingHorizontal: 6, paddingVertical: 2 },
-  localityBtnRateText: { fontSize: 11, fontWeight: '700', color: Brand.tactical },
-  localityChevron:  { fontSize: 20, color: Brand.tactical },
+  localityBtnRateText: { fontSize: 11, fontWeight: '700' },
+  localityChevron: { fontSize: 20 },
 
   resultCard: { borderColor: Brand.tactical + '50', alignItems: 'center', gap: Spacing.one },
-  resultGrade:   { fontSize: 10, fontWeight: '800', color: Brand.tactical, letterSpacing: 1 },
+  resultGrade: { fontSize: 10, fontWeight: '800', letterSpacing: 1 },
   resultAnnual:  { fontSize: 24, fontWeight: '900', fontFamily: 'Courier New' },
   resultMonthly: { fontSize: 14 },
   resultDivider: { width: '100%', height: StyleSheet.hairlineWidth, marginVertical: 4 },

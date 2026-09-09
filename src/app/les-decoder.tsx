@@ -215,7 +215,7 @@ export default function LESDecoderScreen() {
       <View style={styles.tabBar}>
         {TABS.map((t) => (
           <Pressable key={t.id} onPress={() => setActiveTab(t.id)} style={styles.tabItem}>
-            <ThemedText style={[styles.tabLabel, { color: tc.textMuted }, activeTab === t.id && styles.tabLabelActive]}>
+            <ThemedText style={[styles.tabLabel, { color: tc.textMuted }, activeTab === t.id && [styles.tabLabelActive, { color: tc.accent }]]}>
               {t.label}
             </ThemedText>
             {activeTab === t.id && <View style={styles.tabUnderline} />}
@@ -309,7 +309,7 @@ export default function LESDecoderScreen() {
           keyboardShouldPersistTaps="handled">
 
           <ThemedView type="backgroundElement" style={styles.blufBox}>
-            <ThemedText style={styles.blufTitle}>HOW TO USE</ThemedText>
+            <ThemedText style={[styles.blufTitle, { color: tc.accent }]}>HOW TO USE</ThemedText>
             <ThemedText type="small" style={{ lineHeight: 18 }}>
               Open your LES on myPay.dfas.mil and enter the numbers below. This tool
               checks whether your FICA taxes and net pay math are correct. Discrepancies
@@ -429,7 +429,7 @@ export default function LESDecoderScreen() {
           showsVerticalScrollIndicator={false}>
 
           <ThemedView type="backgroundElement" style={styles.blufBox}>
-            <ThemedText style={styles.blufTitle}>CHECK EVERY MONTH</ThemedText>
+            <ThemedText style={[styles.blufTitle, { color: tc.accent }]}>CHECK EVERY MONTH</ThemedText>
             <ThemedText type="small" style={{ lineHeight: 18 }}>
               Most pay errors go unreported because members don't know what to look for.
               Review your LES every pay period against this list. DFAS has correction
@@ -511,7 +511,7 @@ const styles = StyleSheet.create({
   },
   tabItem: { flex: 1, alignItems: 'center', paddingVertical: Spacing.two, position: 'relative' },
   tabLabel: { fontSize: 13, fontWeight: '700', letterSpacing: 0.6 },
-  tabLabelActive: { color: Brand.accent },
+  tabLabelActive: {},
   tabUnderline: {
     position: 'absolute', bottom: 0, left: 8, right: 8,
     height: 2, borderRadius: 1, backgroundColor: Brand.accent,
@@ -580,7 +580,7 @@ const styles = StyleSheet.create({
   tipText: { fontSize: 13, color: '#FF6B35CC', lineHeight: 18 },
 
   blufBox: { borderRadius: Spacing.three, padding: Spacing.three, gap: Spacing.one },
-  blufTitle: { fontSize: 13, fontWeight: '800', letterSpacing: 1, color: Brand.accent },
+  blufTitle: { fontSize: 13, fontWeight: '800', letterSpacing: 1 },
 
   inputRow: {
     flexDirection: 'row', alignItems: 'center',

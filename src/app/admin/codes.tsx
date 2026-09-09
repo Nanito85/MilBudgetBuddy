@@ -95,7 +95,7 @@ function CreateCodeForm({ onCreated }: { onCreated: () => void }) {
 
   return (
     <View style={[s.card, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
-      <ThemedText style={s.cardTitle}>// CREATE NEW CODE</ThemedText>
+      <ThemedText style={[s.cardTitle, { color: tc.tactical }]}>// CREATE NEW CODE</ThemedText>
 
       <ThemedText style={[s.label, { color: tc.textMuted }]}>CODE</ThemedText>
       <View style={s.codeRow}>
@@ -111,7 +111,7 @@ function CreateCodeForm({ onCreated }: { onCreated: () => void }) {
           />
         </View>
         <Pressable onPress={generateCode} style={s.genBtn}>
-          <ThemedText style={s.genBtnText}>GENERATE</ThemedText>
+          <ThemedText style={[s.genBtnText, { color: tc.accent }]}>GENERATE</ThemedText>
         </Pressable>
       </View>
 
@@ -187,7 +187,7 @@ function CodeRow({ item, onToggle, onDelete }: { item: DiscountCode; onToggle: (
       </View>
       <View style={s.codeActions}>
         <Pressable onPress={onToggle} style={[s.actionBtn, { borderColor: Brand.tactical + '50' }]}>
-          <ThemedText style={[s.actionBtnText, { color: Brand.tactical }]}>
+          <ThemedText style={[s.actionBtnText, { color: tc.tactical }]}>
             {item.active ? 'DISABLE' : 'ENABLE'}
           </ThemedText>
         </Pressable>
@@ -283,11 +283,11 @@ export default function CodesScreen() {
     <SafeAreaView style={[s.safe, { backgroundColor: tc.background }]} edges={['top']}>
       <View style={[s.header, { borderColor: tc.borderColor }]}>
         <Pressable onPress={() => router.back()} style={s.back}>
-          <ThemedText style={s.backText}>‹ Admin</ThemedText>
+          <ThemedText style={[s.backText, { color: tc.tactical }]}>‹ Admin</ThemedText>
         </Pressable>
         <ThemedText style={[s.headerTitle, { color: tc.textPrimary }]}>🎟️ DISCOUNT CODES</ThemedText>
         <Pressable onPress={fetchCodes} style={s.back}>
-          <ThemedText style={s.refreshText}>REFRESH</ThemedText>
+          <ThemedText style={[s.refreshText, { color: tc.accent }]}>REFRESH</ThemedText>
         </Pressable>
       </View>
 
@@ -298,7 +298,7 @@ export default function CodesScreen() {
             Codes created here have nowhere to be entered — the client-side redeem screen was removed per Apple
             Guideline 3.1.1. This screen is for record-keeping / a manually-applied backend redeem only. To
             actually give someone free Pro access, use{' '}
-            <ThemedText style={{ color: Brand.tactical, fontWeight: '800' }} onPress={() => router.push('/admin/users' as any)}>
+            <ThemedText style={{ color: tc.tactical, fontWeight: '800' }} onPress={() => router.push('/admin/users' as any)}>
               Grant / Revoke Pro
             </ThemedText>{' '}
             instead — it works immediately with no code.
@@ -307,7 +307,7 @@ export default function CodesScreen() {
 
         <CreateCodeForm onCreated={fetchCodes} />
 
-        <ThemedText style={s.sectionTitle}>// EXISTING CODES ({codes.length})</ThemedText>
+        <ThemedText style={[s.sectionTitle, { color: tc.tactical }]}>// EXISTING CODES ({codes.length})</ThemedText>
 
         {loading && <ActivityIndicator color={Brand.accent} style={{ marginTop: Spacing.three }} />}
         {!!error  && <ThemedText style={s.errorText}>{error}</ThemedText>}
@@ -333,14 +333,14 @@ const s = StyleSheet.create({
   safe:    { flex: 1 },
   header:  { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: Spacing.three, paddingVertical: Spacing.two, borderBottomWidth: StyleSheet.hairlineWidth },
   back:    { minWidth: 60 },
-  backText:    { color: Brand.tactical, fontSize: 14, fontWeight: '700' },
-  refreshText: { color: Brand.accent, fontSize: 11, fontWeight: '700', textAlign: 'right' },
+  backText: { fontSize: 14, fontWeight: '700' },
+  refreshText: { fontSize: 11, fontWeight: '700', textAlign: 'right' },
   headerTitle: { fontSize: 13, fontWeight: '900', letterSpacing: 0.5 },
 
   content: { padding: Spacing.three, gap: Spacing.three, paddingBottom: 60 },
 
   card:      { borderWidth: 1, borderRadius: 10, padding: Spacing.three, gap: Spacing.two },
-  cardTitle: { fontSize: 11, fontWeight: '800', color: Brand.tactical, letterSpacing: 1 },
+  cardTitle: { fontSize: 11, fontWeight: '800', letterSpacing: 1 },
 
   label: { fontSize: 9, fontWeight: '800', letterSpacing: 1, marginBottom: 4 },
   hint:  { fontSize: 9, marginTop: 2 },
@@ -351,12 +351,12 @@ const s = StyleSheet.create({
   codeRow: { flexDirection: 'row', gap: Spacing.two, alignItems: 'flex-end' },
 
   genBtn:     { backgroundColor: Brand.accent + '20', borderWidth: 1, borderColor: Brand.accent + '60', borderRadius: 6, paddingHorizontal: Spacing.two, paddingVertical: Spacing.one + 4 },
-  genBtnText: { color: Brand.accent, fontSize: 10, fontWeight: '900', letterSpacing: 0.5 },
+  genBtnText: { fontSize: 10, fontWeight: '900', letterSpacing: 0.5 },
 
   createBtn:     { backgroundColor: Brand.accent, borderRadius: 6, padding: Spacing.two + 2, alignItems: 'center', marginTop: Spacing.one },
   createBtnText: { color: '#04080F', fontSize: 13, fontWeight: '900', letterSpacing: 1 },
 
-  sectionTitle: { fontSize: 10, fontWeight: '800', color: Brand.tactical, letterSpacing: 1 },
+  sectionTitle: { fontSize: 10, fontWeight: '800', letterSpacing: 1 },
   emptyText:    { fontSize: 12, textAlign: 'center', paddingVertical: Spacing.three },
   errorText:    { color: Brand.classified, fontSize: 12, textAlign: 'center' },
 

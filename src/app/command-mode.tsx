@@ -327,11 +327,11 @@ export default function CommandModeScreen() {
       <SafeAreaView edges={['top']}>
         <View style={[styles.header, { borderBottomColor: tc.borderColor }]}>
           <Pressable onPress={() => router.back()} style={styles.backBtn}>
-            <ThemedText style={styles.backText}>‹ Back</ThemedText>
+            <ThemedText style={[styles.backText, { color: tc.tactical }]}>‹ Back</ThemedText>
           </Pressable>
           <ThemedText style={[styles.title, { color: tc.textPrimary }]}>FINANCIAL READINESS</ThemedText>
           <Pressable onPress={handleShare} style={styles.shareBtn}>
-            <ThemedText style={styles.shareText}>PDF ↑</ThemedText>
+            <ThemedText style={[styles.shareText, { color: tc.tactical }]}>PDF ↑</ThemedText>
           </Pressable>
         </View>
       </SafeAreaView>
@@ -345,7 +345,7 @@ export default function CommandModeScreen() {
         {/* Identity block */}
         <View style={[styles.idBlock, { backgroundColor: tc.surface }]}>
           <View style={styles.idLeft}>
-            <ThemedText style={styles.idRank}>{rankAbbrev || '—'}</ThemedText>
+            <ThemedText style={[styles.idRank, { color: tc.accent }]}>{rankAbbrev || '—'}</ThemedText>
             <ThemedText style={[styles.idName, { color: tc.textPrimary }]}>{displayName}</ThemedText>
             <ThemedText style={[styles.idBranch, { color: tc.textHint }]}>{branchLabel.toUpperCase()} {payGrade ? `· ${payGrade}` : ''}</ThemedText>
           </View>
@@ -353,7 +353,7 @@ export default function CommandModeScreen() {
             <ThemedText style={[styles.idDate, { color: tc.textHint }]}>{today}</ThemedText>
             <View style={styles.idStatus}>
               <View style={styles.idDot} />
-              <ThemedText style={styles.idStatusText}>FOR COMMAND USE</ThemedText>
+              <ThemedText style={[styles.idStatusText, { color: tc.tactical }]}>FOR COMMAND USE</ThemedText>
             </View>
           </View>
         </View>
@@ -422,7 +422,7 @@ export default function CommandModeScreen() {
                 </View>
               ) : (
                 <Pressable onPress={() => setAddingType('income')} style={styles.addItemBtn}>
-                  <ThemedText style={styles.addItemBtnText}>+ Add Income Item</ThemedText>
+                  <ThemedText style={[styles.addItemBtnText, { color: tc.tactical }]}>+ Add Income Item</ThemedText>
                 </Pressable>
               )}
 
@@ -475,7 +475,7 @@ export default function CommandModeScreen() {
                 </View>
               ) : (
                 <Pressable onPress={() => setAddingType('deduction')} style={styles.addItemBtn}>
-                  <ThemedText style={styles.addItemBtnText}>+ Add Deduction</ThemedText>
+                  <ThemedText style={[styles.addItemBtnText, { color: tc.tactical }]}>+ Add Deduction</ThemedText>
                 </Pressable>
               )}
               <Divider />
@@ -485,8 +485,8 @@ export default function CommandModeScreen() {
             {/* ── NET PAY ── */}
             <View style={[styles.card, styles.netCard]}>
               <View style={styles.netRow}>
-                <ThemedText style={styles.netLabel}>NET TAKE-HOME PAY</ThemedText>
-                <ThemedText style={styles.netValue}>{fmt(breakdown.netPay)}</ThemedText>
+                <ThemedText style={[styles.netLabel, { color: tc.success }]}>NET TAKE-HOME PAY</ThemedText>
+                <ThemedText style={[styles.netValue, { color: tc.success }]}>{fmt(breakdown.netPay)}</ThemedText>
               </View>
               {spouseIncome > 0 && (
                 <ThemedText style={styles.netSub}>
@@ -608,9 +608,9 @@ export default function CommandModeScreen() {
 
             {/* ── INSTRUCTIONS ── */}
             <View style={[styles.instructionsCard, { backgroundColor: tc.background, borderColor: tc.borderColor }]}>
-              <ThemedText style={styles.instructionsTitle}>📋 HOW TO USE THIS WORKSHEET</ThemedText>
+              <ThemedText style={[styles.instructionsTitle, { color: tc.tactical }]}>📋 HOW TO USE THIS WORKSHEET</ThemedText>
               <ThemedText style={[styles.instructionsText, { color: tc.textHint }]}>
-                This Financial Data Worksheet is generated from your profile data and is for personal use or voluntary disclosure to your chain of command. Tap <ThemedText style={styles.instructionsHighlight}>SHARE ↑</ThemedText> at the top to export as text and send via email, message, or print.{'\n\n'}
+                This Financial Data Worksheet is generated from your profile data and is for personal use or voluntary disclosure to your chain of command. Tap <ThemedText style={[styles.instructionsHighlight, { color: tc.tactical }]}>SHARE ↑</ThemedText> at the top to export as text and send via email, message, or print.{'\n\n'}
                 All figures are estimates based on current DoD pay tables. This worksheet does not replace official LES data or financial counseling.
               </ThemedText>
             </View>
@@ -633,10 +633,10 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   backBtn: { width: 60 },
-  backText: { fontSize: 16, fontWeight: '600', color: Brand.tactical },
+  backText: { fontSize: 16, fontWeight: '600' },
   title: { flex: 1, textAlign: 'center', fontSize: 13, fontWeight: '900', letterSpacing: 1.5 },
   shareBtn: { width: 60, alignItems: 'flex-end' },
-  shareText: { fontSize: 11, fontWeight: '800', color: Brand.tactical, letterSpacing: 0.5 },
+  shareText: { fontSize: 11, fontWeight: '800', letterSpacing: 0.5 },
 
   content: { paddingHorizontal: Spacing.three, paddingTop: Spacing.three, gap: Spacing.two },
 
@@ -652,13 +652,13 @@ const styles = StyleSheet.create({
   },
   idLeft: { gap: 3 },
   idRight: { alignItems: 'flex-end', gap: 4 },
-  idRank: { fontSize: 10, fontWeight: '800', color: Brand.accent, letterSpacing: 1 },
+  idRank: { fontSize: 10, fontWeight: '800', letterSpacing: 1 },
   idName: { fontSize: 20, fontWeight: '900', letterSpacing: 0.3 },
   idBranch: { fontSize: 10, fontWeight: '700', letterSpacing: 0.5 },
   idDate: { fontSize: 10 },
   idStatus: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   idDot: { width: 5, height: 5, borderRadius: 3, backgroundColor: Brand.tactical },
-  idStatusText: { fontSize: 9, color: Brand.tactical, fontWeight: '800', letterSpacing: 0.5 },
+  idStatusText: { fontSize: 9, fontWeight: '800', letterSpacing: 0.5 },
 
   idMeta: { marginTop: -Spacing.one },
   idMetaText: { fontSize: 10, textAlign: 'center', letterSpacing: 0.5 },
@@ -674,8 +674,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#041208',
   },
   netRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  netLabel: { fontSize: 12, fontWeight: '900', color: Brand.success, letterSpacing: 0.5 },
-  netValue: { fontSize: 22, fontWeight: '900', color: Brand.success, fontFamily: 'Courier New' },
+  netLabel: { fontSize: 12, fontWeight: '900', letterSpacing: 0.5 },
+  netValue: { fontSize: 22, fontWeight: '900', fontFamily: 'Courier New' },
   netSub: { fontSize: 10, color: '#4D9A6A', marginTop: 4 },
 
   remainCard: {
@@ -716,14 +716,14 @@ const styles = StyleSheet.create({
     padding: Spacing.three,
     gap: Spacing.two,
   },
-  instructionsTitle: { fontSize: 11, fontWeight: '800', color: Brand.tactical, letterSpacing: 0.5 },
+  instructionsTitle: { fontSize: 11, fontWeight: '800', letterSpacing: 0.5 },
   instructionsText: { fontSize: 11, lineHeight: 17 },
-  instructionsHighlight: { color: Brand.tactical, fontWeight: '700' },
+  instructionsHighlight: { fontWeight: '700' },
 
   extraItemRow: { flexDirection: 'row', alignItems: 'center' },
   removeX: { fontSize: 12, color: '#E74C3C', paddingLeft: Spacing.two, fontWeight: '700' },
   addItemBtn: { paddingVertical: Spacing.two, alignItems: 'flex-start' },
-  addItemBtnText: { fontSize: 11, color: Brand.tactical, fontWeight: '700', letterSpacing: 0.3 },
+  addItemBtnText: { fontSize: 11, fontWeight: '700', letterSpacing: 0.3 },
   addItemForm: { gap: Spacing.two, paddingTop: Spacing.one },
   addItemInput: {
     borderWidth: 1,

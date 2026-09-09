@@ -13,6 +13,7 @@ import { BRSCard, High3Card } from '@/features/retirement/components/RetirementS
 import { calcRetirement, formatMoney, govtMatchRate } from '@/features/retirement/utils/retirementCalc';
 import { GradePicker } from '@/features/pcs/components/GradePicker';
 import { BottomTabInset, Brand, Spacing } from '@/constants/theme';
+import { useThemeColors } from '@/hooks/use-theme';
 import { monthlyCompensation } from '@/features/va/utils/vaDisabilityCalc';
 import { useUserStore } from '@/store/user.store';
 
@@ -25,6 +26,7 @@ const VA_RATINGS    = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
 export default function RetirementCalculatorScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const tc = useThemeColors();
 
   const profilePayGrade = useUserStore((s) => s.payGrade);
   const profileYos      = useUserStore((s) => s.yos);
@@ -160,7 +162,7 @@ export default function RetirementCalculatorScreen() {
             {yearsAtGrade < 3 && (
               <View style={[styles.cardPadded, { paddingTop: 0 }]}>
                 <View style={[styles.matchBanner, { backgroundColor: `${Brand.warning}15` }]}>
-                  <ThemedText type="small" style={{ color: Brand.warning, fontWeight: '600' }}>
+                  <ThemedText type="small" style={{ color: tc.warning, fontWeight: '600' }}>
                     High-3 note: You've been at {grade} for {yearsAtGrade} yr{yearsAtGrade !== 1 ? 's' : ''}. Your High-3 average will include time at a lower grade, slightly reducing your estimated pension.
                   </ThemedText>
                 </View>
@@ -246,7 +248,7 @@ export default function RetirementCalculatorScreen() {
 
                 {/* Government match */}
                 <View style={[styles.matchBanner, { backgroundColor: `${Brand.success}15` }]}>
-                  <ThemedText type="small" style={{ color: Brand.success, fontWeight: '600' }}>
+                  <ThemedText type="small" style={{ color: tc.success, fontWeight: '600' }}>
                     Gov't match: {gMatchPct.toFixed(1)}% → +{formatMoney(currentPay * govtMatchRate(tspContribRate))}/mo free money
                   </ThemedText>
                 </View>
@@ -342,7 +344,7 @@ export default function RetirementCalculatorScreen() {
                         Tax-free monthly payment
                       </ThemedText>
                     </View>
-                    <ThemedText style={[styles.sliderValue, { color: Brand.tactical, fontSize: 20 }]}>
+                    <ThemedText style={[styles.sliderValue, { color: tc.tactical, fontSize: 20 }]}>
                       {formatMoney(vaMonthly)}/mo
                     </ThemedText>
                   </View>
@@ -363,7 +365,7 @@ export default function RetirementCalculatorScreen() {
                     <ThemedText style={styles.sliderLabel}>
                       {crdpEligible ? 'Pension + VA' : 'Net income (offset)'}
                     </ThemedText>
-                    <ThemedText style={[styles.sliderValue, { color: Brand.accent }]}>
+                    <ThemedText style={[styles.sliderValue, { color: tc.accent }]}>
                       {formatMoney(combinedMonthly)}/mo
                     </ThemedText>
                   </View>
@@ -376,13 +378,13 @@ export default function RetirementCalculatorScreen() {
                         <ThemedText type="small" themeColor="textSecondary">Pension/mo</ThemedText>
                       </ThemedView>
                       <ThemedView type="backgroundElement" style={styles.quickStat}>
-                        <ThemedText style={[styles.quickStatVal, { fontSize: 18, color: Brand.tactical }]}>
+                        <ThemedText style={[styles.quickStatVal, { fontSize: 18, color: tc.tactical }]}>
                           {formatMoney(vaMonthly)}
                         </ThemedText>
                         <ThemedText type="small" themeColor="textSecondary">VA comp/mo</ThemedText>
                       </ThemedView>
                       <ThemedView type="backgroundElement" style={styles.quickStat}>
-                        <ThemedText style={[styles.quickStatVal, { fontSize: 18, color: Brand.accent }]}>
+                        <ThemedText style={[styles.quickStatVal, { fontSize: 18, color: tc.accent }]}>
                           {formatMoney(combinedMonthly)}
                         </ThemedText>
                         <ThemedText type="small" themeColor="textSecondary">Total/mo</ThemedText>

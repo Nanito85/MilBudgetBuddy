@@ -42,23 +42,28 @@ function Stepper({ label, value, step, min, max, onChange }: {
       <ThemedText style={[styles.stepperLabel, { color: tc.textSecondary }]}>{label}</ThemedText>
       <View style={styles.stepperControls}>
         <Pressable style={[styles.stepBtn, { borderColor: tc.borderColor, backgroundColor: tc.background }]} onPress={() => onChange(Math.max(min, value - step))}>
-          <ThemedText style={styles.stepBtnText}>−</ThemedText>
+          <ThemedText style={[styles.stepBtnText, { color: tc.tactical }]}>−</ThemedText>
         </Pressable>
         <ThemedText style={[styles.stepperValue, { color: tc.textPrimary }]}>{fmt(value)}</ThemedText>
         <Pressable style={[styles.stepBtn, { borderColor: tc.borderColor, backgroundColor: tc.background }]} onPress={() => onChange(Math.min(max, value + step))}>
-          <ThemedText style={styles.stepBtnText}>+</ThemedText>
+          <ThemedText style={[styles.stepBtnText, { color: tc.tactical }]}>+</ThemedText>
         </Pressable>
       </View>
     </View>
   );
 }
 
+// `color` here is the raw brand hue — fine for the decorative badge
+// fill/border and progress-bar fill below, but NOT contrast-safe as text
+// color in light mode (see BrandLightText in constants/theme.ts). colorKey
+// names which useThemeColors() field to read instead for the two spots
+// below that render this as actual text.
 const RATE_GRADES = [
-  { min: 0,  max: 10,  label: 'CRITICAL',   color: Brand.danger,   desc: 'Below survival threshold. Cut expenses immediately.' },
-  { min: 10, max: 20,  label: 'LOW',        color: Brand.warning,  desc: 'Getting started. Push toward 20%.' },
-  { min: 20, max: 35,  label: 'SOLID',      color: Brand.accent,   desc: 'On track. FI is achievable within career.' },
-  { min: 35, max: 50,  label: 'STRONG',     color: Brand.tactical, desc: 'Ahead of peers. Accelerate to 50%.' },
-  { min: 50, max: 100, label: 'FIRE MODE',  color: Brand.success,  desc: 'Financial independence in under 17 years.' },
+  { min: 0,  max: 10,  label: 'CRITICAL',   colorKey: 'danger'   as const, color: Brand.danger,   desc: 'Below survival threshold. Cut expenses immediately.' },
+  { min: 10, max: 20,  label: 'LOW',        colorKey: 'warning'  as const, color: Brand.warning,  desc: 'Getting started. Push toward 20%.' },
+  { min: 20, max: 35,  label: 'SOLID',      colorKey: 'accent'   as const, color: Brand.accent,   desc: 'On track. FI is achievable within career.' },
+  { min: 35, max: 50,  label: 'STRONG',     colorKey: 'tactical' as const, color: Brand.tactical, desc: 'Ahead of peers. Accelerate to 50%.' },
+  { min: 50, max: 100, label: 'FIRE MODE',  colorKey: 'success'  as const, color: Brand.success,  desc: 'Financial independence in under 17 years.' },
 ];
 
 function getRateGrade(pct: number) {
@@ -120,6 +125,10 @@ export default function SavingsRateScreen() {
   const fiNumber       = annualExpenses * 25;
   const ytfi           = yearsToFi(savingsRate / 100, annualExpenses, invested);
   const grade          = getRateGrade(savingsRate);
+  // Theme-safe TEXT color for this grade — grade.color itself stays the raw
+  // brand hue for the badge fill/border and progress-bar fill below, which
+  // don't carry the same text-contrast requirement.
+  const gradeTextColor = tc[grade.colorKey];
 
   const progressToFi = fiNumber > 0 ? Math.min(1, invested / fiNumber) : 0;
 
@@ -141,7 +150,7 @@ export default function SavingsRateScreen() {
 
         {/* Hero */}
         <ThemedView type="backgroundElement" style={styles.heroBanner}>
-          <ThemedText style={styles.heroEyebrow}>FINANCIAL INDEPENDENCE TRACKER</ThemedText>
+          <ThemedText style={[styles.heroEyebrow, { color: tc.accent }]}>FINANCIAL INDEPENDENCE TRACKER</ThemedText>
           <ThemedText style={[styles.heroTitle, { color: tc.textPrimary }]}>Savings Rate Mission</ThemedText>
           <ThemedText style={[styles.heroBody, { color: tc.textSecondary }]}>
             Your savings rate determines your FI date more than any other variable. One number to rule them all.
@@ -150,10 +159,10 @@ export default function SavingsRateScreen() {
 
         {/* Inputs */}
         <ThemedView type="backgroundElement" style={styles.card}>
-          <ThemedText style={styles.cardLabel}>YOUR NUMBERS</ThemedText>
+          <ThemedText style={[styles.cardLabel, { color: tc.tactical }]}>YOUR NUMBERS</ThemedText>
           {breakdown && (
             <View style={styles.autoFillNote}>
-              <ThemedText style={styles.autoFillText}>
+              <ThemedText style={[styles.autoFillText, { color: tc.tactical }]}>
                 ✓ Income auto-filled from your pay profile. Expenses auto-filled from budget.
               </ThemedText>
             </View>
@@ -165,13 +174,13 @@ export default function SavingsRateScreen() {
 
         {/* Savings rate gauge */}
         <ThemedView type="backgroundElement" style={styles.card}>
-          <ThemedText style={styles.cardLabel}>YOUR SAVINGS RATE</ThemedText>
+          <ThemedText style={[styles.cardLabel, { color: tc.tactical }]}>YOUR SAVINGS RATE</ThemedText>
           <View style={styles.rateCenter}>
-            <ThemedText style={[styles.rateBig, { color: grade.color }]}>
+            <ThemedText style={[styles.rateBig, { color: gradeTextColor }]}>
               {savingsRate.toFixed(1)}%
             </ThemedText>
             <View style={[styles.gradeBadge, { backgroundColor: grade.color + '20', borderColor: grade.color }]}>
-              <ThemedText style={[styles.gradeText, { color: grade.color }]}>{grade.label}</ThemedText>
+              <ThemedText style={[styles.gradeText, { color: gradeTextColor }]}>{grade.label}</ThemedText>
             </View>
             <ThemedText style={[styles.gradeDesc, { color: tc.textSecondary }]}>{grade.desc}</ThemedText>
           </View>
@@ -191,15 +200,15 @@ export default function SavingsRateScreen() {
 
         {/* FI Number */}
         <ThemedView type="backgroundElement" style={styles.card}>
-          <ThemedText style={styles.cardLabel}>YOUR FI NUMBER (25× ANNUAL EXPENSES)</ThemedText>
+          <ThemedText style={[styles.cardLabel, { color: tc.tactical }]}>YOUR FI NUMBER (25× ANNUAL EXPENSES)</ThemedText>
           <View style={styles.fiRow}>
             <View style={[styles.fiBox, { backgroundColor: tc.background }]}>
               <ThemedText style={[styles.fiBoxLabel, { color: tc.textMuted }]}>FI TARGET</ThemedText>
-              <ThemedText style={[styles.fiBoxValue, { color: Brand.accent }]}>{fmt(fiNumber)}</ThemedText>
+              <ThemedText style={[styles.fiBoxValue, { color: tc.accent }]}>{fmt(fiNumber)}</ThemedText>
             </View>
             <View style={[styles.fiBox, { backgroundColor: tc.background }]}>
               <ThemedText style={[styles.fiBoxLabel, { color: tc.textMuted }]}>INVESTED NOW</ThemedText>
-              <ThemedText style={[styles.fiBoxValue, { color: Brand.tactical }]}>{fmt(invested)}</ThemedText>
+              <ThemedText style={[styles.fiBoxValue, { color: tc.tactical }]}>{fmt(invested)}</ThemedText>
             </View>
             <View style={[styles.fiBox, { backgroundColor: tc.background }]}>
               <ThemedText style={[styles.fiBoxLabel, { color: tc.textMuted }]}>YEARS TO FI</ThemedText>
@@ -218,14 +227,14 @@ export default function SavingsRateScreen() {
 
         {/* Rate benchmarks */}
         <ThemedView type="backgroundElement" style={styles.card}>
-          <ThemedText style={styles.cardLabel}>SAVINGS RATE → YEARS TO FI</ThemedText>
+          <ThemedText style={[styles.cardLabel, { color: tc.tactical }]}>SAVINGS RATE → YEARS TO FI</ThemedText>
           {[10, 20, 30, 40, 50, 65].map((rate) => {
             const isAbove = savingsRate >= rate;
             const y = yearsToFi(rate / 100, 100000, 0);
             const years = y !== null ? `~${y} years` : '100+ years';
             return (
               <View key={rate} style={styles.benchRow}>
-                <ThemedText style={[styles.benchRate, { color: tc.textSecondary }, isAbove && { color: Brand.success }]}>
+                <ThemedText style={[styles.benchRate, { color: tc.textSecondary }, isAbove && { color: tc.success }]}>
                   {rate}%{isAbove ? ' ✓' : ''}
                 </ThemedText>
                 <View style={[styles.benchBarTrack, { backgroundColor: tc.surfaceInner }]}>
@@ -234,7 +243,7 @@ export default function SavingsRateScreen() {
                     backgroundColor: isAbove ? Brand.success : tc.borderColor,
                   }]} />
                 </View>
-                <ThemedText style={[styles.benchYears, { color: tc.textSecondary }, isAbove && { color: Brand.success }]}>{years}</ThemedText>
+                <ThemedText style={[styles.benchYears, { color: tc.textSecondary }, isAbove && { color: tc.success }]}>{years}</ThemedText>
               </View>
             );
           })}
@@ -243,7 +252,7 @@ export default function SavingsRateScreen() {
 
         {/* Actions */}
         <ThemedView type="backgroundElement" style={styles.card}>
-          <ThemedText style={styles.cardLabel}>HOW TO RAISE YOUR RATE</ThemedText>
+          <ThemedText style={[styles.cardLabel, { color: tc.tactical }]}>HOW TO RAISE YOUR RATE</ThemedText>
           {[
             'Live in barracks as long as possible — free housing is the biggest lever available to junior enlisted.',
             'BAH arbitrage: move off-base at E5+ and find housing under your BAH rate.',
@@ -253,7 +262,7 @@ export default function SavingsRateScreen() {
             'Auto-invest: direct deposit into TSP + Roth IRA before you can spend it.',
           ].map((tip, i) => (
             <View key={i} style={styles.tipRow}>
-              <ThemedText style={styles.tipBullet}>▸</ThemedText>
+              <ThemedText style={[styles.tipBullet, { color: tc.accent }]}>▸</ThemedText>
               <ThemedText style={[styles.tipText, { color: tc.textSecondary }]}>{tip}</ThemedText>
             </View>
           ))}
@@ -291,12 +300,12 @@ const styles = StyleSheet.create({
     borderLeftColor: Brand.accent,
     gap: 4,
   },
-  heroEyebrow: { fontSize: 9, fontWeight: '800', letterSpacing: 1.5, color: Brand.accent },
+  heroEyebrow: { fontSize: 9, fontWeight: '800', letterSpacing: 1.5 },
   heroTitle: { fontSize: 20, fontWeight: '900' },
   heroBody: { fontSize: 12, lineHeight: 18, marginTop: 4 },
 
   card: { borderRadius: 4, padding: Spacing.three, gap: Spacing.two },
-  cardLabel: { fontSize: 9, fontWeight: '800', letterSpacing: 1.2, color: Brand.tactical, marginBottom: 2 },
+  cardLabel: { fontSize: 9, fontWeight: '800', letterSpacing: 1.2, marginBottom: 2 },
 
   autoFillNote: {
     backgroundColor: Brand.tactical + '15',
@@ -305,7 +314,7 @@ const styles = StyleSheet.create({
     borderLeftWidth: 2,
     borderLeftColor: Brand.tactical,
   },
-  autoFillText: { fontSize: 10, color: Brand.tactical },
+  autoFillText: { fontSize: 10 },
 
   stepperRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   stepperLabel: { fontSize: 12, flex: 1 },
@@ -318,7 +327,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  stepBtnText: { fontSize: 18, fontWeight: '300', color: Brand.tactical },
+  stepBtnText: { fontSize: 18, fontWeight: '300' },
   stepperValue: { fontSize: 13, fontWeight: '700', width: 80, textAlign: 'center', fontFamily: 'Courier New' },
 
   rateCenter: { alignItems: 'center', gap: Spacing.one },
@@ -349,7 +358,7 @@ const styles = StyleSheet.create({
   benchNote: { fontSize: 9 },
 
   tipRow: { flexDirection: 'row', gap: 6, alignItems: 'flex-start' },
-  tipBullet: { fontSize: 10, color: Brand.accent, marginTop: 2 },
+  tipBullet: { fontSize: 10, marginTop: 2 },
   tipText: { flex: 1, fontSize: 12, lineHeight: 18 },
 
   disclaimer: { borderRadius: 4, padding: Spacing.two },

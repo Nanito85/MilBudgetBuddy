@@ -203,7 +203,7 @@ function SectionCard({ section }: { section: TaxSection }) {
           <ThemedText style={[styles.cardTitle, { color: tc.textPrimary }]}>{section.title.toUpperCase()}</ThemedText>
           <ThemedText style={[styles.cardSummary, { color: tc.textHint }]}>{section.summary}</ThemedText>
         </View>
-        <ThemedText style={styles.chevron}>{expanded ? '∧' : '∨'}</ThemedText>
+        <ThemedText style={[styles.chevron, { color: tc.tactical }]}>{expanded ? '∧' : '∨'}</ThemedText>
       </View>
       {expanded && (
         <View style={styles.cardBody}>
@@ -211,7 +211,7 @@ function SectionCard({ section }: { section: TaxSection }) {
           <ThemedText style={[styles.bodyText, { color: tc.textSecondary }]}>{section.body}</ThemedText>
           {section.tip && (
             <View style={styles.tipBox}>
-              <ThemedText style={styles.tipLabel}>⚡ PRO TIP</ThemedText>
+              <ThemedText style={[styles.tipLabel, { color: tc.accent }]}>⚡ PRO TIP</ThemedText>
               <ThemedText style={[styles.tipText, { color: tc.textPrimary }]}>{section.tip}</ThemedText>
             </View>
           )}
@@ -243,7 +243,7 @@ export default function TaxGuideScreen() {
         showsVerticalScrollIndicator={false}>
 
         <ThemedView type="backgroundElement" style={styles.heroBanner}>
-          <ThemedText style={styles.heroEyebrow}>FY2026 MILITARY TAX REFERENCE</ThemedText>
+          <ThemedText style={[styles.heroEyebrow, { color: tc.accent }]}>FY2026 MILITARY TAX REFERENCE</ThemedText>
           <ThemedText style={[styles.heroTitle, { color: tc.textPrimary }]}>Tax-Free. Tax-Deferred. Tax-Smart.</ThemedText>
           <ThemedText style={[styles.heroBody, { color: tc.textHint }]}>
             Military compensation has more tax advantages than almost any other profession. Understanding them is worth thousands of dollars a year.
@@ -267,7 +267,7 @@ export default function TaxGuideScreen() {
         </ThemedView>
 
         <ThemedView type="backgroundElement" style={styles.disclaimer}>
-          <ThemedText style={styles.disclaimerTitle}>⚠ Not Tax Advice</ThemedText>
+          <ThemedText style={[styles.disclaimerTitle, { color: tc.warning }]}>⚠ Not Tax Advice</ThemedText>
           <ThemedText style={[styles.disclaimerText, { color: tc.textHint }]}>
             This guide is for general informational purposes only. Tax laws change annually. Your situation may differ based on state of domicile, filing status, and other factors. For specific guidance, use MilTax, consult VITA, or see a JAG legal assistance officer.
           </ThemedText>
@@ -289,7 +289,7 @@ const styles = StyleSheet.create({
   content: { paddingHorizontal: Spacing.three, gap: Spacing.two, paddingTop: Spacing.one },
 
   heroBanner: { borderRadius: 4, padding: Spacing.three, borderLeftWidth: 3, borderLeftColor: Brand.accent, gap: 4 },
-  heroEyebrow: { fontSize: 9, fontWeight: '800', letterSpacing: 1.5, color: Brand.accent },
+  heroEyebrow: { fontSize: 9, fontWeight: '800', letterSpacing: 1.5 },
   heroTitle: { fontSize: 20, fontWeight: '900' },
   heroBody: { fontSize: 12, lineHeight: 18, marginTop: 4 },
 
@@ -303,13 +303,13 @@ const styles = StyleSheet.create({
   cardMeta: { flex: 1, gap: 3 },
   cardTitle: { fontSize: 11, fontWeight: '800', letterSpacing: 0.5 },
   cardSummary: { fontSize: 11, lineHeight: 16 },
-  chevron: { fontSize: 14, color: Brand.tactical, width: 16, textAlign: 'center' },
+  chevron: { fontSize: 14, width: 16, textAlign: 'center' },
 
   cardBody: { paddingHorizontal: Spacing.three, paddingBottom: Spacing.three, gap: Spacing.two },
   divider: { height: 1 },
   bodyText: { fontSize: 12, lineHeight: 19 },
   tipBox: { backgroundColor: Brand.accent + '15', borderRadius: 4, padding: Spacing.two, gap: 4, borderLeftWidth: 2, borderLeftColor: Brand.accent },
-  tipLabel: { fontSize: 9, fontWeight: '800', color: Brand.accent, letterSpacing: 1 },
+  tipLabel: { fontSize: 9, fontWeight: '800', letterSpacing: 1 },
   tipText: { fontSize: 12, lineHeight: 18 },
 
   resourceBox: { borderRadius: 4, padding: Spacing.three, gap: 6 },
@@ -317,6 +317,6 @@ const styles = StyleSheet.create({
   resourceItem: { fontSize: 11, lineHeight: 17 },
 
   disclaimer: { borderRadius: 4, padding: Spacing.three, borderLeftWidth: 3, borderLeftColor: Brand.warning, gap: 6 },
-  disclaimerTitle: { fontSize: 12, fontWeight: '700', color: Brand.warning },
+  disclaimerTitle: { fontSize: 12, fontWeight: '700' },
   disclaimerText: { fontSize: 11, lineHeight: 17 },
 });

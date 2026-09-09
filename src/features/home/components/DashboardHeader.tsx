@@ -82,11 +82,11 @@ export function DashboardHeader({ branch, payGrade, rankVariant, lastName, nickn
 
         {/* Right: date/time */}
         <View style={styles.right}>
-          <ThemedText type="label" style={styles.clock}>{timeStr}</ThemedText>
+          <ThemedText type="label" style={[styles.clock, { color: tc.tactical }]}>{timeStr}</ThemedText>
           <ThemedText type="label" style={[styles.date, { color: tc.textMuted }]}>{dateStr}</ThemedText>
           <View style={styles.statusRow}>
             <View style={styles.statusDot} />
-            <ThemedText type="label" style={styles.statusText}>SECURE</ThemedText>
+            <ThemedText type="label" style={[styles.statusText, { color: tc.success }]}>SECURE</ThemedText>
           </View>
         </View>
       </View>
@@ -130,7 +130,7 @@ const styles = StyleSheet.create({
     fontFamily: undefined,
   },
   right: { alignItems: 'flex-end', gap: 3, paddingTop: 2 },
-  clock: { fontSize: 16, color: Brand.tactical, letterSpacing: 1 },
+  clock: { fontSize: 16, letterSpacing: 1 },
   date: { fontSize: 9 },
   statusRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 },
   statusDot: {
@@ -139,7 +139,7 @@ const styles = StyleSheet.create({
     borderRadius: 2.5,
     backgroundColor: Brand.success,
   },
-  statusText: { fontSize: 9, color: Brand.success },
+  statusText: { fontSize: 9 },
   rule: {
     flexDirection: 'row',
     alignItems: 'center',

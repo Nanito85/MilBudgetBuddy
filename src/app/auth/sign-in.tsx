@@ -70,9 +70,9 @@ export default function SignInScreen() {
           showsVerticalScrollIndicator={false}>
 
           <View style={styles.hero}>
-            <ThemedText style={styles.eyebrow}>// MILBUDGETBUDDY</ThemedText>
+            <ThemedText style={[styles.eyebrow, { color: tc.tactical }]}>// MILBUDGETBUDDY</ThemedText>
             <ThemedText style={[styles.title, { color: tc.textPrimary }]}>SIGN IN</ThemedText>
-            <ThemedText style={styles.slogan}>Your Money. Your Mission.</ThemedText>
+            <ThemedText style={[styles.slogan, { color: tc.tactical }]}>Your Money. Your Mission.</ThemedText>
             <ThemedText style={[styles.sub, { color: tc.textSecondary }]}>
               Access your financial data from any device.
             </ThemedText>
@@ -117,7 +117,7 @@ export default function SignInScreen() {
                 </Pressable>
               </View>
               <Pressable onPress={handleForgotPassword} hitSlop={8} style={styles.forgotBtn}>
-                <ThemedText style={[styles.forgotText, { color: Brand.tactical }]}>Forgot password?</ThemedText>
+                <ThemedText style={[styles.forgotText, { color: tc.tactical }]}>Forgot password?</ThemedText>
               </Pressable>
             </View>
 
@@ -138,7 +138,7 @@ export default function SignInScreen() {
           <View style={styles.footer}>
             <ThemedText style={[styles.footerText, { color: tc.textSecondary }]}>Don't have an account?</ThemedText>
             <Pressable onPress={() => router.push('/auth/sign-up' as any)}>
-              <ThemedText style={styles.footerLink}>Create account →</ThemedText>
+              <ThemedText style={[styles.footerLink, { color: tc.tactical }]}>Create account →</ThemedText>
             </Pressable>
           </View>
 
@@ -165,9 +165,9 @@ const styles = StyleSheet.create({
   },
 
   hero: { gap: Spacing.one },
-  eyebrow: { color: Brand.tactical, fontSize: 10, fontWeight: '700', letterSpacing: 1.5 },
+  eyebrow: { fontSize: 10, fontWeight: '700', letterSpacing: 1.5 },
   title: { fontSize: 30, lineHeight: 36, fontWeight: '900', letterSpacing: 0.5, marginTop: 2 },
-  slogan: { fontSize: 14, fontWeight: '700', color: Brand.tactical, letterSpacing: 0.3, marginTop: 2 },
+  slogan: { fontSize: 14, fontWeight: '700', letterSpacing: 0.3, marginTop: 2 },
   sub: { fontSize: 13, lineHeight: 19, marginTop: 4 },
 
   form: { gap: Spacing.three },
@@ -211,7 +211,7 @@ const styles = StyleSheet.create({
 
   footer: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 6 },
   footerText: { fontSize: 13 },
-  footerLink: { color: Brand.tactical, fontSize: 13, fontWeight: '700' },
+  footerLink: { fontSize: 13, fontWeight: '700' },
 
   skipBtn: { alignItems: 'center', paddingVertical: Spacing.two },
   skipText: { fontSize: 12 },

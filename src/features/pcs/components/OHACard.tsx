@@ -79,12 +79,12 @@ export function OHACard({ installation, area, grade, withDep }: Props) {
           <View style={styles.summaryRow}>
             <View style={styles.summaryCol}>
               <ThemedText type="small" themeColor="textSecondary" style={styles.colLabel}>RENT CEILING</ThemedText>
-              <ThemedText style={[styles.colValue, { color: Brand.accent }]}>{fmt(rent)}/mo</ThemedText>
+              <ThemedText style={[styles.colValue, { color: tc.accent }]}>{fmt(rent)}/mo</ThemedText>
             </View>
             <View style={styles.colDivider} />
             <View style={styles.summaryCol}>
               <ThemedText type="small" themeColor="textSecondary" style={styles.colLabel}>UTILITY ALLOW.</ThemedText>
-              <ThemedText style={[styles.colValue, { color: Brand.tactical }]}>{fmt(utility)}/mo</ThemedText>
+              <ThemedText style={[styles.colValue, { color: tc.tactical }]}>{fmt(utility)}/mo</ThemedText>
             </View>
             <View style={styles.colDivider} />
             <View style={styles.summaryCol}>
@@ -98,7 +98,7 @@ export function OHACard({ installation, area, grade, withDep }: Props) {
             <ThemedText type="small" themeColor="textSecondary">
               Monthly OHA ({grade}, {withDep ? 'w/ dep' : 'no dep'})
             </ThemedText>
-            <ThemedText style={styles.totalAmt}>{fmt(monthly)}/mo</ThemedText>
+            <ThemedText style={[styles.totalAmt, { color: tc.accent }]}>{fmt(monthly)}/mo</ThemedText>
           </View>
 
           <View style={styles.divider} />
@@ -126,14 +126,14 @@ export function OHACard({ installation, area, grade, withDep }: Props) {
                 const isActive = g === grade;
                 return (
                   <View key={g} style={[styles.gradeRow, isActive && styles.gradeRowActive]}>
-                    <ThemedText style={[styles.gradeCell, !isActive && { color: tc.textSecondary }, isActive && styles.gradeCellActive]}>{g}</ThemedText>
-                    <ThemedText style={[styles.gradeCell, styles.gradeRentCell, !isActive && { color: tc.textSecondary }, isActive && styles.gradeCellActive]}>
+                    <ThemedText style={[styles.gradeCell, !isActive && { color: tc.textSecondary }, isActive && [styles.gradeCellActive, { color: tc.accent }]]}>{g}</ThemedText>
+                    <ThemedText style={[styles.gradeCell, styles.gradeRentCell, !isActive && { color: tc.textSecondary }, isActive && [styles.gradeCellActive, { color: tc.accent }]]}>
                       {fmt(r.rentCeilingUSD)}
                     </ThemedText>
-                    <ThemedText style={[styles.gradeCell, styles.gradeRentCell, !isActive && { color: tc.textSecondary }, isActive && styles.gradeCellActive]}>
+                    <ThemedText style={[styles.gradeCell, styles.gradeRentCell, !isActive && { color: tc.textSecondary }, isActive && [styles.gradeCellActive, { color: tc.accent }]]}>
                       {fmt(r.utilityAllowanceUSD)}
                     </ThemedText>
-                    <ThemedText style={[styles.gradeCell, styles.gradeRentCell, !isActive && { color: tc.textSecondary }, isActive && styles.gradeCellActive]}>
+                    <ThemedText style={[styles.gradeCell, styles.gradeRentCell, !isActive && { color: tc.textSecondary }, isActive && [styles.gradeCellActive, { color: tc.accent }]]}>
                       {fmt(r.rentCeilingUSD + r.utilityAllowanceUSD)}
                     </ThemedText>
                   </View>
@@ -150,7 +150,7 @@ export function OHACard({ installation, area, grade, withDep }: Props) {
       <View style={styles.footer}>
         <View style={{ flex: 1 }}>
           {area.notes && area.rates.length > 0 && (
-            <ThemedText type="small" themeColor="textSecondary" style={styles.notes}>
+            <ThemedText type="small" themeColor="textSecondary" style={[styles.notes, { color: tc.warning }]}>
               {area.notes}
             </ThemedText>
           )}
@@ -193,7 +193,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.three,
     paddingBottom: Spacing.two,
   },
-  totalAmt: { fontSize: 18, fontWeight: '800', color: Brand.accent, fontFamily: Fonts.data },
+  totalAmt: { fontSize: 18, fontWeight: '800', fontFamily: Fonts.data },
 
   expandBtn: { paddingHorizontal: Spacing.three, paddingVertical: Spacing.two, alignItems: 'center' },
   expandLabel: { fontSize: 11, fontWeight: '600' },
@@ -205,14 +205,14 @@ const styles = StyleSheet.create({
   gradeCell:      { fontSize: 12, width: 42 },
   gradeRentCell:  { flex: 1, textAlign: 'right', fontFamily: Fonts.data },
   gradeCellHdr:   { fontSize: 9, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.3 },
-  gradeCellActive:{ color: Brand.accent, fontWeight: '700' },
+  gradeCellActive: { fontWeight: '700' },
 
   noDataSection: { padding: Spacing.three, gap: Spacing.one },
   noDataTitle:   { fontSize: 14, fontWeight: '600' },
   noDataBody:    { lineHeight: 18 },
 
   footer: { flexDirection: 'row', alignItems: 'flex-end', padding: Spacing.three, paddingTop: Spacing.two, gap: Spacing.two },
-  notes:  { fontSize: 10, lineHeight: 14, marginBottom: 2, color: Brand.warning },
+  notes: { fontSize: 10, lineHeight: 14, marginBottom: 2 },
   disclaimer: { fontSize: 10, lineHeight: 14 },
   dtmoBtn:    { backgroundColor: 'rgba(0,200,168,0.15)', borderRadius: 6, paddingHorizontal: Spacing.two, paddingVertical: 6, borderWidth: 1, borderColor: 'rgba(0,200,168,0.3)' },
   dtmoBtnText:{ fontSize: 11, fontWeight: '800', color: Brand.primary },

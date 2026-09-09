@@ -50,7 +50,7 @@ function MoneyInput({ label, value, onChange, prefix = '$', tc }: { label: strin
     <View style={ss.inputGroup}>
       <ThemedText type="label" style={[ss.inputLabel, { color: tc.textHint }]}>{label}</ThemedText>
       <View style={[ss.inputWrap, { backgroundColor: tc.inputBg, borderColor: tc.borderColor }]}>
-        <ThemedText style={ss.inputPrefix}>{prefix}</ThemedText>
+        <ThemedText style={[ss.inputPrefix, { color: tc.tactical }]}>{prefix}</ThemedText>
         <TextInput
           value={value}
           onChangeText={onChange}
@@ -140,10 +140,10 @@ export default function VALoanCalculatorScreen() {
       {/* Header */}
       <View style={[ss.header, { paddingTop: insets.top + Spacing.two, borderBottomColor: tc.borderColor }]}>
         <Pressable onPress={() => router.back()} style={ss.back}>
-          <ThemedText style={ss.backChevron}>‹</ThemedText>
+          <ThemedText style={[ss.backChevron, { color: tc.accent }]}>‹</ThemedText>
         </Pressable>
         <View style={ss.headerCenter}>
-          <ThemedText type="label" style={ss.headerSub}>// BENEFIT CALCULATOR</ThemedText>
+          <ThemedText type="label" style={[ss.headerSub, { color: tc.tactical }]}>// BENEFIT CALCULATOR</ThemedText>
           <ThemedText style={[ss.headerTitle, { color: tc.textPrimary }]}>VA LOAN</ThemedText>
         </View>
         <View style={{ width: 40 }} />
@@ -158,7 +158,7 @@ export default function VALoanCalculatorScreen() {
         <TacticalCard accentColor={Brand.accent} cornerSize={10} style={ss.bluf}>
           <View style={ss.blufBar} />
           <View style={ss.blufText}>
-            <ThemedText type="label" style={ss.blufLabel}>COMMANDER'S BRIEF</ThemedText>
+            <ThemedText type="label" style={[ss.blufLabel, { color: tc.accent }]}>COMMANDER'S BRIEF</ThemedText>
             <ThemedText style={[ss.blufBody, { color: tc.textSecondary }]}>
               VA loans require no down payment or PMI, saving most buyers hundreds per month. A funding fee applies unless you receive VA disability compensation.
             </ThemedText>
@@ -223,7 +223,7 @@ export default function VALoanCalculatorScreen() {
               </View>
 
               <View style={ss.heroRow}>
-                <ThemedText style={ss.heroAmount}>{fmtMoneyExact(result.monthlyTotal)}</ThemedText>
+                <ThemedText style={[ss.heroAmount, { color: tc.accent }]}>{fmtMoneyExact(result.monthlyTotal)}</ThemedText>
                 <ThemedText type="label" style={[ss.heroPer, { color: tc.textHint }]}>/MO</ThemedText>
               </View>
 
@@ -253,7 +253,7 @@ export default function VALoanCalculatorScreen() {
               <View style={[ss.divider, { backgroundColor: tc.borderColor }]} />
               <ResultRow label="TOTAL LOAN AMOUNT" value={fmtMoney(result.totalLoanAmount)} bold accent={Brand.accent} tc={tc} />
               {result.aboveConforming && (
-                <ThemedText type="label" style={ss.warningNote}>
+                <ThemedText type="label" style={[ss.warningNote, { color: tc.warning }]}>
                   ⚠ ABOVE {fmtMoney(CONFORMING_LOAN_LIMIT)} CONFORMING LIMIT — JUMBO VA LOAN TERMS APPLY
                 </ThemedText>
               )}
@@ -313,9 +313,9 @@ const ss = StyleSheet.create({
     borderBottomColor: Brand.border,
   },
   back: { width: 40 },
-  backChevron: { fontSize: 28, fontWeight: '300', color: Brand.accent, lineHeight: 34 },
+  backChevron: { fontSize: 28, fontWeight: '300', lineHeight: 34 },
   headerCenter: { alignItems: 'center', gap: 2 },
-  headerSub: { color: Brand.tactical, fontSize: 9 },
+  headerSub: { fontSize: 9 },
   headerTitle: { fontSize: 20, fontWeight: '900', letterSpacing: 1.5 },
   content: { paddingHorizontal: Spacing.three, gap: Spacing.three, paddingTop: Spacing.three },
 
@@ -328,7 +328,7 @@ const ss = StyleSheet.create({
   bluf: { borderRadius: 4, flexDirection: 'row', overflow: 'hidden' },
   blufBar: { width: 3, backgroundColor: Brand.accent },
   blufText: { flex: 1, padding: Spacing.three, gap: Spacing.one },
-  blufLabel: { color: Brand.accent, fontSize: 9 },
+  blufLabel: { fontSize: 9 },
   blufBody: { fontSize: 12, lineHeight: 18 },
 
   // Inputs
@@ -347,7 +347,7 @@ const ss = StyleSheet.create({
     paddingVertical: Spacing.one + 2,
     gap: 4,
   },
-  inputPrefix: { fontSize: 13, fontWeight: '700', color: Brand.tactical, fontFamily: Fonts.data },
+  inputPrefix: { fontSize: 13, fontWeight: '700', fontFamily: Fonts.data },
   input: {
     flex: 1,
     fontSize: 14,
@@ -385,7 +385,6 @@ const ss = StyleSheet.create({
     fontSize: 38,
     lineHeight: 44,
     fontWeight: '900',
-    color: Brand.accent,
     fontFamily: Fonts.data,
     letterSpacing: -0.5,
   },
@@ -398,7 +397,7 @@ const ss = StyleSheet.create({
   dotLine: { flex: 1, height: StyleSheet.hairlineWidth, backgroundColor: 'rgba(26,58,92,0.5)' },
   rowValue: { fontSize: 12, fontWeight: '700', fontFamily: Fonts.data, letterSpacing: 0.3 },
   rowValueBold: { fontSize: 13 },
-  warningNote: { color: Brand.warning, fontSize: 8, lineHeight: 12, marginTop: Spacing.one },
+  warningNote: { fontSize: 8, lineHeight: 12, marginTop: Spacing.one },
   disclaimer: { borderRadius: 4, padding: Spacing.two + 4 },
   disclaimerText: { fontSize: 11, lineHeight: 16 },
 });

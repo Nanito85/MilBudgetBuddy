@@ -83,7 +83,7 @@ function BudgetSnapshotBar({
       <View style={bsStyles.details}>
         <View style={bsStyles.topRow}>
           <ThemedText style={[bsStyles.name, { color: tc.textHint }]}>{name.toUpperCase()}</ThemedText>
-          <ThemedText style={[bsStyles.amount, { color: Brand.accent }]}>
+          <ThemedText style={[bsStyles.amount, { color: tc.accent }]}>
             ${Math.round(amount).toLocaleString()}
           </ThemedText>
         </View>
@@ -233,8 +233,8 @@ export default function DashboardScreen() {
   }, [payGrade, readinessChecks]);
 
   const readinessLabel = readinessScore === null ? null
-    : readinessScore >= 80 ? { text: 'MISSION READY',   color: Brand.success }
-    : readinessScore >= 60 ? { text: 'CONDITION YELLOW', color: Brand.accent }
+    : readinessScore >= 80 ? { text: 'MISSION READY',   color: tc.success }
+    : readinessScore >= 60 ? { text: 'CONDITION YELLOW', color: tc.accent }
     : readinessScore >= 40 ? { text: 'NEEDS ATTENTION',  color: '#E8961A' }
     :                        { text: 'NOT READY',         color: Brand.danger };
 
@@ -280,7 +280,7 @@ export default function DashboardScreen() {
             onPress={() => router.push('/profile' as any)}
             style={({ pressed }) => [styles.personnelCard, { backgroundColor: tc.surface, borderColor: tc.borderColor }, pressed && { opacity: 0.85 }]}>
             <View style={styles.personnelLeft}>
-              <ThemedText style={styles.personnelRank}>{rankAbbrev || payGrade}</ThemedText>
+              <ThemedText style={[styles.personnelRank, { color: tc.accent }]}>{rankAbbrev || payGrade}</ThemedText>
               <ThemedText style={[styles.personnelName, { color: tc.textPrimary }]}>{lastName?.toUpperCase() || nickname?.toUpperCase() || 'SERVICEMEMBER'}</ThemedText>
               <ThemedText style={[styles.personnelBranch, { color: tc.textHint }]}>
                 {branch ? BRANCH_LABELS[branch] : '—'}{serviceStatus ? ` · ${serviceStatus.toUpperCase()}` : ''}
@@ -298,7 +298,7 @@ export default function DashboardScreen() {
                 </View>
               )}
               <View style={styles.personnelEditBtn}>
-                <ThemedText style={styles.personnelEditText}>EDIT ›</ThemedText>
+                <ThemedText style={[styles.personnelEditText, { color: tc.tactical }]}>EDIT ›</ThemedText>
               </View>
             </View>
             {installationName ? (
@@ -343,7 +343,7 @@ export default function DashboardScreen() {
                 <ThemedText style={styles.setupIcon}>🪖</ThemedText>
               </View>
               <View style={styles.setupRight}>
-                <ThemedText type="label" style={styles.setupTitle}>SET UP YOUR PROFILE</ThemedText>
+                <ThemedText type="label" style={[styles.setupTitle, { color: tc.accent }]}>SET UP YOUR PROFILE</ThemedText>
                 <ThemedText type="small" style={[styles.setupBody, { color: tc.textSecondary }]}>
                   Enter your rank and duty station to see your personalized pay breakdown.
                 </ThemedText>
@@ -364,7 +364,7 @@ export default function DashboardScreen() {
                 <ThemedText type="label" style={[styles.statusPayLabel, { color: tc.textMuted }]}>
                   EST. MONTHLY DRILL PAY
                 </ThemedText>
-                <ThemedText style={[styles.statusPayValue, { color: Brand.tactical }]}>{fmtPay(drillPay)}</ThemedText>
+                <ThemedText style={[styles.statusPayValue, { color: tc.tactical }]}>{fmtPay(drillPay)}</ThemedText>
                 <ThemedText type="small" themeColor="textSecondary" style={styles.statusPayNote}>
                   Based on {drillsPerMonth ?? 4} drills/mo at your pay grade & YOS. Set in Profile → Edit Personal.
                 </ThemedText>
@@ -382,7 +382,7 @@ export default function DashboardScreen() {
                 <ThemedText type="label" style={[styles.statusPayLabel, { color: tc.textMuted }]}>
                   EST. MONTHLY VA COMPENSATION ({vaDisabilityPercent}%)
                 </ThemedText>
-                <ThemedText style={[styles.statusPayValue, { color: Brand.tactical }]}>{fmtPay(vaMonthly)}</ThemedText>
+                <ThemedText style={[styles.statusPayValue, { color: tc.tactical }]}>{fmtPay(vaMonthly)}</ThemedText>
                 <ThemedText type="small" themeColor="textSecondary" style={styles.statusPayNote}>
                   Estimate only — verify current rates at va.gov. See the Retirement Calculator for your full retired pay estimate.
                 </ThemedText>
@@ -416,7 +416,7 @@ export default function DashboardScreen() {
                     />
                   ))}
                 </View>
-                <ThemedText type="label" style={styles.budgetTapHint}>
+                <ThemedText type="label" style={[styles.budgetTapHint, { color: tc.tactical }]}>
                   TAP TO LOG EXPENSES ›
                 </ThemedText>
               </Pressable>
@@ -545,7 +545,7 @@ export default function DashboardScreen() {
                     style={styles.readinessStep}>
                     <ThemedText style={[styles.readinessStepIcon, { color: tc.textMuted }]}>○</ThemedText>
                     <ThemedText style={[styles.readinessStepLabel, { color: tc.textSecondary }]}>{c.label}</ThemedText>
-                    <ThemedText style={styles.readinessStepPts}>+{c.pts}</ThemedText>
+                    <ThemedText style={[styles.readinessStepPts, { color: tc.accent }]}>+{c.pts}</ThemedText>
                   </Pressable>
                 ))}
               </View>
@@ -595,7 +595,7 @@ const styles = StyleSheet.create({
   setupLeft: { width: 32, alignItems: 'center', paddingTop: 2 },
   setupRight: { flex: 1, gap: 6 },
   setupIcon: { fontSize: 22 },
-  setupTitle: { color: Brand.accent, fontSize: 11, fontWeight: '800', letterSpacing: 0.5 },
+  setupTitle: { fontSize: 11, fontWeight: '800', letterSpacing: 0.5 },
   setupBody: { fontSize: 12, lineHeight: 18 },
   setupCta: {
     alignSelf: 'flex-start',
@@ -618,7 +618,7 @@ const styles = StyleSheet.create({
     gap: Spacing.two,
   },
   personnelLeft: { flex: 1, gap: 2 },
-  personnelRank: { fontSize: 10, fontWeight: '800', color: Brand.accent, letterSpacing: 1 },
+  personnelRank: { fontSize: 10, fontWeight: '800', letterSpacing: 1 },
   personnelName: { fontSize: 18, fontWeight: '900', letterSpacing: 0.3 },
   personnelBranch: { fontSize: 10, fontWeight: '700', letterSpacing: 0.5 },
   personnelRight: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
@@ -631,7 +631,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.two,
     paddingVertical: 4,
   },
-  personnelEditText: { fontSize: 9, fontWeight: '800', color: Brand.tactical, letterSpacing: 0.5 },
+  personnelEditText: { fontSize: 9, fontWeight: '800', letterSpacing: 0.5 },
   personnelStation: { width: '100%', marginTop: -Spacing.one },
   personnelStationText: { fontSize: 10, fontWeight: '600' },
 
@@ -663,7 +663,7 @@ const styles = StyleSheet.create({
   readinessStep: { flexDirection: 'row', alignItems: 'center', gap: Spacing.one + 2 },
   readinessStepIcon: { fontSize: 10, width: 14 },
   readinessStepLabel: { flex: 1, fontSize: 11 },
-  readinessStepPts: { fontSize: 10, fontWeight: '800', color: Brand.accent },
+  readinessStepPts: { fontSize: 10, fontWeight: '800' },
 
   editProfileRow: {
     flexDirection: 'row',
@@ -690,5 +690,5 @@ const styles = StyleSheet.create({
     gap: Spacing.two,
   },
   budgetBars: { gap: Spacing.two },
-  budgetTapHint: { color: Brand.tactical, fontSize: 10, textAlign: 'right', marginTop: 2 },
+  budgetTapHint: { fontSize: 10, textAlign: 'right', marginTop: 2 },
 });

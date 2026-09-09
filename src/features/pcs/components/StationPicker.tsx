@@ -14,6 +14,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Brand, Colors, Spacing } from '@/constants/theme';
 import { getApproxInstallationForZip, Installation, searchInstallations } from '@/data/installations';
+import { useThemeColors } from '@/hooks/use-theme';
 
 interface Props {
   label: string;
@@ -30,6 +31,7 @@ export function StationPicker({ label, selected, onSelect, conusOnly = false }: 
   const insets = useSafeAreaInsets();
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
+  const tc = useThemeColors();
 
   const results = conusOnly
     ? searchInstallations(query).filter((i) => !i.oconus && !!i.mhaZip)
@@ -92,7 +94,7 @@ export function StationPicker({ label, selected, onSelect, conusOnly = false }: 
 
           {!zipMode && (
             <Pressable onPress={() => setZipMode(true)} style={styles.zipToggle}>
-              <ThemedText style={[styles.zipToggleText, { color: Brand.tactical }]}>
+              <ThemedText style={[styles.zipToggleText, { color: tc.tactical }]}>
                 Can't find your duty station? Enter your ZIP code
               </ThemedText>
             </Pressable>
@@ -162,7 +164,7 @@ export function StationPicker({ label, selected, onSelect, conusOnly = false }: 
                     </View>
                     {(item.oconus || item.nonForeignOconus) && (
                       <View style={styles.oconusBadge}>
-                        <ThemedText style={styles.oconusBadgeText}>OCONUS</ThemedText>
+                        <ThemedText style={[styles.oconusBadgeText, { color: tc.warning }]}>OCONUS</ThemedText>
                       </View>
                     )}
                   </Pressable>
@@ -252,6 +254,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.one + 2,
     paddingVertical: 2,
   },
-  oconusBadgeText: { fontSize: 9, fontWeight: '700', color: Brand.warning, letterSpacing: 0.4 },
+  oconusBadgeText: { fontSize: 9, fontWeight: '700', letterSpacing: 0.4 },
   empty: { textAlign: 'center', padding: Spacing.five },
 });

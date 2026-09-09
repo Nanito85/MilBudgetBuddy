@@ -136,14 +136,14 @@ function ProtectionCard({ item }: { item: Protection }) {
           <ThemedText style={[styles.cardTitle, { color: tc.textPrimary }]}>{item.title.toUpperCase()}</ThemedText>
           <ThemedText style={[styles.cardSummary, { color: tc.textHint }]}>{item.summary}</ThemedText>
         </View>
-        <ThemedText style={styles.chevron}>{expanded ? '∧' : '∨'}</ThemedText>
+        <ThemedText style={[styles.chevron, { color: tc.tactical }]}>{expanded ? '∧' : '∨'}</ThemedText>
       </View>
       {expanded && (
         <View style={styles.cardBody}>
           <View style={[styles.divider, { backgroundColor: tc.borderColor }]} />
           <ThemedText style={[styles.details, { color: tc.textSecondary }]}>{item.details}</ThemedText>
           <View style={styles.actionBox}>
-            <ThemedText style={styles.actionLabel}>⚡ WHAT TO DO</ThemedText>
+            <ThemedText style={[styles.actionLabel, { color: tc.tactical }]}>⚡ WHAT TO DO</ThemedText>
             <ThemedText style={[styles.actionText, { color: tc.textPrimary }]}>{item.action}</ThemedText>
           </View>
         </View>
@@ -174,7 +174,7 @@ export default function ScraGuideScreen() {
         showsVerticalScrollIndicator={false}>
 
         <ThemedView type="backgroundElement" style={styles.heroBanner}>
-          <ThemedText style={styles.heroEyebrow}>SERVICEMEMBERS CIVIL RELIEF ACT</ThemedText>
+          <ThemedText style={[styles.heroEyebrow, { color: tc.tactical }]}>SERVICEMEMBERS CIVIL RELIEF ACT</ThemedText>
           <ThemedText style={[styles.heroTitle, { color: tc.textPrimary }]}>Know Your Rights</ThemedText>
           <ThemedText style={[styles.heroBody, { color: tc.textHint }]}>
             The SCRA (50 USC Chapter 50) provides automatic legal and financial protections the moment you go on active duty. These rights do not apply automatically — you must assert them.
@@ -192,7 +192,7 @@ export default function ScraGuideScreen() {
         ))}
 
         <ThemedView type="backgroundElement" style={styles.disclaimer}>
-          <ThemedText style={styles.disclaimerTitle}>⚠ Important Notice</ThemedText>
+          <ThemedText style={[styles.disclaimerTitle, { color: tc.warning }]}>⚠ Important Notice</ThemedText>
           <ThemedText style={[styles.disclaimerText, { color: tc.textHint }]}>
             This guide is for general information only and is not legal advice. Specific protections depend on individual circumstances, the type of debt, and state law. Always consult a JAG attorney or your installation's legal assistance office for your specific situation. JAG legal assistance is FREE for active duty service members and their families.
           </ThemedText>
@@ -233,7 +233,7 @@ const styles = StyleSheet.create({
     gap: 4,
     marginBottom: Spacing.one,
   },
-  heroEyebrow: { fontSize: 9, fontWeight: '800', letterSpacing: 1.5, color: Brand.tactical },
+  heroEyebrow: { fontSize: 9, fontWeight: '800', letterSpacing: 1.5 },
   heroTitle: { fontSize: 22, fontWeight: '900' },
   heroBody: { fontSize: 12, lineHeight: 18, marginTop: 4 },
 
@@ -256,7 +256,7 @@ const styles = StyleSheet.create({
   cardMeta: { flex: 1, gap: 3 },
   cardTitle: { fontSize: 11, fontWeight: '800', letterSpacing: 0.5 },
   cardSummary: { fontSize: 11, lineHeight: 16 },
-  chevron: { fontSize: 14, color: Brand.tactical, width: 16, textAlign: 'center' },
+  chevron: { fontSize: 14, width: 16, textAlign: 'center' },
 
   cardBody: { paddingHorizontal: Spacing.three, paddingBottom: Spacing.three, gap: Spacing.two },
   divider: { height: 1 },
@@ -269,7 +269,7 @@ const styles = StyleSheet.create({
     borderLeftWidth: 2,
     borderLeftColor: Brand.tactical,
   },
-  actionLabel: { fontSize: 9, fontWeight: '800', color: Brand.tactical, letterSpacing: 1 },
+  actionLabel: { fontSize: 9, fontWeight: '800', letterSpacing: 1 },
   actionText: { fontSize: 12, lineHeight: 18 },
 
   disclaimer: {
@@ -280,7 +280,7 @@ const styles = StyleSheet.create({
     gap: 6,
     marginTop: Spacing.two,
   },
-  disclaimerTitle: { fontSize: 12, fontWeight: '700', color: Brand.warning },
+  disclaimerTitle: { fontSize: 12, fontWeight: '700' },
   disclaimerText: { fontSize: 11, lineHeight: 17 },
 
   resourceBox: {

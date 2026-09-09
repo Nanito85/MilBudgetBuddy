@@ -103,7 +103,7 @@ function SectionLabel({ number, text }: { number: number; text: string }) {
   return (
     <View style={ss.labelRow}>
       <View style={[ss.labelBadge, { borderColor: Brand.accent }]}>
-        <ThemedText style={[ss.labelBadgeText, { color: Brand.accent }]}>{number}</ThemedText>
+        <ThemedText style={[ss.labelBadgeText, { color: tc.accent }]}>{number}</ThemedText>
       </View>
       <ThemedText type="smallBold" style={[ss.labelText, { color: tc.textPrimary }]}>{text}</ThemedText>
       <View style={[ss.labelLine, { backgroundColor: tc.borderColor }]} />
@@ -160,14 +160,14 @@ export default function CreditScoreScreen() {
         {/* Header */}
         <View style={[ss.header, { paddingTop: insets.top + Spacing.two }]}>
           <Pressable onPress={() => router.back()} style={ss.backBtn}>
-            <ThemedText style={ss.backText}>‹ BACK</ThemedText>
+            <ThemedText style={[ss.backText, { color: tc.tactical }]}>‹ BACK</ThemedText>
           </Pressable>
           <View style={ss.classBar}>
             <ThemedText type="classified" style={ss.classText}>FOR OFFICIAL USE ONLY</ThemedText>
           </View>
         </View>
 
-        <ThemedText type="label" style={ss.eyebrow}>// FINANCIAL INTEL</ThemedText>
+        <ThemedText type="label" style={[ss.eyebrow, { color: tc.tactical }]}>// FINANCIAL INTEL</ThemedText>
         <ThemedText style={[ss.title, { color: tc.textPrimary }]}>CREDIT SCORE</ThemedText>
         <ThemedText type="small" themeColor="textSecondary" style={ss.subtitle}>
           A simple guide to what your credit score means, what moves it, and how to protect it — no finance background needed.
@@ -265,7 +265,7 @@ export default function CreditScoreScreen() {
                     <ThemedText style={{ fontSize: 22 }}>{item.icon}</ThemedText>
                   </View>
                   <View style={{ flex: 1, gap: 3 }}>
-                    <ThemedText type="smallBold" style={[ss.lifeLabel, { color: Brand.accent }]}>{item.label}</ThemedText>
+                    <ThemedText type="smallBold" style={[ss.lifeLabel, { color: tc.accent }]}>{item.label}</ThemedText>
                     <ThemedText type="small" themeColor="textSecondary" style={ss.lifeDesc}>{item.desc}</ThemedText>
                   </View>
                 </View>
@@ -290,10 +290,10 @@ const ss = StyleSheet.create({
   content: { gap: Spacing.four, paddingHorizontal: Spacing.three },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: Spacing.two },
   backBtn: { padding: 4 },
-  backText: { color: Brand.tactical, fontSize: 12, fontWeight: '800', letterSpacing: 1, lineHeight: 17 },
+  backText: { fontSize: 12, fontWeight: '800', letterSpacing: 1, lineHeight: 17 },
   classBar: { backgroundColor: '#1A0000', paddingHorizontal: Spacing.two, paddingVertical: 3, borderRadius: 2 },
   classText: { color: '#CC2020' },
-  eyebrow: { color: Brand.tactical, fontSize: 10 },
+  eyebrow: { fontSize: 10 },
   title: { fontSize: 30, lineHeight: 36, fontWeight: '900', letterSpacing: 1, marginTop: 4 },
   subtitle: { marginTop: 6, marginBottom: Spacing.one, lineHeight: 20 },
 

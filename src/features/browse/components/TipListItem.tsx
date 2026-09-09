@@ -3,7 +3,8 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Brand, Spacing } from '@/constants/theme';
+import { Spacing } from '@/constants/theme';
+import { useThemeColors } from '@/hooks/use-theme';
 import { useTipsStore } from '@/store/tips.store';
 import { Tip } from '@/types/tip.types';
 
@@ -13,6 +14,7 @@ interface TipListItemProps {
 }
 
 export function TipListItem({ tip, onPress }: TipListItemProps) {
+  const tc = useThemeColors();
   const saved = useTipsStore((s) => s.savedTipIds.includes(tip.id));
   const toggleSave = useTipsStore((s) => s.toggleSave);
 
@@ -35,7 +37,7 @@ export function TipListItem({ tip, onPress }: TipListItemProps) {
             accessibilityLabel={saved ? 'Remove from saved' : 'Save tip'}>
             <ThemedText
               themeColor={saved ? undefined : 'textMuted'}
-              style={[styles.heart, saved && styles.heartSaved]}>
+              style={[styles.heart, saved && { color: tc.accent }]}>
               {saved ? '♥' : '♡'}
             </ThemedText>
           </Pressable>
@@ -78,9 +80,6 @@ const styles = StyleSheet.create({
   },
   heart: {
     fontSize: 18,
-  },
-  heartSaved: {
-    color: Brand.accent,
   },
   chevron: {
     fontSize: 20,

@@ -260,7 +260,7 @@ export default function PCSCalculatorScreen() {
       <View style={styles.tabBar}>
         {TABS.map((t) => (
           <Pressable key={t.id} onPress={() => setActiveTab(t.id)} style={styles.tabItem}>
-            <ThemedText style={[styles.tabLabel, { color: tc.textMuted }, activeTab === t.id && styles.tabLabelActive]}>
+            <ThemedText style={[styles.tabLabel, { color: tc.textMuted }, activeTab === t.id && [styles.tabLabelActive, { color: tc.accent }]]}>
               {t.label}
             </ThemedText>
             {activeTab === t.id && <View style={styles.tabUnderline} />}
@@ -313,7 +313,7 @@ export default function PCSCalculatorScreen() {
           <ThemedView type="backgroundElement" style={styles.card}>
             {profileGrade && (
               <View style={styles.profileBadgeRow}>
-                <ThemedText style={styles.profileBadgeText}>✓ Auto-filled from your profile</ThemedText>
+                <ThemedText style={[styles.profileBadgeText, { color: tc.tactical }]}>✓ Auto-filled from your profile</ThemedText>
               </View>
             )}
             <View style={styles.cardPadded}>
@@ -542,7 +542,7 @@ export default function PCSCalculatorScreen() {
                     One-time payment for moving household expenses
                   </ThemedText>
                 </View>
-                <ThemedText style={[styles.entitlementAmt, { color: Brand.accent }]}>{fmt(dla)}</ThemedText>
+                <ThemedText style={[styles.entitlementAmt, { color: tc.accent }]}>{fmt(dla)}</ThemedText>
               </View>
             </View>
 
@@ -696,7 +696,7 @@ export default function PCSCalculatorScreen() {
                 <ThemedText style={[styles.packageLabel, { fontSize: 15, fontWeight: '700', color: tc.textSecondary }]}>
                   TOTAL ONE-TIME ENTITLEMENTS
                 </ThemedText>
-                <ThemedText style={[styles.packageAmt, { color: Brand.accent, fontSize: 22, fontFamily: Fonts.data }]}>
+                <ThemedText style={[styles.packageAmt, { color: tc.accent, fontSize: 22, fontFamily: Fonts.data }]}>
                   {fmt(totalOneTime)}
                 </ThemedText>
               </View>
@@ -777,7 +777,7 @@ const styles = StyleSheet.create({
   },
   tabItem: { flex: 1, alignItems: 'center', paddingVertical: Spacing.two, position: 'relative' },
   tabLabel: { fontSize: 13, fontWeight: '700', letterSpacing: 0.6 },
-  tabLabelActive: { color: Brand.accent },
+  tabLabelActive: {},
   tabUnderline: {
     position: 'absolute', bottom: 0, left: 8, right: 8,
     height: 2, borderRadius: 1, backgroundColor: Brand.accent,
@@ -889,7 +889,6 @@ const styles = StyleSheet.create({
   },
   profileBadgeText: {
     fontSize: 11,
-    color: Brand.tactical,
     fontWeight: '600',
     letterSpacing: 0.3,
   },

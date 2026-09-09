@@ -130,7 +130,7 @@ export default function PayChartScreen() {
 
             {/* Result */}
             <ThemedView type="backgroundElement" style={[styles.resultCard, { borderLeftColor: Brand.tactical }]}>
-              <ThemedText style={styles.resultEyebrow}>{selectedGrade} · {selectedYos} YOS</ThemedText>
+              <ThemedText style={[styles.resultEyebrow, { color: tc.tactical }]}>{selectedGrade} · {selectedYos} YOS</ThemedText>
               <ThemedText style={[styles.resultMonthly, { color: tc.textPrimary }]}>{fmtPay(monthlyPay)}<ThemedText style={[styles.resultUnit, { color: tc.textHint }]}>/mo</ThemedText></ThemedText>
               <ThemedText style={[styles.resultAnnual, { color: tc.textHint }]}>{fmtPay(annualPay)}/yr</ThemedText>
               <ThemedText style={[styles.resultNote, { color: tc.textMuted }]}>Basic pay only — does not include BAH, BAS, or special pays. Pre-tax.</ThemedText>
@@ -141,10 +141,10 @@ export default function PayChartScreen() {
               <ThemedText style={[styles.cardLabel, { color: tc.textHint }]}>{selectedGrade} — ALL YOS BRACKETS</ThemedText>
               {tableRows.map((row) => (
                 <View key={row.yos} style={[styles.bracketRow, row.yos <= selectedYos && styles.bracketRowActive]}>
-                  <ThemedText style={[styles.bracketYos, { color: tc.textHint }, row.yos <= selectedYos && { color: Brand.tactical }]}>
+                  <ThemedText style={[styles.bracketYos, { color: tc.textHint }, row.yos <= selectedYos && { color: tc.tactical }]}>
                     {row.yos}+ yrs
                   </ThemedText>
-                  <ThemedText style={[styles.bracketPay, { color: tc.textPrimary }, row.yos <= selectedYos && { color: Brand.tactical }]}>
+                  <ThemedText style={[styles.bracketPay, { color: tc.textPrimary }, row.yos <= selectedYos && { color: tc.tactical }]}>
                     {fmtPay(row.pay)}/mo
                   </ThemedText>
                   <ThemedText style={[styles.bracketAnnual, { color: tc.textMuted }]}>{fmtPay(row.pay * 12)}/yr</ThemedText>
@@ -184,8 +184,8 @@ export default function PayChartScreen() {
                 return (
                   <Pressable key={g} onPress={() => setSelectedGrade(g)}>
                     <View style={[styles.allGradeRow, g === selectedGrade && styles.allGradeRowActive]}>
-                      <ThemedText style={[styles.allGradeLabel, { color: tc.textSecondary }, g === selectedGrade && { color: Brand.tactical }]}>{g}</ThemedText>
-                      <ThemedText style={[styles.allGradePay, { color: tc.textPrimary }, g === selectedGrade && { color: Brand.tactical }]}>{fmtPay(pay)}/mo</ThemedText>
+                      <ThemedText style={[styles.allGradeLabel, { color: tc.textSecondary }, g === selectedGrade && { color: tc.tactical }]}>{g}</ThemedText>
+                      <ThemedText style={[styles.allGradePay, { color: tc.textPrimary }, g === selectedGrade && { color: tc.tactical }]}>{fmtPay(pay)}/mo</ThemedText>
                     </View>
                   </Pressable>
                 );
@@ -197,7 +197,7 @@ export default function PayChartScreen() {
         {mode === 'reserve' && (
           <>
             <ThemedView type="backgroundElement" style={styles.resultCard}>
-              <ThemedText style={styles.resultEyebrow}>{selectedGrade} — RESERVE / GUARD DRILL PAY</ThemedText>
+              <ThemedText style={[styles.resultEyebrow, { color: tc.tactical }]}>{selectedGrade} — RESERVE / GUARD DRILL PAY</ThemedText>
               <ThemedText style={[styles.resultMonthly, { color: tc.textPrimary }]}>{fmtPay(Math.round(monthlyPay / 30))}<ThemedText style={[styles.resultUnit, { color: tc.textHint }]}> / drill period</ThemedText></ThemedText>
               <ThemedText style={[styles.resultAnnual, { color: tc.textHint }]}>{fmtPay(Math.round(monthlyPay / 30 * 4))} / drill weekend (4 IDTs)</ThemedText>
               <ThemedText style={[styles.resultNote, { color: tc.textMuted }]}>1 IDT = 1/30 of active-duty monthly basic pay.</ThemedText>
@@ -215,7 +215,7 @@ export default function PayChartScreen() {
               ].map((row, i) => (
                 <View key={i} style={[styles.allGradeRow, i === 5 && styles.allGradeRowActive]}>
                   <ThemedText style={[styles.allGradeLabel, { width: 'auto', flex: 1, color: i === 5 ? Brand.tactical : tc.textSecondary, fontSize: 11 }]}>{row.label}</ThemedText>
-                  <ThemedText style={[styles.allGradePay, { color: tc.textPrimary }, i === 5 && { color: Brand.tactical }]}>{row.value}</ThemedText>
+                  <ThemedText style={[styles.allGradePay, { color: tc.textPrimary }, i === 5 && { color: tc.tactical }]}>{row.value}</ThemedText>
                 </View>
               ))}
             </ThemedView>
@@ -228,8 +228,8 @@ export default function PayChartScreen() {
                 return (
                   <Pressable key={g} onPress={() => setSelectedGrade(g)}>
                     <View style={[styles.allGradeRow, g === selectedGrade && styles.allGradeRowActive]}>
-                      <ThemedText style={[styles.allGradeLabel, { color: tc.textSecondary }, g === selectedGrade && { color: Brand.tactical }]}>{g}</ThemedText>
-                      <ThemedText style={[styles.allGradePay, { color: tc.textPrimary }, g === selectedGrade && { color: Brand.tactical }]}>{fmtPay(weekend)}/weekend</ThemedText>
+                      <ThemedText style={[styles.allGradeLabel, { color: tc.textSecondary }, g === selectedGrade && { color: tc.tactical }]}>{g}</ThemedText>
+                      <ThemedText style={[styles.allGradePay, { color: tc.textPrimary }, g === selectedGrade && { color: tc.tactical }]}>{fmtPay(weekend)}/weekend</ThemedText>
                     </View>
                   </Pressable>
                 );
@@ -244,8 +244,8 @@ export default function PayChartScreen() {
                 return (
                   <Pressable key={g} onPress={() => setSelectedGrade(g)}>
                     <View style={[styles.allGradeRow, g === selectedGrade && styles.allGradeRowActive]}>
-                      <ThemedText style={[styles.allGradeLabel, { color: tc.textSecondary }, g === selectedGrade && { color: Brand.tactical }]}>{g}</ThemedText>
-                      <ThemedText style={[styles.allGradePay, { color: tc.textPrimary }, g === selectedGrade && { color: Brand.tactical }]}>{fmtPay(weekend)}/weekend</ThemedText>
+                      <ThemedText style={[styles.allGradeLabel, { color: tc.textSecondary }, g === selectedGrade && { color: tc.tactical }]}>{g}</ThemedText>
+                      <ThemedText style={[styles.allGradePay, { color: tc.textPrimary }, g === selectedGrade && { color: tc.tactical }]}>{fmtPay(weekend)}/weekend</ThemedText>
                     </View>
                   </Pressable>
                 );
@@ -299,7 +299,7 @@ const styles = StyleSheet.create({
   yosChipTextActive: { color: '#fff' },
 
   resultCard: { borderRadius: 4, padding: Spacing.three, gap: Spacing.one, borderLeftWidth: 3 },
-  resultEyebrow: { fontSize: 9, fontWeight: '800', color: Brand.tactical, letterSpacing: 1.5 },
+  resultEyebrow: { fontSize: 9, fontWeight: '800', letterSpacing: 1.5 },
   resultMonthly: { fontSize: 26, fontWeight: '900', lineHeight: 32 },
   resultUnit: { fontSize: 13, fontWeight: '400' },
   resultAnnual: { fontSize: 16, fontWeight: '600' },

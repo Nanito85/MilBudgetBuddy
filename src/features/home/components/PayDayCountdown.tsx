@@ -66,14 +66,14 @@ export function PayDayCountdown({ netPay }: Props) {
   return (
     <View style={[styles.container, { backgroundColor: tc.surface }]}>
       <View style={styles.left}>
-        <ThemedText style={styles.eyebrow}>NEXT PAY DAY</ThemedText>
+        <ThemedText style={[styles.eyebrow, { color: tc.tactical }]}>NEXT PAY DAY</ThemedText>
         {isToday ? (
           <ThemedText style={[styles.countdownBig, { color: tc.textPrimary }]}>PAY DAY 🎉</ThemedText>
         ) : (
           <View style={styles.countdownRow}>
             <ThemedText style={[styles.countdownBig, { color: tc.textPrimary }]}>{daysAway}</ThemedText>
             <View style={styles.countdownSub}>
-              <ThemedText style={styles.countdownUnit}>DAY{daysAway !== 1 ? 'S' : ''}</ThemedText>
+              <ThemedText style={[styles.countdownUnit, { color: tc.tactical }]}>DAY{daysAway !== 1 ? 'S' : ''}</ThemedText>
               <ThemedText style={[styles.countdownLabel, { color: tc.textHint }]}>{isTomorrow ? 'TOMORROW' : `UNTIL ${label}`}</ThemedText>
             </View>
           </View>
@@ -83,7 +83,7 @@ export function PayDayCountdown({ netPay }: Props) {
       {netPay > 0 && (
         <View style={styles.right}>
           <ThemedText style={[styles.payLabel, { color: tc.textHint }]}>EST. TAKE-HOME</ThemedText>
-          <ThemedText style={styles.payAmount}>{fmtPay(netPay / 2)}</ThemedText>
+          <ThemedText style={[styles.payAmount, { color: tc.accent }]}>{fmtPay(netPay / 2)}</ThemedText>
           <ThemedText style={[styles.payNote, { color: tc.textMuted }]}>per paycheck</ThemedText>
           <ThemedText style={[styles.payMonthly, { color: tc.textMuted }]}>{fmtPay(netPay)}/mo</ThemedText>
         </View>
@@ -106,7 +106,6 @@ const styles = StyleSheet.create({
     fontSize: 8,
     fontWeight: '800',
     letterSpacing: 1.5,
-    color: Brand.tactical,
     fontFamily: 'monospace',
   },
   countdownRow: { flexDirection: 'row', alignItems: 'flex-end', gap: Spacing.one },
@@ -116,12 +115,12 @@ const styles = StyleSheet.create({
     lineHeight: 30,
   },
   countdownSub: { gap: 1, paddingBottom: 4 },
-  countdownUnit: { fontSize: 10, fontWeight: '800', color: Brand.tactical, letterSpacing: 1 },
+  countdownUnit: { fontSize: 10, fontWeight: '800', letterSpacing: 1 },
   countdownLabel: { fontSize: 9, fontWeight: '700', letterSpacing: 0.5 },
   dateStr: { fontSize: 10, fontWeight: '600', marginTop: 2 },
   right: { alignItems: 'flex-end', gap: 2 },
   payLabel: { fontSize: 8, fontWeight: '700', letterSpacing: 1 },
-  payAmount: { fontSize: 20, fontWeight: '900', color: Brand.accent },
+  payAmount: { fontSize: 20, fontWeight: '900' },
   payNote: { fontSize: 8, fontWeight: '600' },
   payMonthly: { fontSize: 9, marginTop: 1 },
 });

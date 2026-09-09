@@ -167,7 +167,7 @@ export default function MoneyFlowchartScreen() {
 
         {/* Hero */}
         <ThemedView type="backgroundElement" style={styles.heroBanner}>
-          <ThemedText style={styles.heroEyebrow}>SINGLE SERVICE MEMBER</ThemedText>
+          <ThemedText style={[styles.heroEyebrow, { color: tc.tactical }]}>SINGLE SERVICE MEMBER</ThemedText>
           <ThemedText style={[styles.heroTitle, { color: tc.textPrimary }]}>The Military Money Order</ThemedText>
           <ThemedText style={[styles.heroBody, { color: tc.textHint }]}>
             Six steps in priority order. Do Step 1 before Step 2. Check each off as you complete it.
@@ -177,14 +177,14 @@ export default function MoneyFlowchartScreen() {
         {/* Progress */}
         <ThemedView type="backgroundElement" style={styles.progressCard}>
           <View style={styles.progressHeader}>
-            <ThemedText style={styles.progressLabel}>MISSION STATUS</ThemedText>
+            <ThemedText style={[styles.progressLabel, { color: tc.tactical }]}>MISSION STATUS</ThemedText>
             <ThemedText style={[styles.progressCount, { color: tc.textPrimary }]}>{completedCount}/{STEPS.length} STEPS</ThemedText>
           </View>
           <View style={[styles.progressTrack, { backgroundColor: tc.surfaceInner }]}>
             <View style={[styles.progressFill, { width: `${progressPct}%` as any }]} />
           </View>
           {completedCount === STEPS.length && (
-            <ThemedText style={styles.progressComplete}>
+            <ThemedText style={[styles.progressComplete, { color: tc.success }]}>
               🎖️ MISSION ACCOMPLISHED — Financial independence protocol engaged.
             </ThemedText>
           )}
@@ -202,7 +202,7 @@ export default function MoneyFlowchartScreen() {
 
         {/* Note */}
         <ThemedView type="backgroundElement" style={styles.disclaimer}>
-          <ThemedText style={styles.disclaimerTitle}>⚠ Deployment Exception</ThemedText>
+          <ThemedText style={[styles.disclaimerTitle, { color: tc.warning }]}>⚠ Deployment Exception</ThemedText>
           <ThemedText style={[styles.disclaimerText, { color: tc.textHint }]}>
             If you are deployed to a Combat Zone (CZTE), skip to Step 5 first. Your income is tax-exempt and TSP contributions jump to $72K/yr. Attack it.
           </ThemedText>
@@ -234,17 +234,17 @@ const styles = StyleSheet.create({
     borderLeftColor: Brand.tactical,
     gap: 4,
   },
-  heroEyebrow: { fontSize: 9, fontWeight: '800', letterSpacing: 1.5, color: Brand.tactical },
+  heroEyebrow: { fontSize: 9, fontWeight: '800', letterSpacing: 1.5 },
   heroTitle: { fontSize: 20, fontWeight: '900' },
   heroBody: { fontSize: 12, lineHeight: 18, marginTop: 4 },
 
   progressCard: { borderRadius: 4, padding: Spacing.three, gap: Spacing.two },
   progressHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  progressLabel: { fontSize: 9, fontWeight: '800', letterSpacing: 1.2, color: Brand.tactical },
+  progressLabel: { fontSize: 9, fontWeight: '800', letterSpacing: 1.2 },
   progressCount: { fontSize: 13, fontWeight: '700', fontFamily: 'Courier New' },
   progressTrack: { height: 6, backgroundColor: '#0D1E30', borderRadius: 3, overflow: 'hidden' },
   progressFill: { height: '100%', backgroundColor: Brand.success, borderRadius: 3 },
-  progressComplete: { fontSize: 12, color: Brand.success, textAlign: 'center', fontWeight: '700' },
+  progressComplete: { fontSize: 12, textAlign: 'center', fontWeight: '700' },
 
   stepCard: {
     flexDirection: 'row',
@@ -296,6 +296,6 @@ const styles = StyleSheet.create({
     borderLeftColor: Brand.warning,
     gap: 6,
   },
-  disclaimerTitle: { fontSize: 12, fontWeight: '700', color: Brand.warning },
+  disclaimerTitle: { fontSize: 12, fontWeight: '700' },
   disclaimerText: { fontSize: 11, lineHeight: 17 },
 });

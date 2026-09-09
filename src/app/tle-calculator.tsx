@@ -94,7 +94,7 @@ export default function TLECalculatorScreen() {
 
         {/* ── BLUF ───────────────────────────────────────────────────────────── */}
         <ThemedView type="backgroundElement" style={styles.blufBox}>
-          <ThemedText style={styles.blufLabel}>BLUF</ThemedText>
+          <ThemedText style={[styles.blufLabel, { color: tc.accent }]}>BLUF</ThemedText>
           <ThemedText type="small" style={{ lineHeight: 18 }}>
             TLE (CONUS) and TLA (OCONUS) are separate allowances under different JTR rules — they
             both reimburse lodging and meals when you cannot move directly into permanent housing,
@@ -284,7 +284,7 @@ export default function TLECalculatorScreen() {
                   <ThemedText type="small" themeColor="textSecondary" style={[styles.fieldLabel, styles.textRight]}>
                     DAILY RATE
                   </ThemedText>
-                  <ThemedText style={[styles.dailyValue, { color: Brand.accent }]}>
+                  <ThemedText style={[styles.dailyValue, { color: tc.accent }]}>
                     {fmtMoney(result.dailyTotal)}/day
                   </ThemedText>
                 </View>
@@ -443,7 +443,7 @@ const styles = StyleSheet.create({
     borderLeftWidth: 4,
     borderLeftColor: Brand.accent,
   },
-  blufLabel: { fontSize: 11, fontWeight: '800', color: Brand.accent, letterSpacing: 0.8 },
+  blufLabel: { fontSize: 11, fontWeight: '800', letterSpacing: 0.8 },
 
   section: { gap: Spacing.two },
   sectionHeaderRow: {

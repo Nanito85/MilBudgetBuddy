@@ -39,7 +39,15 @@ interface EligibilityResult {
   color:    string;
 }
 
-function getEligibility(grade: PayGrade, depStatus: DepStatus): EligibilityResult {
+// `tc` (useThemeColors()) is threaded in from the caller rather than read
+// via the hook here, since this is a plain function, not a component —
+// hooks can't be called from it. Its `color` field is used both as
+// decorative borderLeftColor and as actual text color at the render site
+// below, so it needs to already be the theme-correct value by the time it
+// gets here (tc.success/tc.warning resolve to the light-mode-safe variant
+// automatically; Brand.danger passes contrast as-is in both modes, so it's
+// left alone).
+function getEligibility(grade: PayGrade, depStatus: DepStatus, tc: { success: string; warning: string }): EligibilityResult {
   const withDep = depStatus === 'with';
   if (withDep) {
     return {
@@ -52,7 +60,7 @@ function getEligibility(grade: PayGrade, depStatus: DepStatus): EligibilityResul
         'If you live in government-owned/leased family housing on-post, you receive no BAH — housing is provided in place of the allowance.',
         'If you live off-post, you receive full BAH and keep any difference between your BAH rate and your actual rent.',
       ],
-      color: Brand.success,
+      color: tc.success,
     };
   }
   if (['E1','E2','E3'].includes(grade)) {
@@ -80,7 +88,7 @@ function getEligibility(grade: PayGrade, depStatus: DepStatus): EligibilityResul
         'Once you reach E5, you are automatically entitled to BAH without dependents — no waiver needed.',
         'Check with your unit S1 and installation housing office for your specific situation.',
       ],
-      color: Brand.warning,
+      color: tc.warning,
     };
   }
   return {
@@ -93,7 +101,7 @@ function getEligibility(grade: PayGrade, depStatus: DepStatus): EligibilityResul
       'BAH is paid based on your duty station MHA (Military Housing Area) ZIP code.',
       'Warrant Officers and Officers receive BAH without dependents at all grades.',
     ],
-    color: Brand.success,
+    color: tc.success,
   };
 }
 
@@ -104,7 +112,7 @@ function Chip({ label, selected, onPress }: { label: string; selected: boolean; 
     <Pressable
       onPress={onPress}
       style={[styles.chip, { backgroundColor: tc.background }, selected && styles.chipSelected]}>
-      <ThemedText style={[styles.chipText, { color: tc.textHint }, selected && styles.chipTextSelected]}>{label}</ThemedText>
+      <ThemedText style={[styles.chipText, { color: tc.textHint }, selected && [styles.chipTextSelected, { color: tc.tactical }]]}>{label}</ThemedText>
     </Pressable>
   );
 }
@@ -129,8 +137,8 @@ function FullRateTable({ zip }: { zip: string }) {
         return (
           <View key={g} style={[styles.rateTableRow, { borderBottomColor: tc.borderColor }]}>
             <ThemedText style={[styles.rateTableGrade, { color: tc.textSecondary, flex: 0.8 }]}>{g}</ThemedText>
-            <ThemedText style={[styles.rateTableValue, { color: Brand.tactical }]}>${w.toLocaleString()}</ThemedText>
-            <ThemedText style={[styles.rateTableValue, { color: Brand.accent }]}>${wo.toLocaleString()}</ThemedText>
+            <ThemedText style={[styles.rateTableValue, { color: tc.tactical }]}>${w.toLocaleString()}</ThemedText>
+            <ThemedText style={[styles.rateTableValue, { color: tc.accent }]}>${wo.toLocaleString()}</ThemedText>
           </View>
         );
       })}
@@ -145,8 +153,8 @@ function FullRateTable({ zip }: { zip: string }) {
         return (
           <View key={g} style={[styles.rateTableRow, { borderBottomColor: tc.borderColor }]}>
             <ThemedText style={[styles.rateTableGrade, { color: tc.textSecondary, flex: 0.8 }]}>{g}</ThemedText>
-            <ThemedText style={[styles.rateTableValue, { color: Brand.tactical }]}>${w.toLocaleString()}</ThemedText>
-            <ThemedText style={[styles.rateTableValue, { color: Brand.accent }]}>${wo.toLocaleString()}</ThemedText>
+            <ThemedText style={[styles.rateTableValue, { color: tc.tactical }]}>${w.toLocaleString()}</ThemedText>
+            <ThemedText style={[styles.rateTableValue, { color: tc.accent }]}>${wo.toLocaleString()}</ThemedText>
           </View>
         );
       })}
@@ -161,8 +169,8 @@ function FullRateTable({ zip }: { zip: string }) {
         return (
           <View key={g} style={[styles.rateTableRow, { borderBottomColor: tc.borderColor }]}>
             <ThemedText style={[styles.rateTableGrade, { color: tc.textSecondary, flex: 0.8 }]}>{g}</ThemedText>
-            <ThemedText style={[styles.rateTableValue, { color: Brand.tactical }]}>${w.toLocaleString()}</ThemedText>
-            <ThemedText style={[styles.rateTableValue, { color: Brand.accent }]}>${wo.toLocaleString()}</ThemedText>
+            <ThemedText style={[styles.rateTableValue, { color: tc.tactical }]}>${w.toLocaleString()}</ThemedText>
+            <ThemedText style={[styles.rateTableValue, { color: tc.accent }]}>${wo.toLocaleString()}</ThemedText>
           </View>
         );
       })}
@@ -197,7 +205,7 @@ function LocationSearch({
 
   return (
     <View>
-      <ThemedText style={styles.cardLabel}>DUTY STATION / MHA LOOKUP</ThemedText>
+      <ThemedText style={[styles.cardLabel, { color: tc.tactical }]}>DUTY STATION / MHA LOOKUP</ThemedText>
       <ThemedText style={[styles.cardHint, { color: tc.textHint }]}>
         Type your installation name, city, or state to find your BAH rates.
       </ThemedText>
@@ -253,7 +261,7 @@ function LocationSearch({
         <View style={styles.selectedCard}>
           <View style={styles.selectedCardTop}>
             <View style={{ flex: 1 }}>
-              <ThemedText style={styles.selectedCardLabel}>SELECTED LOCATION</ThemedText>
+              <ThemedText style={[styles.selectedCardLabel, { color: tc.tactical }]}>SELECTED LOCATION</ThemedText>
               <ThemedText style={[styles.selectedCardName, { color: tc.textPrimary }]}>{selectedInstallation.name}</ThemedText>
               <ThemedText style={[styles.selectedCardSub, { color: tc.textHint }]}>
                 {selectedInstallation.city}, {selectedInstallation.state}
@@ -306,7 +314,7 @@ function OhaSearch({
 
   return (
     <View>
-      <ThemedText style={styles.cardLabel}>OCONUS LOCATION SEARCH</ThemedText>
+      <ThemedText style={[styles.cardLabel, { color: tc.tactical }]}>OCONUS LOCATION SEARCH</ThemedText>
       <ThemedText style={[styles.cardHint, { color: tc.textHint }]}>
         Type your installation, country, or region to find your OCONUS area.
       </ThemedText>
@@ -354,12 +362,12 @@ function OhaSearch({
         <View style={styles.selectedCard}>
           <View style={styles.selectedCardTop}>
             <View style={{ flex: 1 }}>
-              <ThemedText style={styles.selectedCardLabel}>SELECTED LOCATION</ThemedText>
+              <ThemedText style={[styles.selectedCardLabel, { color: tc.tactical }]}>SELECTED LOCATION</ThemedText>
               <ThemedText style={[styles.selectedCardName, { color: tc.textPrimary }]}>{selectedLoc.label}</ThemedText>
               <ThemedText style={[styles.selectedCardSub, { color: tc.textHint }]}>{selectedLoc.country} · {selectedLoc.region}</ThemedText>
             </View>
             <View style={[styles.branchBadge, { backgroundColor: Brand.accent + '20', borderColor: Brand.accent + '60' }]}>
-              <ThemedText style={[styles.branchBadgeText, { color: Brand.accent }]}>OCONUS</ThemedText>
+              <ThemedText style={[styles.branchBadgeText, { color: tc.accent }]}>OCONUS</ThemedText>
             </View>
           </View>
           <View style={[styles.ohaNote, { backgroundColor: tc.surface }]}>
@@ -409,7 +417,7 @@ export default function BahGuideScreen() {
   const [ohaSearch, setOhaSearch]   = useState('');
   const [selectedOha, setSelectedOha] = useState<OhaLocation | undefined>();
 
-  const eligibility = useMemo(() => getEligibility(grade, depStatus), [grade, depStatus]);
+  const eligibility = useMemo(() => getEligibility(grade, depStatus, tc), [grade, depStatus, tc]);
   const bahRate     = useMemo(
     () => (zip ? getBahRate(zip, grade, depStatus === 'with') ?? 0 : null),
     [zip, grade, depStatus],
@@ -461,7 +469,7 @@ export default function BahGuideScreen() {
               key={t.key}
               onPress={() => setTab(t.key)}
               style={[styles.tabBtn, tab === t.key && styles.tabBtnActive]}>
-              <ThemedText style={[styles.tabBtnText, { color: tc.textHint }, tab === t.key && { color: Brand.tactical }]}>
+              <ThemedText style={[styles.tabBtnText, { color: tc.textHint }, tab === t.key && { color: tc.tactical }]}>
                 {t.label}
               </ThemedText>
             </Pressable>
@@ -486,7 +494,7 @@ export default function BahGuideScreen() {
 
               {/* Grade selector */}
               <ThemedView type="backgroundElement" style={styles.card}>
-                <ThemedText style={styles.cardLabel}>STEP 1 — YOUR PAY GRADE</ThemedText>
+                <ThemedText style={[styles.cardLabel, { color: tc.tactical }]}>STEP 1 — YOUR PAY GRADE</ThemedText>
                 <ThemedText style={[styles.groupLabel, { color: tc.textMuted }]}>ENLISTED</ThemedText>
                 <View style={styles.chipRow}>
                   {ENLISTED.map((g) => <Chip key={g} label={g} selected={grade === g} onPress={() => setGrade(g)} />)}
@@ -503,7 +511,7 @@ export default function BahGuideScreen() {
 
               {/* Dependency status */}
               <ThemedView type="backgroundElement" style={styles.card}>
-                <ThemedText style={styles.cardLabel}>STEP 2 — DEPENDENCY STATUS</ThemedText>
+                <ThemedText style={[styles.cardLabel, { color: tc.tactical }]}>STEP 2 — DEPENDENCY STATUS</ThemedText>
                 <ThemedText style={[styles.cardHint, { color: tc.textHint }]}>Do you have a spouse or dependents on your orders?</ThemedText>
                 <View style={styles.chipRow}>
                   <Chip label="No Dependents"    selected={depStatus === 'without'} onPress={() => setDepStatus('without')} />
@@ -524,7 +532,7 @@ export default function BahGuideScreen() {
 
               {/* Duty station search */}
               <ThemedView type="backgroundElement" style={styles.card}>
-                <ThemedText style={styles.cardLabel}>STEP 3 — YOUR DUTY STATION</ThemedText>
+                <ThemedText style={[styles.cardLabel, { color: tc.tactical }]}>STEP 3 — YOUR DUTY STATION</ThemedText>
                 <LocationSearch
                   value={bahSearch}
                   onChange={setBahSearch}
@@ -539,12 +547,12 @@ export default function BahGuideScreen() {
               {/* Your personal rate */}
               {eligibility.eligible && zip && bahRate !== null && (
                 <ThemedView type="backgroundElement" style={styles.card}>
-                  <ThemedText style={styles.cardLabel}>YOUR FY2026 BAH RATE</ThemedText>
+                  <ThemedText style={[styles.cardLabel, { color: tc.tactical }]}>YOUR FY2026 BAH RATE</ThemedText>
                   <View style={styles.rateHero}>
                     <ThemedText style={[styles.rateHeroLabel, { color: tc.textHint }]}>
                       {grade} · {depStatus === 'with' ? 'With Dependents' : 'No Dependents'} · {selectedInstallation?.name}
                     </ThemedText>
-                    <ThemedText style={styles.rateHeroValue}>${bahRate.toLocaleString()}</ThemedText>
+                    <ThemedText style={[styles.rateHeroValue, { color: tc.accent }]}>${bahRate.toLocaleString()}</ThemedText>
                     <ThemedText style={[styles.rateHeroSub, { color: tc.textHint }]}>per month · non-taxable</ThemedText>
                   </View>
                 </ThemedView>
@@ -553,7 +561,7 @@ export default function BahGuideScreen() {
               {/* Full rate table */}
               {zip && (
                 <ThemedView type="backgroundElement" style={styles.card}>
-                  <ThemedText style={styles.cardLabel}>
+                  <ThemedText style={[styles.cardLabel, { color: tc.tactical }]}>
                     FY2026 FULL RATE TABLE — {selectedInstallation?.name ?? zip}
                   </ThemedText>
                   <ThemedText style={[styles.cardHint, { color: tc.textHint }]}>All grades — monthly non-taxable amount.</ThemedText>
@@ -563,7 +571,7 @@ export default function BahGuideScreen() {
 
               {/* How BAH works */}
               <ThemedView type="backgroundElement" style={styles.card}>
-                <ThemedText style={styles.cardLabel}>HOW BAH WORKS — THE BASICS</ThemedText>
+                <ThemedText style={[styles.cardLabel, { color: tc.tactical }]}>HOW BAH WORKS — THE BASICS</ThemedText>
                 {[
                   {
                     q: 'What is BAH?',
@@ -595,7 +603,7 @@ export default function BahGuideScreen() {
 
               {/* Strategy tips */}
               <ThemedView type="backgroundElement" style={styles.card}>
-                <ThemedText style={styles.cardLabel}>BAH MONEY STRATEGIES</ThemedText>
+                <ThemedText style={[styles.cardLabel, { color: tc.tactical }]}>BAH MONEY STRATEGIES</ThemedText>
                 {[
                   'E5 and above: Move off-post as soon as possible. Find rent below your BAH rate and keep the difference every month.',
                   'Roommate tactic: Two E5s share a 2-bedroom apartment. Each pays $700/mo in rent — both pocket $500+ in BAH each month.',
@@ -603,7 +611,7 @@ export default function BahGuideScreen() {
                   'Negotiate rent: Landlords near bases often price to BAH rates. Push back and negotiate — especially when signing a long lease.',
                 ].map((tip, i) => (
                   <View key={i} style={styles.tipRow}>
-                    <ThemedText style={styles.tipBullet}>▸</ThemedText>
+                    <ThemedText style={[styles.tipBullet, { color: tc.accent }]}>▸</ThemedText>
                     <ThemedText style={[styles.tipText, { color: tc.textHint }]}>{tip}</ThemedText>
                   </View>
                 ))}
@@ -644,7 +652,7 @@ export default function BahGuideScreen() {
               {/* Staleness warning */}
               {isOhaDataStale() && (
                 <ThemedView type="backgroundElement" style={[styles.card, { borderColor: Brand.warning + '50' }]}>
-                  <ThemedText style={[styles.cardLabel, { color: Brand.warning }]}>
+                  <ThemedText style={[styles.cardLabel, { color: tc.warning }]}>
                     ⚠ OHA DATA MAY BE OUTDATED
                   </ThemedText>
                   <ThemedText style={[styles.cardHint, { color: tc.textHint }]}>
@@ -667,23 +675,23 @@ export default function BahGuideScreen() {
                 const miha = locationData?.miha ?? 0;
                 return ohaRates ? (
                   <ThemedView type="backgroundElement" style={styles.card}>
-                    <ThemedText style={styles.cardLabel}>YOUR OHA ESTIMATE — {OHA_DATA_QUARTER}</ThemedText>
+                    <ThemedText style={[styles.cardLabel, { color: tc.tactical }]}>YOUR OHA ESTIMATE — {OHA_DATA_QUARTER}</ThemedText>
                     <ThemedText style={[styles.cardHint, { color: tc.textHint }]}>{selectedOha.label} · {grade}</ThemedText>
                     <View style={styles.rateHero}>
-                      <ThemedText style={styles.rateHeroValue}>${totalCeiling?.toLocaleString()}</ThemedText>
+                      <ThemedText style={[styles.rateHeroValue, { color: tc.accent }]}>${totalCeiling?.toLocaleString()}</ThemedText>
                       <ThemedText style={[styles.rateHeroSub, { color: tc.textHint }]}>total monthly ceiling (rent + utilities)</ThemedText>
                     </View>
                     <View style={[styles.dataRow, { marginTop: Spacing.two }]}>
                       <ThemedText style={[styles.dataLabel, { color: tc.textHint }]}>Rent ceiling</ThemedText>
-                      <ThemedText style={[styles.dataValue, { color: Brand.tactical }]}>${ohaRates.rentCeilingUSD.toLocaleString()}/mo</ThemedText>
+                      <ThemedText style={[styles.dataValue, { color: tc.tactical }]}>${ohaRates.rentCeilingUSD.toLocaleString()}/mo</ThemedText>
                     </View>
                     <View style={styles.dataRow}>
                       <ThemedText style={[styles.dataLabel, { color: tc.textHint }]}>Utility allowance</ThemedText>
-                      <ThemedText style={[styles.dataValue, { color: Brand.accent }]}>${ohaRates.utilityAllowanceUSD.toLocaleString()}/mo</ThemedText>
+                      <ThemedText style={[styles.dataValue, { color: tc.accent }]}>${ohaRates.utilityAllowanceUSD.toLocaleString()}/mo</ThemedText>
                     </View>
                     <View style={styles.dataRow}>
                       <ThemedText style={[styles.dataLabel, { color: tc.textHint }]}>MIHA (move-in, one-time)</ThemedText>
-                      <ThemedText style={[styles.dataValue, { color: Brand.tactical }]}>
+                      <ThemedText style={[styles.dataValue, { color: tc.tactical }]}>
                         {miha > 0 ? `$${miha.toLocaleString()}` : 'N/A'}
                       </ThemedText>
                     </View>
@@ -696,7 +704,7 @@ export default function BahGuideScreen() {
 
               {/* How OHA works */}
               <ThemedView type="backgroundElement" style={styles.card}>
-                <ThemedText style={styles.cardLabel}>HOW OHA WORKS</ThemedText>
+                <ThemedText style={[styles.cardLabel, { color: tc.tactical }]}>HOW OHA WORKS</ThemedText>
                 {[
                   {
                     q: 'What does OHA cover?',
@@ -732,7 +740,7 @@ export default function BahGuideScreen() {
 
               {/* OHA grade tiers */}
               <ThemedView type="backgroundElement" style={styles.card}>
-                <ThemedText style={styles.cardLabel}>OHA GRADE TIERS — GENERAL GUIDE</ThemedText>
+                <ThemedText style={[styles.cardLabel, { color: tc.tactical }]}>OHA GRADE TIERS — GENERAL GUIDE</ThemedText>
                 <ThemedText style={[styles.cardHint, { color: tc.textHint }]}>Ceilings scale with grade. Exact amounts vary by location and quarter.</ThemedText>
                 {[
                   { grades: 'E1–E4', info: 'Entry-level ceiling. On-post government quarters often recommended or required.' },
@@ -744,7 +752,7 @@ export default function BahGuideScreen() {
                 ].map((row, i) => (
                   <View key={i} style={styles.tierRow}>
                     <View style={styles.tierGradeBox}>
-                      <ThemedText style={styles.tierGrade}>{row.grades}</ThemedText>
+                      <ThemedText style={[styles.tierGrade, { color: tc.tactical }]}>{row.grades}</ThemedText>
                     </View>
                     <ThemedText style={[styles.tierInfo, { color: tc.textHint }]}>{row.info}</ThemedText>
                   </View>
@@ -796,7 +804,7 @@ const styles = StyleSheet.create({
   heroBody:    { fontSize: 12, lineHeight: 18, marginTop: 4 },
 
   card:      { borderRadius: 4, padding: Spacing.three, gap: Spacing.two },
-  cardLabel: { fontSize: 9, fontWeight: '800', letterSpacing: 1.2, color: Brand.tactical, marginBottom: 2 },
+  cardLabel: { fontSize: 9, fontWeight: '800', letterSpacing: 1.2, marginBottom: 2 },
   cardHint:  { fontSize: 11, lineHeight: 16 },
   groupLabel:{ fontSize: 8, fontWeight: '700', letterSpacing: 0.8 },
 
@@ -807,7 +815,7 @@ const styles = StyleSheet.create({
   },
   chipSelected:     { borderColor: Brand.tactical, backgroundColor: Brand.tactical + '20' },
   chipText:         { fontSize: 11, fontWeight: '700' },
-  chipTextSelected: { color: Brand.tactical },
+  chipTextSelected: {},
 
   eligCard: {
     borderWidth: 1,
@@ -850,7 +858,7 @@ const styles = StyleSheet.create({
     borderRadius: 4, padding: Spacing.two, backgroundColor: Brand.tactical + '08', gap: Spacing.one,
   },
   selectedCardTop:  { flexDirection: 'row', alignItems: 'flex-start', gap: Spacing.one },
-  selectedCardLabel:{ fontSize: 8, fontWeight: '800', letterSpacing: 1, color: Brand.tactical },
+  selectedCardLabel: { fontSize: 8, fontWeight: '800', letterSpacing: 1 },
   selectedCardName: { fontSize: 13, fontWeight: '700', marginTop: 2 },
   selectedCardSub:  { fontSize: 10, fontFamily: 'monospace', marginTop: 1 },
 
@@ -868,7 +876,7 @@ const styles = StyleSheet.create({
   // Rate hero
   rateHero:      { alignItems: 'center', gap: 4 },
   rateHeroLabel: { fontSize: 11, fontWeight: '700', textAlign: 'center' },
-  rateHeroValue: { fontSize: 32, lineHeight: 38, fontWeight: '900', color: Brand.accent, fontFamily: 'Courier New' },
+  rateHeroValue: { fontSize: 32, lineHeight: 38, fontWeight: '900', fontFamily: 'Courier New' },
   rateHeroSub:   { fontSize: 12 },
 
   // Full rate table
@@ -888,7 +896,7 @@ const styles = StyleSheet.create({
 
   // Tips
   tipRow:    { flexDirection: 'row', gap: 6, alignItems: 'flex-start' },
-  tipBullet: { fontSize: 10, color: Brand.accent, marginTop: 2 },
+  tipBullet: { fontSize: 10, marginTop: 2 },
   tipText:   { flex: 1, fontSize: 12, lineHeight: 18 },
 
   // Shared data rows
@@ -898,7 +906,7 @@ const styles = StyleSheet.create({
 
   // OHA
   dtmoBox:   { gap: Spacing.two },
-  dtmoTitle: { fontSize: 14, fontWeight: '800', color: Brand.tactical },
+  dtmoTitle: { fontSize: 14, fontWeight: '800' },
   dtmoBody:  { fontSize: 12, lineHeight: 18, color: '#4D7A9A' }, // unused style — left as-is (dead code, no JSX render site)
 
   ohaNote:     { borderRadius: 3, padding: Spacing.two },
@@ -906,7 +914,7 @@ const styles = StyleSheet.create({
 
   tierRow:      { flexDirection: 'row', gap: Spacing.two, alignItems: 'flex-start', paddingVertical: Spacing.one },
   tierGradeBox: { backgroundColor: Brand.tactical + '20', borderRadius: 3, paddingHorizontal: 8, paddingVertical: 3, minWidth: 60, alignItems: 'center' },
-  tierGrade:    { fontSize: 10, fontWeight: '800', color: Brand.tactical, letterSpacing: 0.5 },
+  tierGrade: { fontSize: 10, fontWeight: '800', letterSpacing: 0.5 },
   tierInfo:     { flex: 1, fontSize: 11, lineHeight: 17 },
 
   disclaimer:     { borderRadius: 4, padding: Spacing.two },

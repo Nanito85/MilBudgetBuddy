@@ -61,13 +61,13 @@ export default function SignUpScreen() {
           showsVerticalScrollIndicator={false}>
 
           <Pressable onPress={() => router.back()} style={styles.backBtn}>
-            <ThemedText style={styles.backText}>‹ Back</ThemedText>
+            <ThemedText style={[styles.backText, { color: tc.tactical }]}>‹ Back</ThemedText>
           </Pressable>
 
           <View style={styles.hero}>
-            <ThemedText style={styles.eyebrow}>// MILBUDGETBUDDY</ThemedText>
+            <ThemedText style={[styles.eyebrow, { color: tc.tactical }]}>// MILBUDGETBUDDY</ThemedText>
             <ThemedText style={[styles.title, { color: tc.textPrimary }]}>CREATE ACCOUNT</ThemedText>
-            <ThemedText style={styles.slogan}>Your Money. Your Mission.</ThemedText>
+            <ThemedText style={[styles.slogan, { color: tc.tactical }]}>Your Money. Your Mission.</ThemedText>
             <ThemedText style={[styles.sub, { color: tc.textSecondary }]}>
               Your data syncs securely across all your devices. One account covers the whole family.
             </ThemedText>
@@ -150,7 +150,7 @@ export default function SignUpScreen() {
           <View style={styles.footer}>
             <ThemedText style={[styles.footerText, { color: tc.textSecondary }]}>Already have an account?</ThemedText>
             <Pressable onPress={() => router.push('/auth/sign-in' as any)}>
-              <ThemedText style={styles.footerLink}>Sign in →</ThemedText>
+              <ThemedText style={[styles.footerLink, { color: tc.tactical }]}>Sign in →</ThemedText>
             </Pressable>
           </View>
 
@@ -165,12 +165,12 @@ const styles = StyleSheet.create({
   content: { paddingHorizontal: Spacing.three, paddingBottom: Spacing.five, gap: Spacing.four },
 
   backBtn: { paddingVertical: Spacing.three, alignSelf: 'flex-start' },
-  backText: { fontSize: 16, fontWeight: '600', color: Brand.tactical, lineHeight: 22 },
+  backText: { fontSize: 16, fontWeight: '600', lineHeight: 22 },
 
   hero: { gap: Spacing.one },
-  eyebrow: { color: Brand.tactical, fontSize: 10, fontWeight: '700', letterSpacing: 1.5 },
+  eyebrow: { fontSize: 10, fontWeight: '700', letterSpacing: 1.5 },
   title: { fontSize: 28, lineHeight: 34, fontWeight: '900', letterSpacing: 0.5, marginTop: 2 },
-  slogan: { fontSize: 14, fontWeight: '700', color: Brand.tactical, letterSpacing: 0.3, marginTop: 2 },
+  slogan: { fontSize: 14, fontWeight: '700', letterSpacing: 0.3, marginTop: 2 },
   sub: { fontSize: 13, lineHeight: 19, marginTop: 4 },
 
   form: { gap: Spacing.three },
@@ -208,5 +208,5 @@ const styles = StyleSheet.create({
 
   footer: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 6 },
   footerText: { fontSize: 13 },
-  footerLink: { color: Brand.tactical, fontSize: 13, fontWeight: '700' },
+  footerLink: { fontSize: 13, fontWeight: '700' },
 });

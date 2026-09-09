@@ -56,7 +56,7 @@ export default function TipDetailScreen() {
             hitSlop={12}
             style={styles.saveBtn}
             accessibilityLabel={saved ? 'Remove from saved' : 'Save tip'}>
-            <ThemedText style={[styles.heart, { color: tc.textMuted }, saved && styles.heartSaved]}>
+            <ThemedText style={[styles.heart, { color: tc.textMuted }, saved && { color: tc.accent }]}>
               {saved ? '♥' : '♡'}
             </ThemedText>
           </Pressable>
@@ -114,9 +114,6 @@ const styles = StyleSheet.create({
   },
   heart: {
     fontSize: 26,
-  },
-  heartSaved: {
-    color: Brand.accent,
   },
   title: {
     fontSize: 26,

@@ -175,7 +175,7 @@ export default function ReservesScreen() {
           <ThemedText style={styles.backChevron}>‹</ThemedText>
         </Pressable>
         <View style={{ flex: 1 }}>
-          <ThemedText style={styles.eyebrow}>// RESERVE & GUARD</ThemedText>
+          <ThemedText style={[styles.eyebrow, { color: tc.tactical }]}>// RESERVE & GUARD</ThemedText>
           <ThemedText style={[styles.title, { color: tc.textPrimary }]}>Reserve Hub</ThemedText>
         </View>
       </View>
@@ -195,7 +195,7 @@ export default function ReservesScreen() {
               activeTab === t.id && styles.tabBtnActive,
             ]}>
             <ThemedText style={{ fontSize: 14, lineHeight: 18 }}>{t.icon}</ThemedText>
-            <ThemedText style={[styles.tabLabel, { color: tc.textPrimary }, activeTab === t.id && styles.tabLabelActive]}>
+            <ThemedText style={[styles.tabLabel, { color: tc.textPrimary }, activeTab === t.id && [styles.tabLabelActive, { color: tc.accent }]]}>
               {t.label}
             </ThemedText>
           </Pressable>
@@ -226,13 +226,13 @@ export default function ReservesScreen() {
               <View style={styles.heroRow}>
                 <View style={styles.heroItem}>
                   <ThemedText style={[styles.heroLabel, { color: tc.textHint }]}>PER DRILL PERIOD</ThemedText>
-                  <ThemedText style={[styles.heroValue, { color: Brand.accent }]}>{fmtMoney(idt)}</ThemedText>
+                  <ThemedText style={[styles.heroValue, { color: tc.accent }]}>{fmtMoney(idt)}</ThemedText>
                   <ThemedText style={[styles.heroSub, { color: tc.textMuted }]}>1 IDT / 4 hrs</ThemedText>
                 </View>
                 <View style={[styles.heroDiv, { backgroundColor: tc.borderColor }]} />
                 <View style={styles.heroItem}>
                   <ThemedText style={[styles.heroLabel, { color: tc.textHint }]}>DRILL WEEKEND</ThemedText>
-                  <ThemedText style={[styles.heroValue, { color: Brand.tactical }]}>{fmtMoney(drillWeekend)}</ThemedText>
+                  <ThemedText style={[styles.heroValue, { color: tc.tactical }]}>{fmtMoney(drillWeekend)}</ThemedText>
                   <ThemedText style={[styles.heroSub, { color: tc.textMuted }]}>4 IDTs (Sat + Sun)</ThemedText>
                 </View>
               </View>
@@ -251,7 +251,7 @@ export default function ReservesScreen() {
                   <ThemedText style={[styles.rowLabel, { color: tc.textSecondary }]}>Drill Pay (12 weekends × 4 IDTs)</ThemedText>
                   <ThemedText style={[styles.rowNote, { color: tc.textMuted }]}>48 IDTs per year</ThemedText>
                 </View>
-                <ThemedText style={[styles.rowValue, { color: Brand.accent }]}>{fmtMoneyWhole(annualDrillPay)}</ThemedText>
+                <ThemedText style={[styles.rowValue, { color: tc.accent }]}>{fmtMoneyWhole(annualDrillPay)}</ThemedText>
               </View>
               <View style={[styles.divider, { backgroundColor: tc.borderColor }]} />
               <View style={styles.rowItem}>
@@ -259,12 +259,12 @@ export default function ReservesScreen() {
                   <ThemedText style={[styles.rowLabel, { color: tc.textSecondary }]}>Annual Training (AT) — 15 days</ThemedText>
                   <ThemedText style={[styles.rowNote, { color: tc.textMuted }]}>Typical 2-week active duty for training</ThemedText>
                 </View>
-                <ThemedText style={[styles.rowValue, { color: Brand.tactical }]}>{fmtMoneyWhole(annualAdt)}</ThemedText>
+                <ThemedText style={[styles.rowValue, { color: tc.tactical }]}>{fmtMoneyWhole(annualAdt)}</ThemedText>
               </View>
               <View style={[styles.divider, { backgroundColor: tc.borderColor }]} />
               <View style={[styles.rowItem, styles.totalRow]}>
                 <ThemedText style={[styles.rowLabel, { color: tc.textPrimary, fontWeight: '800' }]}>ESTIMATED ANNUAL TOTAL</ThemedText>
-                <ThemedText style={[styles.rowValue, { color: Brand.success }]}>{fmtMoneyWhole(annualDrillPay + annualAdt)}</ThemedText>
+                <ThemedText style={[styles.rowValue, { color: tc.success }]}>{fmtMoneyWhole(annualDrillPay + annualAdt)}</ThemedText>
               </View>
             </ThemedView>
 
@@ -352,7 +352,7 @@ export default function ReservesScreen() {
               <View style={styles.heroRow}>
                 <View style={styles.heroItem}>
                   <ThemedText style={[styles.heroLabel, { color: tc.textHint }]}>EST. MONTHLY</ThemedText>
-                  <ThemedText style={[styles.heroValue, { color: Brand.accent }]}>
+                  <ThemedText style={[styles.heroValue, { color: tc.accent }]}>
                     {fmtMoneyWhole(retirementPoints > 0 ? pointsBasedCalc : yearBasedMonthly)}
                   </ThemedText>
                   <ThemedText style={[styles.heroSub, { color: tc.textMuted }]}>At age {RETIREMENT_AGE}</ThemedText>
@@ -360,7 +360,7 @@ export default function ReservesScreen() {
                 <View style={[styles.heroDiv, { backgroundColor: tc.borderColor }]} />
                 <View style={styles.heroItem}>
                   <ThemedText style={[styles.heroLabel, { color: tc.textHint }]}>EST. ANNUAL</ThemedText>
-                  <ThemedText style={[styles.heroValue, { color: Brand.tactical }]}>
+                  <ThemedText style={[styles.heroValue, { color: tc.tactical }]}>
                     {fmtMoneyWhole((retirementPoints > 0 ? pointsBasedCalc : yearBasedMonthly) * 12)}
                   </ThemedText>
                   <ThemedText style={[styles.heroSub, { color: tc.textMuted }]}>Pre-tax</ThemedText>
@@ -390,7 +390,7 @@ export default function ReservesScreen() {
               ].map((item, i) => (
                 <View key={i} style={[styles.rowItem, i > 0 && styles.itemBorderTop, i > 0 && { borderTopColor: tc.borderColor }]}>
                   <ThemedText style={[styles.rowLabel, { color: tc.textSecondary }]}>{item.source}</ThemedText>
-                  <ThemedText style={[styles.rowValue, { color: Brand.tactical }]}>{item.points}</ThemedText>
+                  <ThemedText style={[styles.rowValue, { color: tc.tactical }]}>{item.points}</ThemedText>
                 </View>
               ))}
             </ThemedView>
@@ -422,13 +422,13 @@ export default function ReservesScreen() {
               <View style={styles.heroRow}>
                 <View style={styles.heroItem}>
                   <ThemedText style={[styles.heroLabel, { color: tc.textHint }]}>MEMBER ONLY</ThemedText>
-                  <ThemedText style={[styles.heroValue, { color: Brand.accent }]}>{fmtMoney(TRS_PREMIUMS.member_only)}/mo</ThemedText>
+                  <ThemedText style={[styles.heroValue, { color: tc.accent }]}>{fmtMoney(TRS_PREMIUMS.member_only)}/mo</ThemedText>
                   <ThemedText style={[styles.heroSub, { color: tc.textMuted }]}>{fmtMoney(TRS_PREMIUMS.member_only * 12)}/yr</ThemedText>
                 </View>
                 <View style={[styles.heroDiv, { backgroundColor: tc.borderColor }]} />
                 <View style={styles.heroItem}>
                   <ThemedText style={[styles.heroLabel, { color: tc.textHint }]}>MEMBER + FAMILY</ThemedText>
-                  <ThemedText style={[styles.heroValue, { color: Brand.tactical }]}>{fmtMoney(TRS_PREMIUMS.member_family)}/mo</ThemedText>
+                  <ThemedText style={[styles.heroValue, { color: tc.tactical }]}>{fmtMoney(TRS_PREMIUMS.member_family)}/mo</ThemedText>
                   <ThemedText style={[styles.heroSub, { color: tc.textMuted }]}>{fmtMoney(TRS_PREMIUMS.member_family * 12)}/yr</ThemedText>
                 </View>
               </View>
@@ -496,13 +496,13 @@ export default function ReservesScreen() {
               <View style={styles.heroRow}>
                 <View style={styles.heroItem}>
                   <ThemedText style={[styles.heroLabel, { color: tc.textHint }]}>TOTAL BASE PAY</ThemedText>
-                  <ThemedText style={[styles.heroValue, { color: Brand.accent }]}>{fmtMoneyWhole(mobilizationPay)}</ThemedText>
+                  <ThemedText style={[styles.heroValue, { color: tc.accent }]}>{fmtMoneyWhole(mobilizationPay)}</ThemedText>
                   <ThemedText style={[styles.heroSub, { color: tc.textMuted }]}>{deployMonths} months</ThemedText>
                 </View>
                 <View style={[styles.heroDiv, { backgroundColor: tc.borderColor }]} />
                 <View style={styles.heroItem}>
                   <ThemedText style={[styles.heroLabel, { color: tc.textHint }]}>COMBAT ZONE TAX</ThemedText>
-                  <ThemedText style={[styles.heroValue, { color: Brand.success }]}>+{fmtMoneyWhole(taxSavedCombatZone)}</ThemedText>
+                  <ThemedText style={[styles.heroValue, { color: tc.success }]}>+{fmtMoneyWhole(taxSavedCombatZone)}</ThemedText>
                   <ThemedText style={[styles.heroSub, { color: tc.textMuted }]}>~22% saved (est.)</ThemedText>
                 </View>
               </View>
@@ -522,7 +522,7 @@ export default function ReservesScreen() {
               ].map((item, i) => (
                 <View key={i} style={[styles.rowItem, i > 0 && styles.itemBorderTop, i > 0 && { borderTopColor: tc.borderColor }]}>
                   <ThemedText style={[styles.rowLabel, { color: tc.textSecondary, flex: 1, paddingRight: Spacing.two }]}>{item.item}</ThemedText>
-                  <ThemedText style={[styles.rowValue, { color: Brand.tactical }]}>{item.value}</ThemedText>
+                  <ThemedText style={[styles.rowValue, { color: tc.tactical }]}>{item.value}</ThemedText>
                 </View>
               ))}
             </ThemedView>
@@ -566,7 +566,7 @@ const styles = StyleSheet.create({
   },
   back: { width: 40, justifyContent: 'center' },
   backChevron: { fontSize: 28, fontWeight: '300', color: Brand.primary, lineHeight: 34 },
-  eyebrow: { fontSize: 9, fontWeight: '800', color: Brand.tactical, letterSpacing: 1 },
+  eyebrow: { fontSize: 9, fontWeight: '800', letterSpacing: 1 },
   title: { fontSize: 20, fontWeight: '800' },
 
   tabBar: {
@@ -582,7 +582,7 @@ const styles = StyleSheet.create({
   },
   tabBtnActive: { backgroundColor: Brand.accent + '20', borderColor: Brand.accent },
   tabLabel: { fontSize: 13, fontWeight: '900', letterSpacing: 0.3 },
-  tabLabelActive: { color: Brand.accent, fontWeight: '900' },
+  tabLabelActive: { fontWeight: '900' },
 
   scroll: { paddingHorizontal: Spacing.three, paddingTop: Spacing.three, paddingBottom: 80, gap: Spacing.three },
 

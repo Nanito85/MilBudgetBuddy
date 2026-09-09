@@ -27,7 +27,7 @@ export function TipCard({ tip }: TipCardProps) {
       <View style={styles.topRow}>
         <CategoryBadge category={tip.category} />
         <Pressable onPress={() => toggleSave(tip.id)} hitSlop={12} style={styles.bookmarkBtn}>
-          <ThemedText style={[styles.bookmarkIcon, { color: tc.textMuted }, saved && { color: Brand.accent }]}>
+          <ThemedText style={[styles.bookmarkIcon, { color: tc.textMuted }, saved && { color: tc.accent }]}>
             {saved ? '♥' : '♡'}
           </ThemedText>
         </Pressable>

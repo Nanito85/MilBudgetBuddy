@@ -5,7 +5,7 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Brand, Spacing } from '@/constants/theme';
+import { Spacing } from '@/constants/theme';
 import { useThemeColors } from '@/hooks/use-theme';
 
 const LAST_UPDATED = 'May 2026';
@@ -14,7 +14,7 @@ function Article({ num, title, children }: { num: string; title: string; childre
   const tc = useThemeColors();
   return (
     <View style={[s.article, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
-      <ThemedText style={s.articleNum}>{num}</ThemedText>
+      <ThemedText style={[s.articleNum, { color: tc.accent }]}>{num}</ThemedText>
       <ThemedText style={[s.articleTitle, { color: tc.textPrimary }]}>{title}</ThemedText>
       {children}
     </View>
@@ -36,7 +36,7 @@ export default function TermsScreen() {
       <SafeAreaView edges={['top']}>
         <View style={[s.header, { borderBottomColor: tc.borderColor }]}>
           <Pressable onPress={() => router.back()} style={s.backBtn}>
-            <ThemedText style={s.backText}>‹ Back</ThemedText>
+            <ThemedText style={[s.backText, { color: tc.tactical }]}>‹ Back</ThemedText>
           </Pressable>
           <ThemedText style={[s.title, { color: tc.textPrimary }]}>TERMS OF SERVICE</ThemedText>
           <View style={s.backBtn} />
@@ -145,7 +145,7 @@ const s = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   backBtn: { width: 60 },
-  backText: { fontSize: 16, fontWeight: '600', color: Brand.tactical },
+  backText: { fontSize: 16, fontWeight: '600' },
   title: { flex: 1, textAlign: 'center', fontSize: 13, fontWeight: '900', letterSpacing: 1 },
 
   content: { paddingHorizontal: Spacing.three, paddingTop: Spacing.three, gap: Spacing.three },
@@ -155,7 +155,7 @@ const s = StyleSheet.create({
     borderRadius: 8, padding: Spacing.three,
     borderWidth: StyleSheet.hairlineWidth, gap: Spacing.one + 2,
   },
-  articleNum: { fontSize: 9, fontWeight: '800', color: Brand.accent, letterSpacing: 0.5 },
+  articleNum: { fontSize: 9, fontWeight: '800', letterSpacing: 0.5 },
   articleTitle: { fontSize: 13, fontWeight: '900', letterSpacing: 0.5 },
   para: { fontSize: 12, lineHeight: 18 },
 });

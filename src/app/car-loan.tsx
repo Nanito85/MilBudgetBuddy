@@ -128,7 +128,7 @@ export default function CarLoanScreen() {
   function PriceBtn({ amount, label }: { amount: number; label: string }) {
     return (
       <Pressable onPress={() => setPrice(amount)} style={[s.presetBtn, { borderColor: tc.borderColor }, price === amount && s.presetActive]}>
-        <ThemedText style={[s.presetTxt, { color: tc.textHint }, price === amount && s.presetActiveTxt]}>{label}</ThemedText>
+        <ThemedText style={[s.presetTxt, { color: tc.textHint }, price === amount && [s.presetActiveTxt, { color: tc.accent }]]}>{label}</ThemedText>
       </Pressable>
     );
   }
@@ -168,7 +168,7 @@ export default function CarLoanScreen() {
           ))}
           <View style={[s.takeHomeRow, { borderTopColor: tc.borderColor }]}>
             <ThemedText style={[s.takeHomeLabel, { color: tc.textHint }]}>EST. MONTHLY TAKE-HOME</ThemedText>
-            <ThemedText style={[s.takeHomeVal, { color: Brand.tactical }]}>{fmt(takeHome)}</ThemedText>
+            <ThemedText style={[s.takeHomeVal, { color: tc.tactical }]}>{fmt(takeHome)}</ThemedText>
           </View>
         </ThemedView>
 
@@ -209,7 +209,7 @@ export default function CarLoanScreen() {
           </View>
           <View style={[s.inlineRow, { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: tc.borderColor, paddingTop: Spacing.two }]}>
             <ThemedText style={[s.inlineLabel, { color: tc.textHint }]}>Loan Amount</ThemedText>
-            <ThemedText style={[s.stepVal, { color: Brand.accent }]}>{fmt(principal)}</ThemedText>
+            <ThemedText style={[s.stepVal, { color: tc.accent }]}>{fmt(principal)}</ThemedText>
           </View>
         </ThemedView>
 
@@ -226,7 +226,7 @@ export default function CarLoanScreen() {
             <ThemedText style={[s.customAprLabel, { color: tc.textSecondary }]}>Custom APR (from lender)</ThemedText>
             <View style={[s.customAprInputWrap, { backgroundColor: tc.inputBg }]}>
               <TextInput
-                style={s.customAprInput}
+                style={[s.customAprInput, { color: tc.accent }]}
                 value={aprInput}
                 onChangeText={(t) => {
                   const clean = t.replace(/[^0-9.]/g, '');
@@ -240,7 +240,7 @@ export default function CarLoanScreen() {
                 returnKeyType="done"
                 onSubmitEditing={Keyboard.dismiss}
               />
-              <ThemedText style={s.customAprUnit}>%</ThemedText>
+              <ThemedText style={[s.customAprUnit, { color: tc.accent }]}>%</ThemedText>
             </View>
           </View>
 
@@ -281,8 +281,8 @@ export default function CarLoanScreen() {
           </View>
           <View style={s.barLabels}>
             <ThemedText style={[s.barLabelTxt, { color: tc.textMuted }]}>0%</ThemedText>
-            <ThemedText style={[s.barLabelTxt, { color: Brand.tactical }]}>10% safe</ThemedText>
-            <ThemedText style={[s.barLabelTxt, { color: Brand.warning }]}>15% limit</ThemedText>
+            <ThemedText style={[s.barLabelTxt, { color: tc.tactical }]}>10% safe</ThemedText>
+            <ThemedText style={[s.barLabelTxt, { color: tc.warning }]}>15% limit</ThemedText>
             <ThemedText style={[s.barLabelTxt, { color: Brand.danger }]}>20%+</ThemedText>
           </View>
         </ThemedView>
@@ -292,10 +292,10 @@ export default function CarLoanScreen() {
           <ThemedText style={[s.cardLabel, { color: tc.textHint }]}>TOTAL COST BREAKDOWN</ThemedText>
           {[
             { label: 'Vehicle price', val: fmt(price), color: tc.textPrimary },
-            { label: 'Down payment', val: `−${fmt(downPmt)}`, color: Brand.tactical },
+            { label: 'Down payment', val: `−${fmt(downPmt)}`, color: tc.tactical },
             { label: 'Amount financed', val: fmt(principal), color: tc.textPrimary },
             { label: `Interest (${term} months @ ${apr}%)`, val: fmt(totalInt), color: Brand.danger },
-            { label: 'Total you pay', val: fmt(totalCost), color: Brand.accent },
+            { label: 'Total you pay', val: fmt(totalCost), color: tc.accent },
           ].map((row) => (
             <View key={row.label} style={s.breakRow}>
               <ThemedText style={[s.breakLabel, { color: tc.textSecondary }]}>{row.label}</ThemedText>
@@ -310,7 +310,7 @@ export default function CarLoanScreen() {
           <ThemedText style={[s.cardHint, { color: tc.textMuted }]}>
             If you invested that {fmt(payment)}/mo into TSP at 7% for 20 years instead:
           </ThemedText>
-          <ThemedText style={[s.bigNum, { color: Brand.accent, marginTop: Spacing.one }]}>{fmt(tspVal)}</ThemedText>
+          <ThemedText style={[s.bigNum, { color: tc.accent, marginTop: Spacing.one }]}>{fmt(tspVal)}</ThemedText>
           <ThemedText style={[s.cardHint, { color: tc.textMuted }]}>That car loan could cost you {fmt(tspVal - totalCost)} in long-term wealth.</ThemedText>
         </ThemedView>
 
@@ -331,7 +331,7 @@ export default function CarLoanScreen() {
         )}
 
         <ThemedView type="backgroundElement" style={s.tipCard}>
-          <ThemedText style={s.tipLabel}>💡 DEALER SURVIVAL TIPS</ThemedText>
+          <ThemedText style={[s.tipLabel, { color: tc.accent }]}>💡 DEALER SURVIVAL TIPS</ThemedText>
           {[
             'Get pre-approved at your base credit union BEFORE visiting a dealer.',
             'Negotiate price first, financing second. Never discuss monthly payment.',
@@ -339,7 +339,7 @@ export default function CarLoanScreen() {
             'The Military Lending Act caps APR at 36% — know your rights.',
           ].map((tip, i) => (
             <View key={i} style={s.tipRow}>
-              <ThemedText style={s.tipBullet}>›</ThemedText>
+              <ThemedText style={[s.tipBullet, { color: tc.accent }]}>›</ThemedText>
               <ThemedText style={[s.tipText, { color: tc.textSecondary }]}>{tip}</ThemedText>
             </View>
           ))}
@@ -374,7 +374,7 @@ const s = StyleSheet.create({
   presetBtn: { paddingHorizontal: Spacing.two + 2, paddingVertical: 6, borderRadius: 4, borderWidth: 1 },
   presetActive: { backgroundColor: Brand.accent + '30', borderColor: Brand.accent },
   presetTxt: { fontSize: 12, fontWeight: '700' },
-  presetActiveTxt: { color: Brand.accent },
+  presetActiveTxt: {},
 
   inlineRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   inlineLabel: { fontSize: 13, flex: 1 },
@@ -412,12 +412,12 @@ const s = StyleSheet.create({
   customAprRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: Spacing.two },
   customAprLabel: { fontSize: 11, flex: 1 },
   customAprInputWrap: { flexDirection: 'row', alignItems: 'center', gap: 4, borderWidth: 1, borderColor: Brand.accent, borderRadius: 4, paddingHorizontal: Spacing.two, paddingVertical: 6 },
-  customAprInput: { fontSize: 15, fontWeight: '700', color: Brand.accent, width: 60, textAlign: 'right', fontFamily: 'Courier New' },
-  customAprUnit: { fontSize: 13, fontWeight: '700', color: Brand.accent },
+  customAprInput: { fontSize: 15, fontWeight: '700', width: 60, textAlign: 'right', fontFamily: 'Courier New' },
+  customAprUnit: { fontSize: 13, fontWeight: '700' },
 
   tipCard: { borderRadius: 4, padding: Spacing.three, gap: Spacing.one + 2 },
-  tipLabel: { fontSize: 9, fontWeight: '800', color: Brand.accent, letterSpacing: 1, marginBottom: Spacing.one },
+  tipLabel: { fontSize: 9, fontWeight: '800', letterSpacing: 1, marginBottom: Spacing.one },
   tipRow: { flexDirection: 'row', gap: Spacing.two, alignItems: 'flex-start' },
-  tipBullet: { color: Brand.accent, fontSize: 13, fontWeight: '700', width: 12 },
+  tipBullet: { fontSize: 13, fontWeight: '700', width: 12 },
   tipText: { flex: 1, fontSize: 12, lineHeight: 17 },
 });

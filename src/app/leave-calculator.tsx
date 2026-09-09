@@ -16,6 +16,7 @@ import {
   MAX_PAYOUT_DAYS,
 } from '@/features/leave/utils/leaveCalc';
 import { BottomTabInset, Brand, Spacing } from '@/constants/theme';
+import { useThemeColors } from '@/hooks/use-theme';
 
 // ── Result row ────────────────────────────────────────────────────────────────
 
@@ -88,6 +89,7 @@ function LeaveBar({
 export default function LeaveCalculatorScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const tc = useThemeColors();
 
   const [grade, setGrade] = useState<PayGrade>('E5');
   const [yos, setYos] = useState(6);
@@ -150,7 +152,7 @@ export default function LeaveCalculatorScreen() {
 
         {/* ── BLUF ───────────────────────────────────────────────────────────── */}
         <ThemedView type="backgroundElement" style={styles.blufBox}>
-          <ThemedText style={styles.blufTitle}>BLUF</ThemedText>
+          <ThemedText style={[styles.blufTitle, { color: tc.accent }]}>BLUF</ThemedText>
           <ThemedText type="small" style={{ lineHeight: 18 }}>
             You earn 2.5 days of leave per month (30 days/year). Balances above{' '}
             {maxCarryover} days are forfeited at fiscal year end (Sep 30). At separation
@@ -424,7 +426,7 @@ const styles = StyleSheet.create({
   divider: { height: StyleSheet.hairlineWidth, backgroundColor: 'rgba(128,128,128,0.2)', marginHorizontal: Spacing.three },
   hint: { lineHeight: 17, fontSize: 12 },
   blufBox: { borderRadius: Spacing.three, padding: Spacing.three, gap: Spacing.one },
-  blufTitle: { fontSize: 13, fontWeight: '800', letterSpacing: 1, color: Brand.accent },
+  blufTitle: { fontSize: 13, fontWeight: '800', letterSpacing: 1 },
   warnBox: {
     backgroundColor: 'rgba(255,107,53,0.12)',
     borderRadius: Spacing.three,

@@ -10,7 +10,7 @@ export function BranchRegNote() {
 
   return (
     <View style={styles.card}>
-      <ThemedText style={styles.label}>⚠ BRANCH REGULATIONS APPLY</ThemedText>
+      <ThemedText style={[styles.label, { color: tc.warning }]}>⚠ BRANCH REGULATIONS APPLY</ThemedText>
       <ThemedText style={[styles.body, { color: tc.textSecondary }]}>
         The JTR establishes baseline DoD policy, but each branch of service maintains its own
         regulations that may differ. Army (AR), Navy (MILPERSMAN/OPNAVINST), Marine Corps (MCO),
@@ -35,7 +35,6 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: '800',
     letterSpacing: 1.2,
-    color: Brand.warning,
   },
   body: {
     fontSize: 12,

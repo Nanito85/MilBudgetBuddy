@@ -2,7 +2,7 @@ import { Platform, StyleSheet, Text, type TextProps } from 'react-native';
 
 import { Brand, Fonts, ThemeColor } from '@/constants/theme';
 import { useFontScale } from '@/hooks/use-font-scale';
-import { useTheme } from '@/hooks/use-theme';
+import { useTheme, useThemeColors } from '@/hooks/use-theme';
 
 export type ThemedTextProps = TextProps & {
   type?: 'default' | 'title' | 'small' | 'smallBold' | 'subtitle' | 'link' | 'linkPrimary' | 'code' | 'data' | 'label' | 'classified';
@@ -11,6 +11,7 @@ export type ThemedTextProps = TextProps & {
 
 export function ThemedText({ style, type = 'default', themeColor, ...rest }: ThemedTextProps) {
   const theme = useTheme();
+  const tc = useThemeColors();
   const scale = useFontScale();
 
   const baseStyle = (() => {
@@ -21,9 +22,9 @@ export function ThemedText({ style, type = 'default', themeColor, ...rest }: The
       case 'title':      return { fontSize: 44 * scale, lineHeight: 48 * scale, fontWeight: '900' as const, letterSpacing: -1 };
       case 'subtitle':   return { fontSize: 28 * scale, lineHeight: 34 * scale, fontWeight: '800' as const, letterSpacing: -0.5 };
       case 'link':       return { lineHeight: 30 * scale, fontSize: 14 * scale };
-      case 'linkPrimary':return { lineHeight: 30 * scale, fontSize: 14 * scale, color: Brand.tactical };
+      case 'linkPrimary':return { lineHeight: 30 * scale, fontSize: 14 * scale, color: tc.tactical };
       case 'code':       return { fontFamily: Fonts.mono, fontWeight: (Platform.OS === 'android' ? '700' : '500') as '700' | '500', fontSize: 12 * scale, letterSpacing: 0.5 };
-      case 'data':       return { fontFamily: Fonts.data, fontSize: 15 * scale, fontWeight: '700' as const, letterSpacing: 0.5, color: Brand.tactical };
+      case 'data':       return { fontFamily: Fonts.data, fontSize: 15 * scale, fontWeight: '700' as const, letterSpacing: 0.5, color: tc.tactical };
       case 'label':      return { fontSize: Math.max(10, 10 * scale), fontWeight: '700' as const, letterSpacing: 1.5, textTransform: 'uppercase' as const };
       case 'classified': return { fontSize: 9 * scale, fontWeight: '800' as const, letterSpacing: 3, textTransform: 'uppercase' as const, color: Brand.classified };
       default:           return {};

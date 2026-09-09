@@ -145,7 +145,7 @@ export default function VaDisabilityScreen() {
 
               {ratings.length < 10 && (
                 <Pressable onPress={addRating} style={[styles.addRatingBtn, { borderColor: tc.borderColor }]}>
-                  <ThemedText style={styles.addRatingText}>＋ Add Another Rating</ThemedText>
+                  <ThemedText style={[styles.addRatingText, { color: tc.tactical }]}>＋ Add Another Rating</ThemedText>
                 </Pressable>
               )}
             </ThemedView>
@@ -334,7 +334,7 @@ const styles = StyleSheet.create({
   removeBtnText: { fontSize: 14, color: Brand.danger },
 
   addRatingBtn: { alignSelf: 'center', paddingVertical: Spacing.one + 2, paddingHorizontal: Spacing.three, borderRadius: 4, borderWidth: 1, borderStyle: 'dashed', borderColor: Brand.border },
-  addRatingText: { fontSize: 12, color: Brand.tactical, fontWeight: '600' },
+  addRatingText: { fontSize: 12, fontWeight: '600' },
 
   resultCard: { borderRadius: 4, padding: Spacing.three, gap: Spacing.two, borderLeftWidth: 3 },
   resultEyebrow: { fontSize: 8, fontWeight: '800', letterSpacing: 1.5 },

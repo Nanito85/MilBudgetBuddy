@@ -243,7 +243,7 @@ export default function SettingsScreen() {
       <SafeAreaView edges={['top']}>
         <View style={[styles.header, { borderBottomColor: tc.borderColor }]}>
           <Pressable onPress={() => router.back()} style={styles.backBtn}>
-            <ThemedText style={styles.backText}>‹ Back</ThemedText>
+            <ThemedText style={[styles.backText, { color: tc.tactical }]}>‹ Back</ThemedText>
           </Pressable>
           <ThemedText style={[styles.title, { color: text }]}>SETTINGS</ThemedText>
           <View style={styles.backBtn} />
@@ -267,12 +267,12 @@ export default function SettingsScreen() {
             <ThemedText style={[styles.profileNavTitle, { color: text }]}>PERSONNEL FILE</ThemedText>
             <ThemedText type="small" style={[styles.profileNavSub, { color: textDim }]}>Branch, pay grade, family, special pays</ThemedText>
           </View>
-          <ThemedText style={[styles.profileNavChevron, { color: Brand.tactical }]}>›</ThemedText>
+          <ThemedText style={[styles.profileNavChevron, { color: tc.tactical }]}>›</ThemedText>
         </Pressable>
 
         {/* ── APPEARANCE ─────────────────────────────────────────────── */}
         <View style={styles.section}>
-          <ThemedText type="label" style={styles.eyebrow}>// APPEARANCE</ThemedText>
+          <ThemedText type="label" style={[styles.eyebrow, { color: tc.tactical }]}>// APPEARANCE</ThemedText>
           <ThemedText style={[styles.sectionTitle, { color: text }]}>THEME</ThemedText>
           <ThemedText type="small" style={[styles.sectionDesc, { color: textDim }]}>
             Choose how the app looks.
@@ -300,7 +300,7 @@ export default function SettingsScreen() {
                 </ThemedText>
                 {isSelected && (
                   <View style={styles.fontTileCheck}>
-                    <ThemedText style={styles.fontTileCheckMark}>✓</ThemedText>
+                    <ThemedText style={[styles.fontTileCheckMark, { color: tc.accent }]}>✓</ThemedText>
                   </View>
                 )}
               </Pressable>
@@ -310,7 +310,7 @@ export default function SettingsScreen() {
 
         {/* ── FONT SIZE ──────────────────────────────────────────────── */}
         <View style={styles.section}>
-          <ThemedText type="label" style={styles.eyebrow}>// ACCESSIBILITY</ThemedText>
+          <ThemedText type="label" style={[styles.eyebrow, { color: tc.tactical }]}>// ACCESSIBILITY</ThemedText>
           <ThemedText style={[styles.sectionTitle, { color: text }]}>TEXT SIZE</ThemedText>
           <ThemedText type="small" style={[styles.sectionDesc, { color: textDim }]}>
             Increase text size for easier reading. Layouts adjust automatically.
@@ -338,7 +338,7 @@ export default function SettingsScreen() {
                 </ThemedText>
                 {isSelected && (
                   <View style={styles.fontTileCheck}>
-                    <ThemedText style={styles.fontTileCheckMark}>✓</ThemedText>
+                    <ThemedText style={[styles.fontTileCheckMark, { color: tc.accent }]}>✓</ThemedText>
                   </View>
                 )}
               </Pressable>
@@ -348,7 +348,7 @@ export default function SettingsScreen() {
 
         {/* ── HOME SCREEN TILES ──────────────────────────────────────── */}
         <View style={styles.section}>
-          <ThemedText type="label" style={styles.eyebrow}>// HOME SCREEN</ThemedText>
+          <ThemedText type="label" style={[styles.eyebrow, { color: tc.tactical }]}>// HOME SCREEN</ThemedText>
           <ThemedText style={[styles.sectionTitle, { color: text }]}>QUICK ACCESS TILES</ThemedText>
           <ThemedText type="small" style={[styles.sectionDesc, { color: textDim }]}>
             Select up to {MAX_TILES} tools to show on your home screen.
@@ -356,7 +356,7 @@ export default function SettingsScreen() {
         </View>
 
         {/* ON HOME SCREEN */}
-        <ThemedText type="label" style={[styles.tileGroupLabel, { color: Brand.tactical }]}>
+        <ThemedText type="label" style={[styles.tileGroupLabel, { color: tc.tactical }]}>
           ON HOME SCREEN — {selected.length}/{MAX_TILES}
         </ThemedText>
         <View style={styles.tilesGrid}>
@@ -418,7 +418,7 @@ export default function SettingsScreen() {
 
         {/* ── ACCOUNT ────────────────────────────────────────────────── */}
         <View style={styles.section}>
-          <ThemedText type="label" style={styles.eyebrow}>// SYNC & BACKUP</ThemedText>
+          <ThemedText type="label" style={[styles.eyebrow, { color: tc.tactical }]}>// SYNC & BACKUP</ThemedText>
           <ThemedText style={[styles.sectionTitle, { color: text }]}>ACCOUNT</ThemedText>
         </View>
 
@@ -433,7 +433,7 @@ export default function SettingsScreen() {
           <View style={[settingsProStyles.statusCard, { backgroundColor: card, borderColor: Brand.tactical + '40' }]}>
             <ThemedText style={settingsProStyles.proIcon}>☁️</ThemedText>
             <View style={{ flex: 1 }}>
-              <ThemedText style={[settingsProStyles.proTitle, { color: Brand.tactical }]}>SYNCED — DATA BACKED UP</ThemedText>
+              <ThemedText style={[settingsProStyles.proTitle, { color: tc.tactical }]}>SYNCED — DATA BACKED UP</ThemedText>
               <ThemedText style={[settingsProStyles.proSub, { color: textDim }]} numberOfLines={1}>{user.email}</ThemedText>
             </View>
             <View style={{ gap: 6 }}>
@@ -458,16 +458,16 @@ export default function SettingsScreen() {
             style={({ pressed }) => [settingsProStyles.upgradeCard, { backgroundColor: card, borderColor: Brand.tactical + '40' }, pressed && { opacity: 0.7 }]}>
             <ThemedText style={settingsProStyles.proIcon}>☁️</ThemedText>
             <View style={{ flex: 1 }}>
-              <ThemedText style={[settingsProStyles.proTitle, { color: Brand.tactical }]}>SIGN IN TO SYNC</ThemedText>
+              <ThemedText style={[settingsProStyles.proTitle, { color: tc.tactical }]}>SIGN IN TO SYNC</ThemedText>
               <ThemedText style={[settingsProStyles.proSub, { color: textDim }]}>Access your data from any device.</ThemedText>
             </View>
-            <ThemedText style={[settingsProStyles.chevron, { color: Brand.tactical }]}>›</ThemedText>
+            <ThemedText style={[settingsProStyles.chevron, { color: tc.tactical }]}>›</ThemedText>
           </Pressable>
         )}
 
         {/* ── PRO ────────────────────────────────────────────────────── */}
         <View style={styles.section}>
-          <ThemedText type="label" style={styles.eyebrow}>// SUBSCRIPTION</ThemedText>
+          <ThemedText type="label" style={[styles.eyebrow, { color: tc.tactical }]}>// SUBSCRIPTION</ThemedText>
           <ThemedText style={[styles.sectionTitle, { color: text }]}>PRO</ThemedText>
         </View>
 
@@ -477,12 +477,12 @@ export default function SettingsScreen() {
             style={({ pressed }) => [settingsProStyles.upgradeCard, { backgroundColor: card, borderColor: Brand.tactical + '40' }, pressed && { opacity: 0.7 }]}>
             <ThemedText style={settingsProStyles.proIcon}>✓</ThemedText>
             <View style={{ flex: 1 }}>
-              <ThemedText style={[settingsProStyles.proTitle, { color: Brand.tactical }]}>PRO ACTIVE</ThemedText>
+              <ThemedText style={[settingsProStyles.proTitle, { color: tc.tactical }]}>PRO ACTIVE</ThemedText>
               <ThemedText style={[settingsProStyles.proSub, { color: textDim }]}>
                 {proExpiresAt ? `Renews/expires ${new Date(proExpiresAt).toLocaleDateString()}` : 'Manage your subscription'}
               </ThemedText>
             </View>
-            <ThemedText style={[settingsProStyles.chevron, { color: Brand.tactical }]}>›</ThemedText>
+            <ThemedText style={[settingsProStyles.chevron, { color: tc.tactical }]}>›</ThemedText>
           </Pressable>
         ) : null}
 
@@ -505,16 +505,16 @@ export default function SettingsScreen() {
             style={({ pressed }) => [settingsProStyles.upgradeCard, { backgroundColor: card, borderColor: Brand.accent + '40' }, pressed && { opacity: 0.7 }]}>
             <ThemedText style={settingsProStyles.proIcon}>🎖️</ThemedText>
             <View style={{ flex: 1 }}>
-              <ThemedText style={[settingsProStyles.proTitle, { color: Brand.accent }]}>UPGRADE TO PRO</ThemedText>
+              <ThemedText style={[settingsProStyles.proTitle, { color: tc.accent }]}>UPGRADE TO PRO</ThemedText>
               <ThemedText style={[settingsProStyles.proSub, { color: textDim }]}>7-day free trial, then $4.99/mo or $49.99/yr.</ThemedText>
             </View>
-            <ThemedText style={[settingsProStyles.chevron, { color: Brand.accent }]}>›</ThemedText>
+            <ThemedText style={[settingsProStyles.chevron, { color: tc.accent }]}>›</ThemedText>
           </Pressable>
         )}
 
         {/* ── TUTORIAL ───────────────────────────────────────────────── */}
         <View style={styles.section}>
-          <ThemedText type="label" style={styles.eyebrow}>// ORIENTATION</ThemedText>
+          <ThemedText type="label" style={[styles.eyebrow, { color: tc.tactical }]}>// ORIENTATION</ThemedText>
           <ThemedText style={[styles.sectionTitle, { color: text }]}>TUTORIAL</ThemedText>
         </View>
 
@@ -523,15 +523,15 @@ export default function SettingsScreen() {
           style={({ pressed }) => [settingsProStyles.upgradeCard, { backgroundColor: card, borderColor: Brand.accent + '40' }, pressed && { opacity: 0.7 }]}>
           <ThemedText style={settingsProStyles.proIcon}>🎖️</ThemedText>
           <View style={{ flex: 1 }}>
-            <ThemedText style={[settingsProStyles.proTitle, { color: Brand.accent }]}>APP TUTORIAL</ThemedText>
+            <ThemedText style={[settingsProStyles.proTitle, { color: tc.accent }]}>APP TUTORIAL</ThemedText>
             <ThemedText style={[settingsProStyles.proSub, { color: textDim }]}>Review the app orientation and feature overview.</ThemedText>
           </View>
-          <ThemedText style={[settingsProStyles.chevron, { color: Brand.accent }]}>›</ThemedText>
+          <ThemedText style={[settingsProStyles.chevron, { color: tc.accent }]}>›</ThemedText>
         </Pressable>
 
         {/* ── FEEDBACK ───────────────────────────────────────────────── */}
         <View style={styles.section}>
-          <ThemedText type="label" style={styles.eyebrow}>// HELP US IMPROVE</ThemedText>
+          <ThemedText type="label" style={[styles.eyebrow, { color: tc.tactical }]}>// HELP US IMPROVE</ThemedText>
           <ThemedText style={[styles.sectionTitle, { color: text }]}>FEEDBACK</ThemedText>
         </View>
 
@@ -540,15 +540,15 @@ export default function SettingsScreen() {
           style={({ pressed }) => [settingsProStyles.upgradeCard, { backgroundColor: card, borderColor: Brand.tactical + '40' }, pressed && { opacity: 0.7 }]}>
           <ThemedText style={settingsProStyles.proIcon}>💬</ThemedText>
           <View style={{ flex: 1 }}>
-            <ThemedText style={[settingsProStyles.proTitle, { color: Brand.tactical }]}>SEND FEEDBACK</ThemedText>
+            <ThemedText style={[settingsProStyles.proTitle, { color: tc.tactical }]}>SEND FEEDBACK</ThemedText>
             <ThemedText style={[settingsProStyles.proSub, { color: textDim }]}>Report a bug, request a feature, or share a thought.</ThemedText>
           </View>
-          <ThemedText style={[settingsProStyles.chevron, { color: Brand.tactical }]}>›</ThemedText>
+          <ThemedText style={[settingsProStyles.chevron, { color: tc.tactical }]}>›</ThemedText>
         </Pressable>
 
         {/* ── SUPPORT THE APP ───────────────────────────────────────── */}
         <View style={styles.section}>
-          <ThemedText type="label" style={styles.eyebrow}>// SPREAD THE WORD</ThemedText>
+          <ThemedText type="label" style={[styles.eyebrow, { color: tc.tactical }]}>// SPREAD THE WORD</ThemedText>
           <ThemedText style={[styles.sectionTitle, { color: text }]}>SUPPORT MILBUDGETBUDDY</ThemedText>
         </View>
 
@@ -557,10 +557,10 @@ export default function SettingsScreen() {
           style={({ pressed }) => [settingsProStyles.upgradeCard, { backgroundColor: card, borderColor: Brand.tactical + '40' }, pressed && { opacity: 0.7 }]}>
           <ThemedText style={settingsProStyles.proIcon}>⭐</ThemedText>
           <View style={{ flex: 1 }}>
-            <ThemedText style={[settingsProStyles.proTitle, { color: Brand.tactical }]}>RATE MILBUDGETBUDDY</ThemedText>
+            <ThemedText style={[settingsProStyles.proTitle, { color: tc.tactical }]}>RATE MILBUDGETBUDDY</ThemedText>
             <ThemedText style={[settingsProStyles.proSub, { color: textDim }]}>Leave a review on the {Platform.OS === 'ios' ? 'App Store' : 'Play Store'}.</ThemedText>
           </View>
-          <ThemedText style={[settingsProStyles.chevron, { color: Brand.tactical }]}>›</ThemedText>
+          <ThemedText style={[settingsProStyles.chevron, { color: tc.tactical }]}>›</ThemedText>
         </Pressable>
 
         <Pressable
@@ -568,15 +568,15 @@ export default function SettingsScreen() {
           style={({ pressed }) => [settingsProStyles.upgradeCard, { backgroundColor: card, borderColor: Brand.tactical + '40' }, pressed && { opacity: 0.7 }]}>
           <ThemedText style={settingsProStyles.proIcon}>📤</ThemedText>
           <View style={{ flex: 1 }}>
-            <ThemedText style={[settingsProStyles.proTitle, { color: Brand.tactical }]}>SHARE WITH A FRIEND</ThemedText>
+            <ThemedText style={[settingsProStyles.proTitle, { color: tc.tactical }]}>SHARE WITH A FRIEND</ThemedText>
             <ThemedText style={[settingsProStyles.proSub, { color: textDim }]}>Know someone who could use this? Send them the link.</ThemedText>
           </View>
-          <ThemedText style={[settingsProStyles.chevron, { color: Brand.tactical }]}>›</ThemedText>
+          <ThemedText style={[settingsProStyles.chevron, { color: tc.tactical }]}>›</ThemedText>
         </Pressable>
 
         {/* ── KIDS MODE ──────────────────────────────────────────────── */}
         <View style={styles.section}>
-          <ThemedText type="label" style={styles.eyebrow}>// PARENTAL CONTROLS</ThemedText>
+          <ThemedText type="label" style={[styles.eyebrow, { color: tc.tactical }]}>// PARENTAL CONTROLS</ThemedText>
           <ThemedText style={[styles.sectionTitle, { color: text }]}>KIDS MODE PIN</ThemedText>
         </View>
 
@@ -585,19 +585,19 @@ export default function SettingsScreen() {
           style={({ pressed }) => [settingsProStyles.upgradeCard, { backgroundColor: card, borderColor: Brand.tactical + '40' }, pressed && { opacity: 0.7 }]}>
           <ThemedText style={settingsProStyles.proIcon}>🔐</ThemedText>
           <View style={{ flex: 1 }}>
-            <ThemedText style={[settingsProStyles.proTitle, { color: Brand.tactical }]}>
+            <ThemedText style={[settingsProStyles.proTitle, { color: tc.tactical }]}>
               {kidPin ? 'CHANGE KIDS MODE PIN' : 'SET KIDS MODE PIN'}
             </ThemedText>
             <ThemedText style={[settingsProStyles.proSub, { color: textDim }]}>
               {kidPin ? 'PIN is active — tap to change or remove it.' : 'No PIN set — kids can freely exit Kids Mode.'}
             </ThemedText>
           </View>
-          <ThemedText style={[settingsProStyles.chevron, { color: Brand.tactical }]}>›</ThemedText>
+          <ThemedText style={[settingsProStyles.chevron, { color: tc.tactical }]}>›</ThemedText>
         </Pressable>
 
         {/* ── DATA ───────────────────────────────────────────────────── */}
         <View style={styles.section}>
-          <ThemedText type="label" style={styles.eyebrow}>// DATA MANAGEMENT</ThemedText>
+          <ThemedText type="label" style={[styles.eyebrow, { color: tc.tactical }]}>// DATA MANAGEMENT</ThemedText>
           <ThemedText style={[styles.sectionTitle, { color: text }]}>RESET OPTIONS</ThemedText>
         </View>
 
@@ -629,7 +629,7 @@ export default function SettingsScreen() {
 
         {/* ── PRIVACY & LEGAL ────────────────────────────────────────── */}
         <View style={styles.section}>
-          <ThemedText type="label" style={styles.eyebrow}>// COMPLIANCE</ThemedText>
+          <ThemedText type="label" style={[styles.eyebrow, { color: tc.tactical }]}>// COMPLIANCE</ThemedText>
           <ThemedText style={[styles.sectionTitle, { color: text }]}>PRIVACY & LEGAL</ThemedText>
         </View>
 
@@ -638,10 +638,10 @@ export default function SettingsScreen() {
           style={({ pressed }) => [settingsProStyles.upgradeCard, { backgroundColor: card, borderColor: Brand.tactical + '40' }, pressed && { opacity: 0.7 }]}>
           <ThemedText style={settingsProStyles.proIcon}>🔐</ThemedText>
           <View style={{ flex: 1 }}>
-            <ThemedText style={[settingsProStyles.proTitle, { color: Brand.tactical }]}>PRIVACY CENTER</ThemedText>
+            <ThemedText style={[settingsProStyles.proTitle, { color: tc.tactical }]}>PRIVACY CENTER</ThemedText>
             <ThemedText style={[settingsProStyles.proSub, { color: textDim }]}>What data we collect, how it's protected, your rights.</ThemedText>
           </View>
-          <ThemedText style={[settingsProStyles.chevron, { color: Brand.tactical }]}>›</ThemedText>
+          <ThemedText style={[settingsProStyles.chevron, { color: tc.tactical }]}>›</ThemedText>
         </Pressable>
 
         <Pressable
@@ -724,7 +724,7 @@ export default function SettingsScreen() {
         {user && (
           <>
             <View style={styles.section}>
-              <ThemedText type="label" style={styles.eyebrow}>// DANGER ZONE</ThemedText>
+              <ThemedText type="label" style={[styles.eyebrow, { color: tc.tactical }]}>// DANGER ZONE</ThemedText>
             </View>
             <Pressable
               onPress={() =>
@@ -805,13 +805,13 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   backBtn: { width: 60 },
-  backText: { fontSize: 16, fontWeight: '600', color: Brand.tactical, lineHeight: 22 },
+  backText: { fontSize: 16, fontWeight: '600', lineHeight: 22 },
   title: { flex: 1, textAlign: 'center', fontSize: 14, fontWeight: '800', letterSpacing: 2 },
 
   content: { paddingHorizontal: Spacing.three, gap: Spacing.three, paddingTop: Spacing.three },
   section: { gap: Spacing.one },
   versionText: { textAlign: 'center', marginTop: Spacing.three, marginBottom: Spacing.two },
-  eyebrow: { color: Brand.tactical, fontSize: 9 },
+  eyebrow: { fontSize: 9 },
   sectionTitle: { fontSize: 20, fontWeight: '900', letterSpacing: 1 },
   sectionDesc: { fontSize: 13, lineHeight: 18 },
 
@@ -862,7 +862,7 @@ const styles = StyleSheet.create({
     top: Spacing.one + 2,
     right: Spacing.two,
   },
-  fontTileCheckMark: { color: Brand.accent, fontSize: 14, fontWeight: '900' },
+  fontTileCheckMark: { fontSize: 14, fontWeight: '900' },
 
   tileGroupLabel: { fontSize: 9, letterSpacing: 0.8 },
   tilesGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two },

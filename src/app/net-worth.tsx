@@ -296,7 +296,7 @@ export default function NetWorthScreen() {
             <View style={styles.legendItem}>
               <View style={[styles.legendDot, { backgroundColor: Brand.tactical }]} />
               <ThemedText style={[styles.legendLabel, { color: tc.textHint }]}>Assets</ThemedText>
-              <ThemedText style={[styles.legendValue, { color: Brand.tactical }]}>{fmtDollar(totalAssets)}</ThemedText>
+              <ThemedText style={[styles.legendValue, { color: tc.tactical }]}>{fmtDollar(totalAssets)}</ThemedText>
             </View>
             <View style={styles.legendItem}>
               <View style={[styles.legendDot, { backgroundColor: Brand.danger }]} />
@@ -335,7 +335,7 @@ export default function NetWorthScreen() {
               <AddRow category="liability" onAdd={(label) => addEntry(label, 'liability')} />
 
               <Pressable onPress={handleSaveSnapshot} style={styles.snapshotBtn}>
-                <ThemedText style={styles.snapshotBtnText}>📸 Save Monthly Snapshot</ThemedText>
+                <ThemedText style={[styles.snapshotBtnText, { color: tc.accent }]}>📸 Save Monthly Snapshot</ThemedText>
               </Pressable>
               <ThemedText style={[styles.snapshotHint, { color: tc.textMuted }]}>
                 Save once a month to build your trend history.
@@ -494,7 +494,7 @@ const styles = StyleSheet.create({
     borderColor: Brand.accent + '60',
     marginTop: Spacing.two,
   },
-  snapshotBtnText: { fontSize: 14, fontWeight: '700', color: Brand.accent },
+  snapshotBtnText: { fontSize: 14, fontWeight: '700' },
   snapshotHint: { fontSize: 10, textAlign: 'center' },
 
   // History mode

@@ -76,7 +76,7 @@ function DetailModal({ item, onClose, onUpdate }: { item: FeedbackRow; onClose: 
       <SafeAreaView style={{ flex: 1, backgroundColor: tc.background }}>
         <View style={[detail.header, { borderBottomColor: tc.borderColor }]}>
           <Pressable onPress={onClose} hitSlop={12}>
-            <ThemedText style={detail.back}>‹ Back</ThemedText>
+            <ThemedText style={[detail.back, { color: tc.tactical }]}>‹ Back</ThemedText>
           </Pressable>
           <ThemedText style={[detail.title, { color: tc.textPrimary }]}>FEEDBACK DETAIL</ThemedText>
           <View style={{ width: 52 }} />
@@ -142,7 +142,7 @@ function DetailModal({ item, onClose, onUpdate }: { item: FeedbackRow; onClose: 
 
 const detail = StyleSheet.create({
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: Spacing.three, paddingVertical: Spacing.two, borderBottomWidth: StyleSheet.hairlineWidth },
-  back: { fontSize: 15, color: Brand.tactical, fontWeight: '600' },
+  back: { fontSize: 15, fontWeight: '600' },
   title: { fontSize: 12, fontWeight: '800', letterSpacing: 1.5 },
   body: { padding: Spacing.three, gap: Spacing.three },
   metaRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
@@ -209,12 +209,12 @@ export default function AdminFeedbackScreen() {
       {/* Header */}
       <View style={[styles.header, { borderBottomColor: tc.borderColor }]}>
         <Pressable onPress={() => router.back()} hitSlop={12}>
-          <ThemedText style={styles.back}>‹ Back</ThemedText>
+          <ThemedText style={[styles.back, { color: tc.tactical }]}>‹ Back</ThemedText>
         </Pressable>
         <ThemedText style={[styles.title, { color: tc.textPrimary }]}>FEEDBACK</ThemedText>
         <View style={styles.headerRight}>
           <Pressable onPress={() => router.push('/admin/reports' as any)} hitSlop={12}>
-            <ThemedText style={styles.reportsLink}>Reports ›</ThemedText>
+            <ThemedText style={[styles.reportsLink, { color: tc.tactical }]}>Reports ›</ThemedText>
           </Pressable>
         </View>
       </View>
@@ -223,7 +223,7 @@ export default function AdminFeedbackScreen() {
       <View style={[styles.statsBar, { borderBottomColor: tc.borderColor }]}>
         <ThemedText style={[styles.statsText, { color: tc.textHint }]}>{adminTotal} total</ThemedText>
         <Pressable onPress={exportCsv}>
-          <ThemedText style={styles.exportBtn}>⬇ EXPORT CSV</ThemedText>
+          <ThemedText style={[styles.exportBtn, { color: tc.accent }]}>⬇ EXPORT CSV</ThemedText>
         </Pressable>
       </View>
 
@@ -232,7 +232,7 @@ export default function AdminFeedbackScreen() {
         {CATEGORIES.map((cat) => (
           <Pressable key={cat} onPress={() => setCatFilter(cat)}
             style={[styles.filterChip, { borderColor: tc.borderColor, backgroundColor: tc.surface }, catFilter === cat && styles.filterChipActive]}>
-            <ThemedText style={[styles.filterChipText, { color: tc.textHint }, catFilter === cat && styles.filterChipTextActive]}>
+            <ThemedText style={[styles.filterChipText, { color: tc.textHint }, catFilter === cat && [styles.filterChipTextActive, { color: tc.tactical }]]}>
               {cat}
             </ThemedText>
           </Pressable>
@@ -244,7 +244,7 @@ export default function AdminFeedbackScreen() {
         {STATUSES.map((s) => (
           <Pressable key={s} onPress={() => setStatus(s)}
             style={[styles.filterChip, { borderColor: tc.borderColor, backgroundColor: tc.surface }, statusFilter === s && styles.filterChipActive]}>
-            <ThemedText style={[styles.filterChipText, { color: tc.textHint }, statusFilter === s && styles.filterChipTextActive]}>
+            <ThemedText style={[styles.filterChipText, { color: tc.textHint }, statusFilter === s && [styles.filterChipTextActive, { color: tc.tactical }]]}>
               {s === 'All' ? 'All status' : STATUS_LABEL[s]}
             </ThemedText>
           </Pressable>
@@ -271,7 +271,7 @@ export default function AdminFeedbackScreen() {
         <View style={styles.emptyBox}>
           <ThemedText style={[styles.emptyText, { color: tc.textHint }]}>{adminError}</ThemedText>
           <Pressable onPress={() => load(true)} style={styles.retryBtn}>
-            <ThemedText style={styles.retryText}>RETRY</ThemedText>
+            <ThemedText style={[styles.retryText, { color: tc.tactical }]}>RETRY</ThemedText>
           </Pressable>
         </View>
       ) : (
@@ -307,18 +307,18 @@ export default function AdminFeedbackScreen() {
 const styles = StyleSheet.create({
   root: { flex: 1 },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: Spacing.three, paddingVertical: Spacing.two, borderBottomWidth: StyleSheet.hairlineWidth },
-  back: { fontSize: 15, color: Brand.tactical, fontWeight: '600', width: 60 },
+  back: { fontSize: 15, fontWeight: '600', width: 60 },
   title: { fontSize: 13, fontWeight: '900', letterSpacing: 2 },
   headerRight: { width: 60, alignItems: 'flex-end' },
-  reportsLink: { fontSize: 12, color: Brand.tactical, fontWeight: '700' },
+  reportsLink: { fontSize: 12, fontWeight: '700' },
   statsBar: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: Spacing.three, paddingVertical: Spacing.one + 2, borderBottomWidth: StyleSheet.hairlineWidth },
   statsText: { fontSize: 11 },
-  exportBtn: { fontSize: 10, color: Brand.accent, fontWeight: '800', letterSpacing: 0.5 },
+  exportBtn: { fontSize: 10, fontWeight: '800', letterSpacing: 0.5 },
   filterRow: { paddingHorizontal: Spacing.three, paddingVertical: Spacing.two, gap: Spacing.one + 2 },
   filterChip: { paddingHorizontal: Spacing.two, paddingVertical: 5, borderRadius: 3, borderWidth: 1 },
   filterChipActive: { borderColor: Brand.tactical, backgroundColor: Brand.tactical + '20' },
   filterChipText: { fontSize: 10, fontWeight: '700', letterSpacing: 0.3 },
-  filterChipTextActive: { color: Brand.tactical },
+  filterChipTextActive: {},
   searchWrap: { paddingHorizontal: Spacing.three, paddingBottom: Spacing.two },
   searchInput: { borderWidth: 1, borderRadius: 6, paddingHorizontal: Spacing.two + 2, paddingVertical: Spacing.one + 4, fontSize: 14 },
   list: { paddingBottom: 40 },
@@ -332,5 +332,5 @@ const styles = StyleSheet.create({
   emptyBox: { flex: 1, alignItems: 'center', paddingTop: 60, gap: Spacing.two },
   emptyText: { fontSize: 13 },
   retryBtn: { backgroundColor: Brand.tactical + '20', paddingHorizontal: Spacing.three, paddingVertical: Spacing.two, borderRadius: 4 },
-  retryText: { color: Brand.tactical, fontSize: 11, fontWeight: '800' },
+  retryText: { fontSize: 11, fontWeight: '800' },
 });

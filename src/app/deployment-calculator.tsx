@@ -73,6 +73,7 @@ function ResultRow({
   accent?: boolean;
   dimmed?: boolean;
 }) {
+  const tc = useThemeColors();
   return (
     <View style={styles.resultRow}>
       <View style={{ flex: 1 }}>
@@ -87,7 +88,7 @@ function ResultRow({
           </ThemedText>
         ) : null}
       </View>
-      <ThemedText style={[styles.resultValue, accent && styles.resultAccent]}>
+      <ThemedText style={[styles.resultValue, accent && [styles.resultAccent, { color: tc.accent }]]}>
         {value}
       </ThemedText>
     </View>
@@ -189,7 +190,7 @@ export default function DeploymentCalculatorScreen() {
 
         {/* ── BLUF ───────────────────────────────────────────────────────────── */}
         <ThemedView type="backgroundElement" style={styles.blufBox}>
-          <ThemedText style={styles.blufTitle}>BLUF</ThemedText>
+          <ThemedText style={[styles.blufTitle, { color: tc.accent }]}>BLUF</ThemedText>
           <ThemedText type="small" style={{ lineHeight: 18 }}>
             Combat zones mean extra pay and zero federal tax on your basic pay. This tool estimates
             your total deployment earnings, tax savings, and how much more you'll take home vs a
@@ -435,7 +436,7 @@ export default function DeploymentCalculatorScreen() {
               </>
             )}
             <View style={styles.totalBlock}>
-              <ThemedText style={[styles.totalAmount, { color: Brand.accent }]}>
+              <ThemedText style={[styles.totalAmount, { color: tc.accent }]}>
                 {fmtMoney(totalExtraVsHome)}
               </ThemedText>
               <ThemedText type="small" themeColor="textSecondary">Extra vs Home</ThemedText>
@@ -483,7 +484,7 @@ const styles = StyleSheet.create({
   divider: { height: StyleSheet.hairlineWidth, backgroundColor: 'rgba(128,128,128,0.2)', marginHorizontal: Spacing.three },
   hint: { lineHeight: 17, fontSize: 12 },
   blufBox: { borderRadius: Spacing.three, padding: Spacing.three, gap: Spacing.one },
-  blufTitle: { fontSize: 13, fontWeight: '800', letterSpacing: 1, color: Brand.accent },
+  blufTitle: { fontSize: 13, fontWeight: '800', letterSpacing: 1 },
   chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.one },
   chip: {
     paddingHorizontal: Spacing.two + 2,
@@ -514,7 +515,7 @@ const styles = StyleSheet.create({
   resultDimmed: { opacity: 0.6 },
   resultSub: { fontSize: 11, lineHeight: 15, marginTop: 1 },
   resultValue: { fontSize: 14, fontWeight: '700', minWidth: 90, textAlign: 'right' },
-  resultAccent: { color: Brand.accent },
+  resultAccent: {},
   totalDivider: { height: 1, backgroundColor: 'rgba(128,128,128,0.2)', marginVertical: 4 },
   totalsCard: { flexDirection: 'row', flexWrap: 'wrap' },
   totalBlock: { flex: 1, minWidth: 130, alignItems: 'center', padding: Spacing.three, gap: 4 },

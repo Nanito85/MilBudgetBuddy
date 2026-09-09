@@ -191,7 +191,7 @@ export default function AdminUsersScreen() {
     <SafeAreaView style={[s.safe, { backgroundColor: tc.background }]} edges={['top']}>
       <View style={[s.header, { borderColor: tc.borderColor }]}>
         <Pressable onPress={() => router.back()} style={s.back}>
-          <ThemedText style={s.backText}>‹ Admin</ThemedText>
+          <ThemedText style={[s.backText, { color: tc.tactical }]}>‹ Admin</ThemedText>
         </Pressable>
         <ThemedText style={[s.headerTitle, { color: tc.textPrimary }]}>👤 GRANT / REVOKE PRO</ThemedText>
         <View style={s.back} />
@@ -208,7 +208,7 @@ export default function AdminUsersScreen() {
         </View>
 
         <View style={[s.card, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
-          <ThemedText style={s.cardTitle}>// MEMBER EMAIL</ThemedText>
+          <ThemedText style={[s.cardTitle, { color: tc.tactical }]}>// MEMBER EMAIL</ThemedText>
           <View style={[s.input, { backgroundColor: tc.inputBg, borderColor: tc.borderColor }]}>
             <TextInput
               value={email}
@@ -265,7 +265,7 @@ export default function AdminUsersScreen() {
 
         {lastResult && (
           <View style={[s.card, { backgroundColor: tc.surface, borderColor: Brand.tactical + '40' }]}>
-            <ThemedText style={s.cardTitle}>// LAST ACTION</ThemedText>
+            <ThemedText style={[s.cardTitle, { color: tc.tactical }]}>// LAST ACTION</ThemedText>
             <ThemedText style={[s.resultText, { color: tc.textPrimary }]}>
               {lastResult.action === 'grant' ? 'Granted' : 'Revoked'} — {lastResult.email}
             </ThemedText>
@@ -281,9 +281,9 @@ export default function AdminUsersScreen() {
         )}
 
         <View style={s.listHeaderRow}>
-          <ThemedText style={s.sectionTitle}>// GRANTED / PRO ACCESS ({rows.length})</ThemedText>
+          <ThemedText style={[s.sectionTitle, { color: tc.tactical }]}>// GRANTED / PRO ACCESS ({rows.length})</ThemedText>
           <Pressable onPress={fetchRows}>
-            <ThemedText style={[s.refreshText, { color: Brand.accent }]}>REFRESH</ThemedText>
+            <ThemedText style={[s.refreshText, { color: tc.accent }]}>REFRESH</ThemedText>
           </Pressable>
         </View>
 
@@ -342,7 +342,7 @@ export default function AdminUsersScreen() {
             style={[s.loadMoreBtn, { borderColor: tc.borderColor }, loadingMore && { opacity: 0.6 }]}>
             {loadingMore
               ? <ActivityIndicator color={Brand.accent} size="small" />
-              : <ThemedText style={[s.loadMoreText, { color: Brand.accent }]}>LOAD MORE</ThemedText>}
+              : <ThemedText style={[s.loadMoreText, { color: tc.accent }]}>LOAD MORE</ThemedText>}
           </Pressable>
         )}
       </ScrollView>
@@ -354,7 +354,7 @@ const s = StyleSheet.create({
   safe: { flex: 1 },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: Spacing.three, paddingVertical: Spacing.two, borderBottomWidth: StyleSheet.hairlineWidth },
   back: { minWidth: 60 },
-  backText: { color: Brand.tactical, fontSize: 14, fontWeight: '700' },
+  backText: { fontSize: 14, fontWeight: '700' },
   headerTitle: { fontSize: 13, fontWeight: '900', letterSpacing: 0.5 },
 
   content: { padding: Spacing.three, gap: Spacing.three, paddingBottom: 60 },
@@ -363,7 +363,7 @@ const s = StyleSheet.create({
   noticeText: { fontSize: 12, lineHeight: 18 },
 
   card: { borderWidth: 1, borderRadius: 10, padding: Spacing.three, gap: Spacing.one },
-  cardTitle: { fontSize: 11, fontWeight: '800', color: Brand.tactical, letterSpacing: 1, marginBottom: 4 },
+  cardTitle: { fontSize: 11, fontWeight: '800', letterSpacing: 1, marginBottom: 4 },
 
   label: { fontSize: 9, fontWeight: '800', letterSpacing: 1, marginBottom: 4 },
   hint: { fontSize: 10, marginTop: 4 },
@@ -380,7 +380,7 @@ const s = StyleSheet.create({
   resultSub: { fontSize: 11, marginTop: 2, fontFamily: 'monospace' },
 
   listHeaderRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: Spacing.two },
-  sectionTitle: { fontSize: 10, fontWeight: '800', color: Brand.tactical, letterSpacing: 1 },
+  sectionTitle: { fontSize: 10, fontWeight: '800', letterSpacing: 1 },
   refreshText: { fontSize: 11, fontWeight: '700' },
   errorText: { fontSize: 12, textAlign: 'center', marginTop: Spacing.two },
   emptyText: { fontSize: 12, textAlign: 'center', paddingVertical: Spacing.three },

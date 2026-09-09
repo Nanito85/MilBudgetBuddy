@@ -186,7 +186,7 @@ function CategoryRow({ cat, netPay }: { cat: BudgetCategory; netPay: number }) {
                 setAmountVal(cat.monthlyBudget > 0 ? String(cat.monthlyBudget) : '');
                 setEditingAmount(true);
               }}>
-              <ThemedText style={[styles.catAmount, cat.monthlyBudget === 0 && styles.unset]}>
+              <ThemedText style={[styles.catAmount, cat.monthlyBudget === 0 && [styles.unset, { color: tc.accent }]]}>
                 {cat.monthlyBudget > 0 ? fmtPay(cat.monthlyBudget) : 'Set'}
               </ThemedText>
             </Pressable>
@@ -218,7 +218,7 @@ function AddCustomRow({ onAdd }: { onAdd: (name: string) => void }) {
         onChangeText={setName}
         placeholder="Add custom category..."
         placeholderTextColor={tc.textHint}
-        style={styles.addInput}
+        style={[styles.addInput, { color: tc.tactical }]}
         returnKeyType="done"
         onSubmitEditing={submit}
       />
@@ -291,6 +291,7 @@ function SpendingRow({
   spent: number;
   onAddExpense: (catId: string, catName: string, catEmoji: string) => void;
 }) {
+  const tc = useThemeColors();
   const budget = cat.monthlyBudget;
   const pct = budget > 0 ? Math.min(spent / budget, 1) : 0;
   const over = budget > 0 && spent > budget;
@@ -313,7 +314,7 @@ function SpendingRow({
         <Pressable
           onPress={() => onAddExpense(cat.id, cat.name, cat.emoji)}
           style={styles.logBtn}>
-          <ThemedText style={styles.logBtnText}>+ Log</ThemedText>
+          <ThemedText style={[styles.logBtnText, { color: tc.tactical }]}>+ Log</ThemedText>
         </Pressable>
       </View>
       {budget > 0 && (
@@ -458,16 +459,16 @@ function TipRotator() {
   return (
     <View style={[styles.tipCard, { backgroundColor: tc.surfaceInner }]}>
       <View style={styles.tipHeader}>
-        <ThemedText style={styles.tipLabel}>// FIN-OPS INTEL</ThemedText>
+        <ThemedText style={[styles.tipLabel, { color: tc.tactical }]}>// FIN-OPS INTEL</ThemedText>
         <View style={styles.tipNav}>
           <Pressable onPress={prev} hitSlop={8} style={styles.tipNavBtn}>
-            <ThemedText style={styles.tipNavText}>‹</ThemedText>
+            <ThemedText style={[styles.tipNavText, { color: tc.tactical }]}>‹</ThemedText>
           </Pressable>
           <ThemedText style={[styles.tipCounter, { color: tc.textMuted }]}>
             {idx + 1}/{MIL_TIPS.length}
           </ThemedText>
           <Pressable onPress={next} hitSlop={8} style={styles.tipNavBtn}>
-            <ThemedText style={styles.tipNavText}>›</ThemedText>
+            <ThemedText style={[styles.tipNavText, { color: tc.tactical }]}>›</ThemedText>
           </Pressable>
         </View>
       </View>
@@ -712,6 +713,7 @@ function AddGoalModal({
 }
 
 function GoalsMode() {
+  const tc = useThemeColors();
   const goals = useSavingsGoalsStore((s) => s.goals);
   const deposit = useSavingsGoalsStore((s) => s.deposit);
   const withdraw = useSavingsGoalsStore((s) => s.withdraw);
@@ -742,7 +744,7 @@ function GoalsMode() {
           <View style={styles.summaryDivider} />
           <View style={styles.summaryItem}>
             <ThemedText type="small" themeColor="textSecondary">Completed</ThemedText>
-            <ThemedText style={[styles.summaryValue, { color: Brand.success }]}>
+            <ThemedText style={[styles.summaryValue, { color: tc.success }]}>
               {completedCount}/{goals.length}
             </ThemedText>
           </View>
@@ -767,7 +769,7 @@ function GoalsMode() {
 
       {/* Add goal button */}
       <Pressable onPress={() => setAddVisible(true)} style={styles.addGoalBtn}>
-        <ThemedText style={styles.addGoalBtnText}>+ NEW SAVINGS GOAL</ThemedText>
+        <ThemedText style={[styles.addGoalBtnText, { color: tc.accent }]}>+ NEW SAVINGS GOAL</ThemedText>
       </Pressable>
 
       {/* Military savings tips */}
@@ -871,8 +873,8 @@ export default function BudgetScreen() {
 
   const healthLabel = budgetHealthScore === null ? null
     : budgetHealthScore >= 75 ? { text: 'EXCELLENT', color: '#00B27A' }
-    : budgetHealthScore >= 50 ? { text: 'GOOD',      color: Brand.tactical }
-    : budgetHealthScore >= 25 ? { text: 'FAIR',      color: Brand.accent }
+    : budgetHealthScore >= 50 ? { text: 'GOOD',      color: tc.tactical }
+    : budgetHealthScore >= 25 ? { text: 'FAIR',      color: tc.accent }
     :                           { text: 'NEEDS WORK', color: Brand.danger };
 
   const customCategories = categories.filter((c) => c.id.startsWith(CUSTOM_PREFIX));
@@ -910,7 +912,7 @@ export default function BudgetScreen() {
       <ThemedView style={{ flex: 1 }}>
         {/* Header */}
         <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
-          <ThemedText style={styles.headerEyebrow}>// FINANCE OPS</ThemedText>
+          <ThemedText style={[styles.headerEyebrow, { color: tc.tactical }]}>// FINANCE OPS</ThemedText>
           <ThemedText style={[styles.title, { color: tc.textPrimary }]}>BUDGET HQ</ThemedText>
         </View>
 
@@ -1167,7 +1169,6 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: '700',
     letterSpacing: 1.5,
-    color: Brand.tactical,
     fontFamily: 'monospace',
   },
   title: { fontSize: 22, fontWeight: '900', letterSpacing: 0.5 },
@@ -1274,7 +1275,7 @@ const styles = StyleSheet.create({
     minWidth: 120,
   },
   catAmount: { fontSize: 16, fontWeight: '700', color: Brand.primary },
-  unset: { color: Brand.accent, fontWeight: '600' },
+  unset: { fontWeight: '600' },
   input: {
     fontSize: 16,
     fontWeight: '700',
@@ -1296,7 +1297,7 @@ const styles = StyleSheet.create({
     borderColor: Brand.tactical + '60',
   },
   addEmoji: { fontSize: 18, width: 30, opacity: 0.5 },
-  addInput: { flex: 1, fontSize: 15, color: Brand.tactical },
+  addInput: { flex: 1, fontSize: 15 },
   addBtn: {
     backgroundColor: Brand.tactical,
     borderRadius: Spacing.one + 2,
@@ -1329,7 +1330,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: Brand.tactical + '60',
   },
-  logBtnText: { fontSize: 12, fontWeight: '700', color: Brand.tactical },
+  logBtnText: { fontSize: 12, fontWeight: '700' },
   barTrack: { height: 4, borderRadius: 2, backgroundColor: Brand.border, overflow: 'hidden' },
   barFill: { height: 4, borderRadius: 2 },
   overText: { fontSize: 11, color: Brand.danger, fontWeight: '600' },
@@ -1402,12 +1403,11 @@ const styles = StyleSheet.create({
     fontSize: 9,
     fontWeight: '800',
     letterSpacing: 1.2,
-    color: Brand.tactical,
     fontFamily: 'monospace',
   },
   tipNav: { flexDirection: 'row', alignItems: 'center', gap: Spacing.one },
   tipNavBtn: { paddingHorizontal: Spacing.one },
-  tipNavText: { fontSize: 20, color: Brand.tactical, lineHeight: 24 },
+  tipNavText: { fontSize: 20, lineHeight: 24 },
   tipCounter: { fontSize: 10, fontWeight: '700' },
   tipBody: { flexDirection: 'row', gap: Spacing.two, alignItems: 'flex-start' },
   tipIcon: { fontSize: 24, lineHeight: 30 },
@@ -1458,7 +1458,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: Spacing.one,
   },
-  addGoalBtnText: { fontSize: 12, fontWeight: '800', color: Brand.accent, letterSpacing: 0.5 },
+  addGoalBtnText: { fontSize: 12, fontWeight: '800', letterSpacing: 0.5 },
 
   // Modals
   modalOverlay: {

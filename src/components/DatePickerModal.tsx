@@ -159,7 +159,7 @@ export function DatePickerModal({
             </Pressable>
             <ThemedText style={[s.titleText, { color: tc.textPrimary }]}>{title}</ThemedText>
             <Pressable onPress={confirm} hitSlop={16} style={[s.headerSide, s.headerRight]}>
-              <ThemedText style={s.doneText}>Done</ThemedText>
+              <ThemedText style={[s.doneText, { color: tc.tactical }]}>Done</ThemedText>
             </Pressable>
           </View>
 
@@ -169,7 +169,7 @@ export function DatePickerModal({
               <View style={s.yearHeader}>
                 <ThemedText style={[s.yearHeaderLabel, { color: tc.textMuted }]}>SELECT YEAR</ThemedText>
                 <Pressable onPress={() => setMode('day')} hitSlop={12}>
-                  <ThemedText style={s.yearHeaderBack}>↩ Back</ThemedText>
+                  <ThemedText style={[s.yearHeaderBack, { color: tc.tactical }]}>↩ Back</ThemedText>
                 </Pressable>
               </View>
               <ScrollView
@@ -191,11 +191,11 @@ export function DatePickerModal({
                       <ThemedText style={[
                         s.yearRowText,
                         { color: tc.textSecondary },
-                        isCurrentView && s.yearRowTextSelected,
+                        isCurrentView && [s.yearRowTextSelected, { color: tc.tactical }],
                       ]}>
                         {y}
                       </ThemedText>
-                      {isCurrentView && <ThemedText style={s.yearCheck}>✓</ThemedText>}
+                      {isCurrentView && <ThemedText style={[s.yearCheck, { color: tc.tactical }]}>✓</ThemedText>}
                     </Pressable>
                   );
                 })}
@@ -213,7 +213,7 @@ export function DatePickerModal({
                   disabled={!canGoPrev}
                   hitSlop={12}
                   style={[s.navBtn, !canGoPrev && s.navBtnDisabled]}>
-                  <ThemedText style={[s.navArrow, !canGoPrev && { color: tc.textMuted }]}>‹</ThemedText>
+                  <ThemedText style={[s.navArrow, { color: tc.tactical }, !canGoPrev && { color: tc.textMuted }]}>‹</ThemedText>
                 </Pressable>
 
                 {/* Tap label to open year picker */}
@@ -221,7 +221,7 @@ export function DatePickerModal({
                   <ThemedText style={[s.navLabel, { color: tc.textPrimary }]}>
                     {MONTH_NAMES[viewMonth]}  {viewYear}
                   </ThemedText>
-                  <ThemedText style={s.navLabelChevron}>▾</ThemedText>
+                  <ThemedText style={[s.navLabelChevron, { color: tc.tactical }]}>▾</ThemedText>
                 </Pressable>
 
                 <Pressable
@@ -229,7 +229,7 @@ export function DatePickerModal({
                   disabled={!canGoNext}
                   hitSlop={12}
                   style={[s.navBtn, !canGoNext && s.navBtnDisabled]}>
-                  <ThemedText style={[s.navArrow, !canGoNext && { color: tc.textMuted }]}>›</ThemedText>
+                  <ThemedText style={[s.navArrow, { color: tc.tactical }, !canGoNext && { color: tc.textMuted }]}>›</ThemedText>
                 </Pressable>
               </View>
 
@@ -260,7 +260,7 @@ export function DatePickerModal({
                         s.cellText,
                         { color: tc.textSecondary },
                         selected && s.cellTextSelected,
-                        !selected && today && s.cellTextToday,
+                        !selected && today && [s.cellTextToday, { color: tc.tactical }],
                       ]}>
                         {day}
                       </ThemedText>
@@ -315,7 +315,7 @@ const s = StyleSheet.create({
   headerRight: { alignItems: 'flex-end' },
   titleText:  { fontSize: 14, fontWeight: '700', letterSpacing: 0.3 },
   cancelText: { fontSize: 14 },
-  doneText:   { fontSize: 14, fontWeight: '800', color: Brand.tactical },
+  doneText: { fontSize: 14, fontWeight: '800' },
 
   // Year picker
   yearHeader: {
@@ -326,7 +326,7 @@ const s = StyleSheet.create({
     paddingHorizontal: Spacing.one,
   },
   yearHeaderLabel: { fontSize: 11, fontWeight: '800', letterSpacing: 1 },
-  yearHeaderBack:  { fontSize: 13, color: Brand.tactical, fontWeight: '700' },
+  yearHeaderBack: { fontSize: 13, fontWeight: '700' },
   yearList: { maxHeight: YEAR_ROW_H * 6 },
   yearRow: {
     height: YEAR_ROW_H,
@@ -338,8 +338,8 @@ const s = StyleSheet.create({
   },
   yearRowSelected: { backgroundColor: Brand.tactical + '20' },
   yearRowText:         { fontSize: 22, fontWeight: '400' },
-  yearRowTextSelected: { fontSize: 24, fontWeight: '800', color: Brand.tactical },
-  yearCheck: { position: 'absolute', right: Spacing.three, color: Brand.tactical, fontSize: 16 },
+  yearRowTextSelected: { fontSize: 24, fontWeight: '800' },
+  yearCheck: { position: 'absolute', right: Spacing.three, fontSize: 16 },
 
   // Day picker nav
   navRow: {
@@ -351,10 +351,10 @@ const s = StyleSheet.create({
   },
   navBtn:         { padding: Spacing.one },
   navBtnDisabled: { opacity: 0.2 },
-  navArrow:         { fontSize: 28, fontWeight: '300', color: Brand.tactical, lineHeight: 32 },
+  navArrow: { fontSize: 28, fontWeight: '300', lineHeight: 32 },
   navLabelBtn: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   navLabel: { fontSize: 16, fontWeight: '800', letterSpacing: 0.5 },
-  navLabelChevron: { fontSize: 12, color: Brand.tactical, marginTop: 2 },
+  navLabelChevron: { fontSize: 12, marginTop: 2 },
 
   weekRow: { flexDirection: 'row', marginBottom: 4 },
   weekLabel: {
@@ -374,7 +374,7 @@ const s = StyleSheet.create({
   cellPressed:  { backgroundColor: Brand.tactical + '20', borderRadius: CELL_SIZE / 2 },
   cellText:         { fontSize: 15, fontWeight: '500' },
   cellTextSelected: { color: '#FFFFFF', fontWeight: '800' },
-  cellTextToday:    { color: Brand.tactical, fontWeight: '700' },
+  cellTextToday: { fontWeight: '700' },
 
   preview: {
     alignItems: 'center',

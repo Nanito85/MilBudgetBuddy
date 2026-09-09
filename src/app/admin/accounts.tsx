@@ -100,11 +100,11 @@ export default function AdminAccountsScreen() {
     <SafeAreaView style={[s.safe, { backgroundColor: tc.background }]} edges={['top']}>
       <View style={[s.header, { borderColor: tc.borderColor }]}>
         <Pressable onPress={() => router.back()} style={s.back}>
-          <ThemedText style={s.backText}>‹ Admin</ThemedText>
+          <ThemedText style={[s.backText, { color: tc.tactical }]}>‹ Admin</ThemedText>
         </Pressable>
         <ThemedText style={[s.headerTitle, { color: tc.textPrimary }]}>📋 ALL ACCOUNTS</ThemedText>
         <Pressable onPress={fetchFirstPage} style={s.back}>
-          <ThemedText style={[s.refreshText, { color: Brand.accent }]}>REFRESH</ThemedText>
+          <ThemedText style={[s.refreshText, { color: tc.accent }]}>REFRESH</ThemedText>
         </Pressable>
       </View>
 
@@ -140,7 +140,7 @@ export default function AdminAccountsScreen() {
                 </View>
               )}
               <View style={[s.statusPill, { backgroundColor: Brand.tactical + '20', borderColor: Brand.tactical + '50' }]}>
-                <ThemedText style={[s.statusText, { color: Brand.tactical }]}>{platformLabel(row.lastKnownPlatform)}</ThemedText>
+                <ThemedText style={[s.statusText, { color: tc.tactical }]}>{platformLabel(row.lastKnownPlatform)}</ThemedText>
               </View>
             </View>
             <ThemedText style={[s.rowMeta, { color: tc.textSecondary }]}>
@@ -157,7 +157,7 @@ export default function AdminAccountsScreen() {
             style={[s.loadMoreBtn, { borderColor: tc.borderColor }, loadingMore && { opacity: 0.6 }]}>
             {loadingMore
               ? <ActivityIndicator color={Brand.accent} size="small" />
-              : <ThemedText style={[s.loadMoreText, { color: Brand.accent }]}>LOAD MORE</ThemedText>}
+              : <ThemedText style={[s.loadMoreText, { color: tc.accent }]}>LOAD MORE</ThemedText>}
           </Pressable>
         )}
       </ScrollView>
@@ -169,7 +169,7 @@ const s = StyleSheet.create({
   safe: { flex: 1 },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: Spacing.three, paddingVertical: Spacing.two, borderBottomWidth: StyleSheet.hairlineWidth },
   back: { minWidth: 60 },
-  backText: { color: Brand.tactical, fontSize: 14, fontWeight: '700' },
+  backText: { fontSize: 14, fontWeight: '700' },
   refreshText: { fontSize: 11, fontWeight: '700', textAlign: 'right' },
   headerTitle: { fontSize: 13, fontWeight: '900', letterSpacing: 0.5 },
 

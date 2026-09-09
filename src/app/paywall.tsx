@@ -376,7 +376,7 @@ export default function PaywallScreen() {
       <SafeAreaView edges={['top']} style={{ flex: 1 }}>
         <View style={[styles.header, { borderBottomColor: tc.borderColor }]}>
           <Pressable onPress={() => router.back()} style={styles.backBtn}>
-            <ThemedText style={styles.backText}>‹ Back</ThemedText>
+            <ThemedText style={[styles.backText, { color: tc.tactical }]}>‹ Back</ThemedText>
           </Pressable>
           <ThemedText style={[styles.title, { color: tc.textPrimary }]}>MILBUDGETBUDDY PRO</ThemedText>
           {/* The Pro gate dims and disables the ENTIRE app below it while
@@ -387,27 +387,27 @@ export default function PaywallScreen() {
               signed-in non-Pro member had literally no way to reach Settings
               (sign out, account, etc.) at all once gated. */}
           <Pressable onPress={() => router.push('/settings' as any)} style={styles.backBtn}>
-            <ThemedText style={[styles.backText, { textAlign: 'right' }]}>Settings</ThemedText>
+            <ThemedText style={[styles.backText, { color: tc.tactical }, { textAlign: 'right' }]}>Settings</ThemedText>
           </Pressable>
         </View>
 
         <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
           {isPro ? (
             <View style={[styles.activeCard, { backgroundColor: tc.surface, borderColor: Brand.tactical }]}>
-              <ThemedText style={[styles.activeTitle, { color: Brand.tactical }]}>✓ PRO ACTIVE</ThemedText>
+              <ThemedText style={[styles.activeTitle, { color: tc.tactical }]}>✓ PRO ACTIVE</ThemedText>
               <ThemedText style={[styles.activeSub, { color: tc.textSecondary }]}>
                 {proExpiresAt ? `Renews or expires ${new Date(proExpiresAt).toLocaleDateString()}` : ''}
               </ThemedText>
             </View>
           ) : (
             <>
-              <ThemedText style={[styles.eyebrow]}>// UNLOCK EVERYTHING</ThemedText>
+              <ThemedText style={[styles.eyebrow, { color: tc.tactical }]}>// UNLOCK EVERYTHING</ThemedText>
               <ThemedText style={[styles.heading, { color: tc.textPrimary }]}>7 days free, then $4.99/mo</ThemedText>
 
               <View style={styles.featureList}>
                 {FEATURES.map((f) => (
                   <View key={f} style={styles.featureRow}>
-                    <ThemedText style={[styles.featureCheck, { color: Brand.tactical }]}>✓</ThemedText>
+                    <ThemedText style={[styles.featureCheck, { color: tc.tactical }]}>✓</ThemedText>
                     <ThemedText style={[styles.featureText, { color: tc.textSecondary }]}>{f}</ThemedText>
                   </View>
                 ))}
@@ -461,7 +461,7 @@ export default function PaywallScreen() {
               </ThemedText>
 
               <Pressable onPress={handleRestore} disabled={verifying} style={styles.restoreBtn}>
-                <ThemedText style={[styles.restoreText, { color: Brand.tactical }]}>Restore Purchases</ThemedText>
+                <ThemedText style={[styles.restoreText, { color: tc.tactical }]}>Restore Purchases</ThemedText>
               </Pressable>
             </>
           )}
@@ -479,11 +479,11 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   backBtn: { width: 60 },
-  backText: { fontSize: 16, fontWeight: '600', color: Brand.tactical },
+  backText: { fontSize: 16, fontWeight: '600' },
   title: { flex: 1, textAlign: 'center', fontSize: 13, fontWeight: '900', letterSpacing: 1 },
 
   content: { padding: Spacing.four, gap: Spacing.three, paddingBottom: Spacing.six },
-  eyebrow: { color: Brand.tactical, fontSize: 11, fontWeight: '700', letterSpacing: 1.5 },
+  eyebrow: { fontSize: 11, fontWeight: '700', letterSpacing: 1.5 },
   heading: { fontSize: 26, fontWeight: '900', letterSpacing: 0.3, lineHeight: 32 },
 
   featureList: { gap: Spacing.two, marginTop: Spacing.two },

@@ -88,13 +88,13 @@ export function BRSCard({ result, retirementAge, monthlyDiff }: BRSProps) {
 
       <View style={styles.bigRow}>
         <View style={styles.bigStat}>
-          <ThemedText style={[styles.bigValue, { color: Brand.accent }]}>
+          <ThemedText style={[styles.bigValue, { color: tc.accent }]}>
             {formatMoney(result.monthlyPension)}
           </ThemedText>
           <ThemedText type="small" themeColor="textSecondary">per month</ThemedText>
         </View>
         <View style={styles.bigStat}>
-          <ThemedText style={[styles.bigValue, { color: Brand.accent }]}>
+          <ThemedText style={[styles.bigValue, { color: tc.accent }]}>
             {formatMoney(result.annualPension)}
           </ThemedText>
           <ThemedText type="small" themeColor="textSecondary">per year</ThemedText>
@@ -113,14 +113,14 @@ export function BRSCard({ result, retirementAge, monthlyDiff }: BRSProps) {
 
       <View style={styles.detailRow}>
         <ThemedText type="small" themeColor="textSecondary">TSP balance at retirement</ThemedText>
-        <ThemedText style={[styles.detailValue, { color: Brand.success }]}>
+        <ThemedText style={[styles.detailValue, { color: tc.success }]}>
           {formatMoney(result.tspBalance, true)}
         </ThemedText>
       </View>
       {result.continuationPayAmount > 0 && (
         <View style={styles.detailRow}>
           <ThemedText type="small" themeColor="textSecondary">Continuation pay (est.)</ThemedText>
-          <ThemedText style={[styles.detailValue, { color: Brand.success }]}>
+          <ThemedText style={[styles.detailValue, { color: tc.success }]}>
             {formatMoney(result.continuationPayAmount, true)}
           </ThemedText>
         </View>
@@ -137,13 +137,13 @@ export function BRSCard({ result, retirementAge, monthlyDiff }: BRSProps) {
       </View>
       <View style={[styles.detailRow, styles.totalRow]}>
         <ThemedText style={{ fontWeight: '600' }}>Total wealth (pension + TSP)</ThemedText>
-        <ThemedText style={[styles.detailValue, { color: Brand.accent, fontWeight: '800' }]}>
+        <ThemedText style={[styles.detailValue, { color: tc.accent, fontWeight: '800' }]}>
           {formatMoney(totalWealth, true)}
         </ThemedText>
       </View>
 
       <View style={[styles.noteBox, { backgroundColor: `${Brand.accent}10` }]}>
-        <ThemedText type="small" style={{ color: Brand.accent, lineHeight: 18 }}>
+        <ThemedText type="small" style={{ color: tc.accent, lineHeight: 18 }}>
           Default for members who entered service on or after Jan 1, 2018. TSP vests after 2 years of service.
         </ThemedText>
       </View>

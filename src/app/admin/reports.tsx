@@ -59,11 +59,11 @@ function ReportDetailModal({ report, onClose }: { report: ReportRow; onClose: ()
       <SafeAreaView style={{ flex: 1, backgroundColor: tc.background }}>
         <View style={[modal.header, { borderBottomColor: tc.borderColor }]}>
           <Pressable onPress={onClose} hitSlop={12}>
-            <ThemedText style={modal.back}>‹ Back</ThemedText>
+            <ThemedText style={[modal.back, { color: tc.tactical }]}>‹ Back</ThemedText>
           </Pressable>
           <ThemedText style={[modal.title, { color: tc.textPrimary }]}>{data.report_type.toUpperCase()} REPORT</ThemedText>
           <Pressable onPress={shareSummary} hitSlop={12}>
-            <ThemedText style={modal.share}>COPY</ThemedText>
+            <ThemedText style={[modal.share, { color: tc.accent }]}>COPY</ThemedText>
           </Pressable>
         </View>
 
@@ -93,7 +93,7 @@ function ReportDetailModal({ report, onClose }: { report: ReportRow; onClose: ()
             .map(([cat, n]) => (
               <View key={cat} style={[modal.catRow, { borderBottomColor: tc.borderColor }]}>
                 <ThemedText style={[modal.catName, { color: tc.textPrimary }]}>{cat}</ThemedText>
-                <ThemedText style={modal.catCount}>{n}</ThemedText>
+                <ThemedText style={[modal.catCount, { color: tc.tactical }]}>{n}</ThemedText>
               </View>
             ))}
 
@@ -117,9 +117,9 @@ function ReportDetailModal({ report, onClose }: { report: ReportRow; onClose: ()
 
 const modal = StyleSheet.create({
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: Spacing.three, paddingVertical: Spacing.two, borderBottomWidth: StyleSheet.hairlineWidth },
-  back:  { fontSize: 15, color: Brand.tactical, fontWeight: '600' },
+  back: { fontSize: 15, fontWeight: '600' },
   title: { fontSize: 12, fontWeight: '900', letterSpacing: 2 },
-  share: { fontSize: 11, color: Brand.accent, fontWeight: '800', letterSpacing: 0.5 },
+  share: { fontSize: 11, fontWeight: '800', letterSpacing: 0.5 },
   body:  { padding: Spacing.three, gap: Spacing.two + 2 },
   metaBox: { borderWidth: 1, borderRadius: 6, padding: Spacing.two + 2, gap: 4 },
   metaDate:  { fontSize: 13 },
@@ -130,7 +130,7 @@ const modal = StyleSheet.create({
   sectionLabel: { fontSize: 10, fontWeight: '700', letterSpacing: 0.5, marginTop: Spacing.one },
   catRow:  { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 4, borderBottomWidth: StyleSheet.hairlineWidth },
   catName: { fontSize: 13 },
-  catCount: { fontSize: 13, fontWeight: '800', color: Brand.tactical },
+  catCount: { fontSize: 13, fontWeight: '800' },
   summaryText: { fontSize: 14, lineHeight: 22 },
   item:     { fontSize: 13, lineHeight: 20, paddingLeft: Spacing.one },
   itemNone: { fontSize: 12, fontStyle: 'italic' },
@@ -195,7 +195,7 @@ export default function AdminReportsScreen() {
       {/* Header */}
       <View style={[styles.header, { borderBottomColor: tc.borderColor }]}>
         <Pressable onPress={() => router.back()} hitSlop={12}>
-          <ThemedText style={styles.back}>‹ Back</ThemedText>
+          <ThemedText style={[styles.back, { color: tc.tactical }]}>‹ Back</ThemedText>
         </Pressable>
         <ThemedText style={[styles.title, { color: tc.textPrimary }]}>AI REPORTS</ThemedText>
         <View style={{ width: 60 }} />
@@ -217,7 +217,7 @@ export default function AdminReportsScreen() {
           style={({ pressed }) => [styles.genBtn, styles.genBtnWeekly, { backgroundColor: tc.surface }, (pressed || reportGenerating) && { opacity: 0.7 }]}>
           {reportGenerating
             ? <ActivityIndicator color={Brand.accent} size="small" />
-            : <ThemedText style={[styles.genBtnText, { color: Brand.accent }]}>📊 WEEKLY REPORT</ThemedText>}
+            : <ThemedText style={[styles.genBtnText, { color: tc.accent }]}>📊 WEEKLY REPORT</ThemedText>}
         </Pressable>
       </View>
 
@@ -255,7 +255,7 @@ export default function AdminReportsScreen() {
 const styles = StyleSheet.create({
   root: { flex: 1 },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: Spacing.three, paddingVertical: Spacing.two, borderBottomWidth: StyleSheet.hairlineWidth },
-  back:  { fontSize: 15, color: Brand.tactical, fontWeight: '600', width: 60 },
+  back: { fontSize: 15, fontWeight: '600', width: 60 },
   title: { fontSize: 13, fontWeight: '900', letterSpacing: 2 },
   generateRow: { flexDirection: 'row', gap: Spacing.two, padding: Spacing.three },
   genBtn: { flex: 1, borderRadius: 6, padding: Spacing.two + 2, alignItems: 'center', borderWidth: 1 },

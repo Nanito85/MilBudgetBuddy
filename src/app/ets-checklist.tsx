@@ -263,14 +263,14 @@ export default function EtsChecklistScreen() {
         <View style={styles.progressTrack}>
           <View style={[styles.progressFill, { width: `${pct * 100}%` as any }]} />
         </View>
-        <ThemedText style={styles.progressLabel}>{checkedCount}/{totalItems} COMPLETED</ThemedText>
+        <ThemedText style={[styles.progressLabel, { color: tc.tactical }]}>{checkedCount}/{totalItems} COMPLETED</ThemedText>
       </View>
 
       <Pressable onPress={() => router.push('/life-events' as any)} style={styles.relatedToolRow}>
         <ThemedText style={[styles.relatedToolText, { color: tc.textSecondary }]}>
           Want a shorter financial/admin task list instead? See Life Event Checklists
         </ThemedText>
-        <ThemedText style={[styles.relatedToolChevron, { color: Brand.accent }]}>›</ThemedText>
+        <ThemedText style={[styles.relatedToolChevron, { color: tc.accent }]}>›</ThemedText>
       </Pressable>
 
       <ScrollView
@@ -279,7 +279,7 @@ export default function EtsChecklistScreen() {
 
         {pct >= 1 && (
           <ThemedView type="backgroundElement" style={styles.completeBanner}>
-            <ThemedText style={styles.completeText}>🎖 Checklist complete — you're ready to transition!</ThemedText>
+            <ThemedText style={[styles.completeText, { color: tc.tactical }]}>🎖 Checklist complete — you're ready to transition!</ThemedText>
           </ThemedView>
         )}
 
@@ -393,7 +393,6 @@ const styles = StyleSheet.create({
   progressLabel: {
     fontSize: 9,
     fontWeight: '800',
-    color: Brand.tactical,
     letterSpacing: 1,
     textAlign: 'right',
   },
@@ -406,7 +405,7 @@ const styles = StyleSheet.create({
     borderLeftWidth: 3,
     borderLeftColor: Brand.tactical,
   },
-  completeText: { fontSize: 14, fontWeight: '700', color: Brand.tactical },
+  completeText: { fontSize: 14, fontWeight: '700' },
 
   sectionHeader: {
     flexDirection: 'row',

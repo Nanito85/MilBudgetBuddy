@@ -5,7 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Brand, Spacing } from '@/constants/theme';
+import { Spacing } from '@/constants/theme';
 import { useThemeColors } from '@/hooks/use-theme';
 import { useAuthStore } from '@/store/auth.store';
 
@@ -82,17 +82,17 @@ export default function LegalScreen() {
         <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
 
           <Pressable onPress={() => router.back()} style={styles.backBtn}>
-            <ThemedText style={styles.backText}>‹ Back</ThemedText>
+            <ThemedText style={[styles.backText, { color: tc.tactical }]}>‹ Back</ThemedText>
           </Pressable>
 
-          <ThemedText style={styles.eyebrow}>// MILBUDGETBUDDY</ThemedText>
+          <ThemedText style={[styles.eyebrow, { color: tc.tactical }]}>// MILBUDGETBUDDY</ThemedText>
           <ThemedText style={[styles.pageTitle, { color: tc.textPrimary }]}>LEGAL & PRIVACY</ThemedText>
 
           {/* Privacy Policy */}
           <View style={[styles.section, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
             <Pressable style={styles.sectionHeader} onPress={() => toggle('privacy')}>
               <ThemedText style={[styles.sectionTitle, { color: tc.textPrimary }]}>Privacy Policy</ThemedText>
-              <ThemedText style={styles.chevron}>{expanded === 'privacy' ? '▲' : '▼'}</ThemedText>
+              <ThemedText style={[styles.chevron, { color: tc.tactical }]}>{expanded === 'privacy' ? '▲' : '▼'}</ThemedText>
             </Pressable>
             {expanded === 'privacy' && (
               <View style={[styles.sectionBody, { borderTopColor: tc.borderColor }]}>
@@ -112,7 +112,7 @@ export default function LegalScreen() {
                   service.
                 </ThemedText>
                 <Pressable onPress={() => Linking.openURL(PRIVACY_URL)} style={styles.linkBtn}>
-                  <ThemedText style={styles.linkText}>View Full Privacy Policy →</ThemedText>
+                  <ThemedText style={[styles.linkText, { color: tc.accent }]}>View Full Privacy Policy →</ThemedText>
                 </Pressable>
               </View>
             )}
@@ -122,7 +122,7 @@ export default function LegalScreen() {
           <View style={[styles.section, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
             <Pressable style={styles.sectionHeader} onPress={() => toggle('terms')}>
               <ThemedText style={[styles.sectionTitle, { color: tc.textPrimary }]}>Terms of Service</ThemedText>
-              <ThemedText style={styles.chevron}>{expanded === 'terms' ? '▲' : '▼'}</ThemedText>
+              <ThemedText style={[styles.chevron, { color: tc.tactical }]}>{expanded === 'terms' ? '▲' : '▼'}</ThemedText>
             </Pressable>
             {expanded === 'terms' && (
               <View style={[styles.sectionBody, { borderTopColor: tc.borderColor }]}>
@@ -146,7 +146,7 @@ export default function LegalScreen() {
                   account settings.
                 </ThemedText>
                 <Pressable onPress={() => Linking.openURL(TERMS_URL)} style={styles.linkBtn}>
-                  <ThemedText style={styles.linkText}>View Full Terms of Service →</ThemedText>
+                  <ThemedText style={[styles.linkText, { color: tc.accent }]}>View Full Terms of Service →</ThemedText>
                 </Pressable>
               </View>
             )}
@@ -159,7 +159,7 @@ export default function LegalScreen() {
               For help, feedback, or questions, contact us at:
             </ThemedText>
             <Pressable onPress={handleContact} style={styles.contactRow}>
-              <ThemedText style={styles.contactEmail}>{SUPPORT_EMAIL}</ThemedText>
+              <ThemedText style={[styles.contactEmail, { color: tc.accent }]}>{SUPPORT_EMAIL}</ThemedText>
             </Pressable>
           </View>
 
@@ -195,9 +195,9 @@ const styles = StyleSheet.create({
   content: { paddingHorizontal: Spacing.three, paddingBottom: Spacing.five, gap: Spacing.three },
 
   backBtn: { paddingVertical: Spacing.two, alignSelf: 'flex-start' },
-  backText: { fontSize: 16, fontWeight: '600', color: Brand.tactical, lineHeight: 22 },
+  backText: { fontSize: 16, fontWeight: '600', lineHeight: 22 },
 
-  eyebrow: { color: Brand.tactical, fontSize: 10, fontWeight: '700', letterSpacing: 1, marginTop: 4 },
+  eyebrow: { fontSize: 10, fontWeight: '700', letterSpacing: 1, marginTop: 4 },
   pageTitle: { fontSize: 24, fontWeight: '900', letterSpacing: 1, marginBottom: 4 },
 
   section: {
@@ -212,7 +212,7 @@ const styles = StyleSheet.create({
     padding: Spacing.three,
   },
   sectionTitle: { fontSize: 13, fontWeight: '800', letterSpacing: 0.5, padding: Spacing.three },
-  chevron: { fontSize: 12, color: Brand.tactical, paddingRight: Spacing.three },
+  chevron: { fontSize: 12, paddingRight: Spacing.three },
 
   sectionBody: {
     borderTopWidth: StyleSheet.hairlineWidth,
@@ -222,11 +222,11 @@ const styles = StyleSheet.create({
   bodyText: { fontSize: 12, lineHeight: 18 },
 
   linkBtn: { alignSelf: 'flex-start', paddingTop: 4 },
-  linkText: { fontSize: 12, color: Brand.accent, fontWeight: '700' },
+  linkText: { fontSize: 12, fontWeight: '700' },
 
   supportBody: { fontSize: 12, lineHeight: 18, paddingHorizontal: Spacing.three, paddingBottom: Spacing.two },
   contactRow: { paddingHorizontal: Spacing.three, paddingBottom: Spacing.three },
-  contactEmail: { fontSize: 13, fontWeight: '700', color: Brand.accent },
+  contactEmail: { fontSize: 13, fontWeight: '700' },
 
   deleteBtn: {
     marginHorizontal: Spacing.three,

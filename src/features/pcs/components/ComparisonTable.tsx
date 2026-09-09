@@ -7,6 +7,7 @@ import { Brand, Spacing } from '@/constants/theme';
 import { getColaInfo } from '@/data/cola';
 import { Installation } from '@/data/installations';
 import { formatDiff, PCSResult } from '@/features/pcs/utils/pcsCalc';
+import { useThemeColors } from '@/hooks/use-theme';
 
 interface Props {
   result: PCSResult;
@@ -28,6 +29,7 @@ function RateCol({ label, value, highlight }: { label: string; value: string; hi
 }
 
 export function ComparisonTable({ result, current, gaining }: Props) {
+  const tc = useThemeColors();
   const { monthlyDiff, annualDiff } = result;
   const isIncrease = (monthlyDiff ?? 0) >= 0;
   const diffColor = isIncrease ? Brand.success : Brand.danger;
@@ -102,7 +104,7 @@ export function ComparisonTable({ result, current, gaining }: Props) {
       {/* COLA loss warning */}
       {losingCola && (
         <View style={styles.colaNotice}>
-          <ThemedText type="small" style={styles.colaLossText}>
+          <ThemedText type="small" style={[styles.colaLossText, { color: tc.warning }]}>
             ⚠️ COLA LOSS — You currently receive CONUS COLA at {current.name} (~{currentCola!.monthlyEstimate}).
             This allowance does NOT transfer to your gaining station. Factor this into your total pay comparison.
           </ThemedText>
@@ -112,7 +114,7 @@ export function ComparisonTable({ result, current, gaining }: Props) {
       {/* COLA gain notice */}
       {gainingColaFlag && (
         <View style={[styles.colaNotice, styles.colaGainNotice]}>
-          <ThemedText type="small" style={styles.colaGainText}>
+          <ThemedText type="small" style={[styles.colaGainText, { color: tc.success }]}>
             💰 COLA GAIN — {gaining.name} is CONUS COLA eligible (~{gainingCola!.monthlyEstimate}).
             Verify your rate at militarypay.defense.gov after arrival.
           </ThemedText>
@@ -122,7 +124,7 @@ export function ComparisonTable({ result, current, gaining }: Props) {
       {/* Both have COLA */}
       {currentCola && gainingCola && (
         <View style={styles.colaNotice}>
-          <ThemedText type="small" style={styles.colaLossText}>
+          <ThemedText type="small" style={[styles.colaLossText, { color: tc.warning }]}>
             ℹ️ COLA NOTE — Both stations are CONUS COLA eligible. Rates differ:
             {'\n'}• Current ({current.name}): ~{currentCola.monthlyEstimate}
             {'\n'}• Gaining ({gaining.name}): ~{gainingCola.monthlyEstimate}
@@ -134,7 +136,7 @@ export function ComparisonTable({ result, current, gaining }: Props) {
       {/* OCONUS notice */}
       {(current.oconus || gaining.oconus) && (
         <View style={styles.oconusNotice}>
-          <ThemedText type="small" style={styles.oconusText}>
+          <ThemedText type="small" style={[styles.oconusText, { color: tc.warning }]}>
             OCONUS stations use Overseas Housing Allowance (OHA) instead of BAH.
             Contact your gaining unit's finance office for OHA rates.
           </ThemedText>
@@ -188,8 +190,8 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,178,122,0.08)',
     borderLeftColor: Brand.success,
   },
-  colaLossText: { color: Brand.warning, lineHeight: 18 },
-  colaGainText: { color: Brand.success, lineHeight: 18 },
+  colaLossText: { lineHeight: 18 },
+  colaGainText: { lineHeight: 18 },
   oconusNotice: {
     margin: Spacing.three,
     marginTop: 0,
@@ -197,5 +199,5 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(230,126,34,0.1)',
     borderRadius: Spacing.two,
   },
-  oconusText: { color: Brand.warning, lineHeight: 18 },
+  oconusText: { lineHeight: 18 },
 });

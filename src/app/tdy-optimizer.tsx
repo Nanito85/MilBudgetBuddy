@@ -116,11 +116,11 @@ export default function TdyOptimizerScreen() {
     return (
       <View style={styles.inlineStepperControls}>
         <Pressable style={[styles.stepBtn, { backgroundColor: tc.background, borderColor: tc.borderColor }]} onPress={() => onChange(Math.max(min, value - step))}>
-          <ThemedText style={styles.stepBtnText}>−</ThemedText>
+          <ThemedText style={[styles.stepBtnText, { color: tc.tactical }]}>−</ThemedText>
         </Pressable>
         <ThemedText style={[styles.stepperValue, { color: tc.textPrimary }]}>{value} days</ThemedText>
         <Pressable style={[styles.stepBtn, { backgroundColor: tc.background, borderColor: tc.borderColor }]} onPress={() => onChange(Math.min(max, value + step))}>
-          <ThemedText style={styles.stepBtnText}>+</ThemedText>
+          <ThemedText style={[styles.stepBtnText, { color: tc.tactical }]}>+</ThemedText>
         </Pressable>
       </View>
     );
@@ -144,7 +144,7 @@ export default function TdyOptimizerScreen() {
 
         {/* Hero */}
         <ThemedView type="backgroundElement" style={styles.heroBanner}>
-          <ThemedText style={styles.heroEyebrow}>TDY OPTIMIZER</ThemedText>
+          <ThemedText style={[styles.heroEyebrow, { color: tc.accent }]}>TDY OPTIMIZER</ThemedText>
           <ThemedText style={[styles.heroTitle, { color: tc.textPrimary }]}>Per Diem Pocket Calculator</ThemedText>
           <ThemedText style={[styles.heroBody, { color: tc.textHint }]}>
             You keep the difference. If you spend less than your authorized per diem, the savings are yours to pocket. Covers all 42,000+ US ZIP codes + 80+ overseas locations.
@@ -164,7 +164,7 @@ export default function TdyOptimizerScreen() {
 
         {/* Location picker */}
         <ThemedView type="backgroundElement" style={styles.card}>
-          <ThemedText style={styles.cardLabel}>TDY LOCATION</ThemedText>
+          <ThemedText style={[styles.cardLabel, { color: tc.tactical }]}>TDY LOCATION</ThemedText>
 
           {mode === 'conus' && (
             <>
@@ -190,7 +190,7 @@ export default function TdyOptimizerScreen() {
 
               {zipResult && (
                 <View style={[styles.zipPreview, { backgroundColor: tc.background }]}>
-                  <ThemedText style={styles.zipPreviewCity}>{zipResult.isStandard ? 'Federal Standard Rate' : `${zipResult.city}, ${zipResult.state}`}</ThemedText>
+                  <ThemedText style={[styles.zipPreviewCity, { color: tc.tactical }]}>{zipResult.isStandard ? 'Federal Standard Rate' : `${zipResult.city}, ${zipResult.state}`}</ThemedText>
                   <ThemedText style={[styles.zipPreviewRate, { color: tc.textHint }]}>{fmtDay(zipResult.total)}/day • Lodging {fmtDay(zipResult.lodging)} + M&IE {fmtDay(zipResult.meals)}</ThemedText>
                 </View>
               )}
@@ -212,8 +212,8 @@ export default function TdyOptimizerScreen() {
                 <View style={[styles.chipRow, { paddingHorizontal: Spacing.three }]}>
                   {conusResults.map((d) => (
                     <Pressable key={d.did} onPress={() => { setSelected(destToRate(d)); setCitySearch(''); Keyboard.dismiss(); }} style={[styles.locChip, { backgroundColor: tc.background, borderColor: tc.borderColor }, selected.label === `${d.city}, ${d.state}` && styles.locChipSelected]}>
-                      <ThemedText style={[styles.locChipText, { color: tc.textHint }, selected.label === `${d.city}, ${d.state}` && styles.locChipTextSelected]}>{d.city}, {d.state}</ThemedText>
-                      <ThemedText style={[styles.locChipRate, { color: tc.textMuted }, selected.label === `${d.city}, ${d.state}` && { color: Brand.accent }]}>{fmtDay(d.total)}/day</ThemedText>
+                      <ThemedText style={[styles.locChipText, { color: tc.textHint }, selected.label === `${d.city}, ${d.state}` && [styles.locChipTextSelected, { color: tc.tactical }]]}>{d.city}, {d.state}</ThemedText>
+                      <ThemedText style={[styles.locChipRate, { color: tc.textMuted }, selected.label === `${d.city}, ${d.state}` && { color: tc.accent }]}>{fmtDay(d.total)}/day</ThemedText>
                     </Pressable>
                   ))}
                 </View>
@@ -234,8 +234,8 @@ export default function TdyOptimizerScreen() {
                 <View style={[styles.chipRow, { paddingHorizontal: Spacing.three }]}>
                   {oconusResults.map((l) => (
                     <Pressable key={l.id} onPress={() => { setSelected(oconusToRate(l)); setCitySearch(''); Keyboard.dismiss(); }} style={[styles.locChip, { backgroundColor: tc.background, borderColor: tc.borderColor }, selected.label === l.name && styles.locChipSelected]}>
-                      <ThemedText style={[styles.locChipText, { color: tc.textHint }, selected.label === l.name && styles.locChipTextSelected]}>{l.name}</ThemedText>
-                      <ThemedText style={[styles.locChipRate, { color: tc.textMuted }, selected.label === l.name && { color: Brand.accent }]}>{fmtDay(l.total)}/day</ThemedText>
+                      <ThemedText style={[styles.locChipText, { color: tc.textHint }, selected.label === l.name && [styles.locChipTextSelected, { color: tc.tactical }]]}>{l.name}</ThemedText>
+                      <ThemedText style={[styles.locChipRate, { color: tc.textMuted }, selected.label === l.name && { color: tc.accent }]}>{fmtDay(l.total)}/day</ThemedText>
                     </Pressable>
                   ))}
                 </View>
@@ -246,14 +246,14 @@ export default function TdyOptimizerScreen() {
           <View style={styles.selectedInfo}>
             <ThemedText style={[styles.selectedName, { color: tc.textPrimary }]}>{selected.label}</ThemedText>
             <ThemedText style={[styles.selectedArea, { color: tc.textHint }]}>{selected.location}</ThemedText>
-            {selected.isStandard && <ThemedText style={styles.standardBadge}>FEDERAL STANDARD RATE</ThemedText>}
+            {selected.isStandard && <ThemedText style={[styles.standardBadge, { color: tc.accent }]}>FEDERAL STANDARD RATE</ThemedText>}
             {selected.isOconus && <ThemedText style={styles.oconusBadge}>OCONUS — verify at travel.dod.mil</ThemedText>}
           </View>
         </ThemedView>
 
         {/* Days */}
         <ThemedView type="backgroundElement" style={styles.card}>
-          <ThemedText style={styles.cardLabel}>TDY DURATION</ThemedText>
+          <ThemedText style={[styles.cardLabel, { color: tc.tactical }]}>TDY DURATION</ThemedText>
           <View style={styles.daysRow}>
             <ThemedText style={[styles.stepperLabel, { color: tc.textSecondary }]}>Number of days</ThemedText>
             <Stepper value={days} step={1} min={1} max={365} onChange={setDays} />
@@ -262,7 +262,7 @@ export default function TdyOptimizerScreen() {
 
         {/* Authorized rates */}
         <ThemedView type="backgroundElement" style={styles.card}>
-          <ThemedText style={styles.cardLabel}>AUTHORIZED PER DIEM — {selected.label.toUpperCase()}</ThemedText>
+          <ThemedText style={[styles.cardLabel, { color: tc.tactical }]}>AUTHORIZED PER DIEM — {selected.label.toUpperCase()}</ThemedText>
           <View style={styles.rateGrid}>
             <View style={[styles.rateBox, { backgroundColor: tc.background }]}>
               <ThemedText style={[styles.rateBoxLabel, { color: tc.textMuted }]}>LODGING</ThemedText>
@@ -270,11 +270,11 @@ export default function TdyOptimizerScreen() {
             </View>
             <View style={[styles.rateBox, { backgroundColor: tc.background }]}>
               <ThemedText style={[styles.rateBoxLabel, { color: tc.textMuted }]}>M&IE</ThemedText>
-              <ThemedText style={[styles.rateBoxValue, { color: Brand.accent }]}>{fmtDay(authorizedMie)}/day</ThemedText>
+              <ThemedText style={[styles.rateBoxValue, { color: tc.accent }]}>{fmtDay(authorizedMie)}/day</ThemedText>
             </View>
             <View style={[styles.rateBox, { backgroundColor: tc.background }]}>
               <ThemedText style={[styles.rateBoxLabel, { color: tc.textMuted }]}>TOTAL/DAY</ThemedText>
-              <ThemedText style={[styles.rateBoxValue, { color: Brand.tactical }]}>{fmtDay(authorizedTotal)}/day</ThemedText>
+              <ThemedText style={[styles.rateBoxValue, { color: tc.tactical }]}>{fmtDay(authorizedTotal)}/day</ThemedText>
             </View>
           </View>
           <ThemedText style={[styles.rateNote, { color: tc.textMuted }]}>
@@ -284,7 +284,7 @@ export default function TdyOptimizerScreen() {
 
         {/* Actual spend */}
         <ThemedView type="backgroundElement" style={styles.card}>
-          <ThemedText style={styles.cardLabel}>YOUR ACTUAL SPEND</ThemedText>
+          <ThemedText style={[styles.cardLabel, { color: tc.tactical }]}>YOUR ACTUAL SPEND</ThemedText>
 
           <View style={styles.actualRow}>
             <View style={{ flex: 1, gap: 2 }}>
@@ -308,7 +308,7 @@ export default function TdyOptimizerScreen() {
               <ThemedText style={[styles.stepperLabel, { color: tc.textSecondary }]}>M&IE</ThemedText>
               <ThemedText style={[styles.cardNote, { color: tc.textMuted }]}>Your authorized entitlement — unchanged</ThemedText>
             </View>
-            <ThemedText style={[styles.stepperValue, { color: Brand.accent }]}>{fmtDay(authorizedMie)}/day</ThemedText>
+            <ThemedText style={[styles.stepperValue, { color: tc.accent }]}>{fmtDay(authorizedMie)}/day</ThemedText>
           </View>
 
           <View style={[styles.actualRow, { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: tc.borderColor, paddingTop: Spacing.two }]}>
@@ -328,10 +328,10 @@ export default function TdyOptimizerScreen() {
 
         {/* Results */}
         <ThemedView type="backgroundElement" style={styles.card}>
-          <ThemedText style={styles.cardLabel}>POCKET SAVINGS — {days} DAYS</ThemedText>
+          <ThemedText style={[styles.cardLabel, { color: tc.tactical }]}>POCKET SAVINGS — {days} DAYS</ThemedText>
 
           <View style={[styles.bigSavingsBox, { backgroundColor: tc.background }]}>
-            <ThemedText style={styles.bigSavingsLabel}>YOU POCKET</ThemedText>
+            <ThemedText style={[styles.bigSavingsLabel, { color: tc.success }]}>YOU POCKET</ThemedText>
             <ThemedText style={[styles.bigSavings, { color: totalSavings > 0 ? Brand.success : tc.textHint }]}>{fmt(totalSavings)}</ThemedText>
             <ThemedText style={[styles.bigSavingsSub, { color: tc.textHint }]}>{pocketPct.toFixed(0)}% of authorized per diem stays in your pocket</ThemedText>
           </View>
@@ -344,24 +344,24 @@ export default function TdyOptimizerScreen() {
           {lodgingSavings > 0 && (
             <View style={styles.dataRow}>
               <ThemedText style={[styles.dataLabel, { color: tc.textHint }]}>Lodging savings/day</ThemedText>
-              <ThemedText style={[styles.dataValue, { color: Brand.success }]}>+{fmtDay(lodgingSavings)}/day</ThemedText>
+              <ThemedText style={[styles.dataValue, { color: tc.success }]}>+{fmtDay(lodgingSavings)}/day</ThemedText>
             </View>
           )}
           {kitchenette && (
             <View style={styles.dataRow}>
               <ThemedText style={[styles.dataLabel, { color: tc.textHint }]}>Kitchenette savings/day</ThemedText>
-              <ThemedText style={[styles.dataValue, { color: Brand.success }]}>+{fmtDay(KITCHENETTE_SAVINGS)}/day</ThemedText>
+              <ThemedText style={[styles.dataValue, { color: tc.success }]}>+{fmtDay(KITCHENETTE_SAVINGS)}/day</ThemedText>
             </View>
           )}
           <View style={styles.dataRow}>
             <ThemedText style={[styles.dataLabel, { color: tc.textHint }]}>Total pocket savings/day</ThemedText>
-            <ThemedText style={[styles.dataValue, { color: Brand.success }]}>{fmtDay(dailySavings)}/day</ThemedText>
+            <ThemedText style={[styles.dataValue, { color: tc.success }]}>{fmtDay(dailySavings)}/day</ThemedText>
           </View>
         </ThemedView>
 
         {/* Tips */}
         <ThemedView type="backgroundElement" style={styles.card}>
-          <ThemedText style={styles.cardLabel}>PER DIEM OPTIMIZATION TIPS</ThemedText>
+          <ThemedText style={[styles.cardLabel, { color: tc.tactical }]}>PER DIEM OPTIMIZATION TIPS</ThemedText>
           {[
             'Cook in your room: hotel kitchenettes or grocery runs reduce M&IE by 40–60%.',
             'Find off-post housing: AirBnB or weekly rentals near base often beat lodging rates.',
@@ -371,7 +371,7 @@ export default function TdyOptimizerScreen() {
             'DTMO site: verify exact OCONUS rates at defensetravel.dod.mil before travel.',
           ].map((tip, i) => (
             <View key={i} style={styles.tipRow}>
-              <ThemedText style={styles.tipBullet}>▸</ThemedText>
+              <ThemedText style={[styles.tipBullet, { color: tc.accent }]}>▸</ThemedText>
               <ThemedText style={[styles.tipText, { color: tc.textHint }]}>{tip}</ThemedText>
             </View>
           ))}
@@ -399,7 +399,7 @@ const styles = StyleSheet.create({
   content: { paddingHorizontal: Spacing.three, gap: Spacing.two, paddingTop: Spacing.one },
 
   heroBanner: { borderRadius: 4, padding: Spacing.three, borderLeftWidth: 3, borderLeftColor: Brand.accent, gap: 4 },
-  heroEyebrow: { fontSize: 9, fontWeight: '800', letterSpacing: 1.5, color: Brand.accent },
+  heroEyebrow: { fontSize: 9, fontWeight: '800', letterSpacing: 1.5 },
   heroTitle: { fontSize: 20, fontWeight: '900' },
   heroBody: { fontSize: 12, lineHeight: 18, marginTop: 4 },
 
@@ -410,14 +410,14 @@ const styles = StyleSheet.create({
   tabTextActive: { color: '#000' },
 
   card: { borderRadius: 4, padding: Spacing.three, gap: Spacing.two },
-  cardLabel: { fontSize: 9, fontWeight: '800', letterSpacing: 1.2, color: Brand.tactical, marginBottom: 2 },
+  cardLabel: { fontSize: 9, fontWeight: '800', letterSpacing: 1.2, marginBottom: 2 },
   cardNote: { fontSize: 10, lineHeight: 15 },
 
   zipRow: { flexDirection: 'row', gap: Spacing.one, alignItems: 'center' },
   zipApplyBtn: { backgroundColor: Brand.tactical, paddingHorizontal: 12, paddingVertical: 9, borderRadius: 3 },
   zipApplyText: { fontSize: 11, fontWeight: '800', color: '#000' },
   zipPreview: { borderRadius: 3, padding: Spacing.two, gap: 2, borderWidth: 1, borderColor: Brand.tactical + '60' },
-  zipPreviewCity: { fontSize: 13, fontWeight: '700', color: Brand.tactical },
+  zipPreviewCity: { fontSize: 13, fontWeight: '700' },
   zipPreviewRate: { fontSize: 11 },
 
   dividerRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
@@ -430,20 +430,20 @@ const styles = StyleSheet.create({
   locChip: { paddingHorizontal: 10, paddingVertical: 6, borderRadius: 3, borderWidth: 1, gap: 2 },
   locChipSelected: { borderColor: Brand.tactical, backgroundColor: Brand.tactical + '20' },
   locChipText: { fontSize: 10, fontWeight: '700' },
-  locChipTextSelected: { color: Brand.tactical },
+  locChipTextSelected: {},
   locChipRate: { fontSize: 9 },
 
   selectedInfo: { gap: 2 },
   selectedName: { fontSize: 13, fontWeight: '700' },
   selectedArea: { fontSize: 10 },
-  standardBadge: { fontSize: 8, fontWeight: '800', letterSpacing: 1, color: Brand.accent, marginTop: 2 },
+  standardBadge: { fontSize: 8, fontWeight: '800', letterSpacing: 1, marginTop: 2 },
   oconusBadge: { fontSize: 8, fontWeight: '800', letterSpacing: 1, color: Brand.danger, marginTop: 2 },
 
   daysRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   stepperLabel: { fontSize: 12, flex: 1 },
   inlineStepperControls: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
   stepBtn: { width: 30, height: 30, borderRadius: 3, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
-  stepBtnText: { fontSize: 18, fontWeight: '300', color: Brand.tactical },
+  stepBtnText: { fontSize: 18, fontWeight: '300' },
   stepperValue: { fontSize: 13, fontWeight: '700', width: 75, textAlign: 'center', fontFamily: 'Courier New' },
 
   rateGrid: { flexDirection: 'row', gap: Spacing.two },
@@ -462,7 +462,7 @@ const styles = StyleSheet.create({
   kToggleTxtActive: { color: '#000' },
 
   bigSavingsBox: { alignItems: 'center', borderWidth: 1, borderColor: Brand.success + '40', borderRadius: 4, padding: Spacing.three, gap: 4 },
-  bigSavingsLabel: { fontSize: 9, fontWeight: '800', letterSpacing: 1.2, color: Brand.success },
+  bigSavingsLabel: { fontSize: 9, fontWeight: '800', letterSpacing: 1.2 },
   bigSavings: { fontSize: 26, fontWeight: '900', fontFamily: 'Courier New' },
   bigSavingsSub: { fontSize: 10, textAlign: 'center' },
 
@@ -472,7 +472,7 @@ const styles = StyleSheet.create({
   dataValue: { fontSize: 13, fontFamily: 'Courier New' },
 
   tipRow: { flexDirection: 'row', gap: 6, alignItems: 'flex-start' },
-  tipBullet: { fontSize: 10, color: Brand.accent, marginTop: 2 },
+  tipBullet: { fontSize: 10, marginTop: 2 },
   tipText: { flex: 1, fontSize: 12, lineHeight: 18 },
 
   disclaimer: { borderRadius: 4, padding: Spacing.two },

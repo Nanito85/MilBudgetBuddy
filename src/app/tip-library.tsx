@@ -34,11 +34,11 @@ function TipRow({ tip, featured, onPress }: { tip: Tip; featured?: boolean; onPr
         <CategoryBadge category={tip.category} size="sm" />
         {featured && (
           <View style={styles.featuredBadge}>
-            <ThemedText style={styles.featuredBadgeText}>THIS WEEK</ThemedText>
+            <ThemedText style={[styles.featuredBadgeText, { color: tc.accent }]}>THIS WEEK</ThemedText>
           </View>
         )}
         <Pressable onPress={() => toggleSave(tip.id)} hitSlop={10} style={styles.heartBtn}>
-          <ThemedText style={[styles.heart, { color: tc.textMuted }, saved && { color: Brand.accent }]}>
+          <ThemedText style={[styles.heart, { color: tc.textMuted }, saved && { color: tc.accent }]}>
             {saved ? '♥' : '♡'}
           </ThemedText>
         </Pressable>
@@ -88,7 +88,7 @@ export default function TipLibraryScreen() {
     <ThemedView style={styles.container}>
       <View style={[styles.header, { paddingTop: insets.top + Spacing.two, borderBottomColor: tc.borderColor }]}>
         <Pressable onPress={() => router.back()} style={styles.backBtn} hitSlop={12}>
-          <ThemedText style={styles.backText}>‹ Back</ThemedText>
+          <ThemedText style={[styles.backText, { color: tc.tactical }]}>‹ Back</ThemedText>
         </Pressable>
         <ThemedText style={[styles.title, { color: tc.textPrimary }]}>TIP LIBRARY</ThemedText>
         <View style={styles.backBtn} />
@@ -156,7 +156,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   backBtn: { width: 60 },
-  backText: { color: Brand.tactical, fontSize: 15, fontWeight: '600' },
+  backText: { fontSize: 15, fontWeight: '600' },
   title: { flex: 1, textAlign: 'center', fontSize: 14, fontWeight: '900', letterSpacing: 1.2 },
 
   searchWrap: {
@@ -177,7 +177,7 @@ const styles = StyleSheet.create({
   tipRow: { borderWidth: 1, borderRadius: 10, padding: Spacing.three, gap: Spacing.one + 2 },
   tipRowTop: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
   featuredBadge: { backgroundColor: Brand.accent + '20', borderRadius: 4, paddingHorizontal: 6, paddingVertical: 2 },
-  featuredBadgeText: { fontSize: 9, fontWeight: '900', color: Brand.accent, letterSpacing: 0.5 },
+  featuredBadgeText: { fontSize: 9, fontWeight: '900', letterSpacing: 0.5 },
   heartBtn: { marginLeft: 'auto', padding: 2 },
   heart: { fontSize: 18 },
   tipTitle: { fontSize: 15, fontWeight: '700', lineHeight: 20 },

@@ -87,12 +87,12 @@ function MenuCard({ item, onPress }: { item: MenuItem; onPress: () => void }) {
       </View>
       {item.badge && (
         <View style={[styles.badge, item.badge === 'New' ? styles.badgeNew : { backgroundColor: tc.borderColor }]}>
-          <ThemedText type="label" style={[styles.badgeText, item.badge === 'New' ? styles.badgeTextNew : { color: tc.textSecondary }]}>
+          <ThemedText type="label" style={[styles.badgeText, item.badge === 'New' ? { color: tc.accent } : { color: tc.textSecondary }]}>
             {item.badge.toUpperCase()}
           </ThemedText>
         </View>
       )}
-      <ThemedText style={styles.chevron}>›</ThemedText>
+      <ThemedText style={[styles.chevron, { color: tc.accent }]}>›</ThemedText>
     </Pressable>
   );
 }
@@ -185,7 +185,7 @@ export default function ToolsScreen() {
         keyboardShouldPersistTaps="handled">
 
         <SafeAreaView>
-          <ThemedText type="label" style={styles.eyebrow}>// FINANCE OPERATIONS CENTER</ThemedText>
+          <ThemedText type="label" style={[styles.eyebrow, { color: tc.tactical }]}>// FINANCE OPERATIONS CENTER</ThemedText>
           <ThemedText style={[styles.heading, { color: tc.textPrimary }]}>OPS TOOLKIT</ThemedText>
           <ThemedText type="label" style={[styles.subhead, { color: tc.textSecondary }]}>{ALL_TOOLS.length} TOOLS · CALCULATORS · INTEL</ThemedText>
         </SafeAreaView>
@@ -285,7 +285,7 @@ export default function ToolsScreen() {
                 <ThemedText style={[styles.shortcutTitle, { color: tc.textPrimary }]}>SETTINGS</ThemedText>
                 <ThemedText type="small" style={[styles.shortcutDesc, { color: tc.textSecondary }]}>Profile, text size, notifications, quick-access tiles</ThemedText>
               </View>
-              <ThemedText style={styles.chevron}>›</ThemedText>
+              <ThemedText style={[styles.chevron, { color: tc.accent }]}>›</ThemedText>
             </Pressable>
           </>
         )}
@@ -301,7 +301,7 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   content: { paddingHorizontal: Spacing.three, gap: Spacing.three },
 
-  eyebrow: { color: Brand.tactical, fontSize: 10, marginTop: Spacing.two },
+  eyebrow: { fontSize: 10, marginTop: Spacing.two },
   heading: { fontSize: 22, fontWeight: '900', letterSpacing: 1, marginTop: 4 },
   subhead: { fontSize: 10, marginTop: 2 },
 
@@ -367,8 +367,7 @@ const styles = StyleSheet.create({
   badge: { paddingHorizontal: 6, paddingVertical: 2, borderRadius: 2, marginRight: Spacing.one },
   badgeNew: { backgroundColor: Brand.accent + '20' },
   badgeText: { fontSize: 9, fontWeight: '800', letterSpacing: 0.5 },
-  badgeTextNew: { color: Brand.accent },
-  chevron: { color: Brand.accent, fontSize: 20, paddingRight: Spacing.two },
+  chevron: { fontSize: 20, paddingRight: Spacing.two },
 
   shortcutRow: {
     borderWidth: StyleSheet.hairlineWidth,
