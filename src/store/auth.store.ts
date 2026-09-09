@@ -66,6 +66,17 @@ export const useAuthStore = create<AuthState>((set) => ({
       // purchase after signing up" failure this whole flow exists to avoid.
       if (auth.currentUser?.isAnonymous) {
         await linkWithCredential(auth.currentUser, EmailAuthProvider.credential(email, password));
+        // linkWithCredential is a known gap in the Firebase JS SDK:
+        // onAuthStateChanged does NOT reliably fire after it (auth.currentUser
+        // itself updates immediately, but the listener that normally keeps
+        // this store's `user` in sync often silently doesn't re-fire — see
+        // firebase/firebase-js-sdk#4227). Without this, the store would keep
+        // reporting the stale (still isAnonymous: true) user indefinitely
+        // after a successful link — sign-up.tsx's redirect would never fire,
+        // and Settings would keep showing "SIGN IN TO SYNC" forever even
+        // though the account is actually linked. Set it explicitly instead
+        // of trusting the listener for this one path.
+        set({ user: auth.currentUser });
       } else {
         await createUserWithEmailAndPassword(auth, email, password);
       }
@@ -109,6 +120,19 @@ export const useAuthStore = create<AuthState>((set) => ({
       set({ loading: false });
       return true;
     } catch (e: any) {
+      // sign-in.tsx's own success alert deliberately says "If an account
+      // exists for that email..." specifically so a reset request never
+      // confirms whether an email is registered. auth/user-not-found
+      // (thrown when the project doesn't have Firebase's Email Enumeration
+      // Protection enabled) directly undid that by surfacing "No account
+      // found with that email" on the error path — letting anyone check
+      // which emails are registered members just by trying this form.
+      // Treat it as success instead, matching Firebase's own recommended
+      // enumeration-safe handling.
+      if (e.code === 'auth/user-not-found') {
+        set({ loading: false });
+        return true;
+      }
       set({ error: friendlyResetError(e.code), loading: false });
       return false;
     }
@@ -143,8 +167,10 @@ function friendlyError(code: string): string {
 
 function friendlyResetError(code: string): string {
   switch (code) {
+    // auth/user-not-found is deliberately not handled here — resetPassword()
+    // above intercepts it and reports success instead, so an email's
+    // registration status is never revealed. See that comment for why.
     case 'auth/invalid-email':          return 'Enter a valid email address.';
-    case 'auth/user-not-found':         return 'No account found with that email.';
     case 'auth/too-many-requests':      return 'Too many attempts. Try again in a few minutes.';
     case 'auth/network-request-failed': return 'No internet connection. Check your network.';
     default:                            return 'Something went wrong. Try again.';

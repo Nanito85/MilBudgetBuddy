@@ -22,8 +22,18 @@ export default function SignUpScreen() {
   const tc = useThemeColors();
   const { signUp, loading, error, clearError, user } = useAuthStore();
 
+  // Only bounce away for a REAL signed-in user — same reasoning as
+  // sign-in.tsx. This one is the more serious side of the bug: `user` is
+  // also truthy for an anonymous session (silently created by the paywall
+  // for a no-registration purchase), so redirecting on that alone made
+  // THIS screen — the one whose whole job is linking that anonymous
+  // session to a real email/password via signUp()'s linkWithCredential —
+  // completely unreachable for exactly the members it exists for. Anyone
+  // who bought Pro anonymously could never create an account to protect
+  // that purchase; they'd be bounced back to '/' before the form even
+  // rendered.
   useEffect(() => {
-    if (user) router.replace('/');
+    if (user && !user.isAnonymous) router.replace('/');
   }, [user]);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');

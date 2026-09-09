@@ -27,8 +27,16 @@ export default function SignInScreen() {
   const [showPassword, setShowPassword] = useState(false);
   const { user } = useAuthStore();
 
+  // Only bounce away for a REAL signed-in user. `user` can also be an
+  // anonymous session — created silently by the paywall so a Pro purchase
+  // never has to force a real sign-in first (see auth.store.ts's
+  // ensureSignedIn) — and that still populates `user`. Redirecting on that
+  // alone made this screen completely unreachable for anyone arriving from
+  // Settings' "SIGN IN TO SYNC" card (shown specifically to anonymous
+  // sessions): they'd get bounced straight back to '/' the instant this
+  // screen mounted, before they could type anything.
   useEffect(() => {
-    if (user) router.replace('/');
+    if (user && !user.isAnonymous) router.replace('/');
   }, [user]);
 
   const handleSignIn = async () => {
