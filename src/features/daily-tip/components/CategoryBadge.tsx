@@ -1,6 +1,7 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
+import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
 import { CATEGORY_COLORS, CATEGORY_LABELS, TipCategory } from '@/types/tip.types';
 
@@ -15,9 +16,14 @@ export function CategoryBadge({ category, size = 'md' }: CategoryBadgeProps) {
 
   return (
     <View style={[styles.badge, { backgroundColor: bg }, isSmall && styles.badgeSm]}>
-      <Text style={[styles.label, { color: text }, isSmall && styles.labelSm]}>
+      {/* Was a raw RN Text — the only spot in the app not using ThemedText,
+          so this label didn't scale with the in-app Normal/Large/X-Large/
+          XX-Large text-size setting like everything else, and wasn't
+          protected from the OS's own Dynamic Type setting either (see
+          ThemedText's allowFontScaling comment). */}
+      <ThemedText style={[styles.label, { color: text }, isSmall && styles.labelSm]}>
         {CATEGORY_LABELS[category]}
-      </Text>
+      </ThemedText>
     </View>
   );
 }
