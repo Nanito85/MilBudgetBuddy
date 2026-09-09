@@ -46,11 +46,12 @@ const SECTIONS: TaxSection[] = [
       'STATES WITH NO INCOME TAX (all residents benefit):\n' +
       'Alaska, Florida, Nevada, New Hampshire, South Dakota, Tennessee, Texas, Washington, Wyoming\n\n' +
       'STATES THAT FULLY EXEMPT ACTIVE DUTY MILITARY PAY:\n' +
-      'Arkansas, Hawaii, Illinois, Iowa, Kansas, Louisiana, Michigan, Minnesota, Missouri, Montana, New Jersey, New Mexico, New York, Ohio, Oregon, Pennsylvania, Rhode Island, South Carolina, Utah, Vermont, Wisconsin\n\n' +
-      'STATES WITH PARTIAL EXEMPTIONS OR CONDITIONS:\n' +
-      '• California: no exemption for active duty pay\n' +
-      '• Virginia: exempts active duty if domicile is VA\n' +
-      '• Georgia, North Carolina: partial exemptions, verify current law\n\n' +
+      'Alabama, Arizona, Arkansas, Illinois, Indiana, Iowa, Kentucky, Minnesota, Mississippi, Missouri, Montana, New Mexico, North Dakota, Ohio, Oklahoma, Pennsylvania\n\n' +
+      'STATES WITH PARTIAL EXEMPTIONS OR CONDITIONS (verify current law — the boolean model above doesn\'t capture nuance like "only if stationed outside the state"):\n' +
+      '• California, Delaware, DC, Georgia, Kansas, Rhode Island, Utah: no exemption for active duty pay\n' +
+      '• Virginia: up to $15,000 exemption if pay is under $30,000 and you served 90+ consecutive days\n' +
+      '• Colorado, Connecticut, Idaho, Maine, Michigan, New York, Oregon, Vermont, West Virginia: exempt only if stationed outside the state, or other conditions apply\n' +
+      '• Hawaii, Louisiana, Maryland, Massachusetts, Nebraska, New Jersey, North Carolina, South Carolina, Wisconsin: exempt combat zone pay only, or Guard/Reserve-specific, or capped at a partial amount\n\n' +
       'SCRA HOME STATE RULE:\n' +
       'Under SCRA §4001, you can maintain your state of domicile (home of record) for tax purposes regardless of where you are stationed. If your home state has no income tax, you can file there even while stationed in a high-tax state.',
     tip: 'Your state of domicile is where you intend to return after the military — not necessarily where you are stationed. Choosing a no-income-tax state as your domicile (if legitimate) can save thousands per year.',
