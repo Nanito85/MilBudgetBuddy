@@ -55,6 +55,24 @@ function platformLabel(p: string | null): string {
   return 'Unknown';
 }
 
+// listUsers() returns accounts in Firebase's own arbitrary (uid-hash) order —
+// not sorted by any field — so "newest first" / "most recently active first"
+// has to be a client-side sort over whatever's currently loaded. Accounts
+// with no timestamp for the active sort (never signed in, etc.) sort to the
+// bottom rather than the top so a handful of edge cases don't dominate the
+// "latest" view.
+type SortMode = 'default' | 'newest' | 'lastAccessed';
+
+function sortRows(rows: AccountRow[], mode: SortMode): AccountRow[] {
+  if (mode === 'default') return rows;
+  const field = mode === 'newest' ? 'createdAt' : 'lastSignIn';
+  return [...rows].sort((a, b) => {
+    const av = a[field] ? new Date(a[field] as string).getTime() : -Infinity;
+    const bv = b[field] ? new Date(b[field] as string).getTime() : -Infinity;
+    return bv - av;
+  });
+}
+
 export default function AdminAccountsScreen() {
   const router = useRouter();
   const tc = useThemeColors();
@@ -64,6 +82,7 @@ export default function AdminAccountsScreen() {
   const [error, setError] = useState('');
   const [nextPageToken, setNextPageToken] = useState<string | null>(null);
   const [totalSeen, setTotalSeen] = useState(0);
+  const [sortMode, setSortMode] = useState<SortMode>('default');
 
   const fetchFirstPage = async () => {
     setLoading(true); setError('');
@@ -96,6 +115,8 @@ export default function AdminAccountsScreen() {
 
   useEffect(() => { fetchFirstPage(); }, []);
 
+  const displayRows = sortRows(rows, sortMode);
+
   return (
     <SafeAreaView style={[s.safe, { backgroundColor: tc.background }]} edges={['top']}>
       <View style={[s.header, { borderColor: tc.borderColor }]}>
@@ -125,10 +146,33 @@ export default function AdminAccountsScreen() {
         )}
 
         {!loading && !error && rows.length > 0 && (
-          <ThemedText style={[s.countText, { color: tc.textMuted }]}>Showing {totalSeen} account{totalSeen === 1 ? '' : 's'}</ThemedText>
+          <>
+            <ThemedText style={[s.countText, { color: tc.textMuted }]}>Showing {totalSeen} account{totalSeen === 1 ? '' : 's'}</ThemedText>
+            <View style={s.sortRow}>
+              {([
+                { mode: 'default', label: 'ALL' },
+                { mode: 'newest', label: 'NEW ACCESS' },
+                { mode: 'lastAccessed', label: 'LAST ACCESSED' },
+              ] as { mode: SortMode; label: string }[]).map(({ mode, label }) => {
+                const active = sortMode === mode;
+                return (
+                  <Pressable
+                    key={mode}
+                    onPress={() => setSortMode(mode)}
+                    style={[
+                      s.sortPill,
+                      { borderColor: active ? tc.tactical : tc.borderColor },
+                      active && { backgroundColor: Brand.tactical + '20' },
+                    ]}>
+                    <ThemedText style={[s.sortPillText, { color: active ? tc.tactical : tc.textSecondary }]}>{label}</ThemedText>
+                  </Pressable>
+                );
+              })}
+            </View>
+          </>
         )}
 
-        {rows.map((row) => (
+        {displayRows.map((row) => (
           <View key={row.uid} style={[s.rowCard, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
             <View style={s.rowTop}>
               <ThemedText style={[s.rowEmail, { color: tc.textPrimary }]} numberOfLines={1}>
@@ -181,6 +225,10 @@ const s = StyleSheet.create({
   errorText: { fontSize: 12, textAlign: 'center', marginTop: Spacing.two },
   emptyText: { fontSize: 12, textAlign: 'center', paddingVertical: Spacing.three },
   countText: { fontSize: 10, fontWeight: '700', letterSpacing: 0.5 },
+
+  sortRow: { flexDirection: 'row', gap: Spacing.one },
+  sortPill: { borderWidth: 1, borderRadius: 6, paddingHorizontal: Spacing.two, paddingVertical: Spacing.one },
+  sortPillText: { fontSize: 10, fontWeight: '800', letterSpacing: 0.5 },
 
   rowCard: { borderWidth: 1, borderRadius: 8, padding: Spacing.two + 2, gap: 2 },
   rowTop: { flexDirection: 'row', alignItems: 'center', gap: Spacing.one + 2 },
