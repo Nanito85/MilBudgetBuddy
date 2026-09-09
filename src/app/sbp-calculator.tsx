@@ -6,6 +6,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Brand, Spacing } from '@/constants/theme';
+import { getHigh3Average } from '@/data/basic-pay-rates';
+import { retiredPayMultiplier } from '@/features/home/utils/lesCalc';
 import { NumberStepper } from '@/features/retirement/components/NumberStepper';
 import { useThemeColors } from '@/hooks/use-theme';
 import { useUserStore } from '@/store/user.store';
@@ -83,16 +85,19 @@ export default function SbpCalculatorScreen() {
   const storeGrade = useUserStore((s) => s.payGrade);
   const storeYos   = useUserStore((s) => s.yos);
 
-  // Estimated retirement pay = 2.5% × YOS × basic pay (High-3 proxy)
-  // User can override
+  // Estimated retirement pay — same formula as the authoritative retired-pay
+  // calculation in lesCalc.ts (High-3 average x retiredPayMultiplier), not a
+  // separate approximation. This used to compute its own estimate via a
+  // single-point getBasicPay(grade, yos) instead of the real 3-year High-3
+  // average, which measurably diverges (a few percent, more right at a
+  // pay-step boundary) from what the same member's actual retired pay shows
+  // on Home — confusing for the exact member most likely to open this
+  // screen for real (SBP is elected at/after retirement). Still just a
+  // pre-fill; the NumberStepper below lets the user override it.
   const [retirementPay, setRetirementPay] = useState<number>(() => {
-    try {
-      const { getBasicPay } = require('@/data/basic-pay-rates');
-      const pay = getBasicPay(storeGrade ?? 'E7', storeYos ?? 20);
-      return Math.round(pay * 0.025 * (storeYos ?? 20));
-    } catch {
-      return 2000;
-    }
+    const yos = storeYos ?? 20;
+    const high3 = getHigh3Average(storeGrade ?? 'E7', yos);
+    return Math.round(high3 * retiredPayMultiplier(yos));
   });
   const [coverage, setCoverage] = useState(1.0);
   const [spouseAge, setSpouseAge] = useState(45);

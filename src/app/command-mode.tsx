@@ -10,6 +10,7 @@ import { ThemedView } from '@/components/themed-view';
 import { Brand, Spacing } from '@/constants/theme';
 import { calcLES } from '@/features/home/utils/lesCalc';
 import { calcPayoff, fmtDate as fmtPayoffDate, fmtMonths } from '@/features/debt/utils/debtCalc';
+import { monthlyCompensation } from '@/features/va/utils/vaDisabilityCalc';
 import { useThemeColors } from '@/hooks/use-theme';
 import { useBudgetStore } from '@/store/budget.store';
 import { useDebtStore } from '@/store/debt.store';
@@ -112,6 +113,7 @@ export default function CommandModeScreen() {
   const lesOverrides    = useUserStore((s) => s.lesOverrides);
   const setLesOverrides = useUserStore((s) => s.setLesOverrides);
   const serviceStatus   = useUserStore((s) => s.serviceStatus);
+  const vaDisabilityPercent = useUserStore((s) => s.vaDisabilityPercent);
   const spouseIncome = useUserStore((s) => s.spouseMonthlyIncome);
 
   // Add custom item state
@@ -180,6 +182,23 @@ export default function CommandModeScreen() {
     });
   }, [payGrade, yos, mhaZip, dutyStationId, hasSpouse, housingStatus, specialPaysTotal, tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence, lesOverrides, serviceStatus]);
 
+  // VA disability compensation — retired members only, and only added to
+  // TOTAL GROSS when CRDP-eligible (50%+ rating). Below 50%, federal law
+  // requires waiving an equal amount of retired pay to receive this
+  // tax-free instead — breakdown.netPay above already reflects the full
+  // pre-waiver entitlement, so adding VA compensation on top of it would
+  // double-count for anyone under the CRDP threshold. Still shown as its
+  // own line either way (see the income rows below) since it's real money
+  // physically received — this only controls whether it's summed into the
+  // worksheet's totals. Same rule the Retirement Calculator's CRDP section
+  // and Home screen's VA Disability card already apply.
+  const vaMonthly = useMemo(() => {
+    if (serviceStatus !== 'retired' || !vaDisabilityPercent) return 0;
+    return monthlyCompensation(vaDisabilityPercent, hasSpouse, numChildren);
+  }, [serviceStatus, vaDisabilityPercent, hasSpouse, numChildren]);
+  const crdpEligible = (vaDisabilityPercent ?? 0) >= 50;
+  const vaInTotal = crdpEligible ? vaMonthly : 0;
+
   const totalBudgeted = useMemo(
     () => budgetCategories.reduce((s, c) => s + c.monthlyBudget, 0),
     [budgetCategories],
@@ -188,7 +207,7 @@ export default function CommandModeScreen() {
   const budgetWithEntries = budgetCategories.filter((c) => c.monthlyBudget > 0);
 
   const netAfterExpenses = breakdown
-    ? breakdown.netPay + spouseIncome - totalBudgeted
+    ? breakdown.netPay + spouseIncome + vaInTotal - totalBudgeted
     : null;
 
   const handleShare = async () => {
@@ -233,8 +252,9 @@ export default function CommandModeScreen() {
   ${row('BAS (Subsistence Allowance)', fmt(breakdown.bas))}
   ${breakdown.specialPays > 0 ? specialPays.map((p) => row('· ' + (p.customLabel ?? SPECIAL_PAY_LABELS[p.type]), fmt(p.monthlyAmount))).join('') : ''}
   ${breakdown.extraIncomeItems.map((i) => row('· ' + i.label, fmt(i.amount))).join('')}
+  ${vaMonthly > 0 ? row(`VA Disability Compensation (${vaDisabilityPercent}%)${crdpEligible ? '' : ' — offsets retired pay, not additive'}`, fmt(vaMonthly)) : ''}
   ${spouseIncome > 0 ? row('Spouse / Household Income', fmt(spouseIncome)) : ''}
-  ${row('TOTAL GROSS', fmt(breakdown.grossPay + spouseIncome), true)}
+  ${row('TOTAL GROSS', fmt(breakdown.grossPay + spouseIncome + vaInTotal), true)}
 
   ${sectionHeader('DEDUCTIONS', '#B71C1C')}
   ${row('Federal Income Tax (est.)', fmt(breakdown.fedTax))}
@@ -426,6 +446,21 @@ export default function CommandModeScreen() {
                 </Pressable>
               )}
 
+              {vaMonthly > 0 && (
+                <>
+                  <Row
+                    label={`VA Disability Compensation (${vaDisabilityPercent}%)`}
+                    value={fmt(vaMonthly)}
+                  />
+                  {!crdpEligible && (
+                    <ThemedText type="small" themeColor="textSecondary" style={styles.crdpNote}>
+                      Below the 50% CRDP threshold — this offsets your retired pay above rather than
+                      adding to it, so it is shown here but excluded from TOTAL GROSS below.
+                    </ThemedText>
+                  )}
+                </>
+              )}
+
               {spouseIncome > 0 && (
                 <Row label="Spouse / Household Income" value={fmt(spouseIncome)} />
               )}
@@ -433,7 +468,7 @@ export default function CommandModeScreen() {
               <Divider />
               <Row
                 label="TOTAL GROSS"
-                value={fmt(breakdown.grossPay + spouseIncome)}
+                value={fmt(breakdown.grossPay + spouseIncome + vaInTotal)}
                 bold
                 accent={Brand.success}
               />
@@ -488,9 +523,9 @@ export default function CommandModeScreen() {
                 <ThemedText style={[styles.netLabel, { color: tc.success }]}>NET TAKE-HOME PAY</ThemedText>
                 <ThemedText style={[styles.netValue, { color: tc.success }]}>{fmt(breakdown.netPay)}</ThemedText>
               </View>
-              {spouseIncome > 0 && (
+              {(spouseIncome > 0 || vaInTotal > 0) && (
                 <ThemedText style={styles.netSub}>
-                  Combined household: {fmt(breakdown.netPay + spouseIncome)}/mo
+                  Combined household: {fmt(breakdown.netPay + spouseIncome + vaInTotal)}/mo
                 </ThemedText>
               )}
             </View>
@@ -724,6 +759,7 @@ const styles = StyleSheet.create({
   removeX: { fontSize: 12, color: '#E74C3C', paddingLeft: Spacing.two, fontWeight: '700' },
   addItemBtn: { paddingVertical: Spacing.two, alignItems: 'flex-start' },
   addItemBtnText: { fontSize: 11, fontWeight: '700', letterSpacing: 0.3 },
+  crdpNote: { fontSize: 10, lineHeight: 14, marginTop: -4, marginBottom: 4 },
   addItemForm: { gap: Spacing.two, paddingTop: Spacing.one },
   addItemInput: {
     borderWidth: 1,

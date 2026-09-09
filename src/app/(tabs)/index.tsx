@@ -384,7 +384,20 @@ export default function DashboardScreen() {
                 </ThemedText>
                 <ThemedText style={[styles.statusPayValue, { color: tc.tactical }]}>{fmtPay(vaMonthly)}</ThemedText>
                 <ThemedText type="small" themeColor="textSecondary" style={styles.statusPayNote}>
-                  Estimate only — verify current rates at va.gov. See the Retirement Calculator for your full retired pay estimate.
+                  Estimate only — verify current rates at va.gov.{' '}
+                  {(vaDisabilityPercent ?? 0) >= 50
+                    // CRDP (Concurrent Retirement and Disability Pay): a VA
+                    // rating of 50%+ gets this fully in addition to retired
+                    // pay above, no offset. Below 50%, VA law requires
+                    // waiving an equal amount of retired pay to receive this
+                    // — it's not simply additive to the RETIRED PAY card
+                    // above, even though the two cards sit right next to
+                    // each other on this screen. Same rule the Retirement
+                    // Calculator's CRDP section already explains in more
+                    // depth — this just makes sure nobody adds the two
+                    // card totals together and gets a number too high.
+                    ? 'You qualify for CRDP (50%+ rating) — this is fully in addition to your retired pay above.'
+                    : 'Below the 50% CRDP threshold, this amount offsets your retired pay above rather than adding to it — see the Retirement Calculator for the full breakdown.'}
                 </ThemedText>
               </View>
             </View>
