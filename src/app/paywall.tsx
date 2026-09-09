@@ -131,9 +131,26 @@ export default function PaywallScreen() {
   const monthlyDisplayPrice = Platform.OS === 'ios' ? iosMonthly?.displayPrice : androidMonthlyOffer?.displayPrice;
   const annualDisplayPrice  = Platform.OS === 'ios' ? iosAnnual?.displayPrice  : androidAnnualOffer?.displayPrice;
 
+  // Sentry issue 80bc4f97 (2026-09-09, Android): "IAP product not loaded at
+  // purchase time" — the same failure class as 41cc5c8f (the original iOS
+  // race this productsReady check exists for), just not fully closed off on
+  // Android. androidProduct is the top-level "mbb_pro_monthly" product;
+  // subscriptionOffers (the specific base-plan offers, e.g. the monthly vs.
+  // annual pricing under it — each carrying its own offerTokenAndroid, the
+  // thing requestPurchase() actually needs) can populate slightly after the
+  // product itself appears in the fetched list. Checking only
+  // Boolean(androidProduct) let the button go tappable before the offer for
+  // whichever plan is currently selected had actually arrived, landing
+  // straight in purchase()'s `if (!offer?.offerTokenAndroid) notAvailable(...)`
+  // branch below. Require the SELECTED plan's offer specifically, so
+  // switching between Monthly/Annual before the other one has loaded
+  // correctly re-disables the button too.
+  const androidSelectedOfferReady = Platform.OS === 'android'
+    ? Boolean((selected === 'monthly' ? androidMonthlyOffer : androidAnnualOffer)?.offerTokenAndroid)
+    : true;
   const productsReady = Platform.OS === 'ios'
     ? Boolean(iosMonthly || iosAnnual)
-    : Boolean(androidProduct);
+    : Boolean(androidProduct) && androidSelectedOfferReady;
   const purchaseDisabled = verifying || (!productsReady && !productsTimedOut);
 
   // The big heading used to be a hardcoded "7 days free, then $4.99/mo" —
