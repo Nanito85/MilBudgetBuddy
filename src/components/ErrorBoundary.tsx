@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { ThemedText } from './themed-text';
 import { Brand, Spacing } from '@/constants/theme';
 import { useThemeColors } from '@/hooks/use-theme';
+import { captureError } from '@/services/sentry';
 
 interface Props { children: React.ReactNode }
 interface State { hasError: boolean; error?: Error }
@@ -36,8 +37,14 @@ export class ErrorBoundary extends React.Component<Props, State> {
     return { hasError: true, error };
   }
 
-  componentDidCatch(error: Error) {
-    // Could send to Sentry here: captureException(error)
+  componentDidCatch(error: Error, info: React.ErrorInfo) {
+    // Was just a comment noting this *could* report to Sentry — every other
+    // error path in the app (paywall, admin screens, etc.) actually calls
+    // captureError, but the one place catching a real crash never did. Only
+    // console.error'd, which is invisible once Sentry is actually configured
+    // in production (EXPO_PUBLIC_SENTRY_DSN set — see sentry.ts; the console
+    // log stays too since Sentry no-ops without a DSN).
+    captureError(error, { stage: 'error-boundary', componentStack: info.componentStack ?? '' });
     console.error('[MilBudgetBuddy] Uncaught error:', error);
   }
 
