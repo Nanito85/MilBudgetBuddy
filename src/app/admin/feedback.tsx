@@ -164,12 +164,13 @@ const detail = StyleSheet.create({
 export default function AdminFeedbackScreen() {
   const router = useRouter();
   const tc = useThemeColors();
-  const { adminFeedback, adminTotal, adminLoading, adminError, fetchFeedback, updateFeedback } = useFeedbackStore();
+  const { adminFeedback, adminTotal, adminLoading, adminError, fetchFeedback, updateFeedback, exportFeedbackCsv } = useFeedbackStore();
 
   const [catFilter, setCatFilter]    = useState('All');
   const [statusFilter, setStatus]    = useState('All');
   const [search, setSearch]          = useState('');
   const [selected, setSelected]      = useState<FeedbackRow | null>(null);
+  const [exporting, setExporting]    = useState(false);
 
   // adminFeedback.length must be in the dependency array — without it, this
   // closure freezes on whatever the length was when catFilter/statusFilter/
@@ -190,10 +191,24 @@ export default function AdminFeedbackScreen() {
 
   useEffect(() => { load(true); }, [catFilter, statusFilter]);
 
+  // Was hand-building a CSV from only adminFeedback — the currently loaded
+  // PAGE (as few as 50 rows), with no escaping (a message containing a
+  // comma would misalign every column after it). Uses the backend's
+  // dedicated /export endpoint instead: properly quote-escaped, honors the
+  // active filters, and covers up to 2000 rows server-side regardless of
+  // how much has been scrolled/loaded on screen.
   const exportCsv = async () => {
-    const rows = adminFeedback.map((f) => [f.created_at, f.category, f.status, f.message.replace(/\n/g, ' '), f.user_email ?? ''].join(','));
-    const csv = ['created_at,category,status,message,email', ...rows].join('\n');
-    Share.share({ title: 'feedback-export.csv', message: csv });
+    setExporting(true);
+    try {
+      const csv = await exportFeedbackCsv({
+        category: catFilter !== 'All' ? catFilter : undefined,
+        status:   statusFilter !== 'All' ? statusFilter : undefined,
+      });
+      if (!csv) { Alert.alert('Export Failed', 'Could not export feedback. Try again.'); return; }
+      await Share.share({ title: 'feedback-export.csv', message: csv });
+    } finally {
+      setExporting(false);
+    }
   };
 
   const renderItem = ({ item }: { item: FeedbackRow }) => (
@@ -230,8 +245,10 @@ export default function AdminFeedbackScreen() {
       {/* Stats bar */}
       <View style={[styles.statsBar, { borderBottomColor: tc.borderColor }]}>
         <ThemedText style={[styles.statsText, { color: tc.textHint }]}>{adminTotal} total</ThemedText>
-        <Pressable onPress={exportCsv}>
-          <ThemedText style={[styles.exportBtn, { color: tc.accent }]}>⬇ EXPORT CSV</ThemedText>
+        <Pressable onPress={exportCsv} disabled={exporting}>
+          <ThemedText style={[styles.exportBtn, { color: tc.accent }, exporting && { opacity: 0.5 }]}>
+            {exporting ? 'EXPORTING…' : '⬇ EXPORT CSV'}
+          </ThemedText>
         </Pressable>
       </View>
 

@@ -76,6 +76,7 @@ interface FeedbackState {
   fetchReports: () => Promise<void>;
   generateReport: (type: 'daily' | 'weekly') => Promise<ReportRow | null>;
   fetchReportDetail: (id: string) => Promise<ReportRow | null>;
+  exportFeedbackCsv: (filters?: { category?: string; status?: string }) => Promise<string | null>;
 }
 
 export const useFeedbackStore = create<FeedbackState>((set, get) => ({
@@ -254,6 +255,28 @@ export const useFeedbackStore = create<FeedbackState>((set, get) => ({
       });
       if (!res.ok) return null;
       return await res.json();
+    } catch { return null; }
+  },
+
+  // ── Export feedback as CSV (admin) ────────────────────────────────
+  // Calls the backend's dedicated /export endpoint (properly quote-escaped,
+  // filter-aware, up to 2000 rows server-side) instead of hand-building a
+  // CSV client-side from whatever page happens to be loaded in adminFeedback
+  // — the previous approach silently exported only the currently-paginated
+  // subset (as few as 50 of possibly hundreds of rows) with no escaping at
+  // all, so a message containing a comma would misalign every column after it.
+  exportFeedbackCsv: async (filters = {}) => {
+    try {
+      const token = await getIdToken();
+      if (!token) return null;
+      const params = new URLSearchParams();
+      if (filters.category) params.set('category', filters.category);
+      if (filters.status)   params.set('status', filters.status);
+      const res = await fetch(`${API_BASE}/api/feedback/export?${params}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) return null;
+      return await res.text();
     } catch { return null; }
   },
 }));
