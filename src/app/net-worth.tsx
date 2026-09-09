@@ -232,9 +232,13 @@ export default function NetWorthScreen() {
   const liabilities = entries.filter((e) => e.category === 'liability');
 
   const isPositive = netWorth >= 0;
-  const pctAssets = totalAssets > 0
-    ? Math.min(1, totalAssets / Math.max(totalAssets, totalLiabilities))
-    : 0;
+  // Share of the assets+liabilities bar that's green (assets). Was dividing
+  // by max(assets, liabilities) instead of their sum, so the bar rendered
+  // fully green (100%) any time assets >= liabilities — even someone with
+  // $100K in assets and $95K in liabilities (net worth barely positive) saw
+  // an all-green bar with no visual hint of how much debt they're carrying.
+  const combined = totalAssets + totalLiabilities;
+  const pctAssets = combined > 0 ? totalAssets / combined : 0;
 
   const handleSaveSnapshot = () => {
     saveSnapshot(totalAssets, totalLiabilities);
