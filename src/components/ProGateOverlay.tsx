@@ -17,15 +17,13 @@ import { useIsPro } from '@/hooks/use-is-pro';
 // works end to end on Android.
 const PRO_GATE_ENABLED = true;
 
-// iOS purchase verification IS implemented server-side now
+// iOS purchase verification IS implemented server-side
 // (milbudgetbuddy-api's src/lib/apple-verify.ts cryptographically verifies
 // the signedTransaction JWS via Apple's official app-store-server-library —
-// no stub, no 501). This flag is just OFF because that path hasn't had a
-// real sandbox purchase test on iOS yet (see PRO_GATE_ENABLED's comment
-// above for what that looked like on Android before it was flipped on).
-// Flip to `true` once an iOS sandbox buy -> verify -> proExpiresAt unlock
-// has actually been exercised end to end.
-const IOS_GATE_ENABLED = false;
+// no stub, no 501). Flipped true after a real iOS sandbox purchase test
+// confirmed the full buy -> /api/iap/verify -> proExpiresAt unlock flow
+// works end to end, same as PRO_GATE_ENABLED's Android confirmation above.
+const IOS_GATE_ENABLED = true;
 const GATE_ACTIVE_ON_THIS_PLATFORM = Platform.OS === 'ios' ? IOS_GATE_ENABLED : PRO_GATE_ENABLED;
 
 // Screens that must always work regardless of Pro status — otherwise a member
