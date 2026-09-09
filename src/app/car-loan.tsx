@@ -7,6 +7,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Brand, Fonts, Spacing } from '@/constants/theme';
 import { PayGrade } from '@/data/bah-rates';
+import { getBasicPay } from '@/data/basic-pay-rates';
 import { calcLES } from '@/features/home/utils/lesCalc';
 import { useThemeColors } from '@/hooks/use-theme';
 import { useUserStore } from '@/store/user.store';
@@ -33,18 +34,17 @@ function fmt(n: number) {
   return '$' + Math.round(n).toLocaleString('en-US');
 }
 
-// Benchmark max car price by grade (≈ 25% of gross annual pay)
-const GRADE_BENCHMARKS: Partial<Record<PayGrade, { max: number; note: string }>> = {
-  E1: { max: 8000,  note: 'Used, under $10K' },
-  E2: { max: 9000,  note: 'Used, under $10K' },
-  E3: { max: 10000, note: 'Used, reliable' },
-  E4: { max: 12000, note: 'Used, under $15K' },
-  E5: { max: 16000, note: 'Used or entry new' },
-  E6: { max: 20000, note: 'New or certified used' },
-  E7: { max: 25000, note: 'Mid-range new' },
-  E8: { max: 30000, note: 'Mid-range new' },
-  E9: { max: 35000, note: 'Most new vehicles' },
-};
+// Benchmark max car price by grade — 25% of actual annual base pay for that
+// grade/YOS, computed live from the real pay table (see getBasicPay below)
+// instead of a hardcoded guess, so the "roughly 25%" note is always true.
+function benchmarkNote(max: number): string {
+  if (max < 10000) return 'Used, under $10K';
+  if (max < 15000) return 'Used, reliable';
+  if (max < 20000) return 'Used or entry new';
+  if (max < 25000) return 'New or certified used';
+  if (max < 32000) return 'Mid-range new';
+  return 'Most new vehicles';
+}
 
 export default function CarLoanScreen() {
   const router = useRouter();
@@ -114,7 +114,12 @@ export default function CarLoanScreen() {
   const riskColor  = pct > DANGER_PCT ? Brand.danger : pct > WARN_PCT ? Brand.warning : Brand.tactical;
   const riskLabel  = pct > DANGER_PCT ? 'DANGER ZONE' : pct > WARN_PCT ? 'STRETCHED' : 'MANAGEABLE';
 
-  const benchmark  = GRADE_BENCHMARKS[grade];
+  // Same grade + YOS basis as the take-home estimate above, so this stays
+  // consistent with the rest of the screen when the user previews a grade.
+  const benchmarkMax = useMemo(() => {
+    const annualBasePay = getBasicPay(grade, storeYos ?? 4) * 12;
+    return Math.round((annualBasePay * 0.25) / 500) * 500;
+  }, [grade, storeYos]);
 
   function GradeChip({ g }: { g: PayGrade }) {
     const active = grade === g;
@@ -315,20 +320,18 @@ export default function CarLoanScreen() {
         </ThemedView>
 
         {/* Grade benchmark */}
-        {benchmark && (
-          <ThemedView type="backgroundElement" style={s.card}>
-            <ThemedText style={[s.cardLabel, { color: tc.textHint }]}>RECOMMENDED FOR {grade}</ThemedText>
-            <View style={s.benchRow}>
-              <View style={[s.benchBadge, price <= benchmark.max ? { backgroundColor: Brand.tactical + '20', borderColor: Brand.tactical } : { backgroundColor: Brand.danger + '20', borderColor: Brand.danger }]}>
-                <ThemedText style={[s.benchLabel, { color: price <= benchmark.max ? Brand.tactical : Brand.danger }]}>
-                  {price <= benchmark.max ? '✓ WITHIN RANGE' : '✗ OVER BUDGET'}
-                </ThemedText>
-              </View>
-              <ThemedText style={[s.benchVal, { color: tc.textHint }]}>Max recommended: {fmt(benchmark.max)}</ThemedText>
+        <ThemedView type="backgroundElement" style={s.card}>
+          <ThemedText style={[s.cardLabel, { color: tc.textHint }]}>RECOMMENDED FOR {grade}</ThemedText>
+          <View style={s.benchRow}>
+            <View style={[s.benchBadge, price <= benchmarkMax ? { backgroundColor: Brand.tactical + '20', borderColor: Brand.tactical } : { backgroundColor: Brand.danger + '20', borderColor: Brand.danger }]}>
+              <ThemedText style={[s.benchLabel, { color: price <= benchmarkMax ? Brand.tactical : Brand.danger }]}>
+                {price <= benchmarkMax ? '✓ WITHIN RANGE' : '✗ OVER BUDGET'}
+              </ThemedText>
             </View>
-            <ThemedText style={[s.cardHint, { color: tc.textMuted }]}>{benchmark.note} — roughly 25% of your annual base pay.</ThemedText>
-          </ThemedView>
-        )}
+            <ThemedText style={[s.benchVal, { color: tc.textHint }]}>Max recommended: {fmt(benchmarkMax)}</ThemedText>
+          </View>
+          <ThemedText style={[s.cardHint, { color: tc.textMuted }]}>{benchmarkNote(benchmarkMax)} — roughly 25% of your annual base pay.</ThemedText>
+        </ThemedView>
 
         <ThemedView type="backgroundElement" style={s.tipCard}>
           <ThemedText style={[s.tipLabel, { color: tc.accent }]}>💡 DEALER SURVIVAL TIPS</ThemedText>
