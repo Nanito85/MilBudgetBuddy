@@ -28,7 +28,10 @@ export interface DependentAdder {
 }
 
 export const VA_DEP_ADDERS: Record<number, DependentAdder> = {
-  30:  { withSpouse: 65.00,  withSpouseAndChild: 114.00, noSpouseOneChild: 43.00,  perAdditionalChild: 32.00 },
+  // noSpouseOneChild at 30% verified against va.gov: $596.47 (1 child, no
+  // spouse) - $552.47 (veteran alone) = $44.00 — was $43.00, off by $1/mo.
+  // Cross-checked against a second independent source before changing.
+  30:  { withSpouse: 65.00,  withSpouseAndChild: 114.00, noSpouseOneChild: 44.00,  perAdditionalChild: 32.00 },
   40:  { withSpouse: 87.00,  withSpouseAndChild: 152.00, noSpouseOneChild: 58.00,  perAdditionalChild: 43.00 },
   50:  { withSpouse: 109.00, withSpouseAndChild: 190.00, noSpouseOneChild: 73.00,  perAdditionalChild: 54.00 },
   60:  { withSpouse: 131.00, withSpouseAndChild: 228.00, noSpouseOneChild: 88.00,  perAdditionalChild: 65.00 },
