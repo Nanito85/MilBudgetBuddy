@@ -322,15 +322,30 @@ export const INSTALLATIONS: Installation[] = [
   { id: 'fort_buchanan',       name: 'Fort Buchanan',               city: 'Guaynabo',          state: 'Puerto Rico', mhaZip: '', oconus: true, branch: 'Army' },
 ];
 
+// Common informal names users search by that don't literally appear in any
+// installation's name/city/state/branch field (e.g. the UK bases are all
+// stored with state: 'United Kingdom' and county-name cities like 'Suffolk'
+// — nobody searching "England" or "UK" was finding RAF Lakenheath/Mildenhall/
+// Alconbury/Croughton at all). Maps alias -> the real state string to match.
+const STATE_SEARCH_ALIASES: Record<string, string> = {
+  england: 'united kingdom',
+  britain: 'united kingdom',
+  'great britain': 'united kingdom',
+  uk: 'united kingdom',
+  diego: 'british indian ocean territory',
+};
+
 export function searchInstallations(query: string): Installation[] {
   if (!query.trim()) return INSTALLATIONS;
   const q = query.toLowerCase();
+  const aliasedState = STATE_SEARCH_ALIASES[q];
   return INSTALLATIONS.filter(
     (i) =>
       i.name.toLowerCase().includes(q) ||
       i.city.toLowerCase().includes(q) ||
       i.state.toLowerCase().includes(q) ||
-      i.branch.toLowerCase().includes(q),
+      i.branch.toLowerCase().includes(q) ||
+      (aliasedState != null && i.state.toLowerCase().includes(aliasedState)),
   );
 }
 
