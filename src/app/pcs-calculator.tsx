@@ -19,8 +19,12 @@ import { useUserStore } from '@/store/user.store';
 import { FamilyComposer } from '@/features/tle/components/FamilyComposer';
 import { calcTLE, familyLabel, TLA_MAX_DAYS, TLE_DAILY_CAP, TLE_MAX_DAYS } from '@/features/tle/utils/tleCalc';
 
-// ── DLA Tables (FY2026, effective Jan 1 2026, per JTR Table 5-A) ──────────────
-const DLA: Record<string, { noDep: number; withDep: number }> = {
+// ── DLA Tables (CY2026, effective Jan 1 2026, per JTR Table 5-A) ──────────────
+// Record<PayGrade, ...> (not Record<string, ...>) so a grade missing from
+// this table is a compile error, not a runtime crash — O1E/O2E/O3E
+// (prior-enlisted officers) were missing entirely, so DLA[grade].withDep
+// threw for anyone in one of those three grades.
+const DLA: Record<PayGrade, { noDep: number; withDep: number }> = {
   E1:  { noDep: 1870.58, withDep: 3548.02 },
   E2:  { noDep: 2025.26, withDep: 3548.02 },
   E3:  { noDep: 2355.48, withDep: 3548.02 },
@@ -35,6 +39,9 @@ const DLA: Record<string, { noDep: number; withDep: number }> = {
   W3:  { noDep: 3221.08, withDep: 3960.78 },
   W4:  { noDep: 3832.45, withDep: 4323.11 },
   W5:  { noDep: 4315.51, withDep: 4715.58 },
+  O1E: { noDep: 2687.09, withDep: 3621.10 },
+  O2E: { noDep: 3124.97, withDep: 3919.27 },
+  O3E: { noDep: 3675.83, withDep: 4343.80 },
   O1:  { noDep: 2273.82, withDep: 3085.23 },
   O2:  { noDep: 2700.31, withDep: 3451.28 },
   O3:  { noDep: 3404.11, withDep: 4041.88 },
