@@ -697,6 +697,15 @@ export function PaySummaryCard({ breakdown }: Props) {
           {(!breakdown.isRetiredPay || breakdown.basOverridden) && (
             <Row label="BAS" value={fmtPay(breakdown.bas)} indent positive overridden={breakdown.basOverridden} />
           )}
+          {breakdown.familySeparated && (
+            <>
+              <Row label="FAMILY BAH" value={fmtPay(breakdown.familyBah)} indent positive />
+              <Row label="FAMILY SEP. ALLOWANCE (FSA)" value={fmtPay(breakdown.fsa)} indent positive />
+            </>
+          )}
+          {breakdown.alsoGsCivilian && (
+            <Row label="GS CIVILIAN PAY" value={fmtPay(breakdown.gsGrossMonthly)} indent positive />
+          )}
           {breakdown.specialPays > 0 && (
             <Row label="SPECIAL PAYS" value={fmtPay(breakdown.specialPays)} indent positive />
           )}
@@ -737,6 +746,12 @@ export function PaySummaryCard({ breakdown }: Props) {
               <Row label="HOUSEHOLD MONTHLY"  value={fmtPay(householdMonthly)}   bold positive />
               <Row label="HOUSEHOLD / CHECK"  value={fmtPay(householdPerCheck)}  bold />
             </>
+          )}
+
+          {breakdown.familySeparated && !breakdown.familyBahResolved && (
+            <ThemedText type="label" style={[styles.disclaimer, { color: Brand.danger, marginTop: Spacing.one }]}>
+              ⚠ FAMILY LOCATION NOT SET — SET IT IN PROFILE TO SEE THEIR ACTUAL BAH HERE
+            </ThemedText>
           )}
 
           <ThemedText type="label" style={[styles.disclaimer, { color: tc.textMuted }]}>

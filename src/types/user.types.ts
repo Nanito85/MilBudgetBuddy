@@ -165,11 +165,25 @@ export interface UserPreferences {
   // Civilian GS info
   gsGrade?: number;  // 1-15
   gsStep?: number;   // 1-10
+  gsLocalityKey?: string; // GSLocality.key from data/gs-pay-rates.ts, e.g. 'DC', 'RUS'
   // Reserve / Guard pay info
   drillsPerMonth?: number;   // typically 4 (one battle assembly weekend)
   // Retired info
   retirementDate?: string;      // YYYY-MM-DD (date of retirement)
   vaDisabilityPercent?: number; // 0-100, in 10% increments
+  // A retiree who ALSO currently works as a GS civilian employee — retired
+  // pay, VA disability, and a GS paycheck are three separate, independently
+  // stacking income sources for the same real person, not mutually exclusive
+  // statuses. gsGrade/gsStep/gsLocalityKey above double as this income's
+  // pay-setting fields.
+  alsoGsCivilian?: boolean;
+  // Family separation — a member stationed unaccompanied (OCONUS tour, ship
+  // duty, etc.) whose dependents live elsewhere draws BAH at the DEPENDENTS'
+  // location (with-dependents rate) in addition to their own OHA/BAH at their
+  // own duty station (without-dependents rate), plus Family Separation
+  // Allowance (FSA). See lesCalc.ts for the actual calculation.
+  familySeparated?: boolean;
+  dependentsMhaZip?: string; // BAH zip for where dependents actually live
   // Pay setup
   tspContribPct: number;   // Traditional TSP contribution %
   rothTspPct: number;      // Roth TSP contribution %

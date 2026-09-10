@@ -140,6 +140,12 @@ export default function DashboardScreen() {
   const drillsPerMonth   = useUserStore((s) => s.drillsPerMonth);
   const vaDisabilityPercent = useUserStore((s) => s.vaDisabilityPercent);
   const financialGoal = useUserStore((s) => s.financialGoal);
+  const familySeparated  = useUserStore((s) => s.familySeparated);
+  const dependentsMhaZip = useUserStore((s) => s.dependentsMhaZip);
+  const alsoGsCivilian   = useUserStore((s) => s.alsoGsCivilian);
+  const gsGrade          = useUserStore((s) => s.gsGrade);
+  const gsStep           = useUserStore((s) => s.gsStep);
+  const gsLocalityKey    = useUserStore((s) => s.gsLocalityKey);
   const tip = useWeeklyTip(financialGoal);
 
   const debtEntries   = useDebtStore((s) => s.debts);
@@ -207,8 +213,9 @@ export default function DashboardScreen() {
       payGrade, yos, mhaZip, dutyStationId, hasSpouse, housingStatus, specialPaysTotal,
       tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence,
       overrides: lesOverrides, serviceStatus,
+      familySeparated, dependentsMhaZip, alsoGsCivilian, gsGrade, gsStep, gsLocalityKey,
     });
-  }, [payGrade, yos, mhaZip, dutyStationId, hasSpouse, housingStatus, specialPaysTotal, tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence, lesOverrides, serviceStatus]);
+  }, [payGrade, yos, mhaZip, dutyStationId, hasSpouse, housingStatus, specialPaysTotal, tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence, lesOverrides, serviceStatus, familySeparated, dependentsMhaZip, alsoGsCivilian, gsGrade, gsStep, gsLocalityKey]);
 
   // ── Mission Readiness Score (0-100) ─────────────────────────────────────────
   const readinessChecks = useMemo(() => {

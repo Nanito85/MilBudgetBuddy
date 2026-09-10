@@ -54,7 +54,8 @@ import {
   getRankAbbrev,
 } from '@/types/user.types';
 import { VALID_RATINGS, monthlyCompensation } from '@/features/va/utils/vaDisabilityCalc';
-import { calcLES, dentalFamilyRate, getDrillPay, fmtPay } from '@/features/home/utils/lesCalc';
+import { calcLES, dentalFamilyRate, getDrillPay, fmtPay, FSA_MONTHLY } from '@/features/home/utils/lesCalc';
+import { GS_LOCALITIES } from '@/data/gs-pay-rates';
 
 const HOUSING_STATUS_ORDER: HousingStatus[] = ['off_base', 'barracks', 'on_base_family_housing'];
 import { PayGrade } from '@/data/bah-rates';
@@ -436,12 +437,18 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
   const storedDrills   = useUserStore((s) => s.drillsPerMonth);
   const storedRetDate  = useUserStore((s) => s.retirementDate);
   const storedVaPct    = useUserStore((s) => s.vaDisabilityPercent);
+  const storedGsLocality  = useUserStore((s) => s.gsLocalityKey);
+  const storedAlsoGsCivilian = useUserStore((s) => s.alsoGsCivilian);
+  const storedFamilySeparated  = useUserStore((s) => s.familySeparated);
+  const storedDependentsMhaZip = useUserStore((s) => s.dependentsMhaZip);
   const setPersonalDetails = useUserStore((s) => s.setPersonalDetails);
   const setGSInfo      = useUserStore((s) => s.setGSInfo);
   const setBranch      = useUserStore((s) => s.setBranch);
   const setServiceStatus = useUserStore((s) => s.setServiceStatus);
   const setReserveInfo = useUserStore((s) => s.setReserveInfo);
   const setRetiredInfo = useUserStore((s) => s.setRetiredInfo);
+  const setAlsoGsCivilian   = useUserStore((s) => s.setAlsoGsCivilian);
+  const setFamilySeparation = useUserStore((s) => s.setFamilySeparation);
   const branch         = useUserStore((s) => s.branch);
 
   const [status, setStatus] = useState<ServiceStatus | undefined>(serviceStatus);
@@ -484,6 +491,12 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
   }, [enlistDate, retirementDate, isRetired]);
   const [gsGrade, setGsGrade]     = useState(storedGsGrade ?? 7);
   const [gsStep, setGsStep]       = useState(storedGsStep ?? 1);
+  const [gsLocality, setGsLocality] = useState(storedGsLocality ?? 'RUS');
+  const [alsoGsCivilian, setAlsoGsCivilianLocal] = useState(storedAlsoGsCivilian ?? false);
+  const [familySeparated, setFamilySeparatedLocal] = useState(storedFamilySeparated ?? false);
+  const [dependentsStation, setDependentsStation] = useState<Installation | null>(
+    () => getInstallationByZip(storedDependentsMhaZip),
+  );
   const [showStatePicker, setShowStatePicker]   = useState(false);
   const [showEnlistPicker, setShowEnlistPicker] = useState(false);
   const [showRankPicker, setShowRankPicker]     = useState(false);
@@ -513,6 +526,10 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
     setRankDate(dateOfRank ?? '');
     setGsGrade(storedGsGrade ?? 7);
     setGsStep(storedGsStep ?? 1);
+    setGsLocality(storedGsLocality ?? 'RUS');
+    setAlsoGsCivilianLocal(storedAlsoGsCivilian ?? false);
+    setFamilySeparatedLocal(storedFamilySeparated ?? false);
+    setDependentsStation(getInstallationByZip(storedDependentsMhaZip));
   }, [visible]);
 
   // Reset variant to default when branch or grade changes and current variant no longer applies
@@ -529,13 +546,24 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
     if (branch) setBranch(branch);
     if (status) setServiceStatus(status);
     if (isCivilian) {
-      setGSInfo(gsGrade, gsStep, ln, nn, enlistDate || undefined);
+      setGSInfo(gsGrade, gsStep, ln, nn, enlistDate || undefined, gsLocality);
     }
     if (isReserve) {
       setReserveInfo(drillsPerMonth);
     }
     if (isRetired) {
       setRetiredInfo(retirementDate || undefined, vaPercent);
+      // A retiree can ALSO currently be a GS civilian — retired pay, VA
+      // disability, and a GS paycheck stack as three independent income
+      // sources for the same person (see lesCalc.ts). Only meaningful here;
+      // the pure-civilian case already sets gsGrade/gsStep via setGSInfo above.
+      setAlsoGsCivilian(alsoGsCivilian, gsGrade, gsStep, gsLocality);
+    }
+    if (!isRetired && !isCivilian) {
+      // Family separation (unaccompanied OCONUS tour, sea duty, etc.) only
+      // applies to someone actually drawing active/reserve BAH — a retiree
+      // or civilian has no BAH/OHA/FSA to split between two locations.
+      setFamilySeparation(familySeparated, dependentsStation?.mhaZip ?? '');
     }
     setPersonalDetails({
       payGrade: grade,
@@ -635,6 +663,28 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
                       <ThemedText style={[editStyles.gsChipText, { color: tc.textHint }, gsStep === s && { color: tc.accent }]}>
                         {s}
                       </ThemedText>
+                    </Pressable>
+                  ))}
+                </View>
+
+                <ThemedText style={[editStyles.fieldLabel, { color: tc.textHint }]}>GS LOCALITY PAY AREA</ThemedText>
+                <View style={{ gap: Spacing.one }}>
+                  {GS_LOCALITIES.map((loc) => (
+                    <Pressable
+                      key={loc.key}
+                      onPress={() => setGsLocality(loc.key)}
+                      style={[
+                        editStyles.inputWrap,
+                        { backgroundColor: inputBg, borderColor: gsLocality === loc.key ? Brand.accent : tc.borderColor, paddingVertical: Spacing.two },
+                      ]}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: Spacing.two }}>
+                        <ThemedText style={{ fontSize: 16, color: gsLocality === loc.key ? Brand.accent : tc.textHint }}>
+                          {gsLocality === loc.key ? '●' : '○'}
+                        </ThemedText>
+                        <ThemedText style={[editStyles.toggleLabel, { color: tc.textPrimary, fontSize: 14 }]}>
+                          {loc.label} ({(loc.rate * 100).toFixed(2)}%)
+                        </ThemedText>
+                      </View>
                     </Pressable>
                   ))}
                 </View>
@@ -774,6 +824,70 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
                 <ThemedText style={[editStyles.dateHint, { color: tc.tactical }]}>
                   ↳ Est. VA compensation: {fmtPay(monthlyCompensation(vaPercent, spouse, children))}/mo
                 </ThemedText>
+
+                {/* Retired + currently working GS civilian — retired pay, VA
+                    disability, and a GS paycheck all stack together, so this
+                    doesn't replace anything above; it adds to it. */}
+                <View style={editStyles.toggleRow}>
+                  <ThemedText style={[editStyles.toggleLabel, { color: tc.textPrimary }]}>Also Working GS Civilian Job</ThemedText>
+                  <Switch value={alsoGsCivilian} onValueChange={setAlsoGsCivilianLocal} trackColor={{ true: Brand.accent }} thumbColor="#FFF" />
+                </View>
+                {alsoGsCivilian && (
+                  <>
+                    <ThemedText style={[editStyles.fieldHint, { color: tc.textHint, marginTop: -Spacing.two }]}>
+                      Added to your retired pay and VA disability as a separate income source in your Pay Statement.
+                    </ThemedText>
+                    <ThemedText style={[editStyles.fieldLabel, { color: tc.textHint }]}>GS GRADE</ThemedText>
+                    <View style={editStyles.gsRow}>
+                      {Array.from({ length: 15 }, (_, i) => i + 1).map((g) => (
+                        <Pressable
+                          key={g}
+                          onPress={() => setGsGrade(g)}
+                          style={[editStyles.gsChip, { borderColor: tc.borderColor, backgroundColor: tc.surface }, gsGrade === g && editStyles.gsChipActive]}>
+                          <ThemedText style={[editStyles.gsChipText, { color: tc.textHint }, gsGrade === g && { color: tc.accent }]}>
+                            {g}
+                          </ThemedText>
+                        </Pressable>
+                      ))}
+                    </View>
+
+                    <ThemedText style={[editStyles.fieldLabel, { color: tc.textHint }]}>GS STEP</ThemedText>
+                    <View style={editStyles.gsRow}>
+                      {Array.from({ length: 10 }, (_, i) => i + 1).map((s) => (
+                        <Pressable
+                          key={s}
+                          onPress={() => setGsStep(s)}
+                          style={[editStyles.gsChip, { borderColor: tc.borderColor, backgroundColor: tc.surface }, gsStep === s && editStyles.gsChipActive]}>
+                          <ThemedText style={[editStyles.gsChipText, { color: tc.textHint }, gsStep === s && { color: tc.accent }]}>
+                            {s}
+                          </ThemedText>
+                        </Pressable>
+                      ))}
+                    </View>
+
+                    <ThemedText style={[editStyles.fieldLabel, { color: tc.textHint }]}>GS LOCALITY PAY AREA</ThemedText>
+                    <View style={{ gap: Spacing.one }}>
+                      {GS_LOCALITIES.map((loc) => (
+                        <Pressable
+                          key={loc.key}
+                          onPress={() => setGsLocality(loc.key)}
+                          style={[
+                            editStyles.inputWrap,
+                            { backgroundColor: inputBg, borderColor: gsLocality === loc.key ? Brand.accent : tc.borderColor, paddingVertical: Spacing.two },
+                          ]}>
+                          <View style={{ flexDirection: 'row', alignItems: 'center', gap: Spacing.two }}>
+                            <ThemedText style={{ fontSize: 16, color: gsLocality === loc.key ? Brand.accent : tc.textHint }}>
+                              {gsLocality === loc.key ? '●' : '○'}
+                            </ThemedText>
+                            <ThemedText style={[editStyles.toggleLabel, { color: tc.textPrimary, fontSize: 14 }]}>
+                              {loc.label} ({(loc.rate * 100).toFixed(2)}%)
+                            </ThemedText>
+                          </View>
+                        </Pressable>
+                      ))}
+                    </View>
+                  </>
+                )}
               </>
             )}
 
@@ -834,6 +948,35 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
                 </Pressable>
               ))}
             </View>
+
+            {/* Family Separation — unaccompanied OCONUS tour, sea duty, etc.
+                Doesn't apply to a retiree or pure civilian (no BAH/OHA/FSA to
+                split), and there's no one to be separated FROM without a
+                dependent. */}
+            {!isRetired && !isCivilian && spouse && (
+              <>
+                <View style={editStyles.toggleRow}>
+                  <ThemedText style={[editStyles.toggleLabel, { color: tc.textPrimary }]}>Currently Separated From Family</ThemedText>
+                  <Switch value={familySeparated} onValueChange={setFamilySeparatedLocal} trackColor={{ true: Brand.accent }} thumbColor="#FFF" />
+                </View>
+                {familySeparated && (
+                  <>
+                    <ThemedText style={[editStyles.fieldHint, { color: tc.textHint, marginTop: -Spacing.two }]}>
+                      Unaccompanied OCONUS tour, sea duty, or similar orders where your family lives elsewhere.
+                      Your OHA/BAH above switches to the without-dependents rate, your family draws BAH at their
+                      own location, and you&apos;re added Family Separation Allowance (FSA, ${FSA_MONTHLY}/mo).
+                    </ThemedText>
+                    <ThemedText style={[editStyles.fieldLabel, { color: tc.textHint }]}>WHERE YOUR FAMILY LIVES</ThemedText>
+                    <StationPicker label="Family's Location" selected={dependentsStation} onSelect={setDependentsStation} conusOnly />
+                    {!dependentsStation && (
+                      <ThemedText style={[editStyles.fieldHint, { color: Brand.danger, marginTop: -Spacing.two }]}>
+                        Set this so we can calculate your family&apos;s actual BAH — without it, that entitlement won&apos;t show up in your Pay Statement.
+                      </ThemedText>
+                    )}
+                  </>
+                )}
+              </>
+            )}
 
           </ScrollView>
         </SafeAreaView>
@@ -899,12 +1042,19 @@ function EditPayModal({ visible, onClose }: { visible: boolean; onClose: () => v
   const housingStatus    = useUserStore((s) => s.housingStatus);
   const stateResidence   = useUserStore((s) => s.stateResidence);
   const serviceStatus    = useUserStore((s) => s.serviceStatus);
+  const familySeparated  = useUserStore((s) => s.familySeparated);
+  const dependentsMhaZip = useUserStore((s) => s.dependentsMhaZip);
+  const alsoGsCivilian   = useUserStore((s) => s.alsoGsCivilian);
+  const storedGsGradeLES = useUserStore((s) => s.gsGrade);
+  const storedGsStepLES  = useUserStore((s) => s.gsStep);
+  const gsLocalityKey    = useUserStore((s) => s.gsLocalityKey);
 
   const specialPaysTotal = specialPays.reduce((s, p) => s + p.monthlyAmount, 0);
   const calculated = payGrade
     ? calcLES({
         payGrade, yos, mhaZip, dutyStationId, hasSpouse, housingStatus, specialPaysTotal,
         tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence, serviceStatus,
+        familySeparated, dependentsMhaZip, alsoGsCivilian, gsGrade: storedGsGradeLES, gsStep: storedGsStepLES, gsLocalityKey,
       })
     : null;
 

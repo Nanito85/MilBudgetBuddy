@@ -828,6 +828,12 @@ export default function BudgetScreen() {
   const hasDentalFamily = useUserStore((s) => s.hasDentalFamily);
   const sglOptOut = useUserStore((s) => s.sglOptOut);
   const serviceStatus = useUserStore((s) => s.serviceStatus);
+  const familySeparated  = useUserStore((s) => s.familySeparated);
+  const dependentsMhaZip = useUserStore((s) => s.dependentsMhaZip);
+  const alsoGsCivilian   = useUserStore((s) => s.alsoGsCivilian);
+  const gsGrade          = useUserStore((s) => s.gsGrade);
+  const gsStep           = useUserStore((s) => s.gsStep);
+  const gsLocalityKey    = useUserStore((s) => s.gsLocalityKey);
   const stateResidence = useUserStore((s) => s.stateResidence);
   const lesOverrides = useUserStore((s) => s.lesOverrides);
 
@@ -861,8 +867,9 @@ export default function BudgetScreen() {
       stateResidence,
       overrides: lesOverrides,
       serviceStatus,
+      familySeparated, dependentsMhaZip, alsoGsCivilian, gsGrade, gsStep, gsLocalityKey,
     }).netPay;
-  }, [payGrade, yos, mhaZip, dutyStationId, hasSpouse, housingStatus, specialPays, tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence, lesOverrides, serviceStatus]);
+  }, [payGrade, yos, mhaZip, dutyStationId, hasSpouse, housingStatus, specialPays, tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence, lesOverrides, serviceStatus, familySeparated, dependentsMhaZip, alsoGsCivilian, gsGrade, gsStep, gsLocalityKey]);
 
   const remaining = netPay - totalBudgeted;
   const overBudget = remaining < 0;

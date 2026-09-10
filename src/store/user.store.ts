@@ -33,9 +33,13 @@ const DEFAULTS: UserPreferences = {
   dateOfRank: undefined,
   gsGrade: undefined,
   gsStep: undefined,
+  gsLocalityKey: undefined,
   drillsPerMonth: undefined,
   retirementDate: undefined,
   vaDisabilityPercent: undefined,
+  alsoGsCivilian: false,
+  familySeparated: false,
+  dependentsMhaZip: undefined,
   tspContribPct: 0,
   rothTspPct: 0,
   hasDentalFamily: false,
@@ -64,9 +68,11 @@ interface UserState extends UserPreferences {
   setDisclaimerAcknowledged: () => void;
   setHasSeenTutorial: () => void;
   setServiceInfo: (payGrade: PayGrade, lastName: string, nickname: string, yos: number, dateOfEnlistment?: string, dateOfRank?: string) => void;
-  setGSInfo: (gsGrade: number, gsStep: number, lastName: string, nickname: string, dateOfEnlistment?: string) => void;
+  setGSInfo: (gsGrade: number, gsStep: number, lastName: string, nickname: string, dateOfEnlistment?: string, gsLocalityKey?: string) => void;
   setReserveInfo: (drillsPerMonth: number) => void;
   setRetiredInfo: (retirementDate: string | undefined, vaDisabilityPercent: number) => void;
+  setAlsoGsCivilian: (enabled: boolean, gsGrade: number, gsStep: number, gsLocalityKey: string) => void;
+  setFamilySeparation: (familySeparated: boolean, dependentsMhaZip: string) => void;
   setLocationFamily: (mhaZip: string, hasSpouse: boolean, numChildren: number, housingStatus: HousingStatus, installationName?: string, dutyStationId?: string) => void;
   setPersonalDetails: (params: { payGrade: PayGrade; lastName: string; nickname: string; yos: number; mhaZip: string; installationName: string; dutyStationId?: string; hasSpouse: boolean; numChildren: number; housingStatus: HousingStatus; stateResidence: string; dateOfEnlistment: string; dateOfRank: string; rankVariant: RankVariant }) => void;
   setPayDetails: (params: { tspContribPct: number; rothTspPct: number; hasDentalFamily: boolean; sglOptOut: boolean; spouseMonthlyIncome: number; bahOverride?: number; basOverride?: number; basePayOverride?: number }) => void;
@@ -125,6 +131,10 @@ function snapshot(get: () => UserState): UserPreferences {
     greetingStyle: s.greetingStyle,
     gsGrade: s.gsGrade,
     gsStep: s.gsStep,
+    gsLocalityKey: s.gsLocalityKey,
+    alsoGsCivilian: s.alsoGsCivilian,
+    familySeparated: s.familySeparated,
+    dependentsMhaZip: s.dependentsMhaZip,
     spouseMonthlyIncome: s.spouseMonthlyIncome,
     appTheme: s.appTheme,
     fontScale: s.fontScale,
@@ -223,9 +233,10 @@ export const useUserStore = create<UserState>((set, get) => ({
     save({ ...snapshot(get), payGrade, lastName, nickname, yos, rankVariant: 'default', dateOfEnlistment, dateOfRank });
   },
 
-  setGSInfo: (gsGrade, gsStep, lastName, nickname, dateOfEnlistment) => {
-    set({ gsGrade, gsStep, lastName, nickname, dateOfEnlistment });
-    save({ ...snapshot(get), gsGrade, gsStep, lastName, nickname, dateOfEnlistment });
+  setGSInfo: (gsGrade, gsStep, lastName, nickname, dateOfEnlistment, gsLocalityKey) => {
+    const update = { gsGrade, gsStep, lastName, nickname, dateOfEnlistment, ...(gsLocalityKey !== undefined ? { gsLocalityKey } : {}) };
+    set(update);
+    save({ ...snapshot(get), ...update });
   },
 
   setReserveInfo: (drillsPerMonth) => {
@@ -236,6 +247,20 @@ export const useUserStore = create<UserState>((set, get) => ({
   setRetiredInfo: (retirementDate, vaDisabilityPercent) => {
     set({ retirementDate, vaDisabilityPercent });
     save({ ...snapshot(get), retirementDate, vaDisabilityPercent });
+  },
+
+  // A retiree who's also currently a GS civilian employee — independent of
+  // setGSInfo (which is for the pure serviceStatus === 'civilian' path and
+  // also updates lastName/nickname/dateOfEnlistment, none of which apply
+  // when the member is really "retired, plus a separate GS job").
+  setAlsoGsCivilian: (alsoGsCivilian, gsGrade, gsStep, gsLocalityKey) => {
+    set({ alsoGsCivilian, gsGrade, gsStep, gsLocalityKey });
+    save({ ...snapshot(get), alsoGsCivilian, gsGrade, gsStep, gsLocalityKey });
+  },
+
+  setFamilySeparation: (familySeparated, dependentsMhaZip) => {
+    set({ familySeparated, dependentsMhaZip });
+    save({ ...snapshot(get), familySeparated, dependentsMhaZip });
   },
 
   setLocationFamily: (mhaZip, hasSpouse, numChildren, housingStatus, installationName, dutyStationId) => {

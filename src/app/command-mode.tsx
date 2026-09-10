@@ -113,6 +113,12 @@ export default function CommandModeScreen() {
   const lesOverrides    = useUserStore((s) => s.lesOverrides);
   const setLesOverrides = useUserStore((s) => s.setLesOverrides);
   const serviceStatus   = useUserStore((s) => s.serviceStatus);
+  const familySeparated  = useUserStore((s) => s.familySeparated);
+  const dependentsMhaZip = useUserStore((s) => s.dependentsMhaZip);
+  const alsoGsCivilian   = useUserStore((s) => s.alsoGsCivilian);
+  const gsGrade          = useUserStore((s) => s.gsGrade);
+  const gsStep           = useUserStore((s) => s.gsStep);
+  const gsLocalityKey    = useUserStore((s) => s.gsLocalityKey);
   const vaDisabilityPercent = useUserStore((s) => s.vaDisabilityPercent);
   const spouseIncome = useUserStore((s) => s.spouseMonthlyIncome);
 
@@ -179,8 +185,9 @@ export default function CommandModeScreen() {
       payGrade, yos, mhaZip, dutyStationId, hasSpouse, housingStatus, specialPaysTotal,
       tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence,
       overrides: lesOverrides, serviceStatus,
+      familySeparated, dependentsMhaZip, alsoGsCivilian, gsGrade, gsStep, gsLocalityKey,
     });
-  }, [payGrade, yos, mhaZip, dutyStationId, hasSpouse, housingStatus, specialPaysTotal, tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence, lesOverrides, serviceStatus]);
+  }, [payGrade, yos, mhaZip, dutyStationId, hasSpouse, housingStatus, specialPaysTotal, tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence, lesOverrides, serviceStatus, familySeparated, dependentsMhaZip, alsoGsCivilian, gsGrade, gsStep, gsLocalityKey]);
 
   // VA disability compensation — retired members only, and only added to
   // TOTAL GROSS when CRDP-eligible (50%+ rating). Below 50%, federal law

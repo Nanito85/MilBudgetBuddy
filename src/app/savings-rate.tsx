@@ -99,6 +99,12 @@ export default function SavingsRateScreen() {
   const lesOverrides = useUserStore((s) => s.lesOverrides);
   const specialPays = useUserStore((s) => s.specialPays);
   const serviceStatus = useUserStore((s) => s.serviceStatus);
+  const familySeparated  = useUserStore((s) => s.familySeparated);
+  const dependentsMhaZip = useUserStore((s) => s.dependentsMhaZip);
+  const alsoGsCivilian   = useUserStore((s) => s.alsoGsCivilian);
+  const gsGrade          = useUserStore((s) => s.gsGrade);
+  const gsStep           = useUserStore((s) => s.gsStep);
+  const gsLocalityKey    = useUserStore((s) => s.gsLocalityKey);
   const budgetCategories = useBudgetStore((s) => s.categories);
 
   const specialPaysTotal = useMemo(
@@ -112,8 +118,11 @@ export default function SavingsRateScreen() {
   // diverging from what Home shows for the same person.
   const breakdown = useMemo(() => {
     if (!payGrade) return null;
-    return calcLES({ payGrade, yos, mhaZip, dutyStationId, hasSpouse, housingStatus, specialPaysTotal, tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence, overrides: lesOverrides, serviceStatus });
-  }, [payGrade, yos, mhaZip, dutyStationId, hasSpouse, housingStatus, specialPaysTotal, tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence, lesOverrides, serviceStatus]);
+    return calcLES({
+      payGrade, yos, mhaZip, dutyStationId, hasSpouse, housingStatus, specialPaysTotal, tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence, overrides: lesOverrides, serviceStatus,
+      familySeparated, dependentsMhaZip, alsoGsCivilian, gsGrade, gsStep, gsLocalityKey,
+    });
+  }, [payGrade, yos, mhaZip, dutyStationId, hasSpouse, housingStatus, specialPaysTotal, tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence, lesOverrides, serviceStatus, familySeparated, dependentsMhaZip, alsoGsCivilian, gsGrade, gsStep, gsLocalityKey]);
 
   const netPayFromStore = breakdown?.netPay ?? 0;
   const budgetTotal = useMemo(
