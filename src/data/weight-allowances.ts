@@ -6,7 +6,7 @@
  * Source: Joint Travel Regulations, Chapter 5. Verify with TMO/PPPO before your move.
  */
 
-import { PayGrade } from './bah-rates';
+import { baseOfficerGrade, PayGrade } from './bah-rates';
 
 export interface WeightAllowance {
   withDep: number;
@@ -29,8 +29,13 @@ export const WEIGHT_ALLOWANCES: Record<PayGrade, WeightAllowance> = {
   W4:  { withDep: 17_000, withoutDep: 14_000 },
   W5:  { withDep: 17_500, withoutDep: 16_000 },
   O1:  { withDep: 12_000, withoutDep: 10_000 },
+  // O1E/O2E/O3E: same JTR Table 5-37 allowance as the base grade — there is
+  // no separate prior-enlisted-officer weight allowance.
+  O1E: { withDep: 12_000, withoutDep: 10_000 },
   O2:  { withDep: 13_500, withoutDep: 12_500 },
+  O2E: { withDep: 13_500, withoutDep: 12_500 },
   O3:  { withDep: 14_500, withoutDep: 13_000 },
+  O3E: { withDep: 14_500, withoutDep: 13_000 },
   O4:  { withDep: 17_000, withoutDep: 14_000 },
   O5:  { withDep: 17_500, withoutDep: 16_000 },
   O6:  { withDep: 18_000, withoutDep: 18_000 },
@@ -41,7 +46,7 @@ export const WEIGHT_ALLOWANCES: Record<PayGrade, WeightAllowance> = {
 };
 
 export function getWeightAllowance(grade: PayGrade, withDep: boolean): number {
-  const entry = WEIGHT_ALLOWANCES[grade];
+  const entry = WEIGHT_ALLOWANCES[baseOfficerGrade(grade)];
   return withDep ? entry.withDep : entry.withoutDep;
 }
 

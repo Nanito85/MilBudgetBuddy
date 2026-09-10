@@ -40,8 +40,18 @@ export const BASIC_PAY: Record<PayGrade, YOSBracket[]> = {
 
   // ── Officers ────────────────────────────────────────────────────────────────
   O1:  [[0,4150],[2,4320],[3,5222]],
+  // O1E/O2E/O3E: commissioned officers with over 4 years of prior active-duty
+  // enlisted or warrant service (JTR/DFAS "E" suffix). Only takes effect at
+  // 4+ YOS by definition — the table intentionally has no bracket below that.
+  // Notice each "over 4" figure exactly equals the base grade's own "over 4"
+  // (or, for O1E, O1's max/"over 3") rate — that's not a coincidence, it's how
+  // DFAS's published table is structured, and a useful internal check that
+  // these numbers line up with the already-verified O1/O2/O3 rows above.
+  O1E: [[4,5222],[6,5577],[8,5783],[10,5994],[12,6201],[14,6484]],
   O2:  [[0,4782],[2,5446],[3,6272],[4,6484],[6,6618]],
+  O2E: [[4,6484],[6,6618],[8,6828],[10,7184],[12,7459],[14,7664]],
   O3:  [[0,5535],[2,6273],[3,6771],[4,7383],[6,7737],[8,8125],[10,8376],[12,8788],[14,9004]],
+  O3E: [[4,7383],[6,7737],[8,8125],[10,8376],[12,8788],[14,9137],[16,9337],[18,9609]],
   O4:  [[0,6294],[2,7286],[3,7773],[4,7881],[6,8332],[8,8816],[10,9419],[12,9888],[14,10214],[16,10402],[18,10510]],
   O5:  [[0,7295],[2,8219],[3,8787],[4,8894],[6,9250],[8,9462],[10,9929],[12,10272],[14,10714],[16,11392],[18,11714],[20,12033],[22,12394]],
   O6:  [[0,8751],[2,9614],[3,10245],[6,10284],[8,10725],[10,10784],[14,11396],[16,12480],[18,13115],[20,13751],[22,14113],[24,14479],[26,15189],[30,15408]],

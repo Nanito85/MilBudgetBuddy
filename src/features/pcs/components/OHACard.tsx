@@ -12,7 +12,7 @@ import {
   getOhaRate,
   isOhaDataStale,
 } from '@/data/oha-rates';
-import { PayGrade } from '@/data/bah-rates';
+import { baseOfficerGrade, PayGrade } from '@/data/bah-rates';
 import { Installation } from '@/data/installations';
 
 interface Props {
@@ -123,7 +123,11 @@ export function OHACard({ installation, area, grade, withDep }: Props) {
               {GRADE_ORDER.map(g => {
                 const r = getOhaRate(area.locationLabel, g, withDep);
                 if (!r) return null;
-                const isActive = g === grade;
+                // O1E/O2E/O3E aren't in this list (they share their base
+                // grade's OHA exactly, so a separate row would just repeat
+                // one already shown) — normalize so the active row still
+                // highlights correctly for those members.
+                const isActive = g === baseOfficerGrade(grade);
                 return (
                   <View key={g} style={[styles.gradeRow, isActive && styles.gradeRowActive]}>
                     <ThemedText style={[styles.gradeCell, !isActive && { color: tc.textSecondary }, isActive && [styles.gradeCellActive, { color: tc.accent }]]}>{g}</ThemedText>

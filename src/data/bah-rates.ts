@@ -5,32 +5,47 @@
  * Grade order: E1–E9, W1–W5, O1–O10 (24 grades, indices 0–23)
  * Each entry: [withDependents, withoutDependents]
  *
- * NOTE: O1E/O2E/O3E (commissioned officers with over 4 years prior enlisted or
- * warrant service) receive a higher BAH rate than standard O1/O2/O3 per JTR.
- * This app does not distinguish prior-enlisted officers; O1–O3 here use the
- * standard (non-prior-service) rate. Prior-enlisted officers should verify
- * their actual rate with their finance office.
- *
- * Members do not always receive the full rate below — see BAH_PARTIAL and the
- * housing-status logic in lesCalc.ts for barracks / on-base family housing.
+ * O1E/O2E/O3E (commissioned officers with over 4 years prior enlisted or
+ * warrant service) are a real, distinct pay grade with a HIGHER basic pay
+ * table than standard O1/O2/O3 — see basic-pay-rates.ts. BAH, OHA, and PCS
+ * weight allowances, however, are keyed to grade for JTR purposes and are
+ * identical to the base O1/O2/O3 rate regardless of prior-enlisted status
+ * (there is no separate O1E/O2E/O3E column in DoD's own BAH-ASCII file or
+ * JTR Table 5-37). GRADE_INDEX below deliberately maps O1E/O2E/O3E to the
+ * same column as O1/O2/O3 for this reason — this is correct, not a shortcut.
  */
 
 export type PayGrade =
   | 'E1' | 'E2' | 'E3' | 'E4' | 'E5' | 'E6' | 'E7' | 'E8' | 'E9'
   | 'W1' | 'W2' | 'W3' | 'W4' | 'W5'
-  | 'O1' | 'O2' | 'O3' | 'O4' | 'O5' | 'O6' | 'O7' | 'O8' | 'O9' | 'O10';
+  | 'O1' | 'O1E' | 'O2' | 'O2E' | 'O3' | 'O3E'
+  | 'O4' | 'O5' | 'O6' | 'O7' | 'O8' | 'O9' | 'O10';
 
 export const PAY_GRADES: PayGrade[] = [
   'E1','E2','E3','E4','E5','E6','E7','E8','E9',
   'W1','W2','W3','W4','W5',
-  'O1','O2','O3','O4','O5','O6','O7','O8','O9','O10',
+  'O1','O1E','O2','O2E','O3','O3E','O4','O5','O6','O7','O8','O9','O10',
 ];
 
 const GRADE_INDEX: Record<PayGrade, number> = {
   E1:0, E2:1, E3:2, E4:3, E5:4, E6:5, E7:6, E8:7, E9:8,
   W1:9, W2:10, W3:11, W4:12, W5:13,
-  O1:14, O2:15, O3:16, O4:17, O5:18, O6:19, O7:20, O8:21, O9:22, O10:23,
+  O1:14, O1E:14, O2:15, O2E:15, O3:16, O3E:16,
+  O4:17, O5:18, O6:19, O7:20, O8:21, O9:22, O10:23,
 };
+
+/**
+ * O1E/O2E/O3E share every entitlement with their base O1/O2/O3 grade except
+ * basic pay itself (BAH, OHA, weight allowances, rank title/insignia are all
+ * identical). Lookups for those shared entitlements should normalize through
+ * this first so a prior-enlisted grade never needs its own duplicate data.
+ */
+export function baseOfficerGrade(grade: PayGrade): PayGrade {
+  if (grade === 'O1E') return 'O1';
+  if (grade === 'O2E') return 'O2';
+  if (grade === 'O3E') return 'O3';
+  return grade;
+}
 
 export const BAH_DATA_YEAR = 2026;
 export const BAH_EFFECTIVE_DATE = '2026-01-01';

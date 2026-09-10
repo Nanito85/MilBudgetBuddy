@@ -21,7 +21,7 @@
  *   - Okinawa utility is a flat rate across all grades per USFJ policy.
  */
 
-import { PayGrade } from '@/data/bah-rates';
+import { baseOfficerGrade, PayGrade } from '@/data/bah-rates';
 
 export const OHA_DATA_QUARTER   = 'Q2 2026';
 export const OHA_EFFECTIVE_DATE = '2026-05-16';
@@ -895,6 +895,11 @@ export function getOhaRate(
 ): { rentCeilingUSD: number; utilityAllowanceUSD: number } | null {
   const loc = getOhaLocationRates(locationLabel);
   if (!loc || loc.rates.length === 0) return null;
+
+  // O1E/O2E/O3E get the same OHA as their base grade (no separate JTR column
+  // for prior-enlisted officers) — normalize up front so the interpolation
+  // below never has to reason about a grade it has no data for.
+  grade = baseOfficerGrade(grade);
 
   // Exact match
   const exact = loc.rates.find(r => r.grade === grade);

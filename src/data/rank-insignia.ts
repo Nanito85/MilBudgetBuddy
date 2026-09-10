@@ -1,4 +1,4 @@
-import { PayGrade } from '@/data/bah-rates';
+import { baseOfficerGrade, PayGrade } from '@/data/bah-rates';
 import { MilitaryBranch } from '@/types/user.types';
 
 // ── Rank Variants ──────────────────────────────────────────────────────────────
@@ -109,7 +109,9 @@ export type InsigniaRows = string[];
 // Shared officer rows — identical across all branches at the grade level
 // O1/O2: 1 bar; O3: 2 bars; O4/O5: oak leaf; O6: eagle; O7-O10: stars
 function officerRows(grade: PayGrade): InsigniaRows {
-  switch (grade) {
+  // O1E/O2E/O3E (prior-enlisted officers) wear the exact same insignia as
+  // the base grade — the "E" only affects basic pay, not rank/insignia.
+  switch (baseOfficerGrade(grade)) {
     case 'O1':  return ['▬'];         // Gold bar (2LT / ENS / 2d Lt)
     case 'O2':  return ['▬', '▬'];    // Silver bar (1LT / LTJG / 1st Lt)
     case 'O3':  return ['▬▬'];        // Two bars (CPT / LT / Capt)

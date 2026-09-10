@@ -1,4 +1,4 @@
-import { PayGrade } from '@/data/bah-rates';
+import { baseOfficerGrade, PayGrade } from '@/data/bah-rates';
 import { RankVariant, getVariantAbbrev } from '@/data/rank-insignia';
 
 export type MilitaryBranch =
@@ -80,7 +80,10 @@ export function getRankAbbrev(
     const va = getVariantAbbrev(branch, grade, variant);
     if (va) return va;
   }
-  return RANK_ABBREV[branch]?.[grade] ?? grade;
+  // O1E/O2E/O3E carry the same rank title as their base grade (the "E" only
+  // affects basic pay) — RANK_ABBREV has no separate entries for them.
+  const baseGrade = baseOfficerGrade(grade);
+  return RANK_ABBREV[branch]?.[baseGrade] ?? grade;
 }
 
 export type { RankVariant };
