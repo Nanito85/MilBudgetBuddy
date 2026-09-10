@@ -270,7 +270,13 @@ export default function PCSCalculatorScreen() {
 
       {/* ══ TIPS TAB ═══════════════════════════════════════════════════════════ */}
       {activeTab === 'tips' && (
+        // Without an explicit flex:1 here, this ScrollView only sized itself
+        // to its own content instead of properly bounding to the remaining
+        // screen space below the tab bar — fine for short content, but the
+        // full tips list just overflowed past the bottom of the screen
+        // instead of being scrollable.
         <ScrollView
+          style={styles.list}
           contentContainerStyle={[styles.content, { paddingBottom: BottomTabInset + Spacing.five }]}
           showsVerticalScrollIndicator={false}>
           <ThemedText type="small" themeColor="textSecondary" style={styles.tipsIntro}>
@@ -300,6 +306,7 @@ export default function PCSCalculatorScreen() {
       {/* ══ CALCULATOR TAB ═════════════════════════════════════════════════════ */}
       {activeTab === 'calculator' && (
       <ScrollView
+        style={styles.list}
         contentContainerStyle={[styles.content, { paddingBottom: BottomTabInset + Spacing.five }]}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled">
@@ -798,6 +805,7 @@ const styles = StyleSheet.create({
   tipTitle: { fontSize: 15, fontWeight: '700', lineHeight: 20 },
   tipBody: { lineHeight: 19 },
 
+  list: { flex: 1 },
   content: { paddingHorizontal: Spacing.three, gap: Spacing.three },
   section: { gap: Spacing.two },
   sectionLabel: { letterSpacing: 0.8, paddingHorizontal: Spacing.one },

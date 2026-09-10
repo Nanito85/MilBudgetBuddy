@@ -124,7 +124,13 @@ export default function TipLibraryScreen() {
         })}
       </ScrollView>
 
+      {/* Without an explicit flex:1 here, this ScrollView only ever sized
+          itself to its content (the default for an un-flexed flex child) —
+          fine for the short "no tips" empty state, but a real, taller list
+          of tip rows just overflowed past the bottom of the screen instead
+          of being scrollable, so anything past the fold was cropped off. */}
       <ScrollView
+        style={styles.list}
         contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + BottomTabInset + Spacing.five }]}
         showsVerticalScrollIndicator={false}>
         {filtered.length === 0 ? (
@@ -148,6 +154,7 @@ export default function TipLibraryScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
+  list: { flex: 1 },
   header: {
     flexDirection: 'row',
     alignItems: 'center',

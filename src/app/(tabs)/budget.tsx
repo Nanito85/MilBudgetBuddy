@@ -1003,7 +1003,14 @@ export default function BudgetScreen() {
           </ThemedView>
         )}
 
+        {/* Without an explicit flex:1 here, this ScrollView only sized
+            itself to its own content instead of properly bounding to the
+            remaining screen space below the summary card — fine for a
+            short budget, but a fuller category/expense list just
+            overflowed past the bottom of the screen instead of being
+            scrollable. */}
         <ScrollView
+          style={styles.listScroll}
           contentContainerStyle={[styles.list, { paddingBottom: insets.bottom + 140 }]}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
@@ -1225,6 +1232,7 @@ const styles = StyleSheet.create({
   summaryValue: { fontSize: 16, fontWeight: '700' },
   over: { color: '#E74C3C' },
 
+  listScroll: { flex: 1 },
   list: { paddingHorizontal: Spacing.three, gap: Spacing.two },
   hint: { fontSize: 12, textAlign: 'center', marginBottom: Spacing.one },
   sectionDivider: {

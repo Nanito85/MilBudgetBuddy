@@ -202,7 +202,13 @@ export default function ReservesScreen() {
         ))}
       </ScrollView>
 
+      {/* Without an explicit flex:1 here, this ScrollView only sized itself
+          to its own content instead of properly bounding to the remaining
+          screen space below the tab bar — fine for short content, but a
+          full tab's worth of cards just overflowed past the bottom of the
+          screen instead of being scrollable. */}
       <ScrollView
+        style={styles.list}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scroll}>
 
@@ -587,6 +593,7 @@ const styles = StyleSheet.create({
   tabLabel: { fontSize: 13, lineHeight: 17, fontWeight: '900', letterSpacing: 0.3 },
   tabLabelActive: { fontWeight: '900' },
 
+  list: { flex: 1 },
   scroll: { paddingHorizontal: Spacing.three, paddingTop: Spacing.three, paddingBottom: 80, gap: Spacing.three },
 
   sectionHeader: { flexDirection: 'row', gap: Spacing.two, alignItems: 'flex-start' },

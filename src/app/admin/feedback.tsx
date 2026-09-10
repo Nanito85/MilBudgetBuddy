@@ -301,6 +301,7 @@ export default function AdminFeedbackScreen() {
         </View>
       ) : (
         <FlatList
+          style={{ flex: 1 }}
           data={adminFeedback}
           keyExtractor={(item) => item.id}
           renderItem={renderItem}

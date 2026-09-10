@@ -310,7 +310,13 @@ export default function NetWorthScreen() {
           </View>
         </ThemedView>
 
+        {/* Without an explicit flex:1 here, this ScrollView only sized
+            itself to its own content instead of properly bounding to the
+            remaining screen space below the summary card — fine for a
+            short list, but a full set of entries just overflowed past the
+            bottom of the screen instead of being scrollable. */}
         <ScrollView
+          style={styles.listScroll}
           contentContainerStyle={[styles.list, { paddingBottom: insets.bottom + Spacing.five }]}
           keyboardShouldPersistTaps="handled">
 
@@ -453,6 +459,7 @@ const styles = StyleSheet.create({
   legendLabel: { fontSize: 11, fontWeight: '600' },
   legendValue: { fontSize: 11, fontWeight: '800' },
 
+  listScroll: { flex: 1 },
   list: { paddingHorizontal: Spacing.three, gap: Spacing.two },
   hint: { fontSize: 11, textAlign: 'center' },
 

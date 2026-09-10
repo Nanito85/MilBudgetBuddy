@@ -107,8 +107,15 @@ export function FeedbackModal({ visible, onClose }: Props) {
               </Pressable>
             </View>
           ) : (
+            // Without an explicit flex:1 here, this ScrollView only sized
+            // itself to its own content instead of properly bounding to the
+            // remaining screen space below the header — fine for short
+            // content, but a longer message + category chips just
+            // overflowed past the bottom of the screen instead of being
+            // scrollable.
             <ScrollView
-              contentContainerStyle={styles.body}
+              style={styles.body}
+              contentContainerStyle={styles.bodyContent}
               keyboardShouldPersistTaps="handled"
               showsVerticalScrollIndicator={false}>
 
@@ -221,7 +228,8 @@ const styles = StyleSheet.create({
   closeBtn: { padding: 4 },
   closeText: { fontSize: 16 },
 
-  body: { paddingHorizontal: Spacing.three, paddingVertical: Spacing.four, gap: Spacing.two },
+  body: { flex: 1 },
+  bodyContent: { paddingHorizontal: Spacing.three, paddingVertical: Spacing.four, gap: Spacing.two },
 
   eyebrow: { fontSize: 10, fontWeight: '700', letterSpacing: 1.5 },
   sub: { fontSize: 13, lineHeight: 19 },

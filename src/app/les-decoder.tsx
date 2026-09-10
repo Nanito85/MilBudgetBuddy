@@ -265,6 +265,7 @@ export default function LESDecoderScreen() {
           </ScrollView>
 
           <ScrollView
+            style={styles.list}
             contentContainerStyle={[styles.content, { paddingBottom: BottomTabInset + Spacing.five }]}
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled">
@@ -304,6 +305,7 @@ export default function LESDecoderScreen() {
       {/* ══ VERIFY PAY TAB ═════════════════════════════════════════════════════ */}
       {activeTab === 'verify' && (
         <ScrollView
+          style={styles.list}
           contentContainerStyle={[styles.content, { paddingBottom: BottomTabInset + Spacing.five }]}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled">
@@ -425,6 +427,7 @@ export default function LESDecoderScreen() {
       {/* ══ RED FLAGS TAB ══════════════════════════════════════════════════════ */}
       {activeTab === 'redflags' && (
         <ScrollView
+          style={styles.list}
           contentContainerStyle={[styles.content, { paddingBottom: BottomTabInset + Spacing.five }]}
           showsVerticalScrollIndicator={false}>
 
@@ -489,6 +492,13 @@ export default function LESDecoderScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
+  // Without this, each tab's content ScrollView only sized itself to its
+  // own content (the default for an un-flexed flex child) instead of
+  // properly bounding to the remaining screen space — fine for short
+  // content, but a full field list (or the glossary tab's chips-then-list
+  // layout) just overflowed past the bottom of the screen instead of being
+  // scrollable, cropping anything past the fold.
+  list: { flex: 1 },
   header: {
     flexDirection: 'row',
     alignItems: 'center',

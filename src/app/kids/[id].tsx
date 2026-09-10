@@ -83,6 +83,7 @@ function AddGoalModal({ visible, accentColor, onClose, onAdd }: {
           <ScrollView
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
+            style={addGoalStyles.list}
             contentContainerStyle={addGoalStyles.scroll}>
 
             {/* Emoji picker */}
@@ -174,6 +175,7 @@ const addGoalStyles = StyleSheet.create({
   saveBtn: { borderRadius: 20, paddingHorizontal: Spacing.three, paddingVertical: 8 },
   saveBtnText: { color: '#FFFFFF', fontSize: 13, fontWeight: '900', letterSpacing: 1 },
 
+  list: { flex: 1 },
   scroll: { padding: Spacing.three, gap: Spacing.three, paddingBottom: Spacing.six },
 
   fieldLabel: { fontSize: 10, fontWeight: '900', letterSpacing: 2, textTransform: 'uppercase' },
@@ -278,6 +280,7 @@ function EditGoalModal({ visible, goal, accentColor, onClose, onSave, onDelete }
           <ScrollView
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
+            style={addGoalStyles.list}
             contentContainerStyle={addGoalStyles.scroll}>
 
             <ThemedText style={[addGoalStyles.fieldLabel, { color: tc.textSecondary }]}>PICK AN EMOJI</ThemedText>
@@ -412,6 +415,7 @@ function AddChoreModal({ visible, defaultFrequency, accentColor, onClose, onAdd 
           <ScrollView
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
+            style={addGoalStyles.list}
             contentContainerStyle={addGoalStyles.scroll}>
 
             <ThemedText style={[addGoalStyles.fieldLabel, { color: tc.textSecondary }]}>FREQUENCY</ThemedText>
@@ -549,7 +553,13 @@ export default function KidScreen() {
         </View>
       </SafeAreaView>
 
+      {/* Without an explicit flex:1 here, this ScrollView only sized itself
+          to its own content instead of properly bounding to the remaining
+          screen space below the header — fine for a kid with little to
+          show, but a full goals+chores list just overflowed past the
+          bottom of the screen instead of being scrollable. */}
       <ScrollView
+        style={styles.list}
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled">
@@ -759,6 +769,7 @@ const styles = StyleSheet.create({
   earnedAmt:   { fontSize: 15, fontWeight: '900' },
   earnedLabel: { fontSize: 8, letterSpacing: 1.5, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase' },
 
+  list: { flex: 1 },
   content: { paddingHorizontal: Spacing.three, gap: Spacing.four, paddingTop: Spacing.two },
 
   section: { gap: Spacing.two },
