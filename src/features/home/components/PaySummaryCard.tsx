@@ -697,6 +697,9 @@ export function PaySummaryCard({ breakdown }: Props) {
           {(!breakdown.isRetiredPay || breakdown.basOverridden) && (
             <Row label="BAS" value={fmtPay(breakdown.bas)} indent positive overridden={breakdown.basOverridden} />
           )}
+          {breakdown.colaTracked && (
+            <Row label="COLA" value={fmtPay(breakdown.cola)} indent positive />
+          )}
           {breakdown.familySeparated && (
             <>
               <Row label="FAMILY BAH" value={fmtPay(breakdown.familyBah)} indent positive />

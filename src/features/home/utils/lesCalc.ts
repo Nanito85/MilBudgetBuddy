@@ -1,8 +1,10 @@
 import { BAH_PARTIAL, getBahRate, PayGrade } from '@/data/bah-rates';
 import { getBAS } from '@/data/bas-rates';
 import { getBasicPay, getHigh3Average } from '@/data/basic-pay-rates';
+import { getConusCola } from '@/data/conus-cola';
 import { estimateAnnualFedTax, FICA_RATE } from '@/data/federal-tax';
 import { getGSMonthly } from '@/data/gs-pay-rates';
+import { getOconusCola } from '@/data/oconus-cola';
 import { getOhaAreaForInstallation, getOhaRate } from '@/data/oha-rates';
 import { getRetirementStateTaxRate, getStateTaxRate } from '@/data/state-tax';
 import { HousingStatus, LESOverrides, ServiceStatus } from '@/types/user.types';
@@ -72,6 +74,15 @@ export interface LESBreakdown {
   // BAH-eligible mhaZip). Lets the UI relabel the line item accordingly.
   isOha: boolean;
   ohaApproximate: boolean;
+  // COLA (Cost-of-Living Allowance) at the member's own duty station — CONUS
+  // COLA (ZIP-based, only ~18 high-cost metro areas nationwide qualify) or
+  // OCONUS COLA (installation-based), whichever applies. colaTracked is
+  // false when this app has no COLA data for the given location at all
+  // (most CONUS locations, and some OCONUS ones this app doesn't track);
+  // when true but cola is 0, that's a real "not currently authorized" result
+  // (e.g. Okinawa) rather than missing data — the UI should distinguish these.
+  cola: number;
+  colaTracked: boolean;
   // True when `basePay` is retired pay (High-3 legacy formula) rather than
   // active-duty basic pay — lets the UI relabel "BASE PAY" and hide the
   // (always-zero, unless overridden) BAH/BAS rows for a retired member.
@@ -239,6 +250,27 @@ export function calcLES(inputs: LESInputs): LESBreakdown {
   }
   const fsa = familySepActive ? FSA_MONTHLY : 0;
 
+  // COLA — computed at the member's own duty station, same dependents rate
+  // as their own housing (i.e. the without-dependents rate while family-
+  // separated, since dependents aren't at this location either). Retirees
+  // and pure civilians draw neither. CONUS COLA is ZIP-keyed; OCONUS COLA is
+  // keyed off the same OHA locationLabel that resolveHousing() uses.
+  let cola = 0;
+  let colaTracked = false;
+  if (!isRetired && !isCivilianOnly) {
+    const colaHasDep = familySepActive ? false : hasSpouse;
+    if (mhaZip) {
+      const conus = getConusCola(mhaZip, payGrade as PayGrade, yos, colaHasDep);
+      if (conus != null) { cola = conus; colaTracked = true; }
+    } else if (dutyStationId) {
+      const area = getOhaAreaForInstallation(dutyStationId);
+      if (area) {
+        const oconus = getOconusCola(area.locationLabel, payGrade as PayGrade, yos, colaHasDep);
+        if (oconus != null) { cola = oconus; colaTracked = true; }
+      }
+    }
+  }
+
   // GS civilian pay — either a pure civilian, or a retiree who's ALSO
   // currently working a GS job (retired pay + VA disability + a GS paycheck
   // are three separate, simultaneously-stacking income sources for the same
@@ -253,7 +285,7 @@ export function calcLES(inputs: LESInputs): LESBreakdown {
   const extraIncome     = extraIncomeItems.reduce((s, i) => s + i.amount, 0);
   const extraDeductions = extraDeductionItems.reduce((s, i) => s + i.amount, 0);
 
-  const grossPay = basePay + bah + bas + specialPaysTotal + extraIncome + familyBah + fsa + gsGrossMonthly;
+  const grossPay = basePay + bah + bas + cola + specialPaysTotal + extraIncome + familyBah + fsa + gsGrossMonthly;
 
   // Combined federal tax on basePay + GS wages together (not two separate
   // brackets) — stacking GS income on top of retired pay pushes the whole
@@ -289,6 +321,7 @@ export function calcLES(inputs: LESInputs): LESBreakdown {
 
   return {
     basePay, bah, bas,
+    cola, colaTracked,
     specialPays: specialPaysTotal,
     extraIncome, grossPay,
     fica, fedTax, stateTax, tsp, traditionalTsp, rothTsp, sgli, dental,

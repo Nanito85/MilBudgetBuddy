@@ -137,7 +137,7 @@ export default function PCSCalculatorScreen() {
   const insets = useSafeAreaInsets();
   const tc = useThemeColors();
 
-  const { payGrade: profileGrade, hasSpouse: profileHasSpouse, mhaZip: profileZip, hydrated } = useUserStore();
+  const { payGrade: profileGrade, hasSpouse: profileHasSpouse, mhaZip: profileZip, yos: profileYos, hydrated } = useUserStore();
 
   const [activeTab, setActiveTab] = useState<Tab>('calculator');
 
@@ -497,7 +497,14 @@ export default function PCSCalculatorScreen() {
             <ThemedText type="smallBold" themeColor="textSecondary" style={styles.sectionLabel}>
               BAH COMPARISON
             </ThemedText>
-            <ComparisonTable result={result} current={currentStation!} gaining={gainingStation!} />
+            <ComparisonTable
+              result={result}
+              current={currentStation!}
+              gaining={gainingStation!}
+              payGrade={grade}
+              yos={profileYos}
+              hasSpouse={tleHasSpouse}
+            />
           </View>
         )}
 

@@ -44,3 +44,9 @@ app-example
 /ios
 /android
 rate-check-issue-body.md
+
+# raw DTMO source downloads for COLA data regeneration (large, not shipped)
+scripts/cola-data/sources/
+*.CC.zip
+26-*_COLA_Indices.xls
+Spendable-Income-Table*.pdf

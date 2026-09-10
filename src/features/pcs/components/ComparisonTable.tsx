@@ -4,15 +4,20 @@ import { StyleSheet, View } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Brand, Spacing } from '@/constants/theme';
-import { getColaInfo } from '@/data/cola';
+import { PayGrade } from '@/data/bah-rates';
+import { getConusCola, getConusColaZipInfo } from '@/data/conus-cola';
 import { Installation } from '@/data/installations';
 import { formatDiff, PCSResult } from '@/features/pcs/utils/pcsCalc';
+import { fmtPay } from '@/features/home/utils/lesCalc';
 import { useThemeColors } from '@/hooks/use-theme';
 
 interface Props {
   result: PCSResult;
   current: Installation;
   gaining: Installation;
+  payGrade: PayGrade;
+  yos: number;
+  hasSpouse: boolean;
 }
 
 function RateCol({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
@@ -28,16 +33,24 @@ function RateCol({ label, value, highlight }: { label: string; value: string; hi
   );
 }
 
-export function ComparisonTable({ result, current, gaining }: Props) {
+export function ComparisonTable({ result, current, gaining, payGrade, yos, hasSpouse }: Props) {
   const tc = useThemeColors();
   const { monthlyDiff, annualDiff } = result;
   const isIncrease = (monthlyDiff ?? 0) >= 0;
   const diffColor = isIncrease ? Brand.success : Brand.danger;
 
-  const currentCola = getColaInfo(current.id);
-  const gainingCola = getColaInfo(gaining.id);
-  const losingCola = currentCola && !gainingCola;
-  const gainingColaFlag = gainingCola && !currentCola;
+  // Real CONUS COLA (18 eligible high-cost metro areas nationwide, ZIP-keyed
+  // — see src/data/conus-cola.ts). Hawaii/Alaska are "non-foreign OCONUS" and
+  // not part of this program; this app doesn't yet compute their separate
+  // OCONUS-style COLA, so they correctly show no CONUS COLA notice here
+  // rather than the stale flat-range estimate this used to show.
+  const currentColaInfo = getConusColaZipInfo(current.mhaZip);
+  const gainingColaInfo = getConusColaZipInfo(gaining.mhaZip);
+  const currentColaAmt = currentColaInfo ? getConusCola(current.mhaZip, payGrade, yos, hasSpouse) : null;
+  const gainingColaAmt = gainingColaInfo ? getConusCola(gaining.mhaZip, payGrade, yos, hasSpouse) : null;
+  const losingCola = !!currentColaInfo && !gainingColaInfo;
+  const gainingColaFlag = !!gainingColaInfo && !currentColaInfo;
+  const bothHaveCola = !!currentColaInfo && !!gainingColaInfo;
 
   return (
     <ThemedView type="backgroundElement" style={styles.card}>
@@ -105,7 +118,7 @@ export function ComparisonTable({ result, current, gaining }: Props) {
       {losingCola && (
         <View style={styles.colaNotice}>
           <ThemedText type="small" style={[styles.colaLossText, { color: tc.warning }]}>
-            ⚠️ COLA LOSS — You currently receive CONUS COLA at {current.name} (~{currentCola!.monthlyEstimate}).
+            ⚠️ COLA LOSS — You currently receive CONUS COLA at {current.name} ({fmtPay(currentColaAmt ?? 0)}/mo).
             This allowance does NOT transfer to your gaining station. Factor this into your total pay comparison.
           </ThemedText>
         </View>
@@ -115,19 +128,19 @@ export function ComparisonTable({ result, current, gaining }: Props) {
       {gainingColaFlag && (
         <View style={[styles.colaNotice, styles.colaGainNotice]}>
           <ThemedText type="small" style={[styles.colaGainText, { color: tc.success }]}>
-            💰 COLA GAIN — {gaining.name} is CONUS COLA eligible (~{gainingCola!.monthlyEstimate}).
+            💰 COLA GAIN — {gaining.name} is CONUS COLA eligible (~{fmtPay(gainingColaAmt ?? 0)}/mo).
             Verify your rate at militarypay.defense.gov after arrival.
           </ThemedText>
         </View>
       )}
 
       {/* Both have COLA */}
-      {currentCola && gainingCola && (
+      {bothHaveCola && (
         <View style={styles.colaNotice}>
           <ThemedText type="small" style={[styles.colaLossText, { color: tc.warning }]}>
             ℹ️ COLA NOTE — Both stations are CONUS COLA eligible. Rates differ:
-            {'\n'}• Current ({current.name}): ~{currentCola.monthlyEstimate}
-            {'\n'}• Gaining ({gaining.name}): ~{gainingCola.monthlyEstimate}
+            {'\n'}• Current ({current.name}): ~{fmtPay(currentColaAmt ?? 0)}/mo
+            {'\n'}• Gaining ({gaining.name}): ~{fmtPay(gainingColaAmt ?? 0)}/mo
             {'\n'}Verify your actual rate at militarypay.defense.gov.
           </ThemedText>
         </View>
