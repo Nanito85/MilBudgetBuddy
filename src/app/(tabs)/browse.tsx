@@ -1,89 +1,17 @@
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { Alert, Modal, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import { Alert, Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { BottomTabInset, Brand, Spacing } from '@/constants/theme';
+import { AddKidModal } from '@/features/kids/components/AddKidModal';
 import { useThemeColors } from '@/hooks/use-theme';
 import { useKidModeStore } from '@/store/kid-mode.store';
 import { useKidsStore } from '@/store/kids.store';
-import { KidGender, KidProfile, getKidTheme } from '@/types/kids.types';
-
-// ── Add Kid Modal ──────────────────────────────────────────────────────────────
-
-function AddKidModal({ visible, onClose, onAdd }: {
-  visible: boolean;
-  onClose: () => void;
-  onAdd: (nickname: string, gender: KidGender) => void;
-}) {
-  const tc = useThemeColors();
-  const [nickname, setNickname] = useState('');
-  const [gender, setGender] = useState<KidGender>('boy');
-
-  const submit = () => {
-    if (!nickname.trim()) return;
-    onAdd(nickname.trim(), gender);
-    setNickname('');
-    setGender('boy');
-    onClose();
-  };
-
-  return (
-    <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
-      <View style={[modalStyles.bg, { backgroundColor: tc.background }]}>
-        <SafeAreaView style={modalStyles.safe}>
-          <View style={modalStyles.header}>
-            <ThemedText style={[modalStyles.title, { color: tc.textPrimary }]}>// NEW CADET</ThemedText>
-            <Pressable onPress={onClose}>
-              <ThemedText style={[modalStyles.cancel, { color: tc.textMuted }]}>CANCEL</ThemedText>
-            </Pressable>
-          </View>
-
-          <ThemedText type="label" style={[modalStyles.fieldLabel, { color: tc.textMuted }]}>CALL SIGN (NICKNAME)</ThemedText>
-          <View style={[modalStyles.inputWrap, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
-            <TextInput
-              value={nickname}
-              onChangeText={setNickname}
-              placeholder="e.g. Maverick"
-              placeholderTextColor={tc.textHint}
-              style={[modalStyles.input, { color: tc.textPrimary }]}
-              autoFocus
-              autoCapitalize="words"
-            />
-          </View>
-
-          <ThemedText type="label" style={[modalStyles.fieldLabel, { color: tc.textMuted, marginTop: Spacing.three }]}>THEME</ThemedText>
-          <View style={modalStyles.themeRow}>
-            {(['boy', 'girl'] as KidGender[]).map((g) => {
-              const theme = getKidTheme(g);
-              const isSelected = gender === g;
-              return (
-                <Pressable
-                  key={g}
-                  onPress={() => setGender(g)}
-                  style={[modalStyles.themeBtn, { borderColor: tc.borderColor }, isSelected && { borderColor: theme.primary, backgroundColor: theme.bg }]}>
-                  <ThemedText style={modalStyles.themeEmoji}>{g === 'boy' ? '💙' : '💗'}</ThemedText>
-                  <ThemedText style={[modalStyles.themeLabel, { color: tc.textMuted }, isSelected && { color: theme.primary }]}>
-                    {g === 'boy' ? 'BLUE / SKY' : 'PINK / PURPLE'}
-                  </ThemedText>
-                </Pressable>
-              );
-            })}
-          </View>
-
-          <Pressable
-            onPress={submit}
-            style={[modalStyles.addBtn, !nickname.trim() && { opacity: 0.4 }]}>
-            <ThemedText style={[modalStyles.addBtnText, { color: tc.tactical }]}>ACTIVATE PROFILE →</ThemedText>
-          </Pressable>
-        </SafeAreaView>
-      </View>
-    </Modal>
-  );
-}
+import { KidProfile, getKidTheme } from '@/types/kids.types';
 
 // ── PIN Setup Modal ────────────────────────────────────────────────────────────
 
@@ -186,23 +114,6 @@ const pinSetupStyles = StyleSheet.create({
   keyText: { fontSize: 26, fontWeight: '600', color: '#C8D8E8' },
   cancelBtn: { paddingVertical: Spacing.two, paddingHorizontal: Spacing.four },
   cancelText: { fontSize: 13, fontWeight: '800', letterSpacing: 0.5 },
-});
-
-const modalStyles = StyleSheet.create({
-  bg: { flex: 1 },
-  safe: { flex: 1, padding: Spacing.four, gap: Spacing.two },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: Spacing.two },
-  title: { fontSize: 16, fontWeight: '800', letterSpacing: 1 },
-  cancel: { fontSize: 12, fontWeight: '700', letterSpacing: 1 },
-  fieldLabel: { fontSize: 9, marginBottom: 6 },
-  inputWrap: { borderWidth: 1, borderRadius: 4, paddingHorizontal: Spacing.three },
-  input: { fontSize: 18, fontWeight: '700', paddingVertical: Spacing.two + 4 },
-  themeRow: { flexDirection: 'row', gap: Spacing.two },
-  themeBtn: { flex: 1, borderWidth: 1.5, borderRadius: 4, padding: Spacing.three, alignItems: 'center', gap: Spacing.one },
-  themeEmoji: { fontSize: 28, lineHeight: 36 },
-  themeLabel: { fontSize: 9, fontWeight: '800', letterSpacing: 1 },
-  addBtn: { backgroundColor: Brand.accent, borderRadius: 4, padding: Spacing.three, alignItems: 'center', marginTop: 'auto' },
-  addBtnText: { color: '#04080F', fontWeight: '900', fontSize: 13, letterSpacing: 1 },
 });
 
 // ── Kid Card ───────────────────────────────────────────────────────────────────

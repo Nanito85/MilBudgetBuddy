@@ -35,10 +35,11 @@ import {
   schedulePayDayReminders,
 } from '@/services/notifications';
 import { resetAllLocalData } from '@/services/reset-local-data';
+import { AddKidModal } from '@/features/kids/components/AddKidModal';
 import { useKidsStore } from '@/store/kids.store';
 import { useTipsStore } from '@/store/tips.store';
 import { useUserStore } from '@/store/user.store';
-import { KidGender, KidProfile, PendingCompletion } from '@/types/kids.types';
+import { KidProfile, PendingCompletion } from '@/types/kids.types';
 import { Installation, getInstallationById, getInstallationByZip } from '@/data/installations';
 import {
   BRANCH_LABELS,
@@ -106,85 +107,6 @@ function SectionLabel({ text, accentColor }: { text: string; accentColor?: strin
     </View>
   );
 }
-
-// ── Add Kid Modal ──────────────────────────────────────────────────────────────
-
-function AddKidModal({ visible, onClose, onAdd }: {
-  visible: boolean;
-  onClose: () => void;
-  onAdd: (nickname: string, gender: KidGender) => void;
-}) {
-  const tc = useThemeColors();
-  const [nickname, setNickname] = useState('');
-  const [gender, setGender] = useState<KidGender>('boy');
-  const submit = () => {
-    if (!nickname.trim()) return;
-    onAdd(nickname.trim(), gender);
-    setNickname('');
-    onClose();
-  };
-  return (
-    <Modal visible={visible} animationType="slide" presentationStyle="pageSheet">
-      <View style={[modalStyles.bg, { backgroundColor: tc.background }]}>
-        <SafeAreaView style={modalStyles.safe}>
-          <View style={modalStyles.header}>
-            <ThemedText style={[modalStyles.title, { color: tc.textPrimary }]}>// NEW CADET</ThemedText>
-            <Pressable onPress={onClose}>
-              <ThemedText style={[modalStyles.cancel, { color: tc.textMuted }]}>CANCEL</ThemedText>
-            </Pressable>
-          </View>
-          <ThemedText type="label" style={[modalStyles.label, { color: tc.textMuted }]}>NICKNAME</ThemedText>
-          <View style={[modalStyles.inputWrap, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
-            <TextInput
-              value={nickname}
-              onChangeText={setNickname}
-              placeholder="e.g. Maverick"
-              placeholderTextColor={tc.textHint}
-              style={[modalStyles.input, { color: tc.textPrimary }]}
-              autoFocus
-              autoCapitalize="words"
-            />
-          </View>
-          <ThemedText type="label" style={[modalStyles.label, { color: tc.textMuted, marginTop: Spacing.three }]}>THEME</ThemedText>
-          <View style={modalStyles.genderRow}>
-            {(['boy', 'girl'] as KidGender[]).map((g) => (
-              <Pressable
-                key={g}
-                onPress={() => setGender(g)}
-                style={[modalStyles.genderBtn, { borderColor: tc.borderColor }, gender === g && modalStyles.genderBtnActive]}>
-                <ThemedText style={modalStyles.genderEmoji}>{g === 'boy' ? '🪖' : '⭐'}</ThemedText>
-                <ThemedText type="label" style={[modalStyles.genderLabel, { color: tc.textMuted }, gender === g && { color: tc.accent }]}>
-                  {g === 'boy' ? 'NAVY / OLIVE' : 'NAVY / PURPLE'}
-                </ThemedText>
-              </Pressable>
-            ))}
-          </View>
-          <Pressable onPress={submit} style={[modalStyles.addBtn, !nickname.trim() && { opacity: 0.4 }]}>
-            <ThemedText style={modalStyles.addBtnText}>ACTIVATE PROFILE →</ThemedText>
-          </Pressable>
-        </SafeAreaView>
-      </View>
-    </Modal>
-  );
-}
-
-const modalStyles = StyleSheet.create({
-  bg: { flex: 1 },
-  safe: { flex: 1, padding: Spacing.four, gap: Spacing.two },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: Spacing.two },
-  title: { fontSize: 16, fontWeight: '800', letterSpacing: 1 },
-  cancel: { fontSize: 12, fontWeight: '700', letterSpacing: 1 },
-  label: { fontSize: 9, marginBottom: 6 },
-  inputWrap: { borderWidth: 1, borderRadius: 4, paddingHorizontal: Spacing.three },
-  input: { fontSize: 18, fontWeight: '700', paddingVertical: Spacing.two + 4 },
-  genderRow: { flexDirection: 'row', gap: Spacing.two },
-  genderBtn: { flex: 1, borderWidth: 1.5, borderRadius: 4, padding: Spacing.three, alignItems: 'center', gap: 4 },
-  genderBtnActive: { borderColor: Brand.accent },
-  genderEmoji: { fontSize: 32, lineHeight: 40 },
-  genderLabel: { fontSize: 9, fontWeight: '800', letterSpacing: 1 },
-  addBtn: { backgroundColor: Brand.accent, borderRadius: 4, padding: Spacing.three, alignItems: 'center', marginTop: 'auto' },
-  addBtnText: { color: '#04080F', fontWeight: '900', fontSize: 13, letterSpacing: 1 },
-});
 
 // ── State Picker Modal ─────────────────────────────────────────────────────────
 
