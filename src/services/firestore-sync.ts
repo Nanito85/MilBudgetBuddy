@@ -251,6 +251,8 @@ function snapshotUser() {
     alsoGsCivilian: s.alsoGsCivilian ?? false,
     familySeparated: s.familySeparated ?? false,
     dependentsMhaZip: s.dependentsMhaZip ?? null,
+    isDeployed: s.isDeployed ?? false,
+    deploymentLocationId: s.deploymentLocationId ?? null,
     serviceStatus: s.serviceStatus ?? null,
     drillsPerMonth: s.drillsPerMonth ?? null,
     retirementDate: s.retirementDate ?? null,

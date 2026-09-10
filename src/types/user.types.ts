@@ -184,6 +184,19 @@ export interface UserPreferences {
   // Allowance (FSA). See lesCalc.ts for the actual calculation.
   familySeparated?: boolean;
   dependentsMhaZip?: string; // BAH zip for where dependents actually live
+  // Deployment / hazard pay — a member currently deployed to (or stationed
+  // afloat/TDY in) a DoD-designated Imminent Danger Pay area draws IDP
+  // ($225/mo flat) regardless of location within that area; a subset of
+  // those areas are also actual Combat Zones (26 U.S.C. §112), which
+  // additionally excludes basic pay from federal income tax (enlisted/WO:
+  // all of it; officers: capped at E-9 max + IDP). See
+  // data/deployment-locations.ts for the current designated-area list and
+  // lesCalc.ts for the actual calculation. Independent of familySeparated
+  // above — a single deployed member has no one to be "separated" from but
+  // still draws IDP/CZTE; a member on an unaccompanied OCONUS tour draws
+  // FSA but may not be in a hazard-pay area at all.
+  isDeployed?: boolean;
+  deploymentLocationId?: string;
   // Pay setup
   tspContribPct: number;   // Traditional TSP contribution %
   rothTspPct: number;      // Roth TSP contribution %

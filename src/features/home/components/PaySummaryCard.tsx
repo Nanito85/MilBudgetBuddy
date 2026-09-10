@@ -207,6 +207,9 @@ export function PaySummaryCard({ breakdown }: Props) {
           {breakdown.colaTracked && (
             <Row label="COLA" value={fmtPay(breakdown.cola)} indent positive />
           )}
+          {breakdown.isDeployed && (
+            <Row label="IMMINENT DANGER PAY (IDP)" value={fmtPay(breakdown.idp)} indent positive />
+          )}
           {breakdown.familySeparated && (
             <>
               <Row label="FAMILY BAH" value={fmtPay(breakdown.familyBah)} indent positive />
@@ -229,6 +232,11 @@ export function PaySummaryCard({ breakdown }: Props) {
           <ThemedText type="label" style={[styles.sectionHead, { color: tc.tactical }]}>// DEDUCTIONS (MONTHLY)</ThemedText>
           <Row label="FICA (SS + MED)"  value={`-${fmtPay(breakdown.fica)}`}     indent negative />
           <Row label="FED TAX (EST.)"   value={`-${fmtPay(breakdown.fedTax)}`}   indent negative />
+          {breakdown.isCzte && breakdown.czteExcluded > 0 && (
+            <ThemedText type="label" style={[styles.disclaimer, { color: tc.tactical, marginTop: -Spacing.one }]}>
+              ✓ COMBAT ZONE — {fmtPay(breakdown.czteExcluded)} of base pay excluded from fed/state income tax this month (FICA still applies)
+            </ThemedText>
+          )}
           {breakdown.stateTax > 0 && (
             <Row label="STATE TAX (EST.)" value={`-${fmtPay(breakdown.stateTax)}`} indent negative />
           )}

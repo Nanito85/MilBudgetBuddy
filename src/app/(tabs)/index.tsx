@@ -142,6 +142,8 @@ export default function DashboardScreen() {
   const financialGoal = useUserStore((s) => s.financialGoal);
   const familySeparated  = useUserStore((s) => s.familySeparated);
   const dependentsMhaZip = useUserStore((s) => s.dependentsMhaZip);
+  const isDeployed = useUserStore((s) => s.isDeployed);
+  const deploymentLocationId = useUserStore((s) => s.deploymentLocationId);
   const alsoGsCivilian   = useUserStore((s) => s.alsoGsCivilian);
   const gsGrade          = useUserStore((s) => s.gsGrade);
   const gsStep           = useUserStore((s) => s.gsStep);
@@ -214,8 +216,9 @@ export default function DashboardScreen() {
       tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence,
       overrides: lesOverrides, serviceStatus,
       familySeparated, dependentsMhaZip, alsoGsCivilian, gsGrade, gsStep, gsLocalityKey,
+      isDeployed, deploymentLocationId,
     });
-  }, [payGrade, yos, mhaZip, dutyStationId, hasSpouse, housingStatus, specialPaysTotal, tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence, lesOverrides, serviceStatus, familySeparated, dependentsMhaZip, alsoGsCivilian, gsGrade, gsStep, gsLocalityKey]);
+  }, [payGrade, yos, mhaZip, dutyStationId, hasSpouse, housingStatus, specialPaysTotal, tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence, lesOverrides, serviceStatus, familySeparated, dependentsMhaZip, alsoGsCivilian, gsGrade, gsStep, gsLocalityKey, isDeployed, deploymentLocationId]);
 
   // ── Mission Readiness Score (0-100) ─────────────────────────────────────────
   const readinessChecks = useMemo(() => {

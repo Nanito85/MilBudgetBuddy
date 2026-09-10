@@ -16,6 +16,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { Brand, Fonts, Spacing } from '@/constants/theme';
+import { DEPLOYMENT_LOCATIONS, DeploymentLocation, getDeploymentLocation } from '@/data/deployment-locations';
 import { calcLES, dentalFamilyRate, fmtPay } from '@/features/home/utils/lesCalc';
 import { NumberStepper } from '@/features/retirement/components/NumberStepper';
 import { useThemeColors } from '@/hooks/use-theme';
@@ -95,6 +96,92 @@ const ptStyles = StyleSheet.create({
   check: { fontSize: 18 },
 });
 
+function DeploymentLocationPickerModal({ visible, selectedId, onSelect, onClose }: {
+  visible: boolean;
+  selectedId: string;
+  onSelect: (id: string) => void;
+  onClose: () => void;
+}) {
+  const tc = useThemeColors();
+  const [query, setQuery] = useState('');
+  const filtered = query.trim()
+    ? DEPLOYMENT_LOCATIONS.filter((l) => l.label.toLowerCase().includes(query.toLowerCase()))
+    : DEPLOYMENT_LOCATIONS;
+
+  const handleSelect = (loc: DeploymentLocation) => {
+    onSelect(loc.id);
+    setQuery('');
+    onClose();
+  };
+
+  return (
+    <Modal visible={visible} animationType="slide" presentationStyle="pageSheet">
+      <View style={[dlStyles.bg, { backgroundColor: tc.background }]}>
+        <SafeAreaView style={dlStyles.safe}>
+          <View style={dlStyles.header}>
+            <ThemedText style={[dlStyles.title, { color: tc.textPrimary }]}>// DEPLOYMENT LOCATION</ThemedText>
+            <Pressable onPress={() => { setQuery(''); onClose(); }}><ThemedText style={[dlStyles.done, { color: tc.tactical }]}>DONE</ThemedText></Pressable>
+          </View>
+          <ThemedText style={[dlStyles.hint, { color: tc.textMuted }]}>
+            Every DoD/IRS-designated Imminent Danger Pay area. &ldquo;Combat Zone&rdquo; locations also exclude basic pay from income tax.
+          </ThemedText>
+          <View style={[dlStyles.searchWrap, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
+            <TextInput
+              value={query}
+              onChangeText={setQuery}
+              placeholder="Search country or area..."
+              placeholderTextColor={tc.textHint}
+              style={[dlStyles.searchInput, { color: tc.textPrimary }]}
+              autoFocus
+            />
+          </View>
+          <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+            {filtered.map((loc) => {
+              const isSelected = selectedId === loc.id;
+              return (
+                <Pressable
+                  key={loc.id}
+                  onPress={() => handleSelect(loc)}
+                  style={[dlStyles.row, { borderColor: tc.borderColor }, isSelected && dlStyles.rowSelected]}>
+                  <View style={dlStyles.rowText}>
+                    <ThemedText style={[dlStyles.label, { color: tc.textPrimary }, isSelected && { color: tc.accent }]}>{loc.label}</ThemedText>
+                    <ThemedText type="label" style={[dlStyles.zoneTag, { color: loc.zoneType === 'czte' ? tc.tactical : tc.textMuted }]}>
+                      {loc.zoneType === 'czte' ? 'COMBAT ZONE — TAX-FREE BASIC PAY' : 'IMMINENT DANGER PAY AREA'}
+                    </ThemedText>
+                  </View>
+                  {isSelected && <ThemedText style={[dlStyles.check, { color: tc.accent }]}>✓</ThemedText>}
+                </Pressable>
+              );
+            })}
+            {filtered.length === 0 && (
+              <ThemedText style={[dlStyles.hint, { color: tc.textMuted, textAlign: 'center', marginTop: Spacing.four }]}>
+                No matching location. If you believe your location should be designated, verify at your S1/finance office — this list follows current DoD/IRS designations.
+              </ThemedText>
+            )}
+          </ScrollView>
+        </SafeAreaView>
+      </View>
+    </Modal>
+  );
+}
+
+const dlStyles = StyleSheet.create({
+  bg: { flex: 1 },
+  safe: { flex: 1, paddingHorizontal: Spacing.three, paddingTop: Spacing.three },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: Spacing.one },
+  title: { fontSize: 14, fontWeight: '800', letterSpacing: 1 },
+  done: { fontSize: 12, fontWeight: '700', letterSpacing: 1 },
+  hint: { fontSize: 11, lineHeight: 15, marginBottom: Spacing.two },
+  searchWrap: { borderWidth: 1, borderRadius: 6, paddingHorizontal: Spacing.two, marginBottom: Spacing.two },
+  searchInput: { fontSize: 15, paddingVertical: Spacing.two },
+  row: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two, paddingVertical: Spacing.two + 2, borderBottomWidth: StyleSheet.hairlineWidth },
+  rowSelected: { backgroundColor: Brand.accent + '10' },
+  rowText: { flex: 1, gap: 2 },
+  label: { fontSize: 14, lineHeight: 18, fontWeight: '600' },
+  zoneTag: { fontSize: 9, lineHeight: 12 },
+  check: { fontSize: 18 },
+});
+
 function SummaryRow({ label, value }: { label: string; value: string }) {
   const tc = useThemeColors();
   return (
@@ -143,6 +230,9 @@ export function EditPayModal({ visible, onClose }: { visible: boolean; onClose: 
   const serviceStatus    = useUserStore((s) => s.serviceStatus);
   const familySeparated  = useUserStore((s) => s.familySeparated);
   const dependentsMhaZip = useUserStore((s) => s.dependentsMhaZip);
+  const isDeployed = useUserStore((s) => s.isDeployed);
+  const deploymentLocationId = useUserStore((s) => s.deploymentLocationId);
+  const setDeploymentStatus = useUserStore((s) => s.setDeploymentStatus);
   const alsoGsCivilian   = useUserStore((s) => s.alsoGsCivilian);
   const storedGsGradeLES = useUserStore((s) => s.gsGrade);
   const storedGsStepLES  = useUserStore((s) => s.gsStep);
@@ -161,6 +251,7 @@ export function EditPayModal({ visible, onClose }: { visible: boolean; onClose: 
         payGrade, yos, mhaZip, dutyStationId, hasSpouse, housingStatus, specialPaysTotal,
         tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence, serviceStatus,
         familySeparated, dependentsMhaZip, alsoGsCivilian, gsGrade: storedGsGradeLES, gsStep: storedGsStepLES, gsLocalityKey,
+        isDeployed, deploymentLocationId,
         overrides: lesOverrides,
       })
     : null;
@@ -196,6 +287,12 @@ export function EditPayModal({ visible, onClose }: { visible: boolean; onClose: 
   const [payAmountInput, setPayAmountInput] = useState('');
   const [showPayTypePicker, setShowPayTypePicker] = useState(false);
 
+  // Deployment / hazard pay
+  const [deployed, setDeployed] = useState(!!isDeployed);
+  const [locationId, setLocationId] = useState(deploymentLocationId ?? '');
+  const [showLocationPicker, setShowLocationPicker] = useState(false);
+  const selectedDeploymentLocation = getDeploymentLocation(locationId);
+
   // Re-sync every local field from the store each time the modal opens —
   // without this, fields only ever reflect what the store held when this
   // component first mounted, so pay data set later (onboarding, cloud sync,
@@ -212,6 +309,8 @@ export function EditPayModal({ visible, onClose }: { visible: boolean; onClose: 
     setBasStr(lesOverrides.basOverride ? lesOverrides.basOverride.toString() : calculated ? String(Math.round(calculated.bas)) : '');
     setExtraIncome(lesOverrides.extraIncome);
     setExtraDeductions(lesOverrides.extraDeductions);
+    setDeployed(!!isDeployed);
+    setLocationId(deploymentLocationId ?? '');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visible]);
 
@@ -246,6 +345,7 @@ export function EditPayModal({ visible, onClose }: { visible: boolean; onClose: 
     // setPayDetails already preserves extraIncome/extraDeductions untouched,
     // but it can't set them itself — write those two arrays through here.
     setLesOverrides({ basePayOverride, bahOverride, basOverride, extraIncome, extraDeductions });
+    setDeploymentStatus(deployed, locationId);
     onClose();
   };
 
@@ -328,6 +428,14 @@ export function EditPayModal({ visible, onClose }: { visible: boolean; onClose: 
                   <SummaryRow label="BAS" value={fmtPay(calculated.bas)} />
                 )}
                 {calculated.colaTracked && <SummaryRow label="COLA" value={fmtPay(calculated.cola)} />}
+                {calculated.isDeployed && (
+                  <>
+                    <SummaryRow label="IMMINENT DANGER PAY (IDP)" value={fmtPay(calculated.idp)} />
+                    {calculated.isCzte && calculated.czteExcluded > 0 && (
+                      <SummaryRow label="COMBAT ZONE TAX EXCLUSION" value={`-${fmtPay(calculated.czteExcluded)} taxable`} />
+                    )}
+                  </>
+                )}
                 {calculated.familySeparated && (
                   <>
                     <SummaryRow label="FAMILY BAH" value={fmtPay(calculated.familyBah)} />
@@ -479,6 +587,39 @@ export function EditPayModal({ visible, onClose }: { visible: boolean; onClose: 
               </Pressable>
             )}
 
+            {/* Deployment / Hazard Pay — flat $225/mo Imminent Danger Pay for
+                any DoD-designated IDP area, plus (for actual Combat Zones) a
+                federal/state income tax exclusion on basic pay. Independent
+                of Family Separation above. */}
+            <View style={[editStyles.sectionHead, { borderTopColor: tc.borderColor }]}>
+              <ThemedText style={[editStyles.sectionHeadText, { color: tc.textPrimary }]}>🪖 DEPLOYMENT / HAZARD PAY</ThemedText>
+              <ThemedText style={[editStyles.sectionHeadSub, { color: tc.textHint }]}>
+                Deployed, embarked, or on TDY to a DoD-designated hazard area? Select where — this adds
+                Imminent Danger Pay automatically, and excludes basic pay from income tax in an actual combat zone.
+              </ThemedText>
+            </View>
+
+            <View style={editStyles.toggleRow}>
+              <View style={{ flex: 1, gap: 2 }}>
+                <ThemedText style={[editStyles.toggleLabel, { color: tc.textPrimary }]}>Currently Deployed</ThemedText>
+                {deployed && selectedDeploymentLocation && (
+                  <ThemedText style={[editStyles.toggleSub, { color: tc.textHint }]}>
+                    {selectedDeploymentLocation.zoneType === 'czte' ? 'Combat Zone — tax-free basic pay' : 'Imminent Danger Pay area'}
+                  </ThemedText>
+                )}
+              </View>
+              <Switch value={deployed} onValueChange={setDeployed} trackColor={{ true: Brand.accent }} thumbColor="#FFF" />
+            </View>
+
+            {deployed && (
+              <Pressable onPress={() => setShowLocationPicker(true)} style={[editStyles.inputWrap, { backgroundColor: inputBg, borderColor: tc.borderColor, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }]}>
+                <ThemedText style={{ color: selectedDeploymentLocation ? tc.textPrimary : placeholder, fontSize: 15 }}>
+                  {selectedDeploymentLocation ? selectedDeploymentLocation.label : 'Select deployment location'}
+                </ThemedText>
+                <ThemedText style={{ color: tc.accent, fontSize: 12 }}>▼</ThemedText>
+              </Pressable>
+            )}
+
             {/* Additional Income — anything else on the LES this app doesn't
                 calculate on its own (extra COLA/OHA adjustment, clothing
                 allowance, etc). */}
@@ -583,6 +724,13 @@ export function EditPayModal({ visible, onClose }: { visible: boolean; onClose: 
         selected={selectedPayType}
         onSelect={setSelectedPayType}
         onClose={() => setShowPayTypePicker(false)}
+      />
+
+      <DeploymentLocationPickerModal
+        visible={showLocationPicker}
+        selectedId={locationId}
+        onSelect={setLocationId}
+        onClose={() => setShowLocationPicker(false)}
       />
     </Modal>
   );

@@ -2,7 +2,9 @@ import { BAH_PARTIAL, getBahRate, PayGrade } from '@/data/bah-rates';
 import { getBAS } from '@/data/bas-rates';
 import { getBasicPay, getHigh3Average } from '@/data/basic-pay-rates';
 import { getConusCola } from '@/data/conus-cola';
+import { getDeploymentLocation, IDP_MONTHLY } from '@/data/deployment-locations';
 import { estimateAnnualFedTax, FICA_RATE } from '@/data/federal-tax';
+import { calcCzteExcludedBasicPay } from '@/features/deployment/utils/deploymentCalc';
 import { getGSMonthly } from '@/data/gs-pay-rates';
 import { getOconusCola } from '@/data/oconus-cola';
 import { getOhaAreaForInstallation, getOhaRate } from '@/data/oha-rates';
@@ -100,6 +102,17 @@ export interface LESBreakdown {
   alsoGsCivilian: boolean;
   gsGrossMonthly: number;
   gsFica: number;
+  // Deployment / hazard pay — see data/deployment-locations.ts. isDeployed
+  // reflects whether it actually applied (false for a retiree/civilian or
+  // an unrecognized location, even if the member toggled the switch on).
+  // idp is the flat $225/mo Imminent Danger Pay; czteExcluded is the amount
+  // of basePay excluded from federal (and state) income tax this month
+  // because the location is an actual Combat Zone, not just IDP-only.
+  isDeployed: boolean;
+  deploymentLocationLabel: string | undefined;
+  isCzte: boolean;
+  idp: number;
+  czteExcluded: number;
 }
 
 export interface LESInputs {
@@ -135,6 +148,14 @@ export interface LESInputs {
   gsGrade?: number;
   gsStep?: number;
   gsLocalityKey?: string;
+  // Deployment / hazard pay — independent of familySeparated above (a
+  // single deployed member has no one to be "separated" from but still
+  // draws IDP/CZTE; a member on an unaccompanied OCONUS tour draws FSA but
+  // may not be in a hazard-pay area at all). Never applies to a retiree or
+  // pure civilian. deploymentLocationId must match an entry in
+  // data/deployment-locations.ts to have any effect.
+  isDeployed?: boolean;
+  deploymentLocationId?: string;
 }
 
 interface HousingResult {
@@ -190,6 +211,7 @@ export function calcLES(inputs: LESInputs): LESBreakdown {
     payGrade, yos, mhaZip, dutyStationId, hasSpouse, housingStatus = 'off_base', specialPaysTotal,
     tspContribPct, rothTspPct = 0, hasDentalFamily, sglOptOut, stateResidence, overrides, serviceStatus,
     familySeparated, dependentsMhaZip, alsoGsCivilian, gsGrade, gsStep, gsLocalityKey,
+    isDeployed, deploymentLocationId,
   } = inputs;
 
   const isRetired = serviceStatus === 'retired';
@@ -271,6 +293,20 @@ export function calcLES(inputs: LESInputs): LESBreakdown {
     }
   }
 
+  // Deployment / hazard pay — flat $225/mo IDP for any DoD-designated
+  // Imminent Danger Pay area, plus (for the subset of those areas that are
+  // actual Combat Zones under 26 U.S.C. §112) a federal — and, following
+  // the same treatment, state — income tax exclusion on basic pay: all of
+  // it for enlisted/warrant officers, capped at the E-9 max + IDP for
+  // commissioned officers. Independent of family separation — applies the
+  // same whether or not the member has dependents. Never applies to a
+  // retiree or pure civilian, or to a location this app doesn't recognize.
+  const deploymentActive = !isRetired && !isCivilianOnly && !!isDeployed;
+  const deploymentLoc = deploymentActive ? getDeploymentLocation(deploymentLocationId) : undefined;
+  const idp = deploymentLoc ? IDP_MONTHLY : 0;
+  const isCzte = deploymentLoc?.zoneType === 'czte';
+  const czteExcluded = isCzte ? calcCzteExcludedBasicPay(basePay, payGrade.startsWith('O')) : 0;
+
   // GS civilian pay — either a pure civilian, or a retiree who's ALSO
   // currently working a GS job (retired pay + VA disability + a GS paycheck
   // are three separate, simultaneously-stacking income sources for the same
@@ -285,14 +321,17 @@ export function calcLES(inputs: LESInputs): LESBreakdown {
   const extraIncome     = extraIncomeItems.reduce((s, i) => s + i.amount, 0);
   const extraDeductions = extraDeductionItems.reduce((s, i) => s + i.amount, 0);
 
-  const grossPay = basePay + bah + bas + cola + specialPaysTotal + extraIncome + familyBah + fsa + gsGrossMonthly;
+  const grossPay = basePay + bah + bas + cola + specialPaysTotal + extraIncome + familyBah + fsa + gsGrossMonthly + idp;
 
   // Combined federal tax on basePay + GS wages together (not two separate
   // brackets) — stacking GS income on top of retired pay pushes the whole
   // household into a higher marginal bracket, and computing each source's
-  // tax independently would understate that.
+  // tax independently would understate that. czteExcluded (see above) comes
+  // off basePay first — FICA still applies to it (CZTE only excludes
+  // INCOME tax, federal and state; Social Security/Medicare are unaffected).
   const fica    = (isRetired ? 0 : basePay * FICA_RATE) + gsGrossMonthly * FICA_RATE;
-  const fedTax  = estimateFedTax((basePay + gsGrossMonthly) * 12, hasSpouse);
+  const taxableBasePay = basePay - czteExcluded;
+  const fedTax  = estimateFedTax((taxableBasePay + gsGrossMonthly) * 12, hasSpouse);
   // Military retirement pay exemptions are a materially different (and
   // generally more generous) list than active-duty exemptions — see
   // getRetirementStateTaxRate's own comment in data/state-tax.ts. Using the
@@ -302,7 +341,7 @@ export function calcLES(inputs: LESInputs): LESBreakdown {
   // uses the regular rate even when basePay (the pension portion) doesn't.
   const stateRate      = isRetired ? getRetirementStateTaxRate(stateResidence) : getStateTaxRate(stateResidence);
   const gsStateRate     = getStateTaxRate(stateResidence);
-  const stateTax       = basePay * stateRate + gsGrossMonthly * gsStateRate;
+  const stateTax       = taxableBasePay * stateRate + gsGrossMonthly * gsStateRate;
   // Retired pay is a pension, not payroll earnings — it isn't TSP-eligible
   // (you can't contribute a portion of a pension disbursement to TSP, only
   // actual wages). Zeroed here regardless of what tspContribPct/rothTspPct
@@ -338,6 +377,11 @@ export function calcLES(inputs: LESInputs): LESBreakdown {
     familyBah, familyBahResolved, fsa,
     alsoGsCivilian: gsActive,
     gsGrossMonthly, gsFica,
+    isDeployed: !!deploymentLoc,
+    deploymentLocationLabel: deploymentLoc?.label,
+    isCzte,
+    idp,
+    czteExcluded,
     retiredPayPct: Math.round(retiredPct * 100),
   };
 }

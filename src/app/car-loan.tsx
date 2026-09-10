@@ -67,6 +67,8 @@ export default function CarLoanScreen() {
   const serviceStatus    = useUserStore((s) => s.serviceStatus);
   const familySeparated  = useUserStore((s) => s.familySeparated);
   const dependentsMhaZip = useUserStore((s) => s.dependentsMhaZip);
+  const isDeployed = useUserStore((s) => s.isDeployed);
+  const deploymentLocationId = useUserStore((s) => s.deploymentLocationId);
   const alsoGsCivilian   = useUserStore((s) => s.alsoGsCivilian);
   const gsGrade          = useUserStore((s) => s.gsGrade);
   const gsStep           = useUserStore((s) => s.gsStep);
@@ -100,8 +102,9 @@ export default function CarLoanScreen() {
         overrides: grade === storeGrade ? lesOverrides : undefined,
         serviceStatus,
         familySeparated, dependentsMhaZip, alsoGsCivilian, gsGrade, gsStep, gsLocalityKey,
+        isDeployed, deploymentLocationId,
       }),
-    [grade, storeYos, mhaZip, dutyStationId, hasSpouse, housingStatus, specialPaysTotal, tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence, lesOverrides, storeGrade, serviceStatus, familySeparated, dependentsMhaZip, alsoGsCivilian, gsGrade, gsStep, gsLocalityKey],
+    [grade, storeYos, mhaZip, dutyStationId, hasSpouse, housingStatus, specialPaysTotal, tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence, lesOverrides, storeGrade, serviceStatus, familySeparated, dependentsMhaZip, alsoGsCivilian, gsGrade, gsStep, gsLocalityKey, isDeployed, deploymentLocationId],
   );
   const takeHome   = Math.round(breakdown.netPay);
   const principal  = Math.max(0, price - downPmt);

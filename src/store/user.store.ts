@@ -40,6 +40,8 @@ const DEFAULTS: UserPreferences = {
   alsoGsCivilian: false,
   familySeparated: false,
   dependentsMhaZip: undefined,
+  isDeployed: false,
+  deploymentLocationId: undefined,
   tspContribPct: 0,
   rothTspPct: 0,
   hasDentalFamily: false,
@@ -73,6 +75,7 @@ interface UserState extends UserPreferences {
   setRetiredInfo: (retirementDate: string | undefined, vaDisabilityPercent: number) => void;
   setAlsoGsCivilian: (enabled: boolean, gsGrade: number, gsStep: number, gsLocalityKey: string) => void;
   setFamilySeparation: (familySeparated: boolean, dependentsMhaZip: string) => void;
+  setDeploymentStatus: (isDeployed: boolean, deploymentLocationId: string) => void;
   setLocationFamily: (mhaZip: string, hasSpouse: boolean, numChildren: number, housingStatus: HousingStatus, installationName?: string, dutyStationId?: string) => void;
   setPersonalDetails: (params: { payGrade: PayGrade; lastName: string; nickname: string; yos: number; mhaZip: string; installationName: string; dutyStationId?: string; hasSpouse: boolean; numChildren: number; housingStatus: HousingStatus; stateResidence: string; dateOfEnlistment: string; dateOfRank: string; rankVariant: RankVariant }) => void;
   setPayDetails: (params: { tspContribPct: number; rothTspPct: number; hasDentalFamily: boolean; sglOptOut: boolean; spouseMonthlyIncome: number; bahOverride?: number; basOverride?: number; basePayOverride?: number }) => void;
@@ -135,6 +138,8 @@ function snapshot(get: () => UserState): UserPreferences {
     alsoGsCivilian: s.alsoGsCivilian,
     familySeparated: s.familySeparated,
     dependentsMhaZip: s.dependentsMhaZip,
+    isDeployed: s.isDeployed,
+    deploymentLocationId: s.deploymentLocationId,
     spouseMonthlyIncome: s.spouseMonthlyIncome,
     appTheme: s.appTheme,
     fontScale: s.fontScale,
@@ -261,6 +266,11 @@ export const useUserStore = create<UserState>((set, get) => ({
   setFamilySeparation: (familySeparated, dependentsMhaZip) => {
     set({ familySeparated, dependentsMhaZip });
     save({ ...snapshot(get), familySeparated, dependentsMhaZip });
+  },
+
+  setDeploymentStatus: (isDeployed, deploymentLocationId) => {
+    set({ isDeployed, deploymentLocationId });
+    save({ ...snapshot(get), isDeployed, deploymentLocationId });
   },
 
   setLocationFamily: (mhaZip, hasSpouse, numChildren, housingStatus, installationName, dutyStationId) => {

@@ -101,6 +101,8 @@ export default function SavingsRateScreen() {
   const serviceStatus = useUserStore((s) => s.serviceStatus);
   const familySeparated  = useUserStore((s) => s.familySeparated);
   const dependentsMhaZip = useUserStore((s) => s.dependentsMhaZip);
+  const isDeployed = useUserStore((s) => s.isDeployed);
+  const deploymentLocationId = useUserStore((s) => s.deploymentLocationId);
   const alsoGsCivilian   = useUserStore((s) => s.alsoGsCivilian);
   const gsGrade          = useUserStore((s) => s.gsGrade);
   const gsStep           = useUserStore((s) => s.gsStep);
@@ -121,8 +123,9 @@ export default function SavingsRateScreen() {
     return calcLES({
       payGrade, yos, mhaZip, dutyStationId, hasSpouse, housingStatus, specialPaysTotal, tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence, overrides: lesOverrides, serviceStatus,
       familySeparated, dependentsMhaZip, alsoGsCivilian, gsGrade, gsStep, gsLocalityKey,
+      isDeployed, deploymentLocationId,
     });
-  }, [payGrade, yos, mhaZip, dutyStationId, hasSpouse, housingStatus, specialPaysTotal, tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence, lesOverrides, serviceStatus, familySeparated, dependentsMhaZip, alsoGsCivilian, gsGrade, gsStep, gsLocalityKey]);
+  }, [payGrade, yos, mhaZip, dutyStationId, hasSpouse, housingStatus, specialPaysTotal, tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence, lesOverrides, serviceStatus, familySeparated, dependentsMhaZip, alsoGsCivilian, gsGrade, gsStep, gsLocalityKey, isDeployed, deploymentLocationId]);
 
   const netPayFromStore = breakdown?.netPay ?? 0;
   const budgetTotal = useMemo(

@@ -115,6 +115,8 @@ export default function CommandModeScreen() {
   const serviceStatus   = useUserStore((s) => s.serviceStatus);
   const familySeparated  = useUserStore((s) => s.familySeparated);
   const dependentsMhaZip = useUserStore((s) => s.dependentsMhaZip);
+  const isDeployed = useUserStore((s) => s.isDeployed);
+  const deploymentLocationId = useUserStore((s) => s.deploymentLocationId);
   const alsoGsCivilian   = useUserStore((s) => s.alsoGsCivilian);
   const gsGrade          = useUserStore((s) => s.gsGrade);
   const gsStep           = useUserStore((s) => s.gsStep);
@@ -186,8 +188,9 @@ export default function CommandModeScreen() {
       tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence,
       overrides: lesOverrides, serviceStatus,
       familySeparated, dependentsMhaZip, alsoGsCivilian, gsGrade, gsStep, gsLocalityKey,
+      isDeployed, deploymentLocationId,
     });
-  }, [payGrade, yos, mhaZip, dutyStationId, hasSpouse, housingStatus, specialPaysTotal, tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence, lesOverrides, serviceStatus, familySeparated, dependentsMhaZip, alsoGsCivilian, gsGrade, gsStep, gsLocalityKey]);
+  }, [payGrade, yos, mhaZip, dutyStationId, hasSpouse, housingStatus, specialPaysTotal, tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence, lesOverrides, serviceStatus, familySeparated, dependentsMhaZip, alsoGsCivilian, gsGrade, gsStep, gsLocalityKey, isDeployed, deploymentLocationId]);
 
   // VA disability compensation — retired members only, and only added to
   // TOTAL GROSS when CRDP-eligible (50%+ rating). Below 50%, federal law
@@ -258,6 +261,7 @@ export default function CommandModeScreen() {
   ${row('BAH (Housing Allowance)', fmt(breakdown.bah))}
   ${row('BAS (Subsistence Allowance)', fmt(breakdown.bas))}
   ${breakdown.colaTracked ? row('COLA (Cost-of-Living Allowance)', fmt(breakdown.cola)) : ''}
+  ${breakdown.isDeployed ? row('Imminent Danger Pay (IDP)', fmt(breakdown.idp)) : ''}
   ${breakdown.familySeparated ? row('Family BAH', fmt(breakdown.familyBah)) : ''}
   ${breakdown.familySeparated ? row('Family Separation Allowance (FSA)', fmt(breakdown.fsa)) : ''}
   ${breakdown.alsoGsCivilian ? row('GS Civilian Pay', fmt(breakdown.gsGrossMonthly)) : ''}
@@ -268,7 +272,7 @@ export default function CommandModeScreen() {
   ${row('TOTAL GROSS', fmt(breakdown.grossPay + spouseIncome + vaInTotal), true)}
 
   ${sectionHeader('DEDUCTIONS', '#B71C1C')}
-  ${row('Federal Income Tax (est.)', fmt(breakdown.fedTax))}
+  ${row(breakdown.isCzte && breakdown.czteExcluded > 0 ? 'Federal Income Tax (est., combat zone exclusion applied)' : 'Federal Income Tax (est.)', fmt(breakdown.fedTax))}
   ${breakdown.stateTax > 0 ? row('State Income Tax (est.)', fmt(breakdown.stateTax)) : ''}
   ${row('FICA (Social Security + Medicare)', fmt(breakdown.fica))}
   ${breakdown.traditionalTsp > 0 ? row(`Traditional TSP (${tspContribPct}%)`, fmt(breakdown.traditionalTsp)) : ''}
@@ -417,6 +421,9 @@ export default function CommandModeScreen() {
               {breakdown.colaTracked && (
                 <Row label="COLA (Cost-of-Living Allowance)" value={fmt(breakdown.cola)} />
               )}
+              {breakdown.isDeployed && (
+                <Row label="Imminent Danger Pay (IDP)" value={fmt(breakdown.idp)} />
+              )}
               {breakdown.familySeparated && (
                 <>
                   <Row label="Family BAH" value={fmt(breakdown.familyBah)} />
@@ -500,7 +507,10 @@ export default function CommandModeScreen() {
             {/* ── DEDUCTIONS ── */}
             <View style={[styles.card, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
               <SectionHeader label="DEDUCTIONS" color="#E74C3C" />
-              <Row label="Federal Income Tax (est.)" value={fmt(breakdown.fedTax)} />
+              <Row
+                label={breakdown.isCzte && breakdown.czteExcluded > 0 ? 'Federal Income Tax (est., combat zone excl. applied)' : 'Federal Income Tax (est.)'}
+                value={fmt(breakdown.fedTax)}
+              />
               {breakdown.stateTax > 0 && (
                 <Row label="State Income Tax (est.)" value={fmt(breakdown.stateTax)} />
               )}

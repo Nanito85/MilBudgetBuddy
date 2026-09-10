@@ -15,8 +15,9 @@ import { BASIC_PAY_DATA_YEAR, getBasicPay } from '@/data/basic-pay-rates';
 import { BAS_DATA_YEAR, getBAS } from '@/data/bas-rates';
 import { PayGrade } from '@/data/bah-rates';
 import { FICA_RATE } from '@/data/federal-tax';
+import { IDP_MONTHLY } from '@/data/deployment-locations';
 
-export { BASIC_PAY_DATA_YEAR, BAS_DATA_YEAR };
+export { BASIC_PAY_DATA_YEAR, BAS_DATA_YEAR, IDP_MONTHLY };
 
 export type ZoneType =
   | 'czte'       // Combat Zone — IDP + federal tax exclusion
@@ -67,9 +68,19 @@ export interface DeploymentResult {
 // Derived from the canonical basic-pay-rates.ts table rather than duplicated
 // here, so it can't drift out of sync with the real E9 pay chart.
 const E9_MAX_PAY = getBasicPay('E9', 40);
-const IDP_MONTHLY = 225;
 const FSA_MONTHLY = 300;
 const SDP_APR = 0.10;
+
+/**
+ * The actual CZTE math (26 U.S.C. §112): in a designated Combat Zone,
+ * enlisted/warrant officers exclude ALL basic pay from federal income tax;
+ * commissioned officers are capped at the E-9 max basic pay + IDP. Shared
+ * with lesCalc.ts (the Home Pay Statement's deployment/hazard-pay section)
+ * so the two can't drift apart on this formula.
+ */
+export function calcCzteExcludedBasicPay(basicPay: number, isOfficer: boolean): number {
+  return isOfficer ? Math.min(basicPay, E9_MAX_PAY + IDP_MONTHLY) : basicPay;
+}
 // FICA_RATE now comes from data/federal-tax.ts, the same source calcLES
 // uses (src/features/home/utils/lesCalc.ts) — this used to be its own
 // hand-copied `const FICA_RATE = 0.0765` with a comment promising it was
@@ -105,14 +116,7 @@ export function calcDeployment(inputs: DeploymentInputs): DeploymentResult {
   const grossTotal = basicPay + bah + bas + idp + fsa + hdp;
 
   // CZTE tax exclusion — only basic pay is taxable; BAH/BAS are always tax-free
-  let czteExcluded = 0;
-  if (zoneType === 'czte') {
-    if (isOfficer) {
-      czteExcluded = Math.min(basicPay, E9_MAX_PAY + IDP_MONTHLY);
-    } else {
-      czteExcluded = basicPay; // all basic pay excluded for enlisted/WO
-    }
-  }
+  const czteExcluded = zoneType === 'czte' ? calcCzteExcludedBasicPay(basicPay, isOfficer) : 0;
 
   const taxablePayNormal = basicPay;
   const taxablePayCzte = Math.max(0, basicPay - czteExcluded);
