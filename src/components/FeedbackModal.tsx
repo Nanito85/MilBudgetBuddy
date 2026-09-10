@@ -232,12 +232,17 @@ const styles = StyleSheet.create({
   chipRow: { paddingVertical: Spacing.one, gap: Spacing.one + 2, flexDirection: 'row' },
   chip: {
     paddingHorizontal: Spacing.two + 2,
-    paddingVertical: Spacing.one + 2,
+    paddingVertical: Spacing.one + 4,
     borderRadius: 99,
     borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   chipActive: { borderColor: Brand.tactical, backgroundColor: Brand.tactical + '20' },
-  chipText: { fontSize: 12, fontWeight: '600' },
+  // Explicit lineHeight so it scales with Settings > Text Size — a bare
+  // fontSize alone doesn't, so at larger sizes the pill's fixed padding
+  // stopped being enough room and its rounded border clipped the letters.
+  chipText: { fontSize: 12, lineHeight: 16, fontWeight: '600' },
   chipTextActive: {},
 
   messageInput: {

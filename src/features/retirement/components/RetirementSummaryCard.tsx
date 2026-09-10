@@ -157,9 +157,14 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
     borderRadius: 99,
     paddingHorizontal: Spacing.two,
-    paddingVertical: Spacing.one - 1,
+    paddingVertical: Spacing.one + 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  badgeText: { color: '#FFFFFF', fontSize: 11, fontWeight: '800', letterSpacing: 0.6 },
+  // Explicit lineHeight so it scales with Settings > Text Size — a bare
+  // fontSize alone doesn't, so at larger sizes the badge's fixed padding
+  // stopped being enough room and its rounded border clipped the letters.
+  badgeText: { color: '#FFFFFF', fontSize: 11, lineHeight: 14, fontWeight: '800', letterSpacing: 0.6 },
   systemNote: { fontSize: 12, opacity: 0.6 },
   bigRow: { flexDirection: 'row', gap: Spacing.three, marginTop: Spacing.one },
   bigStat: { gap: 2 },

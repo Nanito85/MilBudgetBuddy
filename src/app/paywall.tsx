@@ -608,9 +608,13 @@ const styles = StyleSheet.create({
   planCardActive: { borderColor: Brand.tactical, backgroundColor: Brand.tactical + '10' },
   bestValueBadge: {
     position: 'absolute', top: -10, backgroundColor: Brand.accent,
-    borderRadius: 99, paddingHorizontal: 8, paddingVertical: 2,
+    borderRadius: 99, paddingHorizontal: 8, paddingVertical: 3,
+    alignItems: 'center', justifyContent: 'center',
   },
-  bestValueText: { fontSize: 8, fontWeight: '900', color: '#04080F', letterSpacing: 0.5 },
+  // Explicit lineHeight so it scales with Settings > Text Size — a bare
+  // fontSize alone doesn't, so at larger sizes the badge's fixed padding
+  // stopped being enough room and its rounded border clipped the letters.
+  bestValueText: { fontSize: 8, lineHeight: 11, fontWeight: '900', color: '#04080F', letterSpacing: 0.5 },
   planLabel: { fontSize: 13, fontWeight: '700', marginTop: 4 },
   planPrice: { fontSize: 20, fontWeight: '900' },
 

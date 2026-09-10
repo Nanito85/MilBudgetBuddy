@@ -31,21 +31,26 @@ export function CategoryBadge({ category, size = 'md' }: CategoryBadgeProps) {
 const styles = StyleSheet.create({
   badge: {
     borderRadius: 99,
-    paddingVertical: Spacing.half,
+    paddingVertical: Spacing.half + 2,
     paddingHorizontal: Spacing.two,
     alignSelf: 'flex-start',
   },
   badgeSm: {
-    paddingVertical: 2,
+    paddingVertical: 3,
     paddingHorizontal: Spacing.one + Spacing.half,
   },
+  // Explicit lineHeight so it scales with Settings > Text Size — a bare
+  // fontSize alone doesn't, so at larger sizes the badge's fixed padding
+  // stopped being enough room and its rounded border clipped the letters.
   label: {
     fontSize: 12,
+    lineHeight: 15,
     fontWeight: '700',
     letterSpacing: 0.4,
     textTransform: 'uppercase',
   },
   labelSm: {
     fontSize: 10,
+    lineHeight: 13,
   },
 });

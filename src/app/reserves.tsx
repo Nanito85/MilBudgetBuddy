@@ -581,7 +581,10 @@ const styles = StyleSheet.create({
     minWidth: 80,
   },
   tabBtnActive: { backgroundColor: Brand.accent + '20', borderColor: Brand.accent },
-  tabLabel: { fontSize: 13, fontWeight: '900', letterSpacing: 0.3 },
+  // Explicit lineHeight so it scales with Settings > Text Size — a bare
+  // fontSize alone doesn't, so at larger sizes the pill's fixed padding
+  // stopped being enough room and its rounded border clipped the letters.
+  tabLabel: { fontSize: 13, lineHeight: 17, fontWeight: '900', letterSpacing: 0.3 },
   tabLabelActive: { fontWeight: '900' },
 
   scroll: { paddingHorizontal: Spacing.three, paddingTop: Spacing.three, paddingBottom: 80, gap: Spacing.three },

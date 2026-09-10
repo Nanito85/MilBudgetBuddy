@@ -488,14 +488,18 @@ const styles = StyleSheet.create({
   chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.one },
   chip: {
     paddingHorizontal: Spacing.two + 2,
-    paddingVertical: Spacing.one + 2,
+    paddingVertical: Spacing.one + 4,
     borderRadius: 99,
     borderWidth: 1,
     borderColor: 'rgba(128,128,128,0.3)',
     alignItems: 'center',
+    justifyContent: 'center',
   },
   chipActive: { backgroundColor: Brand.primary, borderColor: Brand.primary },
-  chipText: { fontSize: 13, fontWeight: '500' },
+  // Explicit lineHeight so it scales with Settings > Text Size — a bare
+  // fontSize alone doesn't, so at larger sizes the pill's fixed padding
+  // stopped being enough room and its rounded border clipped the letters.
+  chipText: { fontSize: 13, lineHeight: 17, fontWeight: '500' },
   chipTextActive: { color: '#FFFFFF', fontWeight: '700' },
   inputRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 4 },
   inputLabel: { fontSize: 15, fontWeight: '500', flex: 1 },

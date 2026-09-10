@@ -465,13 +465,18 @@ const styles = StyleSheet.create({
   chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.one },
   pctChip: {
     paddingHorizontal: Spacing.two,
-    paddingVertical: Spacing.one,
+    paddingVertical: Spacing.one + 2,
     borderRadius: 99,
     borderWidth: 1,
     borderColor: 'rgba(128,128,128,0.25)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   pctChipActive: { backgroundColor: Brand.primary, borderColor: Brand.primary },
-  pctChipText: { fontSize: 13, fontWeight: '500' },
+  // Explicit lineHeight so it scales with Settings > Text Size — a bare
+  // fontSize alone doesn't, so at larger sizes the pill's fixed padding
+  // stopped being enough room and its rounded border clipped the letters.
+  pctChipText: { fontSize: 13, lineHeight: 17, fontWeight: '500' },
   pctChipTextActive: { color: '#FFFFFF', fontWeight: '700' },
   matchBanner: { borderRadius: Spacing.two, padding: Spacing.two },
   disclaimer: {

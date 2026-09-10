@@ -252,8 +252,13 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(230,126,34,0.15)',
     borderRadius: 99,
     paddingHorizontal: Spacing.one + 2,
-    paddingVertical: 2,
+    paddingVertical: 3,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  oconusBadgeText: { fontSize: 9, fontWeight: '700', letterSpacing: 0.4 },
+  // Explicit lineHeight so it scales with Settings > Text Size — a bare
+  // fontSize alone doesn't, so at larger sizes the badge's fixed padding
+  // stopped being enough room and its rounded border clipped the letters.
+  oconusBadgeText: { fontSize: 9, lineHeight: 12, fontWeight: '700', letterSpacing: 0.4 },
   empty: { textAlign: 'center', padding: Spacing.five },
 });

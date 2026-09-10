@@ -697,9 +697,13 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 99,
     paddingHorizontal: Spacing.two + 2,
-    paddingVertical: 5,
+    paddingVertical: 7,
   },
-  editProfileText: { fontSize: 11, fontWeight: '700', letterSpacing: 0.3 },
+  // Explicit lineHeight so it scales correctly with the app's Text Size
+  // setting (Settings > Text Size) — a bare fontSize alone doesn't, so at
+  // larger sizes the pill's fixed padding stopped being enough room and its
+  // rounded border started overlapping the letters.
+  editProfileText: { fontSize: 11, lineHeight: 15, fontWeight: '700', letterSpacing: 0.3 },
   editProfileClose: { padding: 4 },
   editProfileCloseText: { fontSize: 11, fontWeight: '700' },
 

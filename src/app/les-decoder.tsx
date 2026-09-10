@@ -531,7 +531,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.three, paddingVertical: 8,
     borderRadius: 99, borderWidth: 1, borderColor: 'rgba(128,128,128,0.25)',
   },
-  filterChipText: { fontSize: 13, fontWeight: '700', letterSpacing: 0.3 },
+  // Explicit lineHeight so it scales with Settings > Text Size — a bare
+  // fontSize alone doesn't, so at larger sizes the pill's fixed padding
+  // stopped being enough room and its rounded border clipped the letters.
+  filterChipText: { fontSize: 13, lineHeight: 17, fontWeight: '700', letterSpacing: 0.3 },
 
   content: { paddingHorizontal: Spacing.three, paddingTop: Spacing.two, gap: Spacing.two },
   section: { gap: Spacing.two },
@@ -617,9 +620,13 @@ const styles = StyleSheet.create({
   flagTitle: { flex: 1, fontSize: 14, fontWeight: '800' },
   severityBadge: {
     borderRadius: 99, borderWidth: 1,
-    paddingHorizontal: Spacing.one + 2, paddingVertical: 2,
+    paddingHorizontal: Spacing.one + 2, paddingVertical: 3,
+    alignItems: 'center', justifyContent: 'center',
   },
-  severityText: { fontSize: 11, fontWeight: '800', letterSpacing: 0.5 },
+  // Explicit lineHeight so it scales with Settings > Text Size — a bare
+  // fontSize alone doesn't, so at larger sizes the badge's fixed padding
+  // stopped being enough room and its rounded border clipped the letters.
+  severityText: { fontSize: 11, lineHeight: 14, fontWeight: '800', letterSpacing: 0.5 },
   flagBody: { lineHeight: 20, fontSize: 14 },
   actionBox: {
     backgroundColor: 'rgba(0,0,0,0.15)',

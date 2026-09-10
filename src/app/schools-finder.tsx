@@ -406,16 +406,24 @@ const styles = StyleSheet.create({
     backgroundColor: Brand.primary + '22',
     borderRadius: 99,
     paddingHorizontal: Spacing.two,
-    paddingVertical: 3,
+    paddingVertical: 4,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  dodeaBadgeText: { fontSize: 10, fontWeight: '800', color: Brand.primary, letterSpacing: 0.6 },
+  // Explicit lineHeight on both badges so they scale with Settings > Text
+  // Size — a bare fontSize alone doesn't, so at larger sizes the badge's
+  // fixed padding stopped being enough room and its rounded border clipped
+  // the letters.
+  dodeaBadgeText: { fontSize: 10, lineHeight: 13, fontWeight: '800', color: Brand.primary, letterSpacing: 0.6 },
   localBadge: {
     backgroundColor: '#2A9D8F22',
     borderRadius: 99,
     paddingHorizontal: Spacing.two,
-    paddingVertical: 3,
+    paddingVertical: 4,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  localBadgeText: { fontSize: 10, fontWeight: '800', color: '#2A9D8F', letterSpacing: 0.6 },
+  localBadgeText: { fontSize: 10, lineHeight: 13, fontWeight: '800', color: '#2A9D8F', letterSpacing: 0.6 },
 
   schoolCard: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
   schoolTypeBadge: {

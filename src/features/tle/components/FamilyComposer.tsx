@@ -139,7 +139,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   toggleBtnActive: { backgroundColor: Brand.primary },
-  toggleText: { fontSize: 14, fontWeight: '600' },
+  // Explicit lineHeight so it scales with Settings > Text Size — a bare
+  // fontSize alone doesn't, so at larger sizes the pill's fixed padding
+  // stopped being enough room and its rounded border clipped the letters.
+  toggleText: { fontSize: 14, lineHeight: 18, fontWeight: '600' },
   toggleTextActive: { color: '#FFFFFF' },
 
   divider: {
