@@ -63,10 +63,10 @@ function PINSetupModal({ visible, accentColor, onComplete, onCancel }: {
     <Modal visible={visible} transparent animationType="fade" onRequestClose={handleClose} statusBarTranslucent>
       <View style={pinSetupStyles.overlay}>
         <View style={[pinSetupStyles.card, { borderColor: accentColor + '40' }]}>
-          <ThemedText style={[pinSetupStyles.title, { color: accentColor }]}>SET PARENT PIN</ThemedText>
+          <ThemedText style={[pinSetupStyles.title, { color: accentColor }]}>SET KIDS MODE PIN</ThemedText>
           <ThemedText style={pinSetupStyles.subtitle}>
             {step === 'enter'
-              ? 'Create a 4-digit PIN to lock and unlock kid mode.'
+              ? 'Create a 4-digit PIN required to exit Kids Mode back to the parent view.'
               : 'Confirm your PIN to make sure you have it right.'}
           </ThemedText>
           {error ? <ThemedText style={pinSetupStyles.error}>{error}</ThemedText> : null}
@@ -225,8 +225,18 @@ export default function KidsScreen() {
     }
   };
 
-  const handlePINSetupComplete = (newPin: string) => {
-    setPin(newPin);
+  // Waits for the PIN to actually finish saving to secure storage before
+  // activating Kids Mode — matching Settings' PIN flow. Without this, a
+  // failed save (e.g. a SecureStore hiccup) would still activate Kids Mode
+  // as if the PIN were set, potentially locking the kid in with no working
+  // PIN to exit back to the parent view.
+  const handlePINSetupComplete = async (newPin: string) => {
+    try {
+      await setPin(newPin);
+    } catch {
+      Alert.alert('Couldn’t Save PIN', 'Something went wrong saving your PIN. Please try again.');
+      return;
+    }
     if (handOffKid) {
       activate(handOffKid.id);
       setHandOffKid(null);
