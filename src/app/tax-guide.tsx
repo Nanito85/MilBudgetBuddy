@@ -239,7 +239,12 @@ export default function TaxGuideScreen() {
         <View style={{ width: 40 }} />
       </View>
 
+      {/* Without an explicit flex:1 here, this ScrollView only sized itself
+          to its own content instead of properly bounding to the remaining
+          screen space below the header — the full guide just overflowed
+          past the bottom of the screen instead of being scrollable. */}
       <ScrollView
+        style={styles.list}
         contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + Spacing.five }]}
         showsVerticalScrollIndicator={false}>
 
@@ -287,6 +292,7 @@ const styles = StyleSheet.create({
   backChevron: { fontSize: 28, fontWeight: '300', color: Brand.primary, lineHeight: 34 },
   title: { fontSize: 18, fontWeight: '700' },
 
+  list: { flex: 1 },
   content: { paddingHorizontal: Spacing.three, gap: Spacing.two, paddingTop: Spacing.one },
 
   heroBanner: { borderRadius: 4, padding: Spacing.three, borderLeftWidth: 3, borderLeftColor: Brand.accent, gap: 4 },

@@ -519,8 +519,11 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: 'rgba(128,128,128,0.2)',
   },
-  tabItem: { flex: 1, alignItems: 'center', paddingVertical: Spacing.two, position: 'relative' },
-  tabLabel: { fontSize: 13, fontWeight: '700', letterSpacing: 0.6 },
+  tabItem: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: Spacing.two + 2, position: 'relative' },
+  // Explicit lineHeight so it scales with Settings > Text Size — a bare
+  // fontSize alone doesn't, so at larger sizes "VERIFY PAY" especially
+  // looked cramped and could clip against the underline indicator below it.
+  tabLabel: { fontSize: 13, lineHeight: 17, fontWeight: '700', letterSpacing: 0.6, textAlign: 'center' },
   tabLabelActive: {},
   tabUnderline: {
     position: 'absolute', bottom: 0, left: 8, right: 8,

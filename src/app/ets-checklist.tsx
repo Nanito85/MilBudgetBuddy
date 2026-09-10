@@ -273,7 +273,13 @@ export default function EtsChecklistScreen() {
         <ThemedText style={[styles.relatedToolChevron, { color: tc.accent }]}>›</ThemedText>
       </Pressable>
 
+      {/* Without an explicit flex:1 here, this ScrollView only sized itself
+          to its own content instead of properly bounding to the remaining
+          screen space below the header/progress bar — the full checklist
+          just overflowed past the bottom of the screen instead of being
+          scrollable. */}
       <ScrollView
+        style={styles.list}
         contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + Spacing.five }]}
         showsVerticalScrollIndicator={false}>
 
@@ -397,6 +403,7 @@ const styles = StyleSheet.create({
     textAlign: 'right',
   },
 
+  list: { flex: 1 },
   content: { paddingHorizontal: Spacing.three, gap: Spacing.two },
 
   completeBanner: {
@@ -430,17 +437,22 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.one,
   },
   itemCardDone: { opacity: 0.65 },
+  // A fixed 22x22 box couldn't grow with the checkmark at larger
+  // Settings > Text Size scales. minWidth/minHeight + padding keeps the
+  // box shape at the default size but lets it grow instead of clipping.
   checkbox: {
-    width: 22,
-    height: 22,
+    minWidth: 22,
+    minHeight: 22,
     borderRadius: 4,
     borderWidth: 1.5,
+    paddingHorizontal: 2,
+    paddingVertical: 2,
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 1,
     flexShrink: 0,
   },
-  checkmark: { fontSize: 13, color: '#FFFFFF', fontWeight: '800' },
+  checkmark: { fontSize: 13, lineHeight: 16, color: '#FFFFFF', fontWeight: '800' },
   itemBody: { flex: 1, gap: 3 },
   itemLabel: { fontSize: 13, fontWeight: '600', lineHeight: 18 },
   itemLabelDone: { textDecorationLine: 'line-through' },

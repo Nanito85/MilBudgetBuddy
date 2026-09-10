@@ -480,10 +480,14 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   winnerBanner: {
-    paddingVertical: 3,
+    paddingVertical: 4,
     alignItems: 'center',
+    justifyContent: 'center',
   },
-  winnerText: { fontSize: 8, fontWeight: '800', color: '#FFF', letterSpacing: 1 },
+  // Explicit lineHeight so it scales with Settings > Text Size — a bare
+  // fontSize alone doesn't, so at larger sizes this banner's tight padding
+  // stopped being enough room and the card's overflow:hidden clipped it.
+  winnerText: { fontSize: 8, lineHeight: 11, fontWeight: '800', color: '#FFF', letterSpacing: 1 },
   planHeader: { flexDirection: 'row', alignItems: 'stretch' },
   planAccentBar: { width: 3 },
   planHeaderText: { flex: 1, padding: Spacing.two, gap: 2 },

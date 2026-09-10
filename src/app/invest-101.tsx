@@ -283,16 +283,23 @@ const styles = StyleSheet.create({
   sectionLabel: { fontSize: 13, fontWeight: '700' },
   bodyText: { lineHeight: 22 },
   actionRow: { flexDirection: 'row', gap: Spacing.two, alignItems: 'flex-start' },
+  // A fixed 20x20 box with lineHeight pinned to match it couldn't grow with
+  // the number at larger Settings > Text Size scales (both the fontSize and
+  // that lineHeight scale together, but the fixed height doesn't) — the
+  // digit just got clipped by its own circle. minWidth/minHeight + padding
+  // keeps the circle shape at the default size but lets it grow into an
+  // oval instead of clipping when the text scales.
   actionNum: {
-    width: 20,
-    height: 20,
+    minWidth: 20,
+    minHeight: 20,
     borderRadius: 10,
+    paddingHorizontal: 3,
+    paddingVertical: 2,
     backgroundColor: Brand.primary,
     color: '#FFFFFF',
     fontSize: 11,
     fontWeight: '700',
     textAlign: 'center',
-    lineHeight: 20,
     flexShrink: 0,
   },
   actionText: { flex: 1, lineHeight: 20 },

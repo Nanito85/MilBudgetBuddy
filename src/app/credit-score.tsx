@@ -300,11 +300,16 @@ const ss = StyleSheet.create({
   section: { gap: Spacing.two },
 
   labelRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
+  // A fixed 22x22 circle couldn't grow with the number inside it at larger
+  // Settings > Text Size scales — the digit just got clipped by the circle.
+  // minWidth/minHeight + padding keeps the circle shape at the default size
+  // but lets it grow into an oval instead of clipping when the text scales.
   labelBadge: {
-    width: 22, height: 22, borderRadius: 11, borderWidth: 1.5,
+    minWidth: 22, minHeight: 22, borderRadius: 11, borderWidth: 1.5,
+    paddingHorizontal: 3, paddingVertical: 3,
     alignItems: 'center', justifyContent: 'center',
   },
-  labelBadgeText: { fontSize: 12, fontWeight: '800' },
+  labelBadgeText: { fontSize: 12, lineHeight: 15, fontWeight: '800' },
   labelLine: { flex: 1, height: StyleSheet.hairlineWidth },
   labelText: { fontSize: 15, letterSpacing: 0.2, textTransform: 'none' },
   sectionIntro: { lineHeight: 20, paddingLeft: 30 },
