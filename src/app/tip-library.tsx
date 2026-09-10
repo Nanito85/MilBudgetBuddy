@@ -166,9 +166,19 @@ const styles = StyleSheet.create({
   searchInput: { fontSize: 15, paddingVertical: Spacing.two + 2 },
 
   chipsScroll: { marginTop: Spacing.two, flexGrow: 0 },
-  chipsRow: { paddingHorizontal: Spacing.three, gap: Spacing.one + 2, paddingVertical: 2 },
-  chip: { borderWidth: 1, borderRadius: 99, paddingHorizontal: Spacing.two + 2, paddingVertical: Spacing.one + 2 },
-  chipText: { fontSize: 12, fontWeight: '700' },
+  chipsRow: { paddingHorizontal: Spacing.three, gap: Spacing.one + 2, paddingVertical: 4 },
+  // A fixed, unscaled paddingVertical left too little vertical room around
+  // the text once the app's Text Size accessibility setting scaled the
+  // label up (Settings > Text Size, up to 1.6x) — the pill's rounded border
+  // ended up overlapping the top/bottom of the letters. Explicit lineHeight
+  // (which DOES scale with that setting, unlike a bare fontSize) plus more
+  // padding and centered alignment gives real breathing room at every size.
+  chip: {
+    borderWidth: 1, borderRadius: 99,
+    paddingHorizontal: Spacing.two + 4, paddingVertical: Spacing.one + 4,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  chipText: { fontSize: 12, lineHeight: 16, fontWeight: '700' },
   chipTextActive: { color: '#1A1A1A' },
 
   content: { paddingHorizontal: Spacing.three, paddingTop: Spacing.three, gap: Spacing.two },
