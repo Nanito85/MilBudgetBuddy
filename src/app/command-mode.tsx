@@ -257,6 +257,10 @@ export default function CommandModeScreen() {
   ${row('Base Pay', fmt(breakdown.basePay))}
   ${row('BAH (Housing Allowance)', fmt(breakdown.bah))}
   ${row('BAS (Subsistence Allowance)', fmt(breakdown.bas))}
+  ${breakdown.colaTracked ? row('COLA (Cost-of-Living Allowance)', fmt(breakdown.cola)) : ''}
+  ${breakdown.familySeparated ? row('Family BAH', fmt(breakdown.familyBah)) : ''}
+  ${breakdown.familySeparated ? row('Family Separation Allowance (FSA)', fmt(breakdown.fsa)) : ''}
+  ${breakdown.alsoGsCivilian ? row('GS Civilian Pay', fmt(breakdown.gsGrossMonthly)) : ''}
   ${breakdown.specialPays > 0 ? specialPays.map((p) => row('· ' + (p.customLabel ?? SPECIAL_PAY_LABELS[p.type]), fmt(p.monthlyAmount))).join('') : ''}
   ${breakdown.extraIncomeItems.map((i) => row('· ' + i.label, fmt(i.amount))).join('')}
   ${vaMonthly > 0 ? row(`VA Disability Compensation (${vaDisabilityPercent}%)${crdpEligible ? '' : ' — offsets retired pay, not additive'}`, fmt(vaMonthly)) : ''}
@@ -410,6 +414,18 @@ export default function CommandModeScreen() {
               <Row label="Base Pay" value={fmt(breakdown.basePay)} />
               <Row label="BAH (Housing Allowance)" value={fmt(breakdown.bah)} />
               <Row label="BAS (Subsistence Allowance)" value={fmt(breakdown.bas)} />
+              {breakdown.colaTracked && (
+                <Row label="COLA (Cost-of-Living Allowance)" value={fmt(breakdown.cola)} />
+              )}
+              {breakdown.familySeparated && (
+                <>
+                  <Row label="Family BAH" value={fmt(breakdown.familyBah)} />
+                  <Row label="Family Separation Allowance (FSA)" value={fmt(breakdown.fsa)} />
+                </>
+              )}
+              {breakdown.alsoGsCivilian && (
+                <Row label="GS Civilian Pay" value={fmt(breakdown.gsGrossMonthly)} />
+              )}
 
               {breakdown.specialPays > 0 && (
                 <>
