@@ -130,6 +130,7 @@ export default function SchoolsFinderScreen() {
       </View>
 
       <ScrollView
+        style={{ flex: 1 }}
         contentContainerStyle={[styles.content, { paddingBottom: BottomTabInset + Spacing.five }]}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled">
@@ -463,17 +464,22 @@ const styles = StyleSheet.create({
     gap: Spacing.two,
     alignItems: 'flex-start',
   },
+  // A fixed 28x28 circle couldn't grow with the number inside it at larger
+  // Settings > Text Size scales. minWidth/minHeight + padding keeps the
+  // circle shape at the default size but lets it grow instead of clipping.
   checkStepBubble: {
-    width: 28,
-    height: 28,
+    minWidth: 28,
+    minHeight: 28,
     borderRadius: 14,
+    paddingHorizontal: 3,
+    paddingVertical: 3,
     backgroundColor: Brand.primary,
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 2,
     flexShrink: 0,
   },
-  checkStep: { fontSize: 13, fontWeight: '800', color: '#FFF' },
+  checkStep: { fontSize: 13, lineHeight: 16, fontWeight: '800', color: '#FFF' },
   checkBody: {
     flex: 1,
     backgroundColor: 'rgba(128,128,128,0.08)',
@@ -515,16 +521,21 @@ const styles = StyleSheet.create({
     padding: Spacing.two + 2,
     gap: Spacing.two,
   },
+  // A fixed 24x24 circle couldn't grow with the number inside it at larger
+  // Settings > Text Size scales. minWidth/minHeight + padding keeps the
+  // circle shape at the default size but lets it grow instead of clipping.
   escalationBubble: {
-    width: 24,
-    height: 24,
+    minWidth: 24,
+    minHeight: 24,
     borderRadius: 12,
+    paddingHorizontal: 3,
+    paddingVertical: 3,
     backgroundColor: '#FF6B35',
     alignItems: 'center',
     justifyContent: 'center',
     flexShrink: 0,
     marginTop: 1,
   },
-  escalationStep: { fontSize: 11, fontWeight: '800', color: '#FFF' },
+  escalationStep: { fontSize: 11, lineHeight: 14, fontWeight: '800', color: '#FFF' },
   escalationText: { flex: 1, fontSize: 13, lineHeight: 18 },
 });

@@ -455,6 +455,7 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
           </View>
 
           <ScrollView
+        style={{ flex: 1 }}
             contentContainerStyle={editStyles.content}
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
@@ -898,8 +899,11 @@ const editStyles = StyleSheet.create({
   payIcon: { fontSize: 20, width: 28, textAlign: 'center' },
   payLabel: { fontSize: 14, fontWeight: '600' },
   payAmt: { fontSize: 10 },
-  removeBtn: { width: 28, height: 28, borderRadius: 14, backgroundColor: Brand.classified + '20', alignItems: 'center', justifyContent: 'center' },
-  removeBtnText: { color: Brand.classified, fontSize: 13, fontWeight: '700' },
+  // A fixed 28x28 circle couldn't grow with the "✕" inside it at larger
+  // Settings > Text Size scales. minWidth/minHeight + padding keeps the
+  // circle shape at the default size but lets it grow instead of clipping.
+  removeBtn: { minWidth: 28, minHeight: 28, borderRadius: 14, paddingHorizontal: 3, paddingVertical: 3, backgroundColor: Brand.classified + '20', alignItems: 'center', justifyContent: 'center' },
+  removeBtnText: { color: Brand.classified, fontSize: 13, lineHeight: 16, fontWeight: '700' },
   totalRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: Spacing.one },
   totalLabel: { fontSize: 10 },
   totalAmt: { fontSize: 16, fontWeight: '700' },
@@ -1410,8 +1414,11 @@ const styles = StyleSheet.create({
   kidChevron: { fontSize: 20 },
   kidBadge: { backgroundColor: '#FFB300', borderRadius: 8, minWidth: 18, height: 18, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 4 },
   kidBadgeText: { fontSize: 10, fontWeight: '900', color: '#04080F' },
-  removeKidBtn: { width: 24, height: 24, borderRadius: 12, backgroundColor: Brand.classified + '15', alignItems: 'center', justifyContent: 'center' },
-  removeKidBtnText: { fontSize: 10, color: Brand.classified, fontWeight: '700' },
+  // A fixed 24x24 circle couldn't grow with the "✕" inside it at larger
+  // Settings > Text Size scales. minWidth/minHeight + padding keeps the
+  // circle shape at the default size but lets it grow instead of clipping.
+  removeKidBtn: { minWidth: 24, minHeight: 24, borderRadius: 12, paddingHorizontal: 3, paddingVertical: 3, backgroundColor: Brand.classified + '15', alignItems: 'center', justifyContent: 'center' },
+  removeKidBtnText: { fontSize: 10, lineHeight: 13, color: Brand.classified, fontWeight: '700' },
 
   prefRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   prefLabel: { fontSize: 15, fontWeight: '600' },

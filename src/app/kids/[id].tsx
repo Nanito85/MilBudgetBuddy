@@ -169,8 +169,11 @@ const addGoalStyles = StyleSheet.create({
     paddingVertical: Spacing.two + 4,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  cancelBtn: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
-  cancelText: { fontSize: 14, fontWeight: '700' },
+  // A fixed 36x36 circle couldn't grow with the "✕" inside it at larger
+  // Settings > Text Size scales. minWidth/minHeight + padding keeps the
+  // circle shape at the default size but lets it grow instead of clipping.
+  cancelBtn: { minWidth: 36, minHeight: 36, borderRadius: 18, paddingHorizontal: 4, paddingVertical: 4, alignItems: 'center', justifyContent: 'center' },
+  cancelText: { fontSize: 14, lineHeight: 18, fontWeight: '700' },
   title: { fontSize: 16, fontWeight: '900', letterSpacing: 1 },
   saveBtn: { borderRadius: 20, paddingHorizontal: Spacing.three, paddingVertical: 8 },
   saveBtnText: { color: '#FFFFFF', fontSize: 13, fontWeight: '900', letterSpacing: 1 },

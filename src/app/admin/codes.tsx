@@ -291,7 +291,9 @@ export default function CodesScreen() {
         </Pressable>
       </View>
 
-      <ScrollView contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
         <View style={[s.card, { backgroundColor: tc.surface, borderColor: Brand.classified + '40' }]}>
           <ThemedText style={[s.cardTitle, { color: Brand.classified }]}>// NO IN-APP REDEMPTION</ThemedText>
           <ThemedText style={{ color: tc.textSecondary, fontSize: 12, lineHeight: 18 }}>

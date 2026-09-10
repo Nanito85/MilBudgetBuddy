@@ -167,7 +167,9 @@ export default function CarLoanScreen() {
         <View style={{ width: 40 }} />
       </View>
 
-      <ScrollView contentContainerStyle={[s.content, { paddingBottom: insets.bottom + Spacing.five }]} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={[s.content, { paddingBottom: insets.bottom + Spacing.five }]} showsVerticalScrollIndicator={false}>
 
         {/* Grade */}
         <ThemedView type="backgroundElement" style={s.card}>

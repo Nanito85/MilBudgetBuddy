@@ -43,6 +43,7 @@ export default function TipDetailScreen() {
       </View>
 
       <ScrollView
+        style={{ flex: 1 }}
         contentContainerStyle={[
           styles.content,
           { paddingBottom: BottomTabInset + Spacing.five },

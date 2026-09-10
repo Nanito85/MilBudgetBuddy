@@ -78,7 +78,9 @@ export default function LifeEventsScreen() {
           </Pressable>
         </View>
 
-        <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
           {tab === 'active' ? (
             <>
               {activeEvents.length === 0 ? (

@@ -188,6 +188,7 @@ export default function Invest101Screen() {
       </View>
 
       <ScrollView
+        style={{ flex: 1 }}
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}>
         <ThemedText type="small" themeColor="textSecondary" style={styles.eyebrow}>

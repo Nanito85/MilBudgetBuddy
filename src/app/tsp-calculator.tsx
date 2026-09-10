@@ -97,6 +97,7 @@ export default function TspCalculatorScreen() {
       </View>
 
       <ScrollView
+        style={{ flex: 1 }}
         contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + Spacing.five }]}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}>

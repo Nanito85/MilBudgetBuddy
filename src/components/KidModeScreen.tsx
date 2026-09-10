@@ -311,15 +311,21 @@ const choreStyles = StyleSheet.create({
     borderRadius: 8,
     padding: Spacing.two + 2,
   },
+  // A fixed 26x26 circle couldn't grow with the checkmark inside it at
+  // larger Settings > Text Size scales. minWidth/minHeight + padding keeps
+  // the circle shape at the default size but lets it grow instead of
+  // clipping.
   check: {
-    width: 26,
-    height: 26,
+    minWidth: 26,
+    minHeight: 26,
     borderRadius: 13,
     borderWidth: 2,
+    paddingHorizontal: 3,
+    paddingVertical: 3,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  checkMark: { color: '#fff', fontSize: 13, fontWeight: '900' },
+  checkMark: { color: '#fff', fontSize: 13, lineHeight: 16, fontWeight: '900' },
   name: { fontSize: 14, fontWeight: '600', color: '#FFFFFF' },
   pendingLabel: { fontSize: 10, color: '#FFB300', fontWeight: '700', marginTop: 1 },
   value: { fontSize: 13, fontWeight: '800' },
@@ -428,6 +434,7 @@ export function KidModeScreen() {
         </View>
 
         <ScrollView
+        style={{ flex: 1 }}
           contentContainerStyle={screen.content}
           showsVerticalScrollIndicator={false}>
 

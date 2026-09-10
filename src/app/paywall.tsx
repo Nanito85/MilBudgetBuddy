@@ -493,7 +493,9 @@ export default function PaywallScreen() {
           </Pressable>
         </View>
 
-        <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
           {isPro ? (
             <View style={[styles.activeCard, { backgroundColor: tc.surface, borderColor: Brand.tactical }]}>
               <ThemedText style={[styles.activeTitle, { color: tc.tactical }]}>✓ PRO ACTIVE</ThemedText>

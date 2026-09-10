@@ -82,7 +82,9 @@ function DetailModal({ item, onClose, onUpdate }: { item: FeedbackRow; onClose: 
           <View style={{ width: 52 }} />
         </View>
 
-        <ScrollView contentContainerStyle={detail.body} showsVerticalScrollIndicator={false}>
+        <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={detail.body} showsVerticalScrollIndicator={false}>
           {/* Meta */}
           <View style={detail.metaRow}>
             <ThemedText style={[detail.metaVal, { color: tc.textPrimary }]}>{item.category}</ThemedText>

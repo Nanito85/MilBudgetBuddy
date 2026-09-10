@@ -162,6 +162,7 @@ export default function MoneyFlowchartScreen() {
       </View>
 
       <ScrollView
+        style={{ flex: 1 }}
         contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + Spacing.five }]}
         showsVerticalScrollIndicator={false}>
 
@@ -258,15 +259,20 @@ const styles = StyleSheet.create({
   stepBar: { width: 4 },
   stepContent: { flex: 1, padding: Spacing.two },
   stepHeader: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
+  // A fixed 24x24 circle couldn't grow with the number inside it at larger
+  // Settings > Text Size scales. minWidth/minHeight + padding keeps the
+  // circle shape at the default size but lets it grow instead of clipping.
   stepNum: {
-    width: 24,
-    height: 24,
+    minWidth: 24,
+    minHeight: 24,
     borderRadius: 12,
     borderWidth: 2,
+    paddingHorizontal: 3,
+    paddingVertical: 3,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  stepNumText: { fontSize: 11, fontWeight: '800' },
+  stepNumText: { fontSize: 11, lineHeight: 14, fontWeight: '800' },
   stepIcon: { fontSize: 20 },
   stepMeta: { flex: 1, gap: 2 },
   stepTitle: { fontSize: 11, fontWeight: '800', letterSpacing: 0.5 },

@@ -200,15 +200,20 @@ const styles = StyleSheet.create({
   ageBtnTxt: { color: '#fff', fontSize: 18, fontWeight: '300', lineHeight: 22, marginTop: -1 },
   ageVal: { fontSize: 14, fontWeight: '700', minWidth: 48, textAlign: 'center' },
 
+  // A fixed 28x28 circle couldn't grow with the "✕" inside it at larger
+  // Settings > Text Size scales. minWidth/minHeight + padding keeps the
+  // circle shape at the default size but lets it grow instead of clipping.
   removeBtn: {
-    width: 28,
-    height: 28,
+    minWidth: 28,
+    minHeight: 28,
     borderRadius: 14,
+    paddingHorizontal: 3,
+    paddingVertical: 3,
     backgroundColor: Brand.danger + '18',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  removeBtnText: { fontSize: 12, color: Brand.danger, fontWeight: '700' },
+  removeBtnText: { fontSize: 12, lineHeight: 15, color: Brand.danger, fontWeight: '700' },
 
   emptyChildren: {
     paddingHorizontal: Spacing.three,

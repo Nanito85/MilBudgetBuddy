@@ -197,7 +197,9 @@ export default function AdminUsersScreen() {
         <View style={s.back} />
       </View>
 
-      <ScrollView contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
         <View style={[s.noticeCard, { backgroundColor: tc.surface, borderColor: Brand.tactical + '40' }]}>
           <ThemedText style={[s.noticeText, { color: tc.textSecondary }]}>
             This grants Pro directly to a member's account server-side — no code, no purchase, nothing they

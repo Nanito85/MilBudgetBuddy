@@ -129,7 +129,9 @@ export default function AdminAccountsScreen() {
         </Pressable>
       </View>
 
-      <ScrollView contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
         <View style={[s.noticeCard, { backgroundColor: tc.surface, borderColor: Brand.tactical + '40' }]}>
           <ThemedText style={[s.noticeText, { color: tc.textSecondary }]}>
             Every account that's ever signed up, Android or iOS — Firebase accounts aren't tied to which store they

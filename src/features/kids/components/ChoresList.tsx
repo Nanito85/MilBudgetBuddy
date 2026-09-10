@@ -112,16 +112,22 @@ const styles = StyleSheet.create({
   pressed: { opacity: 0.7 },
   deleteBtn: { padding: Spacing.two },
   deleteBtnText: { fontSize: 14, fontWeight: '700', color: 'rgba(255,255,255,0.5)' },
+  // A fixed 26x26 circle couldn't grow with the checkmark inside it at
+  // larger Settings > Text Size scales. minWidth/minHeight + padding keeps
+  // the circle shape at the default size but lets it grow instead of
+  // clipping.
   checkbox: {
-    width: 26,
-    height: 26,
+    minWidth: 26,
+    minHeight: 26,
     borderRadius: 13,
     borderWidth: 2,
+    paddingHorizontal: 3,
+    paddingVertical: 3,
     borderColor: 'rgba(255,255,255,0.3)',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  checkmark: { color: '#FFFFFF', fontSize: 14, fontWeight: '700' },
+  checkmark: { color: '#FFFFFF', fontSize: 14, lineHeight: 17, fontWeight: '700' },
   info: { flex: 1 },
   choreName: { fontSize: 15, fontWeight: '600', color: '#FFFFFF' },
   doneText: { textDecorationLine: 'line-through', opacity: 0.7 },

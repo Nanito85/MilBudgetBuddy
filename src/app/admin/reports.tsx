@@ -73,7 +73,9 @@ function ReportDetailModal({ report, onClose }: { report: ReportRow; onClose: ()
           </Pressable>
         </View>
 
-        <ScrollView contentContainerStyle={modal.body} showsVerticalScrollIndicator={false}>
+        <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={modal.body} showsVerticalScrollIndicator={false}>
           {/* Meta */}
           <View style={[modal.metaBox, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
             <ThemedText style={[modal.metaDate, { color: tc.textSecondary }]}>

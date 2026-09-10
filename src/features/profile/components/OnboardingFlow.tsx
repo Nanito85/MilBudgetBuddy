@@ -193,7 +193,9 @@ function AuthModal({
             </ThemedText>
             <View style={{ width: 60 }} />
           </View>
-          <ScrollView contentContainerStyle={authModalStyles.content} keyboardShouldPersistTaps="handled">
+          <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={authModalStyles.content} keyboardShouldPersistTaps="handled">
             {displayError ? (
               <View style={authModalStyles.errorBox}>
                 <ThemedText style={authModalStyles.errorText}>{displayError}</ThemedText>
