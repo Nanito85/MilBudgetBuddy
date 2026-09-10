@@ -32,6 +32,42 @@ function userDoc(uid: string, collection: string) {
   return doc(db, 'users', uid, 'data', collection);
 }
 
+// Firestore's setDoc() throws SYNCHRONOUSLY (not a rejected promise) on any
+// `undefined` field value anywhere in the document, including nested inside
+// objects/arrays. That throw happens before setDoc() even returns, so a
+// trailing `.catch()` on the call never sees it -- it surfaces as an
+// unhandled, app-crashing exception instead. Optional fields are undefined
+// by default for most users (lesOverrides.bahOverride/basOverride/
+// basePayOverride, specialPays[].customLabel), so this was a routine crash
+// waiting to happen on nearly any profile sync, not an edge case. Every
+// reader of these fields already uses `!= null` / `??`, so `null` (what
+// Firestore actually stores for "no value") behaves identically to
+// `undefined` did -- this just needs to happen before every setDoc() call.
+function stripUndefined<T>(value: T): T {
+  if (Array.isArray(value)) {
+    return value.map((v) => stripUndefined(v)) as unknown as T;
+  }
+  if (value !== null && typeof value === 'object' && !(value instanceof Date)) {
+    const out: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
+      out[k] = v === undefined ? null : stripUndefined(v);
+    }
+    return out as T;
+  }
+  return value;
+}
+
+// Wraps a setDoc() call so its synchronous throw (see stripUndefined above)
+// can't crash the app even if some future field slips past sanitization --
+// a failed cloud sync should never take down the whole session.
+function safeSetDoc(docRef: ReturnType<typeof userDoc>, data: Record<string, unknown>) {
+  try {
+    return setDoc(docRef, stripUndefined(data), { merge: true }).catch(() => {});
+  } catch {
+    return Promise.resolve();
+  }
+}
+
 const ALL_COLLECTIONS = [
   'profile', 'budget', 'debt', 'expenses', 'kids', 'goals', 'networth', 'nwSnapshots', 'lifeEvents',
 ] as const;
@@ -48,15 +84,15 @@ export async function deleteCloudData(uid: string) {
 
 export async function pushToCloud(uid: string) {
   const writes = [
-    setDoc(userDoc(uid, 'profile'),     { ...snapshotUser() },       { merge: true }),
-    setDoc(userDoc(uid, 'budget'),      { categories: useBudgetStore.getState().categories },            { merge: true }),
-    setDoc(userDoc(uid, 'debt'),        { debts: useDebtStore.getState().debts, extraMonthly: useDebtStore.getState().extraMonthly }, { merge: true }),
-    setDoc(userDoc(uid, 'expenses'),    { expenses: useExpensesStore.getState().expenses },              { merge: true }),
-    setDoc(userDoc(uid, 'kids'),        { kids: useKidsStore.getState().kids },                          { merge: true }),
-    setDoc(userDoc(uid, 'goals'),       { goals: useSavingsGoalsStore.getState().goals },                { merge: true }),
-    setDoc(userDoc(uid, 'networth'),    { entries: useNetWorthStore.getState().entries }, { merge: true }),
-    setDoc(userDoc(uid, 'nwSnapshots'), { snapshots: useNwSnapshotsStore.getState().snapshots }, { merge: true }),
-    setDoc(userDoc(uid, 'lifeEvents'),  { events: useLifeEventsStore.getState().events }, { merge: true }),
+    safeSetDoc(userDoc(uid, 'profile'),     { ...snapshotUser() }),
+    safeSetDoc(userDoc(uid, 'budget'),      { categories: useBudgetStore.getState().categories }),
+    safeSetDoc(userDoc(uid, 'debt'),        { debts: useDebtStore.getState().debts, extraMonthly: useDebtStore.getState().extraMonthly }),
+    safeSetDoc(userDoc(uid, 'expenses'),    { expenses: useExpensesStore.getState().expenses }),
+    safeSetDoc(userDoc(uid, 'kids'),        { kids: useKidsStore.getState().kids }),
+    safeSetDoc(userDoc(uid, 'goals'),       { goals: useSavingsGoalsStore.getState().goals }),
+    safeSetDoc(userDoc(uid, 'networth'),    { entries: useNetWorthStore.getState().entries }),
+    safeSetDoc(userDoc(uid, 'nwSnapshots'), { snapshots: useNwSnapshotsStore.getState().snapshots }),
+    safeSetDoc(userDoc(uid, 'lifeEvents'),  { events: useLifeEventsStore.getState().events }),
   ];
   await Promise.all(writes);
 }
@@ -255,31 +291,31 @@ export function syncCollection(uid: string | null, collection: string) {
   if (!uid) return;
   switch (collection) {
     case 'profile':
-      setDoc(userDoc(uid, 'profile'), snapshotUser(), { merge: true }).catch(() => {});
+      safeSetDoc(userDoc(uid, 'profile'), snapshotUser());
       break;
     case 'budget':
-      setDoc(userDoc(uid, 'budget'), { categories: useBudgetStore.getState().categories }, { merge: true }).catch(() => {});
+      safeSetDoc(userDoc(uid, 'budget'), { categories: useBudgetStore.getState().categories });
       break;
     case 'debt':
-      setDoc(userDoc(uid, 'debt'), { debts: useDebtStore.getState().debts, extraMonthly: useDebtStore.getState().extraMonthly }, { merge: true }).catch(() => {});
+      safeSetDoc(userDoc(uid, 'debt'), { debts: useDebtStore.getState().debts, extraMonthly: useDebtStore.getState().extraMonthly });
       break;
     case 'expenses':
-      setDoc(userDoc(uid, 'expenses'), { expenses: useExpensesStore.getState().expenses }, { merge: true }).catch(() => {});
+      safeSetDoc(userDoc(uid, 'expenses'), { expenses: useExpensesStore.getState().expenses });
       break;
     case 'kids':
-      setDoc(userDoc(uid, 'kids'), { kids: useKidsStore.getState().kids }, { merge: true }).catch(() => {});
+      safeSetDoc(userDoc(uid, 'kids'), { kids: useKidsStore.getState().kids });
       break;
     case 'goals':
-      setDoc(userDoc(uid, 'goals'), { goals: useSavingsGoalsStore.getState().goals }, { merge: true }).catch(() => {});
+      safeSetDoc(userDoc(uid, 'goals'), { goals: useSavingsGoalsStore.getState().goals });
       break;
     case 'networth':
-      setDoc(userDoc(uid, 'networth'), { entries: useNetWorthStore.getState().entries }, { merge: true }).catch(() => {});
+      safeSetDoc(userDoc(uid, 'networth'), { entries: useNetWorthStore.getState().entries });
       break;
     case 'nwSnapshots':
-      setDoc(userDoc(uid, 'nwSnapshots'), { snapshots: useNwSnapshotsStore.getState().snapshots }, { merge: true }).catch(() => {});
+      safeSetDoc(userDoc(uid, 'nwSnapshots'), { snapshots: useNwSnapshotsStore.getState().snapshots });
       break;
     case 'lifeEvents':
-      setDoc(userDoc(uid, 'lifeEvents'), { events: useLifeEventsStore.getState().events }, { merge: true }).catch(() => {});
+      safeSetDoc(userDoc(uid, 'lifeEvents'), { events: useLifeEventsStore.getState().events });
       break;
   }
 }
