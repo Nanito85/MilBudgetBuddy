@@ -1049,6 +1049,13 @@ function EditPayModal({ visible, onClose }: { visible: boolean; onClose: () => v
   const storedGsStepLES  = useUserStore((s) => s.gsStep);
   const gsLocalityKey    = useUserStore((s) => s.gsLocalityKey);
 
+  // Retired pay is a pension, not earned wages — it isn't TSP-eligible (you
+  // can't contribute a portion of a pension disbursement to TSP, only actual
+  // payroll earnings). A member who set a TSP % while still active and then
+  // retired would otherwise keep seeing a phantom TSP deduction taken out of
+  // retired pay that DFAS would never actually withhold.
+  const isRetired = serviceStatus === 'retired';
+
   const specialPaysTotal = specialPays.reduce((s, p) => s + p.monthlyAmount, 0);
   const calculated = payGrade
     ? calcLES({
@@ -1186,18 +1193,28 @@ function EditPayModal({ visible, onClose }: { visible: boolean; onClose: () => v
                 style={[editStyles.input, { color: tc.textPrimary, flex: 1 }]} returnKeyType="next" />
             </View>
 
-            {/* TSP */}
+            {/* TSP — not applicable to retired pay (a pension, not payroll
+                earnings you can contribute from) */}
             <View style={[editStyles.sectionHead, { borderTopColor: tc.borderColor }]}>
               <ThemedText style={[editStyles.sectionHeadText, { color: tc.textPrimary }]}>📈 TSP / RETIREMENT</ThemedText>
             </View>
-            <ThemedText style={[editStyles.fieldHint, { color: tc.textMuted }]}>
-              Enter the % you contribute from your base pay. Check your LES block "DEDUCTIONS" — look for Traditional TSP and/or Roth TSP lines.
-            </ThemedText>
-            <NumberStepper label="Traditional TSP" value={tsp} min={0} max={100} onChange={setTsp} unit="%" />
-            <NumberStepper label="Roth TSP" value={rothTsp} min={0} max={100} onChange={setRothTsp} unit="%" />
-            <ThemedText style={[editStyles.fieldHint, { color: tc.textMuted }]}>
-              Total TSP: {tsp + rothTsp}% of base pay. Combined cannot exceed IRS annual limit ($24,500 for FY2026).
-            </ThemedText>
+            {isRetired ? (
+              <ThemedText style={[editStyles.fieldHint, { color: tc.textMuted }]}>
+                Not applicable — retired pay is a pension, not payroll earnings, so it can&apos;t be contributed to TSP.
+                {alsoGsCivilian ? " If you contribute to TSP through your GS civilian job, that isn't tracked here yet." : ''}
+              </ThemedText>
+            ) : (
+              <>
+                <ThemedText style={[editStyles.fieldHint, { color: tc.textMuted }]}>
+                  Enter the % you contribute from your base pay. Check your LES block "DEDUCTIONS" — look for Traditional TSP and/or Roth TSP lines.
+                </ThemedText>
+                <NumberStepper label="Traditional TSP" value={tsp} min={0} max={100} onChange={setTsp} unit="%" />
+                <NumberStepper label="Roth TSP" value={rothTsp} min={0} max={100} onChange={setRothTsp} unit="%" />
+                <ThemedText style={[editStyles.fieldHint, { color: tc.textMuted }]}>
+                  Total TSP: {tsp + rothTsp}% of base pay. Combined cannot exceed IRS annual limit ($24,500 for FY2026).
+                </ThemedText>
+              </>
+            )}
 
             {/* Spouse Income */}
             <View style={[editStyles.sectionHead, { borderTopColor: tc.borderColor }]}>

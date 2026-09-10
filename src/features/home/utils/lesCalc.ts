@@ -271,8 +271,14 @@ export function calcLES(inputs: LESInputs): LESBreakdown {
   const stateRate      = isRetired ? getRetirementStateTaxRate(stateResidence) : getStateTaxRate(stateResidence);
   const gsStateRate     = getStateTaxRate(stateResidence);
   const stateTax       = basePay * stateRate + gsGrossMonthly * gsStateRate;
-  const traditionalTsp = basePay * (tspContribPct / 100);
-  const rothTsp        = basePay * (rothTspPct / 100);
+  // Retired pay is a pension, not payroll earnings — it isn't TSP-eligible
+  // (you can't contribute a portion of a pension disbursement to TSP, only
+  // actual wages). Zeroed here regardless of what tspContribPct/rothTspPct
+  // happen to be set to, so a member who set a real % while still active and
+  // then retired doesn't keep seeing a phantom deduction DFAS would never
+  // actually withhold from retired pay.
+  const traditionalTsp = isRetired ? 0 : basePay * (tspContribPct / 100);
+  const rothTsp        = isRetired ? 0 : basePay * (rothTspPct / 100);
   const tsp            = traditionalTsp + rothTsp;
   const sgli           = sglOptOut ? 0 : SGLI_MONTHLY;
   const dental   = hasDentalFamily ? dentalFamilyRate(payGrade) : 0;
