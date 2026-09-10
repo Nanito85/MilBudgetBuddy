@@ -13,22 +13,39 @@
  *     officers, capped at the E-9 max + IDP for commissioned officers.
  *     Every other IDP-only area gets the $225/mo but stays fully taxable.
  *
- * Sources (cross-referenced):
+ * Sources (cross-referenced, verified directly against irs.gov):
  *   - Current 2026 full designated-areas list: Missouri Secretary of
  *     State's published "Combat Zone, Hostile Fire or Imminent Danger
  *     areas" sheet (sources IRS/DoD designations for voter/tax purposes).
- *   - CZTE legal basis per area: IRS Publication 3 (Armed Forces' Tax
- *     Guide) + Executive Orders 12744 (Arabian Peninsula, 1991), 13119
- *     (Kosovo/former Yugoslavia, 1999), 13239 (Afghanistan, 2001), and the
- *     DoD "direct support" certifications tied to EO 13239 (Pakistan,
- *     Tajikistan, Jordan, Kyrgyzstan, Uzbekistan, Yemen, Djibouti, Somalia,
- *     Syria — all ongoing, no end date) and to EO 12744 (Turkey, Israel,
- *     Egypt, E. Mediterranean Sea — all EXPIRED 2003–2005, so those three
- *     are IDP-only today despite once being CZTE). Sinai Peninsula is CZTE
- *     by Congressional designation for multinational peacekeeping duty.
+ *   - CZTE legal basis per area: verified directly against the IRS's own
+ *     "Combat zones" page (irs.gov/individuals/military/combat-zones) and
+ *     IRS Publication 3 (Armed Forces' Tax Guide):
+ *       - EO 12744 (Arabian Peninsula, 1991): Persian Gulf, Red Sea, Gulf
+ *         of Oman, Gulf of Aden, Arabian Sea (north of 10°N/west of 68°E),
+ *         Iraq, Kuwait, Saudi Arabia, Oman, Bahrain, Qatar, UAE — plus
+ *         ongoing direct-support areas Jordan (since 3/19/2003), Lebanon
+ *         (since 2/12/2015), and Turkey EAST OF 33.51°E longitude only
+ *         (since 9/19/2016 — covers Incirlik AB/Diyarbakir; western Turkey
+ *         is not included). An EARLIER 2003–2005 direct-support
+ *         certification also covered Israel, Egypt, and the E.
+ *         Mediterranean Sea, but that one expired — those three are
+ *         IDP-only today, not CZTE.
+ *       - EO 13119 (Kosovo/former Yugoslavia, 1999): Serbia, Montenegro,
+ *         Albania, Kosovo, Adriatic Sea, Ionian Sea (north of 39th
+ *         parallel).
+ *       - EO 13239 (Afghanistan, 2001) plus its ongoing direct-support
+ *         areas: Pakistan, Tajikistan, Jordan, Kyrgyzstan, Uzbekistan
+ *         (since 9/19–10/1/2001), Yemen (since 4/10/2002), Djibouti (since
+ *         7/1/2002), Somalia and Syria (since 1/1/2004). A separate
+ *         Philippines direct-support certification (Mindanao/Sulu, tied to
+ *         orders referencing Operation Enduring Freedom) ran 1/9/2002 to
+ *         9/30/2015 and has EXPIRED — Philippines is IDP-only today, not
+ *         CZTE, despite still appearing on the general danger-pay list.
+ *       - Sinai Peninsula: CZTE via the Tax Cuts and Jobs Act (2017), for
+ *         multinational peacekeeping (MFO) duty.
  *   - Former Yugoslavia areas (Bosnia, Herzegovina, Croatia, Macedonia)
- *     under Public Law 104-117 are NOT in the current 2026 list at all —
- *     no longer any designation, active or otherwise.
+ *     under the older Public Law 104-117 are NOT in the current 2026 list
+ *     at all — no longer any designation, active or otherwise.
  *
  * HOW TO UPDATE: these designations do change (areas get added/removed as
  * operations start/end) — re-check the current-year designated-areas list
@@ -95,7 +112,7 @@ export const DEPLOYMENT_LOCATIONS: DeploymentLocation[] = [
   loc('Kosovo', 'czte'),
   loc('Kuwait', 'czte'),
   loc('Kyrgyzstan', 'czte'),
-  loc('Lebanon', 'idp_only'),
+  loc('Lebanon', 'czte'),
   loc('Libya', 'idp_only'),
   loc('Malaysia (State of Sabah)', 'idp_only'),
   loc('Mali', 'idp_only'),
@@ -105,7 +122,9 @@ export const DEPLOYMENT_LOCATIONS: DeploymentLocation[] = [
   loc('Oman', 'czte'),
   loc('Pakistan', 'czte'),
   loc('Persian Gulf', 'czte'),
-  loc('Philippines (Mindanao, Sulu Archipelago)', 'czte'),
+  // CZTE for this location expired 9/30/2015 (was tied to orders
+  // referencing Operation Enduring Freedom) — IDP-only today.
+  loc('Philippines (Mindanao, Sulu Archipelago)', 'idp_only'),
   loc('Qatar', 'czte'),
   loc('Red Sea', 'czte'),
   loc('Saudi Arabia', 'czte'),
@@ -117,7 +136,12 @@ export const DEPLOYMENT_LOCATIONS: DeploymentLocation[] = [
   loc('Syria', 'czte'),
   loc('Tajikistan', 'czte'),
   loc('Tunisia', 'idp_only'),
-  loc('Turkey', 'idp_only'),
+  // CZTE only applies east of 33.51°E longitude (Incirlik AB, Diyarbakir),
+  // in direct support of the Arabian Peninsula combat zone, since
+  // 9/19/2016 — split into two entries so western Turkey doesn't overclaim
+  // the tax exclusion it isn't eligible for.
+  loc('Turkey (east of 33.51°E — Incirlik AB / Diyarbakir)', 'czte'),
+  loc('Turkey (other)', 'idp_only'),
   loc('Uganda', 'idp_only'),
   loc('Ukraine', 'idp_only'),
   loc('United Arab Emirates', 'czte'),
