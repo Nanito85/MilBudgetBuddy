@@ -242,6 +242,7 @@ export default function LESDecoderScreen() {
           {/* Section filter chips */}
           <ScrollView
             horizontal
+            style={{ flexGrow: 0 }}
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.filterRow}>
             {(['all', ...sectionOrder] as const).map((s) => {
@@ -255,7 +256,7 @@ export default function LESDecoderScreen() {
                     styles.filterChip,
                     active && { backgroundColor: (meta?.color ?? Brand.accent) + '22', borderColor: meta?.color ?? Brand.accent },
                   ]}>
-                  {meta && <ThemedText style={{ fontSize: 12 }}>{meta.icon}</ThemedText>}
+                  {meta && <ThemedText style={styles.filterChipIcon}>{meta.icon}</ThemedText>}
                   <ThemedText style={[styles.filterChipText, { color: tc.textMuted }, active && { color: meta?.color ?? Brand.accent }]}>
                     {s === 'all' ? 'ALL' : meta!.label}
                   </ThemedText>
@@ -538,9 +539,15 @@ const styles = StyleSheet.create({
   searchIcon: { fontSize: 16 },
   searchInput: { flex: 1, fontSize: 15, paddingVertical: Spacing.two },
 
-  filterRow: { paddingHorizontal: Spacing.three, paddingBottom: Spacing.two, gap: Spacing.two, flexDirection: 'row' },
+  // alignItems: 'center' matters here — a flexDirection:'row' container
+  // defaults to 'stretch' on the cross axis, so without it every chip
+  // stretches to match whichever sibling renders tallest. The emoji icon
+  // in some chips can render much taller than its own fontSize on certain
+  // devices/fonts, and without this, that blew up EVERY chip in the row to
+  // match it.
+  filterRow: { paddingHorizontal: Spacing.three, paddingBottom: Spacing.two, gap: Spacing.two, flexDirection: 'row', alignItems: 'center' },
   filterChip: {
-    flexDirection: 'row', alignItems: 'center', gap: 5,
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 5,
     paddingHorizontal: Spacing.three, paddingVertical: 8,
     borderRadius: 99, borderWidth: 1, borderColor: 'rgba(128,128,128,0.25)',
   },
@@ -548,6 +555,7 @@ const styles = StyleSheet.create({
   // fontSize alone doesn't, so at larger sizes the pill's fixed padding
   // stopped being enough room and its rounded border clipped the letters.
   filterChipText: { fontSize: 13, lineHeight: 17, fontWeight: '700', letterSpacing: 0.3 },
+  filterChipIcon: { fontSize: 12, lineHeight: 15 },
 
   content: { paddingHorizontal: Spacing.three, paddingTop: Spacing.two, gap: Spacing.two },
   section: { gap: Spacing.two },
