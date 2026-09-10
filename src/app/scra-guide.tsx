@@ -63,7 +63,7 @@ const PROTECTIONS: Protection[] = [
     summary: 'You can terminate residential leases and auto leases upon receiving qualifying orders.',
     details:
       'Under 50 USC §3955 (both residential and motor vehicle leases are covered by this same section):\n\n' +
-      'RESIDENTIAL LEASES: You may terminate a lease entered into before or during service if you receive orders for a PCS of 90+ miles, or deployment of 90+ days.\n' +
+      'RESIDENTIAL LEASES: You may terminate a lease entered into before or during service if you receive ANY PCS orders (no minimum distance — the statute has no mileage threshold), or orders to deploy with a unit for 90+ days.\n' +
       '• Termination effective 30 days after next rent payment due date after delivering notice.\n' +
       '• Must provide written notice + copy of orders to the landlord.\n\n' +
       'AUTO LEASES: You may terminate an auto lease if you are called to active duty for 180+ days, or receive PCS orders from CONUS to OCONUS (or OCONUS to a new location).\n' +
