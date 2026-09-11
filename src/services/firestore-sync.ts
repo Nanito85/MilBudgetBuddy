@@ -226,6 +226,32 @@ function startAutoPush(uid: string) {
   pushUnsubs.push(...subs);
 }
 
+// The full set of collection keys startAutoPush() above subscribes to —
+// kept in one place so withAutoPushSuppressed() below can't silently drift
+// out of sync with the subscription list the same way the old two-copies-
+// of-the-store-list bug did for OHA locations.
+const SYNCED_COLLECTION_KEYS = [
+  'profile', 'budget', 'debt', 'expenses', 'kids', 'goals', 'networth', 'nwSnapshots', 'lifeEvents',
+];
+
+// Exposed for resetAllLocalData() (services/reset-local-data.ts) — a local-
+// only reset must NOT cascade into startAutoPush's subscribers and silently
+// overwrite the signed-in user's cloud data with the freshly-reset defaults
+// (that file's own doc comment says this is meant to be "purely the
+// on-device data wipe," and Settings' Reset All Data / Delete Account UI
+// deliberately treats them as two separate actions with different scope).
+// Marks every synced collection as "applying remote" for the duration of
+// `fn`, the same guard startSync() already uses for incoming snapshots, so
+// the auto-push listeners skip pushing the reset up.
+export function withAutoPushSuppressed<T>(fn: () => T): T {
+  SYNCED_COLLECTION_KEYS.forEach((k) => applyingRemote.add(k));
+  try {
+    return fn();
+  } finally {
+    SYNCED_COLLECTION_KEYS.forEach((k) => applyingRemote.delete(k));
+  }
+}
+
 // ── Store write-through helpers ───────────────────────────────────────────────
 
 function snapshotUser() {
