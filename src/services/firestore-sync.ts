@@ -268,6 +268,9 @@ function snapshotUser() {
   const s = useUserStore.getState();
   return {
     branch: s.branch ?? null,
+    financialGoal: s.financialGoal ?? null,
+    hasSeenTutorial: s.hasSeenTutorial,
+    greetingStyle: s.greetingStyle,
     payGrade: s.payGrade ?? null,
     rankVariant: s.rankVariant ?? null,
     lastName: s.lastName ?? null,
