@@ -192,21 +192,25 @@ export default function CommandModeScreen() {
     });
   }, [payGrade, yos, mhaZip, dutyStationId, hasSpouse, housingStatus, specialPaysTotal, tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence, lesOverrides, serviceStatus, familySeparated, dependentsMhaZip, alsoGsCivilian, gsGrade, gsStep, gsLocalityKey, isDeployed, deploymentLocationId]);
 
-  // VA disability compensation — retired members only, and only added to
-  // TOTAL GROSS when CRDP-eligible (50%+ rating). Below 50%, federal law
-  // requires waiving an equal amount of retired pay to receive this
-  // tax-free instead — breakdown.netPay above already reflects the full
-  // pre-waiver entitlement, so adding VA compensation on top of it would
-  // double-count for anyone under the CRDP threshold. Still shown as its
-  // own line either way (see the income rows below) since it's real money
-  // physically received — this only controls whether it's summed into the
-  // worksheet's totals. Same rule the Retirement Calculator's CRDP section
-  // and Home screen's VA Disability card already apply.
+  // VA disability compensation — available regardless of service status (a
+  // member doesn't need to be retired to have a service-connected rating).
+  // The CRDP offset only matters for someone actually drawing retired pay:
+  // below 50%, federal law requires waiving an equal amount of retired pay
+  // to receive this tax-free instead — breakdown.netPay above already
+  // reflects the full pre-waiver entitlement, so adding VA compensation on
+  // top of it would double-count for a retiree under the CRDP threshold.
+  // A non-retiree has no retired pay to waive at all, so their VA
+  // compensation is always fully additive regardless of rating %. Still
+  // shown as its own line either way (see the income rows below) since
+  // it's real money physically received — this only controls whether it's
+  // summed into the worksheet's totals. Same rule the Retirement
+  // Calculator's CRDP section and Home screen's VA Disability card apply.
+  const isRetired = serviceStatus === 'retired';
   const vaMonthly = useMemo(() => {
-    if (serviceStatus !== 'retired' || !vaDisabilityPercent) return 0;
+    if (!vaDisabilityPercent) return 0;
     return monthlyCompensation(vaDisabilityPercent, hasSpouse, numChildren);
-  }, [serviceStatus, vaDisabilityPercent, hasSpouse, numChildren]);
-  const crdpEligible = (vaDisabilityPercent ?? 0) >= 50;
+  }, [vaDisabilityPercent, hasSpouse, numChildren]);
+  const crdpEligible = !isRetired || (vaDisabilityPercent ?? 0) >= 50;
   const vaInTotal = crdpEligible ? vaMonthly : 0;
 
   const totalBudgeted = useMemo(

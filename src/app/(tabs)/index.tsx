@@ -255,10 +255,15 @@ export default function DashboardScreen() {
     return getDrillPay(payGrade, yos, drillsPerMonth ?? 4);
   }, [serviceStatus, payGrade, yos, drillsPerMonth]);
 
+  // A member doesn't need to be retired to draw VA disability compensation
+  // (medically separated before 20 years, still serving with a rating from a
+  // prior injury, etc) — this used to gate on serviceStatus === 'retired',
+  // so anyone else with a real rating never saw this card at all even though
+  // they're owed real, separate, tax-free income.
   const vaMonthly = useMemo(() => {
-    if (serviceStatus !== 'retired' || !vaDisabilityPercent) return null;
+    if (!vaDisabilityPercent) return null;
     return monthlyCompensation(vaDisabilityPercent, hasSpouse, numChildren);
-  }, [serviceStatus, vaDisabilityPercent, hasSpouse, numChildren]);
+  }, [vaDisabilityPercent, hasSpouse, numChildren]);
 
   return (
     <ThemedView style={styles.container}>
@@ -383,7 +388,7 @@ export default function DashboardScreen() {
           </View>
         )}
 
-        {/* ── VA DISABILITY (RETIRED) ──────────────────────────────── */}
+        {/* ── VA DISABILITY (any service status with a rating set) ──── */}
         {vaMonthly !== null && (
           <View style={styles.section}>
             <SectionHeader label="VA DISABILITY" accentColor={Brand.tactical} />
@@ -395,8 +400,9 @@ export default function DashboardScreen() {
                 <ThemedText style={[styles.statusPayValue, { color: tc.tactical }]}>{fmtPay(vaMonthly)}</ThemedText>
                 <ThemedText type="small" themeColor="textSecondary" style={styles.statusPayNote}>
                   Estimate only — verify current rates at va.gov.{' '}
-                  {(vaDisabilityPercent ?? 0) >= 50
-                    // CRDP (Concurrent Retirement and Disability Pay): a VA
+                  {serviceStatus === 'retired'
+                    // CRDP (Concurrent Retirement and Disability Pay) only
+                    // applies to someone actually drawing retired pay. A VA
                     // rating of 50%+ gets this fully in addition to retired
                     // pay above, no offset. Below 50%, VA law requires
                     // waiving an equal amount of retired pay to receive this
@@ -406,8 +412,13 @@ export default function DashboardScreen() {
                     // Calculator's CRDP section already explains in more
                     // depth — this just makes sure nobody adds the two
                     // card totals together and gets a number too high.
-                    ? 'You qualify for CRDP (50%+ rating) — this is fully in addition to your retired pay above.'
-                    : 'Below the 50% CRDP threshold, this amount offsets your retired pay above rather than adding to it — see the Retirement Calculator for the full breakdown.'}
+                    ? ((vaDisabilityPercent ?? 0) >= 50
+                        ? 'You qualify for CRDP (50%+ rating) — this is fully in addition to your retired pay above.'
+                        : 'Below the 50% CRDP threshold, this amount offsets your retired pay above rather than adding to it — see the Retirement Calculator for the full breakdown.')
+                    // Not retired — no retired pay to interact with at all,
+                    // so this is simply separate, tax-free income with no
+                    // offset consideration.
+                    : 'This is separate, tax-free income — it does not affect or get affected by any other pay shown on this screen.'}
                 </ThemedText>
               </View>
             </View>

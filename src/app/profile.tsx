@@ -408,13 +408,16 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
       setReserveInfo(drillsPerMonth);
     }
     if (isRetired) {
-      setRetiredInfo(retirementDate || undefined, vaPercent);
       // A retiree can ALSO currently be a GS civilian — retired pay, VA
       // disability, and a GS paycheck stack as three independent income
       // sources for the same person (see lesCalc.ts). Only meaningful here;
       // the pure-civilian case already sets gsGrade/gsStep via setGSInfo above.
       setAlsoGsCivilian(alsoGsCivilian, gsGrade, gsStep, gsLocality);
     }
+    // VA disability rating applies regardless of service status — this used
+    // to only save when isRetired, so a non-retired member's rating was
+    // silently discarded on save even after the UI let them pick one.
+    setRetiredInfo(isRetired ? (retirementDate || undefined) : undefined, vaPercent);
     if (!isRetired && !isCivilian) {
       // Family separation (unaccompanied OCONUS tour, sea duty, etc.) only
       // applies to someone actually drawing active/reserve BAH — a retiree
@@ -652,7 +655,7 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
               </>
             )}
 
-            {/* Retired — retirement date + VA disability rating */}
+            {/* Retired — retirement date */}
             {isRetired && (
               <>
                 <ThemedText style={[editStyles.fieldLabel, { color: tc.textHint }]}>MONTH & YEAR YOU RETIRED</ThemedText>
@@ -664,24 +667,41 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
                   </ThemedText>
                   <ThemedText style={{ fontSize: 18, paddingRight: 4 }}>📅</ThemedText>
                 </Pressable>
+              </>
+            )}
 
-                <ThemedText style={[editStyles.fieldLabel, { color: tc.textHint }]}>VA DISABILITY RATING</ThemedText>
-                <View style={editStyles.gsRow}>
-                  {VA_PICKER_OPTIONS.map((p) => (
-                    <Pressable
-                      key={p}
-                      onPress={() => setVaPercent(p)}
-                      style={[editStyles.gsChip, { width: 52, borderColor: tc.borderColor, backgroundColor: tc.surface }, vaPercent === p && editStyles.gsChipActive]}>
-                      <ThemedText style={[editStyles.gsChipText, { color: tc.textHint }, vaPercent === p && { color: tc.accent }]}>
-                        {p}%
-                      </ThemedText>
-                    </Pressable>
-                  ))}
-                </View>
-                <ThemedText style={[editStyles.dateHint, { color: tc.tactical }]}>
-                  ↳ Est. VA compensation: {fmtPay(monthlyCompensation(vaPercent, spouse, children))}/mo
-                </ThemedText>
+            {/* VA Disability Rating — available regardless of service status.
+                A member doesn't need to be retired to have a service-connected
+                VA rating (medically separated before 20 years, still serving
+                with a rating from a prior injury, etc). This used to be nested
+                under isRetired, so anyone else had no way to enter one at all
+                and the Home screen's VA card silently never showed for them,
+                even though they may be owed real, separate compensation. */}
+            <ThemedText style={[editStyles.fieldLabel, { color: tc.textHint }]}>VA DISABILITY RATING (IF ANY)</ThemedText>
+            <ThemedText style={[editStyles.fieldHint, { color: tc.textHint, marginTop: -Spacing.two }]}>
+              Optional — set this even if you're still serving or separated without retiring. VA compensation is separate, tax-free income independent of any other pay.
+            </ThemedText>
+            <View style={editStyles.gsRow}>
+              {VA_PICKER_OPTIONS.map((p) => (
+                <Pressable
+                  key={p}
+                  onPress={() => setVaPercent(p)}
+                  style={[editStyles.gsChip, { width: 52, borderColor: tc.borderColor, backgroundColor: tc.surface }, vaPercent === p && editStyles.gsChipActive]}>
+                  <ThemedText style={[editStyles.gsChipText, { color: tc.textHint }, vaPercent === p && { color: tc.accent }]}>
+                    {p}%
+                  </ThemedText>
+                </Pressable>
+              ))}
+            </View>
+            {vaPercent > 0 && (
+              <ThemedText style={[editStyles.dateHint, { color: tc.tactical }]}>
+                ↳ Est. VA compensation: {fmtPay(monthlyCompensation(vaPercent, spouse, children))}/mo
+              </ThemedText>
+            )}
 
+            {/* Retired-only settings continue below */}
+            {isRetired && (
+              <>
                 {/* Retired + currently working GS civilian — retired pay, VA
                     disability, and a GS paycheck all stack together, so this
                     doesn't replace anything above; it adds to it. */}
