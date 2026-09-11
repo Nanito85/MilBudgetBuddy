@@ -85,6 +85,7 @@ export interface GiBillResult {
   monthlyTotalValue: number;
 
   tuitionNote: string;
+  bahNote: string;
 }
 
 export function calcGiBill(inputs: GiBillInputs): GiBillResult {
@@ -105,7 +106,16 @@ export function calcGiBill(inputs: GiBillInputs): GiBillResult {
   } else {
     rawBah = monthlyBahAtSchool * tierRate;
   }
-  const monthlyBah = Math.round(rawBah * enrollRate);
+  // MHA (housing) has a stricter enrollment threshold than tuition or the
+  // book stipend: 38 CFR 21.9700 requires MORE than half-time — "half-time"
+  // itself pays $0 MHA, not a prorated half rate. Book stipend only needs
+  // AT LEAST half-time and genuinely does prorate to 50% there, which is
+  // why enrollRate is still the right multiplier for annualBookStipend
+  // below — this used to also apply that same 50% rate to BAH, overstating
+  // a half-time student's housing benefit by the full BAH amount.
+  // Source: va.gov/education/benefit-rates/post-9-11-gi-bill-rates (MHA
+  // eligibility: "rate of pursuit must be more than 50%").
+  const monthlyBah = enrollment === 'half' ? 0 : Math.round(rawBah * enrollRate);
 
   // Tuition coverage
   let tuitionCap: number;
@@ -135,6 +145,10 @@ export function calcGiBill(inputs: GiBillInputs): GiBillResult {
     ? 'N/A (online)'
     : `~$${monthlyTuitionValue.toLocaleString()}/mo`;
 
+  const bahNote = enrollment === 'half'
+    ? 'No housing allowance is payable at exactly half-time — MHA requires enrollment MORE than half-time (38 CFR 21.9700). Tuition and the book stipend still apply.'
+    : '';
+
   return {
     monthsRemaining,
     monthsUsed,
@@ -153,5 +167,6 @@ export function calcGiBill(inputs: GiBillInputs): GiBillResult {
     annualBookStipend,
     monthlyTotalValue,
     tuitionNote,
+    bahNote,
   };
 }

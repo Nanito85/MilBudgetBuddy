@@ -243,6 +243,9 @@ export default function GiBillCalculatorScreen() {
               </View>
               <ThemedText style={[styles.breakdownVal, { color: tc.textPrimary }]}>{result.monthlyBahDisplay}</ThemedText>
             </View>
+            {result.bahNote.length > 0 && (
+              <ThemedText style={[styles.tuitionNote, { color: tc.warning }]}>{result.bahNote}</ThemedText>
+            )}
 
             <View style={styles.breakdownRow}>
               <View style={styles.breakdownLeft}>
@@ -305,7 +308,7 @@ export default function GiBillCalculatorScreen() {
 
         <ThemedView type="backgroundElement" style={styles.noteCard}>
           <ThemedText style={[styles.noteText, { color: tc.textMuted }]}>
-            Rates are AY{GI_BILL_DATA_YEAR}. BAH rates adjust annually each August. Housing allowance is paid only during active enrollment (not during breaks). Transfer of benefits to dependents requires 4+ years remaining service at time of request. Verify entitlements at benefits.va.gov/gibill.
+            Rates are AY{GI_BILL_DATA_YEAR}. BAH rates adjust annually each August. Housing allowance is paid only during active enrollment (not during breaks), and only above half-time — see note above if that applies to you. Transfer of benefits to dependents requires 6+ years of service already completed plus agreeing to serve 4 more years (10 years total), waived for Purple Heart recipients. Verify entitlements at benefits.va.gov/gibill.
           </ThemedText>
         </ThemedView>
 
