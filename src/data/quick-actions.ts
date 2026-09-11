@@ -66,6 +66,25 @@ export function getDefaultQuickAccessIds(
   if (serviceStatus === 'retired') {
     return ['retirement', 'va_dis', 'ets', 'tricare'];
   }
+  // A pure civilian (GS employee, no active/reserve/retired military status —
+  // see lesCalc.ts's isCivilianOnly) has no PCS orders, TRICARE, SCRA
+  // protections, or VA/deployment benefits at all. This case used to fall
+  // through to the active-duty switch below unhandled, same as every other
+  // financialGoal branch there, which could default a civilian's Quick
+  // Access tiles to PCS/DITY/TLE/TRICARE/SCRA — tools that flat-out don't
+  // apply to them. TSP still applies (GS employees have their own TSP).
+  if (serviceStatus === 'civilian') {
+    switch (financialGoal) {
+      case 'save_money':       return ['budget', 'tsp', 'credit', 'net_worth'];
+      case 'pay_debt':         return ['debt', 'budget', 'credit', 'net_worth'];
+      case 'retirement':       return ['tsp', 'net_worth', 'credit', 'debt'];
+      case 'family_budgeting': return ['budget', 'credit', 'net_worth', 'debt'];
+      case 'emergency_fund':   return ['budget', 'debt', 'credit', 'net_worth'];
+      // pcs_planning has no civilian equivalent — falls through to the
+      // generic default rather than showing PCS/DITY/TLE tiles.
+      default:                 return DEFAULT_QUICK_ACCESS_IDS;
+    }
+  }
   if (serviceStatus === 'reserve') {
     switch (financialGoal) {
       case 'retirement':       return ['tsp', 'retirement', 'va_dis', 'gi_bill'];
