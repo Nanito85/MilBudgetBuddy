@@ -56,15 +56,17 @@ export default function PrivacyCenterScreen() {
 
         <View style={s.hero}>
           <ThemedText style={s.heroIcon}>🔐</ThemedText>
-          <ThemedText style={[s.heroTitle, { color: tc.textPrimary }]}>YOUR DATA STAYS ON YOUR DEVICE</ThemedText>
+          <ThemedText style={[s.heroTitle, { color: tc.textPrimary }]}>YOUR DATA STAYS PRIVATE</ThemedText>
           <ThemedText style={[s.heroSub, { color: tc.textSecondary }]}>
-            MilBudgetBuddy stores all financial data locally on your phone. We do not sell,
-            share, or monetize your personal or financial information.
+            MilBudgetBuddy stores your financial data locally on your phone by default — it only
+            leaves your device if you create an account for cross-device sync, and even then it
+            goes to your own private Firebase account. We do not sell, share, or monetize your
+            personal or financial information.
           </ThemedText>
         </View>
 
         <Section title="WHAT DATA WE COLLECT">
-          <Row icon="📱" label="Local Device Storage" value="Profile, budget, expenses, savings goals — stored on your device only via AsyncStorage" />
+          <Row icon="📱" label="Local Device Storage" value="Profile, budget, expenses, savings goals — stored on your device via AsyncStorage, and also in your own private cloud account if you're signed in" />
           <Row icon="☁️" label="Cloud Sync (if signed in)" value="Your data is synced to your personal Firebase account. Only you can access it." />
           <Row icon="🪪" label="Account Info" value="Email address only, if you create an account. Used for sync and account recovery." />
           <Row icon="📊" label="Anonymous Analytics" value="App opens and feature usage — no names, no pay data, no PII. Used to improve the app." />
@@ -80,7 +82,7 @@ export default function PrivacyCenterScreen() {
         </Section>
 
         <Section title="YOUR RIGHTS">
-          <Row icon="📤" label="Export Your Data" value="All data is stored locally — you can access it directly or use the Financial Readiness Worksheet to export." />
+          <Row icon="📤" label="Export Your Data" value="Your data lives on your device (and your own cloud account if signed in) — access it directly in the app or use the Financial Readiness Worksheet to export." />
           <Row icon="🗑️" label="Delete Your Data" value="Delete Account (Settings → Account) permanently removes all cloud data. Local data can be cleared via Settings → Reset All Data." />
           <Row icon="👁️" label="Data Transparency" value="You can view all stored data at any time in the app — profile, budget, expenses, goals." />
         </Section>

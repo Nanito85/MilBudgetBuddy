@@ -25,12 +25,16 @@ import { useUserStore } from '@/store/user.store';
 
 type Plan = 'monthly' | 'annual';
 
+// Cloud sync deliberately isn't listed here — it's not actually Pro-gated
+// (see _layout.tsx's sign-in effect and ProGateOverlay's always-allowed
+// /auth route: any signed-in account gets real-time sync regardless of Pro
+// status). Everything below IS behind the Pro gate — see
+// ProGateOverlay.ALWAYS_ALLOWED_PREFIXES, none of these routes are on it.
 const FEATURES = [
   'Full pay & entitlements suite — BAH, BAS, special pays, LES decoder',
   'PCS, DITY, and TLE/TLA calculators',
   'Retirement, TSP, and VA benefit projections',
   'Budget, debt payoff, and net worth tracking',
-  'Cloud sync across all your devices',
 ];
 
 export default function PaywallScreen() {
