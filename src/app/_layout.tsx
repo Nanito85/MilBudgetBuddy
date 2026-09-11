@@ -18,6 +18,7 @@ import { useUserStore } from '@/store/user.store';
 import { pullFromCloud, pushToCloud, startSync, stopSync } from '@/services/firestore-sync';
 import { useKidsStore } from '@/store/kids.store';
 import { initRemoteConfig } from '@/services/remote-config';
+import { schedulePayDayReminders } from '@/services/notifications';
 import { initSentry, setUserContext } from '@/services/sentry';
 import { startAnalytics, stopAnalytics, trackEvent, trackScreen } from '@/services/analytics';
 
@@ -28,6 +29,7 @@ export default function RootLayout() {
   const appTheme = useAppTheme();
   const hydrated = useUserStore((s) => s.hydrated);
   const onboarded = useUserStore((s) => s.onboarded);
+  const notificationsEnabled = useUserStore((s) => s.notificationsEnabled);
   const kidModeActive = useKidModeStore((s) => s.active);
   const { user, initialized, init: initAuth } = useAuthStore();
   const pathname = usePathname();
@@ -56,6 +58,23 @@ export default function RootLayout() {
       stopAnalytics();
     };
   }, []);
+
+  // schedulePayDayReminders() only ever schedules the NEXT 6 months of
+  // one-shot date-based notifications (unlike scheduleWeeklyTip's native
+  // WEEKLY-repeating trigger, which never needs refreshing) — and it used to
+  // only be called once, from Profile's notification toggle or onboarding.
+  // A member who enabled it and then just kept using the app normally would
+  // silently stop getting pay day reminders once that 6-month window ran
+  // out, with the Settings toggle still showing "on" the whole time and no
+  // indication anything had lapsed. Re-running it here on every app launch
+  // (once hydration confirms the setting is actually on) keeps the rolling
+  // window fresh — it's idempotent (cancels + replaces the same identifiers
+  // each time), so this is safe to call on every launch, not just the first.
+  useEffect(() => {
+    if (hydrated && notificationsEnabled) {
+      schedulePayDayReminders();
+    }
+  }, [hydrated, notificationsEnabled]);
 
   // When a user signs in/out, sync data. Anonymous sessions (created
   // silently by the paywall so a purchase never has to force a real
