@@ -144,18 +144,23 @@ export default function PCSCalculatorScreen() {
   const insets = useSafeAreaInsets();
   const tc = useThemeColors();
 
-  const { payGrade: profileGrade, hasSpouse: profileHasSpouse, mhaZip: profileZip, yos: profileYos, hydrated } = useUserStore();
+  const { payGrade: profileGrade, hasSpouse: profileHasSpouse, numChildren: profileNumChildren, mhaZip: profileZip, yos: profileYos, hydrated } = useUserStore();
+  // DLA/BAH "with dependents" applies to any dependent, not just a spouse —
+  // a single parent's default here used to come from profileHasSpouse alone,
+  // defaulting them (wrongly) to the no-dependents rate even though the
+  // toggle below is freely editable if they notice and fix it themselves.
+  const profileHasDependents = profileHasSpouse || (profileNumChildren ?? 0) > 0;
 
   const [activeTab, setActiveTab] = useState<Tab>('calculator');
 
   const [grade, setGrade] = useState<PayGrade>(profileGrade ?? 'E5');
-  const [withDep, setWithDep] = useState(profileGrade ? profileHasSpouse : true);
+  const [withDep, setWithDep] = useState(profileGrade ? profileHasDependents : true);
   const [profileApplied, setProfileApplied] = useState(false);
 
   useEffect(() => {
     if (hydrated && !profileApplied) {
       if (profileGrade) setGrade(profileGrade);
-      setWithDep(profileGrade ? profileHasSpouse : true);
+      setWithDep(profileGrade ? profileHasDependents : true);
       const profileStation = getInstallationByZip(profileZip);
       if (profileStation) setCurrentStation(profileStation);
       setProfileApplied(true);

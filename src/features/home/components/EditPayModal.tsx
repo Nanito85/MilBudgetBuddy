@@ -225,6 +225,7 @@ export function EditPayModal({ visible, onClose }: { visible: boolean; onClose: 
   const mhaZip           = useUserStore((s) => s.mhaZip);
   const dutyStationId    = useUserStore((s) => s.dutyStationId);
   const hasSpouse        = useUserStore((s) => s.hasSpouse);
+  const numChildren      = useUserStore((s) => s.numChildren);
   const housingStatus    = useUserStore((s) => s.housingStatus);
   const stateResidence   = useUserStore((s) => s.stateResidence);
   const serviceStatus    = useUserStore((s) => s.serviceStatus);
@@ -248,7 +249,7 @@ export function EditPayModal({ visible, onClose }: { visible: boolean; onClose: 
   const specialPaysTotal = specialPays.reduce((s, p) => s + p.monthlyAmount, 0);
   const calculated = payGrade
     ? calcLES({
-        payGrade, yos, mhaZip, dutyStationId, hasSpouse, housingStatus, specialPaysTotal,
+        payGrade, yos, mhaZip, dutyStationId, hasSpouse, numChildren, housingStatus, specialPaysTotal,
         tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence, serviceStatus,
         familySeparated, dependentsMhaZip, alsoGsCivilian, gsGrade: storedGsGradeLES, gsStep: storedGsStepLES, gsLocalityKey,
         isDeployed, deploymentLocationId,

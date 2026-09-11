@@ -821,6 +821,7 @@ export default function BudgetScreen() {
   const mhaZip = useUserStore((s) => s.mhaZip);
   const dutyStationId = useUserStore((s) => s.dutyStationId);
   const hasSpouse = useUserStore((s) => s.hasSpouse);
+  const numChildren = useUserStore((s) => s.numChildren);
   const housingStatus = useUserStore((s) => s.housingStatus);
   const specialPays = useUserStore((s) => s.specialPays);
   const tspContribPct = useUserStore((s) => s.tspContribPct);
@@ -860,6 +861,7 @@ export default function BudgetScreen() {
       mhaZip,
       dutyStationId,
       hasSpouse,
+      numChildren,
       housingStatus,
       specialPaysTotal,
       tspContribPct,
@@ -872,7 +874,7 @@ export default function BudgetScreen() {
       familySeparated, dependentsMhaZip, alsoGsCivilian, gsGrade, gsStep, gsLocalityKey,
       isDeployed, deploymentLocationId,
     }).netPay;
-  }, [payGrade, yos, mhaZip, dutyStationId, hasSpouse, housingStatus, specialPays, tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence, lesOverrides, serviceStatus, familySeparated, dependentsMhaZip, alsoGsCivilian, gsGrade, gsStep, gsLocalityKey, isDeployed, deploymentLocationId]);
+  }, [payGrade, yos, mhaZip, dutyStationId, hasSpouse, numChildren, housingStatus, specialPays, tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence, lesOverrides, serviceStatus, familySeparated, dependentsMhaZip, alsoGsCivilian, gsGrade, gsStep, gsLocalityKey, isDeployed, deploymentLocationId]);
 
   const remaining = netPay - totalBudgeted;
   const overBudget = remaining < 0;

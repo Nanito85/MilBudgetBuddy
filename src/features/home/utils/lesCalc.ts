@@ -121,6 +121,13 @@ export interface LESInputs {
   mhaZip: string | undefined;
   dutyStationId?: string; // used to resolve OHA when mhaZip is unset (OCONUS station)
   hasSpouse: boolean;
+  // With-dependents BAH/OHA/COLA/FSA eligibility is driven by hasSpouse OR
+  // this — a single member with children but no spouse still qualifies for
+  // the with-dependents rate on all of those (BAH-II eligibility is "any
+  // dependent," not spouse-specific). Only hasSpouse (not this) affects
+  // filing-status-based federal tax estimation below, since that's genuinely
+  // about marital status.
+  numChildren?: number;
   housingStatus?: HousingStatus; // defaults to 'off_base' (full BAH) if omitted
   specialPaysTotal: number;
   tspContribPct: number;   // Traditional TSP %
@@ -136,9 +143,9 @@ export interface LESInputs {
   serviceStatus?: ServiceStatus;
   // Family separation: member's own housing switches to the without-dependents
   // rate, and a second with-dependents BAH is added at the dependents' actual
-  // location, plus flat FSA. Only meaningful with hasSpouse (or a dependent) —
-  // there's no one to be "separated from" otherwise. Never applies to a
-  // retiree (retirees draw no BAH/OHA/FSA at all).
+  // location, plus flat FSA. Only meaningful with a dependent (spouse or
+  // child) — there's no one to be "separated from" otherwise. Never applies
+  // to a retiree (retirees draw no BAH/OHA/FSA at all).
   familySeparated?: boolean;
   dependentsMhaZip?: string;
   // GS civilian pay stacks onto this budget for a pure civilian
@@ -177,13 +184,13 @@ function resolveHousing(
   mhaZip: string | undefined,
   dutyStationId: string | undefined,
   payGrade: string,
-  hasSpouse: boolean,
+  hasDependents: boolean,
   housingStatus: HousingStatus,
 ): HousingResult {
   if (housingStatus === 'on_base_family_housing') return { amount: 0, isOha: false, approximate: false };
 
   if (mhaZip) {
-    const amount = housingStatus === 'barracks' ? BAH_PARTIAL : (getBahRate(mhaZip, payGrade as any, hasSpouse) ?? 0);
+    const amount = housingStatus === 'barracks' ? BAH_PARTIAL : (getBahRate(mhaZip, payGrade as any, hasDependents) ?? 0);
     return { amount, isOha: false, approximate: false };
   }
 
@@ -191,7 +198,7 @@ function resolveHousing(
 
   const area = dutyStationId ? getOhaAreaForInstallation(dutyStationId) : undefined;
   if (!area) return { amount: 0, isOha: false, approximate: false };
-  const rate = getOhaRate(area.locationLabel, payGrade as PayGrade, hasSpouse);
+  const rate = getOhaRate(area.locationLabel, payGrade as PayGrade, hasDependents);
   if (!rate) return { amount: 0, isOha: true, approximate: area.approximate };
   return { amount: rate.rentCeilingUSD + rate.utilityAllowanceUSD, isOha: true, approximate: area.approximate };
 }
@@ -208,13 +215,18 @@ export function retiredPayMultiplier(yos: number): number {
 
 export function calcLES(inputs: LESInputs): LESBreakdown {
   const {
-    payGrade, yos, mhaZip, dutyStationId, hasSpouse, housingStatus = 'off_base', specialPaysTotal,
+    payGrade, yos, mhaZip, dutyStationId, hasSpouse, numChildren = 0, housingStatus = 'off_base', specialPaysTotal,
     tspContribPct, rothTspPct = 0, hasDentalFamily, sglOptOut, stateResidence, overrides, serviceStatus,
     familySeparated, dependentsMhaZip, alsoGsCivilian, gsGrade, gsStep, gsLocalityKey,
     isDeployed, deploymentLocationId,
   } = inputs;
 
   const isRetired = serviceStatus === 'retired';
+  // With-dependents BAH/OHA/COLA/FSA eligibility — any dependent qualifies,
+  // not just a spouse (see LESInputs.numChildren doc comment). hasSpouse
+  // alone is kept for the federal tax filing-status estimate further below,
+  // which is genuinely marital-status-specific.
+  const hasDependents = hasSpouse || numChildren > 0;
   // A pure civilian (never served, or no longer tracked as active/reserve/
   // retired) draws no military pay at all — basic pay, BAH, and BAS are all
   // active-duty/retiree entitlements, not things a civilian has. Previously
@@ -230,7 +242,7 @@ export function calcLES(inputs: LESInputs): LESBreakdown {
   // member isn't housing a family there), plus flat FSA. Doesn't apply to a
   // retiree or pure civilian — neither draws BAH/OHA/FSA at all — and
   // requires an actual dependent to be separated from.
-  const familySepActive = !isRetired && !isCivilianOnly && !!familySeparated && hasSpouse;
+  const familySepActive = !isRetired && !isCivilianOnly && !!familySeparated && hasDependents;
 
   // A retiree draws retired pay (a percentage of High-3 average basic pay),
   // not an active-duty paycheck — no BAH, no BAS, and retired pay isn't
@@ -247,7 +259,7 @@ export function calcLES(inputs: LESInputs): LESBreakdown {
     // When separated, the member's OWN housing is at the without-dependents
     // rate — the with-dependents rate now belongs to the dependents' actual
     // location (familyBah below), not the member's empty household.
-    : resolveHousing(mhaZip, dutyStationId, payGrade, familySepActive ? false : hasSpouse, housingStatus);
+    : resolveHousing(mhaZip, dutyStationId, payGrade, familySepActive ? false : hasDependents, housingStatus);
   const calcBah = housing.amount;
   const calcBas = (isRetired || isCivilianOnly) ? 0 : getBAS(payGrade);
 
@@ -280,7 +292,7 @@ export function calcLES(inputs: LESInputs): LESBreakdown {
   let cola = 0;
   let colaTracked = false;
   if (!isRetired && !isCivilianOnly) {
-    const colaHasDep = familySepActive ? false : hasSpouse;
+    const colaHasDep = familySepActive ? false : hasDependents;
     if (mhaZip) {
       const conus = getConusCola(mhaZip, payGrade as PayGrade, yos, colaHasDep);
       if (conus != null) { cola = conus; colaTracked = true; }

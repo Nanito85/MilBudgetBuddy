@@ -56,6 +56,7 @@ export default function CarLoanScreen() {
   const mhaZip           = useUserStore((s) => s.mhaZip);
   const dutyStationId    = useUserStore((s) => s.dutyStationId);
   const hasSpouse        = useUserStore((s) => s.hasSpouse);
+  const numChildren      = useUserStore((s) => s.numChildren);
   const housingStatus    = useUserStore((s) => s.housingStatus);
   const specialPays      = useUserStore((s) => s.specialPays);
   const tspContribPct    = useUserStore((s) => s.tspContribPct);
@@ -97,14 +98,14 @@ export default function CarLoanScreen() {
       calcLES({
         payGrade: grade,
         yos: storeYos ?? 4,
-        mhaZip, dutyStationId, hasSpouse, housingStatus, specialPaysTotal,
+        mhaZip, dutyStationId, hasSpouse, numChildren, housingStatus, specialPaysTotal,
         tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence,
         overrides: grade === storeGrade ? lesOverrides : undefined,
         serviceStatus,
         familySeparated, dependentsMhaZip, alsoGsCivilian, gsGrade, gsStep, gsLocalityKey,
         isDeployed, deploymentLocationId,
       }),
-    [grade, storeYos, mhaZip, dutyStationId, hasSpouse, housingStatus, specialPaysTotal, tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence, lesOverrides, storeGrade, serviceStatus, familySeparated, dependentsMhaZip, alsoGsCivilian, gsGrade, gsStep, gsLocalityKey, isDeployed, deploymentLocationId],
+    [grade, storeYos, mhaZip, dutyStationId, hasSpouse, numChildren, housingStatus, specialPaysTotal, tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence, lesOverrides, storeGrade, serviceStatus, familySeparated, dependentsMhaZip, alsoGsCivilian, gsGrade, gsStep, gsLocalityKey, isDeployed, deploymentLocationId],
   );
   const takeHome   = Math.round(breakdown.netPay);
   const principal  = Math.max(0, price - downPmt);

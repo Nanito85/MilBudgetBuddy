@@ -829,8 +829,13 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
             {/* Family Separation — unaccompanied OCONUS tour, sea duty, etc.
                 Doesn't apply to a retiree or pure civilian (no BAH/OHA/FSA to
                 split), and there's no one to be separated FROM without a
-                dependent. */}
-            {!isRetired && !isCivilian && spouse && (
+                dependent — a spouse OR a child qualifies (FSA isn't
+                spouse-exclusive; a single parent with legal custody of a
+                child qualifies the same as a married member). This used to
+                require `spouse` specifically, silently hiding this whole
+                section — and the real FSA/dependents-BAH entitlement it
+                represents — from single military parents. */}
+            {!isRetired && !isCivilian && (spouse || children > 0) && (
               <>
                 <View style={editStyles.toggleRow}>
                   <ThemedText style={[editStyles.toggleLabel, { color: tc.textPrimary }]}>Currently Separated From Family</ThemedText>

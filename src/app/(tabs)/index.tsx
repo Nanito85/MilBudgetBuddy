@@ -212,13 +212,13 @@ export default function DashboardScreen() {
   const breakdown = useMemo(() => {
     if (!payGrade) return null;
     return calcLES({
-      payGrade, yos, mhaZip, dutyStationId, hasSpouse, housingStatus, specialPaysTotal,
+      payGrade, yos, mhaZip, dutyStationId, hasSpouse, numChildren, housingStatus, specialPaysTotal,
       tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence,
       overrides: lesOverrides, serviceStatus,
       familySeparated, dependentsMhaZip, alsoGsCivilian, gsGrade, gsStep, gsLocalityKey,
       isDeployed, deploymentLocationId,
     });
-  }, [payGrade, yos, mhaZip, dutyStationId, hasSpouse, housingStatus, specialPaysTotal, tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence, lesOverrides, serviceStatus, familySeparated, dependentsMhaZip, alsoGsCivilian, gsGrade, gsStep, gsLocalityKey, isDeployed, deploymentLocationId]);
+  }, [payGrade, yos, mhaZip, dutyStationId, hasSpouse, numChildren, housingStatus, specialPaysTotal, tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence, lesOverrides, serviceStatus, familySeparated, dependentsMhaZip, alsoGsCivilian, gsGrade, gsStep, gsLocalityKey, isDeployed, deploymentLocationId]);
 
   // ── Mission Readiness Score (0-100) ─────────────────────────────────────────
   const readinessChecks = useMemo(() => {

@@ -184,13 +184,13 @@ export default function CommandModeScreen() {
   const breakdown = useMemo(() => {
     if (!payGrade) return null;
     return calcLES({
-      payGrade, yos, mhaZip, dutyStationId, hasSpouse, housingStatus, specialPaysTotal,
+      payGrade, yos, mhaZip, dutyStationId, hasSpouse, numChildren, housingStatus, specialPaysTotal,
       tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence,
       overrides: lesOverrides, serviceStatus,
       familySeparated, dependentsMhaZip, alsoGsCivilian, gsGrade, gsStep, gsLocalityKey,
       isDeployed, deploymentLocationId,
     });
-  }, [payGrade, yos, mhaZip, dutyStationId, hasSpouse, housingStatus, specialPaysTotal, tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence, lesOverrides, serviceStatus, familySeparated, dependentsMhaZip, alsoGsCivilian, gsGrade, gsStep, gsLocalityKey, isDeployed, deploymentLocationId]);
+  }, [payGrade, yos, mhaZip, dutyStationId, hasSpouse, numChildren, housingStatus, specialPaysTotal, tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence, lesOverrides, serviceStatus, familySeparated, dependentsMhaZip, alsoGsCivilian, gsGrade, gsStep, gsLocalityKey, isDeployed, deploymentLocationId]);
 
   // VA disability compensation — available regardless of service status (a
   // member doesn't need to be retired to have a service-connected rating).
