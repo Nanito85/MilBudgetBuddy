@@ -407,31 +407,44 @@ export default function PaywallScreen() {
     } finally {
       setVerifying(false);
     }
-    if (Platform.OS === 'ios') {
-      const sku = selected === 'monthly' ? IOS_MONTHLY_SKU : IOS_ANNUAL_SKU;
-      const sub = subscriptions.find((s) => s.id === sku);
-      if (!sub) {
-        notAvailable(sku);
+    // requestPurchase() itself rejects (not just onPurchaseError above) when
+    // the user backs out of the native purchase sheet — on Android that's a
+    // CodedError "User cancelled the operation" thrown straight out of this
+    // promise. Left unawaited-for-errors, that became an unhandled promise
+    // rejection that Sentry logged as a real error (issue MILBUDGETBUDDY-1,
+    // _construct/index.android) even though it's expected user behavior, not
+    // a bug. Swallow it the same way onPurchaseError already does.
+    try {
+      if (Platform.OS === 'ios') {
+        const sku = selected === 'monthly' ? IOS_MONTHLY_SKU : IOS_ANNUAL_SKU;
+        const sub = subscriptions.find((s) => s.id === sku);
+        if (!sub) {
+          notAvailable(sku);
+          return;
+        }
+        await requestPurchase({ type: 'subs', request: { apple: { sku } } });
         return;
       }
-      await requestPurchase({ type: 'subs', request: { apple: { sku } } });
-      return;
-    }
 
-    const offer = selected === 'monthly' ? androidMonthlyOffer : androidAnnualOffer;
-    if (!offer?.offerTokenAndroid) {
-      notAvailable(ANDROID_PRODUCT_ID);
-      return;
-    }
-    await requestPurchase({
-      type: 'subs',
-      request: {
-        google: {
-          skus: [ANDROID_PRODUCT_ID],
-          subscriptionOffers: [{ sku: ANDROID_PRODUCT_ID, offerToken: offer.offerTokenAndroid }],
+      const offer = selected === 'monthly' ? androidMonthlyOffer : androidAnnualOffer;
+      if (!offer?.offerTokenAndroid) {
+        notAvailable(ANDROID_PRODUCT_ID);
+        return;
+      }
+      await requestPurchase({
+        type: 'subs',
+        request: {
+          google: {
+            skus: [ANDROID_PRODUCT_ID],
+            subscriptionOffers: [{ sku: ANDROID_PRODUCT_ID, offerToken: offer.offerTokenAndroid }],
+          },
         },
-      },
-    });
+      });
+    } catch (e: any) {
+      if (e?.code !== 'user-cancelled' && e?.message !== 'User cancelled the operation') {
+        captureError(e, { stage: 'request-purchase', platform: Platform.OS });
+      }
+    }
   };
 
   const handleRestore = async () => {
