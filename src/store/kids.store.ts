@@ -10,6 +10,7 @@ interface KidsState {
   hydrated: boolean;
   hydrate: () => Promise<void>;
   addKid: (nickname: string, gender: KidGender) => void;
+  updateKid: (kidId: string, nickname: string, gender: KidGender) => void;
   removeKid: (kidId: string) => void;
   addGoal: (kidId: string, name: string, emoji: string, targetAmount: number) => void;
   updateGoalProgress: (kidId: string, goalId: string, amount: number) => void;
@@ -87,6 +88,16 @@ export const useKidsStore = create<KidsState>((set, get) => ({
   addKid: (nickname, gender) => {
     const kid: KidProfile = { id: uid(), nickname, gender, goals: [], chores: [], pendingCompletions: [] };
     const kids = [...get().kids, kid];
+    set({ kids });
+    saveKids(kids);
+  },
+
+  updateKid: (kidId, nickname, gender) => {
+    const trimmed = nickname.trim();
+    if (!trimmed) return;
+    const kids = get().kids.map((k) =>
+      k.id === kidId ? { ...k, nickname: trimmed, gender } : k,
+    );
     set({ kids });
     saveKids(kids);
   },

@@ -19,7 +19,7 @@ import { ChoresList } from '@/features/kids/components/ChoresList';
 import { GoalMeter } from '@/features/kids/components/GoalMeter';
 import { KIDS_TIPS, getDailyKidsTipIndex } from '@/data/kids-tips';
 import { useKidsStore } from '@/store/kids.store';
-import { ChoreFrequency, Goal, getKidTheme } from '@/types/kids.types';
+import { ChoreFrequency, Goal, KidGender, getKidTheme } from '@/types/kids.types';
 import { Spacing } from '@/constants/theme';
 import { useThemeColors } from '@/hooks/use-theme';
 
@@ -485,6 +485,107 @@ const choreStyles = StyleSheet.create({
   freqLabel: { fontSize: 12, fontWeight: '700', letterSpacing: 0.5 },
 });
 
+// ── Edit Kid Modal ─────────────────────────────────────────────────────────────
+// Renaming a kid was previously only possible by deleting and re-adding the
+// whole profile (losing goals/chores/history) — the nickname shown on this
+// screen's header had no edit affordance at all, so a misspelled name could
+// never be fixed in place.
+
+function EditKidModal({ visible, nickname, gender, onClose, onSave }: {
+  visible: boolean;
+  nickname: string;
+  gender: KidGender;
+  onClose: () => void;
+  onSave: (nickname: string, gender: KidGender) => void;
+}) {
+  const tc = useThemeColors();
+  const [name, setName] = useState(nickname);
+  const [selectedGender, setSelectedGender] = useState<KidGender>(gender);
+
+  // Sync state whenever the modal is (re)opened for this kid.
+  React.useEffect(() => {
+    if (visible) { setName(nickname); setSelectedGender(gender); }
+  }, [visible, nickname, gender]);
+
+  const theme = getKidTheme(selectedGender);
+  const isValid = name.trim().length > 0;
+
+  const submit = () => {
+    if (!isValid) return;
+    onSave(name.trim(), selectedGender);
+    Keyboard.dismiss();
+    onClose();
+  };
+
+  return (
+    <Modal visible={visible} animationType="slide" presentationStyle="pageSheet">
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+        <SafeAreaView style={[addGoalStyles.container, { backgroundColor: tc.surface, borderTopColor: theme.accent }]}>
+          <View style={[addGoalStyles.header, { borderBottomColor: tc.borderColor }]}>
+            <Pressable onPress={() => { Keyboard.dismiss(); onClose(); }} style={[addGoalStyles.cancelBtn, { backgroundColor: tc.surfaceInner }]}>
+              <ThemedText style={[addGoalStyles.cancelText, { color: tc.textSecondary }]}>✕</ThemedText>
+            </Pressable>
+            <ThemedText style={[addGoalStyles.title, { color: theme.accent }]}>✏️ EDIT CADET</ThemedText>
+            <Pressable
+              onPress={submit}
+              disabled={!isValid}
+              style={[addGoalStyles.saveBtn, { backgroundColor: theme.accent }, !isValid && { opacity: 0.4 }]}>
+              <ThemedText style={addGoalStyles.saveBtnText}>SAVE</ThemedText>
+            </Pressable>
+          </View>
+
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+            style={addGoalStyles.list}
+            contentContainerStyle={addGoalStyles.scroll}>
+
+            <ThemedText style={[addGoalStyles.fieldLabel, { color: tc.textSecondary }]}>CALL SIGN (NICKNAME)</ThemedText>
+            <View style={[addGoalStyles.inputWrap, { backgroundColor: tc.inputBg, borderColor: tc.borderColor }]}>
+              <TextInput
+                value={name}
+                onChangeText={setName}
+                placeholder="e.g. Maverick"
+                placeholderTextColor={tc.textHint}
+                style={[addGoalStyles.input, { color: tc.textPrimary }]}
+                autoFocus
+                autoCapitalize="words"
+                returnKeyType="done"
+                onSubmitEditing={submit}
+              />
+            </View>
+
+            <ThemedText style={[addGoalStyles.fieldLabel, { color: tc.textSecondary, marginTop: Spacing.two }]}>THEME</ThemedText>
+            <View style={choreStyles.freqRow}>
+              {(['boy', 'girl'] as KidGender[]).map((g) => {
+                const gTheme = getKidTheme(g);
+                const isSelected = selectedGender === g;
+                return (
+                  <Pressable
+                    key={g}
+                    onPress={() => setSelectedGender(g)}
+                    style={[
+                      choreStyles.freqBtn,
+                      { borderColor: tc.borderColor },
+                      isSelected && { borderColor: gTheme.accent, backgroundColor: gTheme.accent + '20' },
+                    ]}>
+                    <ThemedText style={choreStyles.freqEmoji}>{g === 'boy' ? '💙' : '💗'}</ThemedText>
+                    <ThemedText style={[choreStyles.freqLabel, { color: tc.textSecondary }, isSelected && { color: gTheme.accent }]}>
+                      {g === 'boy' ? 'BLUE / SKY' : 'PINK / PURPLE'}
+                    </ThemedText>
+                  </Pressable>
+                );
+              })}
+            </View>
+          </ScrollView>
+        </SafeAreaView>
+      </KeyboardAvoidingView>
+    </Modal>
+  );
+}
+
 // ── Main Kid Screen ────────────────────────────────────────────────────────────
 
 export default function KidScreen() {
@@ -498,7 +599,9 @@ export default function KidScreen() {
   const updateGoal   = useKidsStore((s) => s.updateGoal);
   const removeGoal   = useKidsStore((s) => s.removeGoal);
   const addChore     = useKidsStore((s) => s.addChore);
+  const updateKid    = useKidsStore((s) => s.updateKid);
 
+  const [showEditKid, setShowEditKid]   = useState(false);
   const [showAddGoal, setShowAddGoal]   = useState(false);
   const [showEditGoal, setShowEditGoal] = useState(false);
   const [editingGoal, setEditingGoal]   = useState<Goal | null>(null);
@@ -543,12 +646,15 @@ export default function KidScreen() {
           <Pressable onPress={() => router.canGoBack() ? router.back() : router.push('/profile')} style={styles.backBtn}>
             <ThemedText style={[styles.backText, { color: theme.accentLight }]}>‹ Back</ThemedText>
           </Pressable>
-          <View style={styles.headerCenter}>
+          <Pressable onPress={() => setShowEditKid(true)} style={styles.headerCenter} hitSlop={8}>
             <View style={[styles.headerBadge, { backgroundColor: theme.primary + '30' }]}>
               <ThemedText style={[styles.rankLabel, { color: theme.accentLight }]}>{theme.label}</ThemedText>
             </View>
-            <ThemedText style={styles.nickname}>{kid.nickname.toUpperCase()}</ThemedText>
-          </View>
+            <View style={styles.nicknameRow}>
+              <ThemedText style={styles.nickname}>{kid.nickname.toUpperCase()}</ThemedText>
+              <ThemedText style={styles.nicknameEditIcon}>✏️</ThemedText>
+            </View>
+          </Pressable>
           <View style={[styles.earnedBadge, { backgroundColor: theme.card }]}>
             <ThemedText style={[styles.earnedAmt, { color: theme.badge }]}>${totalEarned.toFixed(2)}</ThemedText>
             <ThemedText style={styles.earnedLabel}>EARNED</ThemedText>
@@ -724,6 +830,14 @@ export default function KidScreen() {
         <View style={{ height: Spacing.six }} />
       </ScrollView>
 
+      <EditKidModal
+        visible={showEditKid}
+        nickname={kid.nickname}
+        gender={kid.gender}
+        onClose={() => setShowEditKid(false)}
+        onSave={(nickname, gender) => updateKid(kid.id, nickname, gender)}
+      />
+
       <AddGoalModal
         visible={showAddGoal}
         accentColor={theme.accent}
@@ -767,7 +881,9 @@ const styles = StyleSheet.create({
   headerCenter: { flex: 1, alignItems: 'center', gap: 4 },
   headerBadge: { borderRadius: 10, paddingHorizontal: 8, paddingVertical: 2 },
   rankLabel: { fontSize: 9, fontWeight: '900', letterSpacing: 2, textTransform: 'uppercase' },
+  nicknameRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   nickname: { fontSize: 22, fontWeight: '900', letterSpacing: 1, color: '#FFFFFF' },
+  nicknameEditIcon: { fontSize: 13, opacity: 0.6 },
   earnedBadge: { width: 70, alignItems: 'center', borderRadius: 12, padding: Spacing.one + 2 },
   earnedAmt:   { fontSize: 15, fontWeight: '900' },
   earnedLabel: { fontSize: 8, letterSpacing: 1.5, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase' },
