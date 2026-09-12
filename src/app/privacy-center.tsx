@@ -109,7 +109,7 @@ export default function PrivacyCenterScreen() {
         </View>
 
         <ThemedText style={[s.contactText, { color: tc.textMuted }]}>
-          Questions? Contact us at: support@milbudgetbuddy.com
+          Questions? Contact us at: milbudgetbuddy@proton.me
         </ThemedText>
 
       </ScrollView>

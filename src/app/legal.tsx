@@ -9,7 +9,7 @@ import { Spacing } from '@/constants/theme';
 import { useThemeColors } from '@/hooks/use-theme';
 import { useAuthStore } from '@/store/auth.store';
 
-const SUPPORT_EMAIL = 'support@milbudgetbuddy.com';
+const SUPPORT_EMAIL = 'milbudgetbuddy@proton.me';
 const PRIVACY_URL = 'https://nanito85.github.io/MilBudgetBuddy/privacy-policy.html';
 const TERMS_URL = 'https://nanito85.github.io/MilBudgetBuddy/terms.html';
 
