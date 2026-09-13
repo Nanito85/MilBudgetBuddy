@@ -364,14 +364,24 @@ export function calcLES(inputs: LESInputs): LESBreakdown {
   const stateRate      = isRetired ? getRetirementStateTaxRate(stateResidence) : getStateTaxRate(stateResidence);
   const gsStateRate     = getStateTaxRate(stateResidence);
   const stateTax       = taxableBasePay * stateRate + gsGrossMonthly * gsStateRate;
-  // Retired pay is a pension, not payroll earnings — it isn't TSP-eligible
-  // (you can't contribute a portion of a pension disbursement to TSP, only
-  // actual wages). Zeroed here regardless of what tspContribPct/rothTspPct
-  // happen to be set to, so a member who set a real % while still active and
-  // then retired doesn't keep seeing a phantom deduction DFAS would never
-  // actually withhold from retired pay.
-  const traditionalTsp = isRetired ? 0 : basePay * (tspContribPct / 100);
-  const rothTsp        = isRetired ? 0 : basePay * (rothTspPct / 100);
+  // TSP is only ever deducted from actual PAYROLL wages, never from a
+  // pension — so which paycheck it comes off of depends on which one the
+  // person actually has: active-duty basePay for a serving member, or GS
+  // wages (gsGrossMonthly) for a pure civilian OR a retiree who's also
+  // currently working a GS job (both are FERS TSP, off their GS salary —
+  // retired pay itself is never TSP-eligible, matching the "Retired pay is
+  // a pension" reasoning below). Previously this was hardcoded to
+  // `basePay * pct` unconditionally (just zeroed for isRetired) — basePay is
+  // always 0 for a pure civilian (see calcBasePay above), so a civilian's
+  // tspContribPct/rothTspPct silently multiplied against 0 and NEVER
+  // deducted anything, even though gsGrossMonthly (their actual paycheck)
+  // was sitting right there. Using gsGrossMonthly here also means a retiree
+  // who separately elects TSP % against their GS civilian job now actually
+  // sees that deduction, instead of the flat "not tracked" gap noted in
+  // EditPayModal before this fix.
+  const tspEligiblePay = gsActive ? gsGrossMonthly : (isRetired ? 0 : basePay);
+  const traditionalTsp = tspEligiblePay * (tspContribPct / 100);
+  const rothTsp        = tspEligiblePay * (rothTspPct / 100);
   const tsp            = traditionalTsp + rothTsp;
   // SGLI (Servicemembers' Group Life Insurance) only covers members while
   // actively serving — it terminates at separation/retirement (with a 120-
@@ -391,7 +401,15 @@ export function calcLES(inputs: LESInputs): LESBreakdown {
   // SBP (Survivor Benefit Plan) is the retiree-side analog: an opt-in
   // premium against retired pay, never active-duty pay. See sbpCalc.ts.
   const sbp = (isRetired && sbpEnabled) ? calcSbpPremium(basePay, sbpCoveragePct) : 0;
-  const dental   = hasDentalFamily ? dentalFamilyRate(payGrade) : 0;
+  // TDP (TRICARE Dental Program) is a uniformed-services-only benefit — it
+  // has no equivalent for someone who has never served, so `hasDentalFamily`
+  // is meaningless for a pure civilian. (A retiree who's alsoGsCivilian can
+  // still enroll in TDP as a retiree, same as any other retiree — this only
+  // excludes serviceStatus === 'civilian'.) Federal civilians get dental
+  // through FEDVIP instead, an entirely different enrollee-pays-full-premium
+  // plan this app doesn't model — see the civilian-only gating of the
+  // "Family Dental Plan" toggle itself in EditPayModal for the matching fix.
+  const dental   = (hasDentalFamily && !isCivilianOnly) ? dentalFamilyRate(payGrade) : 0;
   const gsFica = gsGrossMonthly * FICA_RATE;
 
   const totalDeductions = fica + fedTax + stateTax + tsp + sgli + sbp + dental + extraDeductions;

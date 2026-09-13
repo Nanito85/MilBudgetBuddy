@@ -194,6 +194,92 @@ console.log('\n[11] Spouse Aid & Attendance');
   assertEqual(monthlyCompensation(70, true, 0), 1808.45 + 153, 'Existing monthlyCompensation() signature/behavior unchanged');
 }
 
+// ── 12. GS civilian pay: TSP actually deducts from GS wages ───────────────────
+console.log('\n[12] GS civilian TSP deducts from gsGrossMonthly, not a phantom basePay');
+{
+  const civilianBase = {
+    payGrade: 'E7' as const, yos: 10, mhaZip: undefined, hasSpouse: false, numChildren: 0,
+    specialPaysTotal: 0, hasDentalFamily: false, sglOptOut: true,
+    serviceStatus: 'civilian' as const, gsGrade: 12, gsStep: 5, gsLocalityKey: 'RUS',
+  };
+  const noTsp = calcLES({ ...civilianBase, tspContribPct: 0, rothTspPct: 0 });
+  assertTrue(noTsp.gsGrossMonthly > 0, 'A pure civilian with GS grade/step set shows nonzero GS pay');
+  assertEqual(noTsp.tsp, 0, 'No TSP % elected -> no TSP deduction');
+
+  const withTsp = calcLES({ ...civilianBase, tspContribPct: 5, rothTspPct: 0 });
+  assertTrue(withTsp.tsp > 0, 'A pure civilian electing 5% TSP now actually has a nonzero TSP deduction (previously always $0 — TSP was computed off basePay, which is 0 for a civilian)');
+  assertEqual(withTsp.traditionalTsp, withTsp.gsGrossMonthly * 0.05, 'Civilian traditional TSP is 5% of GS gross pay, not basic pay');
+  assertEqual(withTsp.basePay, 0, 'A pure civilian still has no basePay at all (sanity check on the fix)');
+
+  // Retiree who ALSO works a GS job: TSP should come off the GS paycheck,
+  // never off the pension (retired pay).
+  const retiredGs = calcLES({
+    payGrade: 'E7', yos: 22, mhaZip: undefined, hasSpouse: false, numChildren: 0,
+    specialPaysTotal: 0, hasDentalFamily: false, sglOptOut: true,
+    serviceStatus: 'retired', alsoGsCivilian: true, gsGrade: 12, gsStep: 5, gsLocalityKey: 'RUS',
+    tspContribPct: 5, rothTspPct: 0,
+  });
+  assertTrue(retiredGs.basePay > 0, 'Retiree-who-also-works-GS still shows nonzero retired pay');
+  assertEqual(retiredGs.traditionalTsp, retiredGs.gsGrossMonthly * 0.05, 'Retiree-who-also-works-GS TSP is 5% of their GS pay, not their pension');
+
+  // A retiree with NO GS job at all still has no TSP-eligible income.
+  const retiredNoGs = calcLES({
+    payGrade: 'E7', yos: 22, mhaZip: undefined, hasSpouse: false, numChildren: 0,
+    specialPaysTotal: 0, hasDentalFamily: false, sglOptOut: true,
+    serviceStatus: 'retired', tspContribPct: 5, rothTspPct: 0,
+  });
+  assertEqual(retiredNoGs.tsp, 0, 'A retiree with no GS job at all still has $0 TSP (a pension alone is never TSP-eligible)');
+
+  // Active duty is unaffected by any of this — TSP still off basePay.
+  const active = calcLES({
+    payGrade: 'E7', yos: 10, mhaZip: undefined, hasSpouse: false, numChildren: 0,
+    specialPaysTotal: 0, hasDentalFamily: false, sglOptOut: true,
+    serviceStatus: 'active', tspContribPct: 5, rothTspPct: 0,
+  });
+  assertEqual(active.traditionalTsp, active.basePay * 0.05, 'Active duty TSP is still 5% of basic pay, unchanged by the GS-TSP fix');
+}
+
+// ── 13. TDP "Family Dental Plan" never applies to a pure civilian ─────────────
+console.log('\n[13] TDP dental deduction gated for civilians (a TRICARE/military-only benefit)');
+{
+  const civilianDental = calcLES({
+    payGrade: 'E5', yos: 5, mhaZip: undefined, hasSpouse: true, numChildren: 0,
+    specialPaysTotal: 0, tspContribPct: 0, hasDentalFamily: true, sglOptOut: true,
+    serviceStatus: 'civilian', gsGrade: 9, gsStep: 1, gsLocalityKey: 'RUS',
+  });
+  assertEqual(civilianDental.dental, 0, 'A pure civilian is never charged the TDP (TRICARE Dental Program) family premium, even with hasDentalFamily=true');
+
+  const activeDental = calcLES({
+    payGrade: 'E5', yos: 5, mhaZip: undefined, hasSpouse: true, numChildren: 0,
+    specialPaysTotal: 0, tspContribPct: 0, hasDentalFamily: true, sglOptOut: true,
+    serviceStatus: 'active',
+  });
+  assertTrue(activeDental.dental > 0, 'Active duty with Family Dental Plan enabled is still charged the TDP premium (unchanged behavior)');
+
+  const retiredGsDental = calcLES({
+    payGrade: 'E7', yos: 22, mhaZip: undefined, hasSpouse: true, numChildren: 0,
+    specialPaysTotal: 0, tspContribPct: 0, hasDentalFamily: true, sglOptOut: true,
+    serviceStatus: 'retired', alsoGsCivilian: true, gsGrade: 12, gsStep: 5, gsLocalityKey: 'RUS',
+  });
+  assertTrue(retiredGsDental.dental > 0, 'A retiree who also works a GS job can still be enrolled in TDP as a retiree (only pure civilians are gated out)');
+}
+
+// ── 14. State tax on stacked GS wages uses the regular (non-exempt) table ────
+console.log('\n[14] GS wages always use the standard state tax table, never a military-exempt one');
+{
+  // Kansas fully exempts military RETIREMENT pay but not ordinary wages —
+  // see getRetirementStateTaxRate's own header. A retiree's GS paycheck is
+  // ordinary civilian wage income and must still be taxed normally even in
+  // a state that exempts their pension.
+  const retiredGsInKS = calcLES({
+    payGrade: 'E7', yos: 22, mhaZip: undefined, hasSpouse: false, numChildren: 0,
+    specialPaysTotal: 0, tspContribPct: 0, hasDentalFamily: false, sglOptOut: true,
+    serviceStatus: 'retired', alsoGsCivilian: true, gsGrade: 12, gsStep: 5, gsLocalityKey: 'RUS',
+    stateResidence: 'KS',
+  });
+  assertTrue(retiredGsInKS.stateTax > 0, 'A retiree-who-also-works-GS living in a retirement-pay-exempt state (KS) is still taxed on their GS wages');
+}
+
 // ── Summary ────────────────────────────────────────────────────────────────────
 console.log(`\n${pass} passed, ${fail} failed`);
 if (fail > 0) process.exit(1);

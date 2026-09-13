@@ -31,6 +31,21 @@ export default function RetirementCalculatorScreen() {
   const profilePayGrade  = useUserStore((s) => s.payGrade);
   const profileYos       = useUserStore((s) => s.yos);
   const profileDateOfRank = useUserStore((s) => s.dateOfRank);
+  // This entire screen only models the two MILITARY retirement systems
+  // (legacy High-3 and BRS) — 20-year cliff vesting, High-3 average basic
+  // pay, TSP matched under BRS rules, CRDP/VA offset, etc. A pure civilian
+  // (serviceStatus === 'civilian', never served — see lesCalc.ts's
+  // isCivilianOnly) is under FERS instead: a completely different
+  // three-legged structure (FERS Basic Benefit ~1%/1.1% per year of civilian
+  // high-3 salary + Social Security + TSP, with its own MRA-based vesting/
+  // eligibility rules) that this screen doesn't model at all. Nothing here
+  // previously warned a civilian that the numbers on screen don't apply to
+  // them — this app has no FERS retirement calculator yet (a real future
+  // feature, out of scope for this pass), so the safest fix short of
+  // building one is a clear banner rather than silently letting a civilian
+  // read High-3/BRS numbers as if they were their own pension math.
+  const serviceStatus = useUserStore((s) => s.serviceStatus);
+  const isCivilianOnly = serviceStatus === 'civilian';
 
   const [grade, setGrade] = useState<PayGrade>('E7');
   // Grade the member holds today — distinct from "grade" (grade at retirement)
@@ -115,6 +130,16 @@ export default function RetirementCalculatorScreen() {
         style={{ flex: 1 }}
         contentContainerStyle={[styles.content, { paddingBottom: BottomTabInset + Spacing.five }]}
         showsVerticalScrollIndicator={false}>
+
+        {isCivilianOnly && (
+          <View style={[styles.section, { paddingBottom: 0 }]}>
+            <View style={[styles.matchBanner, { backgroundColor: `${Brand.warning}15` }]}>
+              <ThemedText type="small" style={{ color: tc.warning, fontWeight: '600' }}>
+                This calculator models MILITARY retirement (High-3 / BRS) only. As a civilian GS employee you&apos;re under FERS instead — a different pension formula (≈1%–1.1% × years × civilian high-3 salary), plus Social Security and TSP, with its own eligibility rules. FERS isn&apos;t modeled in this app yet, so the numbers below don&apos;t apply to you.
+              </ThemedText>
+            </View>
+          </View>
+        )}
 
         {/* YOUR SERVICE */}
         <View style={styles.section}>
