@@ -133,6 +133,8 @@ export default function DashboardScreen() {
   const hasDentalFamily = useUserStore((s) => s.hasDentalFamily);
   const sglOptOut = useUserStore((s) => s.sglOptOut);
   const stateResidence = useUserStore((s) => s.stateResidence);
+  const sbpEnabled = useUserStore((s) => s.sbpEnabled);
+  const sbpCoveragePct = useUserStore((s) => s.sbpCoveragePct);
   const lesOverrides = useUserStore((s) => s.lesOverrides);
   const installationName = useUserStore((s) => s.installationName);
   const serviceStatus    = useUserStore((s) => s.serviceStatus);
@@ -216,14 +218,20 @@ export default function DashboardScreen() {
       tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence,
       overrides: lesOverrides, serviceStatus,
       familySeparated, dependentsMhaZip, alsoGsCivilian, gsGrade, gsStep, gsLocalityKey,
-      isDeployed, deploymentLocationId,
+      isDeployed, deploymentLocationId, sbpEnabled, sbpCoveragePct,
     });
-  }, [payGrade, yos, mhaZip, dutyStationId, hasSpouse, numChildren, housingStatus, specialPaysTotal, tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence, lesOverrides, serviceStatus, familySeparated, dependentsMhaZip, alsoGsCivilian, gsGrade, gsStep, gsLocalityKey, isDeployed, deploymentLocationId]);
+  }, [payGrade, yos, mhaZip, dutyStationId, hasSpouse, numChildren, housingStatus, specialPaysTotal, tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence, lesOverrides, serviceStatus, familySeparated, dependentsMhaZip, alsoGsCivilian, gsGrade, gsStep, gsLocalityKey, isDeployed, deploymentLocationId, sbpEnabled, sbpCoveragePct]);
 
   // ── Mission Readiness Score (0-100) ─────────────────────────────────────────
+  // Retired pay isn't TSP-eligible (see lesCalc.ts) — the TSP checks below
+  // were previously always included, so a retiree could never fully
+  // satisfy them no matter how well-optimized everything else was, capping
+  // their score and leaving two permanently-unclearable "TO-DO" items on
+  // a screen meant to reflect THEIR actual financial readiness.
+  const isRetired = serviceStatus === 'retired';
   const readinessChecks = useMemo(() => {
     const setCats = budgetCategories.filter((c) => c.monthlyBudget > 0).length;
-    return [
+    const checks = [
       { label: 'Profile complete',        done: !!(payGrade && branch && yos > 0), pts: 20 },
       { label: 'Duty station set',        done: !!(mhaZip || dutyStationId),        pts: 5  },
       { label: 'State of residence set',  done: !!stateResidence,                   pts: 5  },
@@ -235,11 +243,17 @@ export default function DashboardScreen() {
       { label: 'Debt entries tracked',    done: debtEntries.length > 0,             pts: 5  },
       { label: 'Income & budget linked',  done: !!(breakdown && breakdown.netPay > 0 && budgetTotal > 0), pts: 10 },
     ];
-  }, [payGrade, branch, yos, mhaZip, dutyStationId, stateResidence, budgetCategories, budgetTotal, breakdown, tspContribPct, savingsGoals, debtEntries]);
+    return isRetired ? checks.filter((c) => !c.label.startsWith('TSP')) : checks;
+  }, [payGrade, branch, yos, mhaZip, dutyStationId, stateResidence, budgetCategories, budgetTotal, breakdown, tspContribPct, savingsGoals, debtEntries, isRetired]);
 
   const readinessScore = useMemo(() => {
     if (!payGrade) return null;
-    return Math.min(100, readinessChecks.reduce((s, c) => s + (c.done ? c.pts : 0), 0));
+    // Normalized against THIS checklist's own max (not a hardcoded 100) —
+    // dropping the TSP checks above for a retiree means their applicable
+    // points no longer sum to 100 on their own.
+    const maxPts = readinessChecks.reduce((s, c) => s + c.pts, 0);
+    const earned = readinessChecks.reduce((s, c) => s + (c.done ? c.pts : 0), 0);
+    return maxPts > 0 ? Math.min(100, Math.round((earned / maxPts) * 100)) : 0;
   }, [payGrade, readinessChecks]);
 
   const readinessLabel = readinessScore === null ? null
@@ -348,7 +362,7 @@ export default function DashboardScreen() {
           {breakdown ? (
             <>
               <PaySummaryCard breakdown={breakdown} />
-              <PayDayCountdown netPay={breakdown.netPay} />
+              <PayDayCountdown netPay={breakdown.netPay} isRetired={breakdown.isRetiredPay} />
             </>
           ) : (
             <Pressable

@@ -55,6 +55,12 @@ export function High3Card({ result, retirementAge }: High3Props) {
         <ThemedText type="small" themeColor="textSecondary">High-3 avg basic pay</ThemedText>
         <ThemedText style={styles.detailValue}>{formatMoney(result.high3AvgPay)}/mo</ThemedText>
       </View>
+      <View style={styles.detailRow}>
+        <ThemedText type="small" themeColor="textSecondary">Calculation method</ThemedText>
+        <ThemedText style={[styles.detailValue, { fontSize: 12 }]}>
+          {result.usedDetailedCalc ? 'Detailed (promotion-aware)' : 'Quick Estimate'}
+        </ThemedText>
+      </View>
 
       <View style={[styles.noteBox, { backgroundColor: `${Brand.primary}10` }]}>
         <ThemedText type="small" style={{ color: Brand.primaryLight, lineHeight: 18 }}>

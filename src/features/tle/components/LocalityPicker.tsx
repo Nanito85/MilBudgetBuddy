@@ -58,7 +58,12 @@ export function LocalityPicker({ selected, oconus, onSelect }: Props) {
       </Pressable>
 
       <Modal visible={open} animationType="slide" presentationStyle="pageSheet">
-        <View style={[styles.sheet, { backgroundColor: colors.background, paddingBottom: insets.bottom + Spacing.three }]}>
+        {/* presentationStyle="pageSheet" only gets its own safe-area chrome
+            from the OS on iOS -- on Android every Modal renders edge-to-edge
+            regardless of presentationStyle, so without this top inset the
+            header (and its "Done" button) rendered directly under the
+            status bar and couldn't be tapped there. */}
+        <View style={[styles.sheet, { backgroundColor: colors.background, paddingTop: insets.top, paddingBottom: insets.bottom + Spacing.three }]}>
           <View style={styles.sheetHeader}>
             <ThemedText style={styles.sheetTitle}>Select Location</ThemedText>
             <Pressable onPress={() => { setOpen(false); setQuery(''); }}>

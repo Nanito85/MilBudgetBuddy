@@ -1,11 +1,11 @@
 ﻿import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { PayGrade } from '@/data/bah-rates';
+import { PAY_GRADES, PayGrade } from '@/data/bah-rates';
 import { BASIC_PAY_DATA_YEAR, getBasicPay } from '@/data/basic-pay-rates';
 import { BreakEvenChart } from '@/features/retirement/components/BreakEvenChart';
 import { NumberStepper } from '@/features/retirement/components/NumberStepper';
@@ -49,6 +49,17 @@ export default function RetirementCalculatorScreen() {
     const years = Math.floor((Date.now() - new Date(profileDateOfRank).getTime()) / (365.25 * 24 * 3600 * 1000));
     return years >= 0 ? Math.min(years, profileYos || 10) : 3;
   });
+  // Detailed (promotion-aware) High-3 — only meaningful when yearsAtGrade < 3.
+  // Defaults to one grade below `grade`; re-synced whenever `grade` changes
+  // so it never silently points at a grade the member picked previously.
+  const [previousGrade, setPreviousGrade] = useState<PayGrade>(() => {
+    const idx = PAY_GRADES.indexOf(grade);
+    return PAY_GRADES[Math.max(0, idx - 1)];
+  });
+  useEffect(() => {
+    const idx = PAY_GRADES.indexOf(grade);
+    setPreviousGrade(PAY_GRADES[Math.max(0, idx - 1)]);
+  }, [grade]);
   const [retirementYOS, setRetirementYOS] = useState(20);
   const [system, setSystem] = useState<RetirementSystem>('both');
   const [tspContribIdx, setTspContribIdx] = useState(4);  // 5%
@@ -66,6 +77,8 @@ export default function RetirementCalculatorScreen() {
     currentYOS,
     tspContribRate,
     tspAnnualReturn,
+    yearsAtGrade,
+    previousGrade,
   });
 
   const showHigh3 = system === 'both' || system === 'high3';
@@ -173,9 +186,13 @@ export default function RetirementCalculatorScreen() {
               <View style={[styles.cardPadded, { paddingTop: 0 }]}>
                 <View style={[styles.matchBanner, { backgroundColor: `${Brand.warning}15` }]}>
                   <ThemedText type="small" style={{ color: tc.warning, fontWeight: '600' }}>
-                    High-3 note: You've been at {grade} for {yearsAtGrade} yr{yearsAtGrade !== 1 ? 's' : ''}. Your High-3 average will include time at a lower grade, slightly reducing your estimated pension.
+                    High-3 note: You&apos;ve been at {grade} for {yearsAtGrade} yr{yearsAtGrade !== 1 ? 's' : ''}, so part of your High-3 window was spent at your previous grade. Select it below for a Detailed estimate — otherwise this uses the Quick Estimate ({grade} the whole 36 months), which runs a bit high.
                   </ThemedText>
                 </View>
+                <ThemedText type="small" themeColor="textSecondary" style={{ marginTop: Spacing.two, marginBottom: Spacing.one }}>
+                  PREVIOUS GRADE (before {grade})
+                </ThemedText>
+                <GradePicker selected={previousGrade} onSelect={setPreviousGrade} />
               </View>
             )}
           </ThemedView>

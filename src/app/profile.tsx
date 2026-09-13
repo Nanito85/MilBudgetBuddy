@@ -52,7 +52,9 @@ import {
   getRankAbbrev,
 } from '@/types/user.types';
 import { VALID_RATINGS, monthlyCompensation } from '@/features/va/utils/vaDisabilityCalc';
-import { getDrillPay, fmtPay, FSA_MONTHLY } from '@/features/home/utils/lesCalc';
+import { getDrillPay, fmtPay, FSA_MONTHLY, retiredPayMultiplier } from '@/features/home/utils/lesCalc';
+import { getHigh3Average } from '@/data/basic-pay-rates';
+import { calcSbpPremium } from '@/features/retirement/utils/sbpCalc';
 import { EditPayModal } from '@/features/home/components/EditPayModal';
 import { GS_LOCALITIES } from '@/data/gs-pay-rates';
 
@@ -293,6 +295,8 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
   const storedDrills   = useUserStore((s) => s.drillsPerMonth);
   const storedRetDate  = useUserStore((s) => s.retirementDate);
   const storedVaPct    = useUserStore((s) => s.vaDisabilityPercent);
+  const storedSbpEnabled = useUserStore((s) => s.sbpEnabled);
+  const storedSbpCoveragePct = useUserStore((s) => s.sbpCoveragePct);
   const storedGsLocality  = useUserStore((s) => s.gsLocalityKey);
   const storedAlsoGsCivilian = useUserStore((s) => s.alsoGsCivilian);
   const storedFamilySeparated  = useUserStore((s) => s.familySeparated);
@@ -303,6 +307,7 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
   const setServiceStatus = useUserStore((s) => s.setServiceStatus);
   const setReserveInfo = useUserStore((s) => s.setReserveInfo);
   const setRetiredInfo = useUserStore((s) => s.setRetiredInfo);
+  const setSbpInfo     = useUserStore((s) => s.setSbpInfo);
   const setAlsoGsCivilian   = useUserStore((s) => s.setAlsoGsCivilian);
   const setFamilySeparation = useUserStore((s) => s.setFamilySeparation);
   const branch         = useUserStore((s) => s.branch);
@@ -312,6 +317,8 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
   const [retirementDate, setRetDate] = useState(storedRetDate ?? '');
   const [vaPercent, setVaPercent]    = useState(storedVaPct ?? 0);
   const [showRetDatePicker, setShowRetDatePicker] = useState(false);
+  const [sbpEnabled, setSbpEnabledLocal] = useState(storedSbpEnabled ?? false);
+  const [sbpCoveragePct, setSbpCoveragePctLocal] = useState(storedSbpCoveragePct ?? 1);
 
   const isCivilian = branch === 'other' || status === 'civilian';
   const isReserve  = status === 'reserve';
@@ -367,6 +374,8 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
     setDrillsPerMonth(storedDrills ?? 4);
     setRetDate(storedRetDate ?? '');
     setVaPercent(storedVaPct ?? 0);
+    setSbpEnabledLocal(storedSbpEnabled ?? false);
+    setSbpCoveragePctLocal(storedSbpCoveragePct ?? 1);
     setGrade(payGrade ?? 'E5');
     setRankVariant(storedVariant ?? 'default');
     setLn(lastName ?? '');
@@ -418,6 +427,10 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
     // to only save when isRetired, so a non-retired member's rating was
     // silently discarded on save even after the UI let them pick one.
     setRetiredInfo(isRetired ? (retirementDate || undefined) : undefined, vaPercent);
+    // SBP is a retiree-only election — never persist it as "on" for someone
+    // who isn't retired (e.g. if they were retired earlier, un-set it, then
+    // switched status back before saving).
+    setSbpInfo(isRetired ? sbpEnabled : false, sbpCoveragePct);
     if (!isRetired && !isCivilian) {
       // Family separation (unaccompanied OCONUS tour, sea duty, etc.) only
       // applies to someone actually drawing active/reserve BAH — a retiree
@@ -765,6 +778,37 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
                     </View>
                   </>
                 )}
+
+                {/* SBP is an opt-in premium against retired pay — it must
+                    never be assumed on for every retiree (a real share of
+                    retirees decline it), and it has no active-duty
+                    equivalent (see lesCalc.ts). */}
+                <View style={editStyles.toggleRow}>
+                  <ThemedText style={[editStyles.toggleLabel, { color: tc.textPrimary }]}>Survivor Benefit Plan (SBP)</ThemedText>
+                  <Switch value={sbpEnabled} onValueChange={setSbpEnabledLocal} trackColor={{ true: Brand.accent }} thumbColor="#FFF" />
+                </View>
+                {sbpEnabled && (
+                  <>
+                    <ThemedText style={[editStyles.fieldHint, { color: tc.textHint, marginTop: -Spacing.two }]}>
+                      Coverage — the % of your retired pay your spouse/beneficiary is insured for. Deducted from retired pay at 6.5% of the covered amount.
+                    </ThemedText>
+                    <View style={editStyles.gsRow}>
+                      {[1, 0.75, 0.5, 0.25].map((pct) => (
+                        <Pressable
+                          key={pct}
+                          onPress={() => setSbpCoveragePctLocal(pct)}
+                          style={[editStyles.gsChip, { width: 60, borderColor: tc.borderColor, backgroundColor: tc.surface }, sbpCoveragePct === pct && editStyles.gsChipActive]}>
+                          <ThemedText style={[editStyles.gsChipText, { color: tc.textHint }, sbpCoveragePct === pct && { color: tc.accent }]}>
+                            {Math.round(pct * 100)}%
+                          </ThemedText>
+                        </Pressable>
+                      ))}
+                    </View>
+                    <ThemedText style={[editStyles.dateHint, { color: tc.tactical }]}>
+                      ↳ Est. premium: {fmtPay(calcSbpPremium(getHigh3Average(grade, y) * retiredPayMultiplier(y), sbpCoveragePct))}/mo, deducted from retired pay
+                    </ThemedText>
+                  </>
+                )}
               </>
             )}
 
@@ -1046,7 +1090,7 @@ export default function ProfileScreen() {
       if (!granted) { Alert.alert('Permission Required', 'Enable notifications in device settings.'); return; }
       setNotifications(true);
       scheduleWeeklyTip(notificationHour, notificationMinute);
-      schedulePayDayReminders();
+      schedulePayDayReminders(undefined, serviceStatus === 'retired');
     } else {
       setNotifications(false);
       cancelWeeklyTip();

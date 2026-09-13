@@ -14,6 +14,7 @@ import { useAuthStore } from '@/store/auth.store';
 import { useKidModeStore } from '@/store/kid-mode.store';
 import { useLifeEventsStore } from '@/store/life-events.store';
 import { useTipsStore } from '@/store/tips.store';
+import { useVaClaimsStore } from '@/store/va-claims.store';
 import { useUserStore } from '@/store/user.store';
 import { pullFromCloud, pushToCloud, startSync, stopSync } from '@/services/firestore-sync';
 import { useKidsStore } from '@/store/kids.store';
@@ -30,6 +31,7 @@ export default function RootLayout() {
   const hydrated = useUserStore((s) => s.hydrated);
   const onboarded = useUserStore((s) => s.onboarded);
   const notificationsEnabled = useUserStore((s) => s.notificationsEnabled);
+  const serviceStatus = useUserStore((s) => s.serviceStatus);
   const kidModeActive = useKidModeStore((s) => s.active);
   const { user, initialized, init: initAuth } = useAuthStore();
   const pathname = usePathname();
@@ -51,6 +53,7 @@ export default function RootLayout() {
     useKidModeStore.getState().hydrate();
     useKidsStore.getState().hydrate();
     useLifeEventsStore.getState().hydrate();
+    useVaClaimsStore.getState().hydrate();
     const unsubAuth = initAuth();
     return () => {
       unsubAuth();
@@ -72,9 +75,9 @@ export default function RootLayout() {
   // each time), so this is safe to call on every launch, not just the first.
   useEffect(() => {
     if (hydrated && notificationsEnabled) {
-      schedulePayDayReminders();
+      schedulePayDayReminders(undefined, serviceStatus === 'retired');
     }
-  }, [hydrated, notificationsEnabled]);
+  }, [hydrated, notificationsEnabled, serviceStatus]);
 
   // When a user signs in/out, sync data. Anonymous sessions (created
   // silently by the paywall so a purchase never has to force a real
@@ -170,6 +173,7 @@ export default function RootLayout() {
         <Stack.Screen name="bah-guide" />
         <Stack.Screen name="reserves" />
         <Stack.Screen name="life-events" />
+        <Stack.Screen name="va-claims-tracker" />
         <Stack.Screen name="command-mode" />
         <Stack.Screen name="gs-pay-calculator" />
         <Stack.Screen name="promotion-calculator" />

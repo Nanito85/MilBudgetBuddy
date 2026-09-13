@@ -35,7 +35,10 @@ export function FamilyComposer({ hasSpouse, childAges, onSpouseChange, onChildAg
     <ThemedView type="backgroundElement" style={styles.card}>
       {/* Spouse toggle */}
       <View style={styles.row}>
-        <ThemedText style={styles.label}>Spouse / Domestic Partner</ThemedText>
+        {/* hasSpouse drives with-dependents eligibility (BAH/TLE/etc), which
+            requires a legally recognized spouse — an unmarried domestic
+            partner doesn't qualify, so this shouldn't imply otherwise. */}
+        <ThemedText style={styles.label}>Married (Spouse)</ThemedText>
         <View style={styles.toggle}>
           {([false, true] as const).map((val) => (
             <Pressable

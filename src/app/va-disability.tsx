@@ -10,10 +10,20 @@ import { useThemeColors } from '@/hooks/use-theme';
 import {
   combinedRating,
   monthlyCompensation,
+  monthlyCompensationDetailed,
   RatingInput,
   VALID_RATINGS,
   VA_RATES_ALONE,
+  VaDependentsDetailed,
 } from '@/features/va/utils/vaDisabilityCalc';
+
+type Limb = NonNullable<RatingInput['limb']>;
+const LIMB_OPTIONS: { value: Limb; label: string }[] = [
+  { value: 'left_arm',  label: 'Left Arm' },
+  { value: 'right_arm', label: 'Right Arm' },
+  { value: 'left_leg',  label: 'Left Leg' },
+  { value: 'right_leg', label: 'Right Leg' },
+];
 
 function uid() {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
@@ -67,12 +77,28 @@ export default function VaDisabilityScreen() {
   const [ratings, setRatings] = useState<RatingInput[]>([{ id: uid(), pct: 50 }]);
   const [hasSpouse, setHasSpouse] = useState(false);
   const [numChildren, setNumChildren] = useState(0);
+  // "Additional VA Dependents / Special Circumstances" — progressive
+  // disclosure, off by default so the common case (spouse + regular kids)
+  // stays a simple calculator. See monthlyCompensationDetailed.
+  const [showAdvancedDeps, setShowAdvancedDeps] = useState(false);
+  const [spouseAidAttendance, setSpouseAidAttendance] = useState(false);
+  const [numSchoolChildren, setNumSchoolChildren] = useState(0);
+  const [numDependentParents, setNumDependentParents] = useState<0 | 1 | 2>(0);
 
   const combined = useMemo(() => combinedRating(ratings), [ratings]);
-  const monthly = useMemo(
-    () => monthlyCompensation(combined.rounded, hasSpouse, numChildren),
-    [combined.rounded, hasSpouse, numChildren],
+  const hasAdvancedDeps = spouseAidAttendance || numSchoolChildren > 0 || numDependentParents > 0;
+  const detailedBreakdown = useMemo(
+    () => monthlyCompensationDetailed(combined.rounded, {
+      hasSpouse, spouseAidAttendance, numChildren, numSchoolChildren, numDependentParents,
+    } as VaDependentsDetailed),
+    [combined.rounded, hasSpouse, spouseAidAttendance, numChildren, numSchoolChildren, numDependentParents],
   );
+  // Only pulls in the advanced fields once the member actually set one —
+  // otherwise this matches monthlyCompensation() exactly (same numbers,
+  // same 5 other call sites' behavior untouched).
+  const monthly = hasAdvancedDeps
+    ? detailedBreakdown.total
+    : monthlyCompensation(combined.rounded, hasSpouse, numChildren);
 
   const addRating = () => {
     if (ratings.length >= 10) return;
@@ -86,6 +112,10 @@ export default function VaDisabilityScreen() {
 
   const updateRating = (id: string, pct: number) => {
     setRatings((prev) => prev.map((r) => (r.id === id ? { ...r, pct } : r)));
+  };
+
+  const updateLimb = (id: string, limb: Limb | undefined) => {
+    setRatings((prev) => prev.map((r) => (r.id === id ? { ...r, limb } : r)));
   };
 
   const ratingColor = combined.rounded >= 70 ? Brand.danger
@@ -110,6 +140,13 @@ export default function VaDisabilityScreen() {
         <TabBtn label="RATE TABLE"  active={tab === 'rates'}      onPress={() => setTab('rates')} />
       </View>
 
+      <Pressable onPress={() => router.push('/va-claims-tracker' as any)} style={styles.relatedToolRow}>
+        <ThemedText style={[styles.relatedToolText, { color: tc.textSecondary }]}>
+          Already filed? Track its stage and appeal deadline in the VA Claims & Appeals Tracker
+        </ThemedText>
+        <ThemedText style={[styles.relatedToolChevron, { color: tc.accent }]}>›</ThemedText>
+      </Pressable>
+
       <ScrollView
         style={{ flex: 1 }}
         contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + Spacing.five }]}
@@ -126,21 +163,48 @@ export default function VaDisabilityScreen() {
               </ThemedText>
 
               {ratings.map((r, i) => (
-                <View key={r.id} style={styles.ratingRow}>
-                  <ThemedText style={[styles.ratingIndex, { color: tc.textHint }]}>#{i + 1}</ThemedText>
-                  <View style={styles.ratingPickerWrap}>
-                    <RatingPicker value={r.pct} onChange={(v) => updateRating(r.id, v)} />
+                <View key={r.id} style={styles.ratingBlock}>
+                  <View style={styles.ratingRow}>
+                    <ThemedText style={[styles.ratingIndex, { color: tc.textHint }]}>#{i + 1}</ThemedText>
+                    <View style={styles.ratingPickerWrap}>
+                      <RatingPicker value={r.pct} onChange={(v) => updateRating(r.id, v)} />
+                    </View>
+                    {ratings.length > 1 && (
+                      <Pressable
+                        onPress={() => Alert.alert('Remove', `Remove rating #${i + 1}?`, [
+                          { text: 'Cancel', style: 'cancel' },
+                          { text: 'Remove', style: 'destructive', onPress: () => removeRating(r.id) },
+                        ])}
+                        style={styles.removeBtn}>
+                        <ThemedText style={styles.removeBtnText}>✕</ThemedText>
+                      </Pressable>
+                    )}
                   </View>
-                  {ratings.length > 1 && (
-                    <Pressable
-                      onPress={() => Alert.alert('Remove', `Remove rating #${i + 1}?`, [
-                        { text: 'Cancel', style: 'cancel' },
-                        { text: 'Remove', style: 'destructive', onPress: () => removeRating(r.id) },
-                      ])}
-                      style={styles.removeBtn}>
-                      <ThemedText style={styles.removeBtnText}>✕</ThemedText>
-                    </Pressable>
-                  )}
+                  {/* Optional — only needed for the bilateral factor (38 CFR
+                      §4.26), which applies when at least one rating affects
+                      a left extremity AND at least one affects a right
+                      extremity (arm or leg, any combination). Left unset,
+                      this rating is treated as not limb-specific. */}
+                  <View style={styles.limbRow}>
+                    <ThemedText style={[styles.limbLabel, { color: tc.textMuted }]}>LIMB (OPTIONAL — FOR BILATERAL FACTOR):</ThemedText>
+                    <View style={styles.limbChips}>
+                      <Pressable
+                        onPress={() => updateLimb(r.id, undefined)}
+                        style={[styles.limbChip, { borderColor: tc.borderColor }, !r.limb && styles.limbChipActive]}>
+                        <ThemedText style={[styles.limbChipText, { color: tc.textHint }, !r.limb && styles.limbChipTextActive]}>N/A</ThemedText>
+                      </Pressable>
+                      {LIMB_OPTIONS.map((opt) => (
+                        <Pressable
+                          key={opt.value}
+                          onPress={() => updateLimb(r.id, opt.value)}
+                          style={[styles.limbChip, { borderColor: tc.borderColor }, r.limb === opt.value && styles.limbChipActive]}>
+                          <ThemedText style={[styles.limbChipText, { color: tc.textHint }, r.limb === opt.value && styles.limbChipTextActive]}>
+                            {opt.label}
+                          </ThemedText>
+                        </Pressable>
+                      ))}
+                    </View>
+                  </View>
                 </View>
               ))}
 
@@ -174,22 +238,72 @@ export default function VaDisabilityScreen() {
                 </View>
               </View>
 
+              {/* Bilateral factor banner (38 CFR §4.26) — only when the
+                  member has at least one left-limb AND one right-limb
+                  rating. Plain-English explanation, not the regulation
+                  text, since most members won't know this rule exists. */}
+              {combined.bilateralApplied && (
+                <View style={[styles.bilateralBanner, { backgroundColor: `${Brand.tactical}15` }]}>
+                  <ThemedText style={{ color: tc.tactical, fontWeight: '700', fontSize: 12 }}>
+                    ✓ Bilateral factor applied
+                  </ThemedText>
+                  <ThemedText type="small" style={{ color: tc.textSecondary, marginTop: 2 }}>
+                    You have ratings on both a left and a right limb. The VA combines those first, then adds a 10% bonus (+{combined.bilateralBonus.toFixed(1)}% here) before combining with your other ratings — it&apos;s required by regulation, not optional, and gives you a slightly higher combined rating than simply combining every rating in one pass.
+                  </ThemedText>
+                </View>
+              )}
+
               {/* Step-by-step breakdown */}
               <View style={[styles.breakdownBox, { backgroundColor: tc.background }]}>
                 <ThemedText style={[styles.breakdownTitle, { color: tc.textMuted }]}>HOW THE VA CALCULATED THIS</ThemedText>
                 {(() => {
-                  const sorted = [...ratings].sort((a, b) => b.pct - a.pct);
-                  let remaining = 100;
-                  return sorted.map((r, i) => {
-                    const disabled = remaining * (r.pct / 100);
-                    remaining = remaining - disabled;
-                    return (
-                      <ThemedText key={r.id} style={[styles.breakdownStep, { color: tc.textHint }]}>
-                        {i === 0 ? `${r.pct}% of 100% = ${disabled.toFixed(1)}% disabled` : `${r.pct}% of ${(remaining + disabled).toFixed(1)}% = ${disabled.toFixed(1)}% more disabled`}
-                        {` → ${(100 - remaining).toFixed(1)}% total`}
+                  function walkThrough(items: RatingInput[], startLabel: string) {
+                    const sorted = [...items].sort((a, b) => b.pct - a.pct);
+                    let remaining = 100;
+                    return sorted.map((r, i) => {
+                      const disabled = remaining * (r.pct / 100);
+                      remaining = remaining - disabled;
+                      return (
+                        <ThemedText key={r.id} style={[styles.breakdownStep, { color: tc.textHint }]}>
+                          {i === 0 ? `${r.pct}% of ${startLabel} = ${disabled.toFixed(1)}% disabled` : `${r.pct}% of ${(remaining + disabled).toFixed(1)}% = ${disabled.toFixed(1)}% more disabled`}
+                          {` → ${(100 - remaining).toFixed(1)}% total`}
+                        </ThemedText>
+                      );
+                    });
+                  }
+
+                  if (!combined.bilateralApplied) {
+                    return walkThrough(ratings, '100%');
+                  }
+
+                  const limbRatings = ratings.filter((r) => r.limb);
+                  const otherRatings = ratings.filter((r) => !r.limb);
+                  // Recompute the bilateral subtotal the same way combinedRating()
+                  // did internally, purely so this walkthrough can show it.
+                  const limbSorted = [...limbRatings].sort((a, b) => b.pct - a.pct);
+                  let limbRemaining = 100;
+                  for (const r of limbSorted) limbRemaining = limbRemaining * (1 - r.pct / 100);
+                  const limbSubtotalExact = 100 - limbRemaining;
+                  const bilateralValue = limbSubtotalExact + limbSubtotalExact * 0.1;
+
+                  return (
+                    <>
+                      <ThemedText style={[styles.breakdownStep, { color: tc.tactical, fontWeight: '700' }]}>
+                        Step 1 — combine your bilateral (left + right limb) ratings:
                       </ThemedText>
-                    );
-                  });
+                      {walkThrough(limbRatings, '100%')}
+                      <ThemedText style={[styles.breakdownStep, { color: tc.tactical }]}>
+                        {limbSubtotalExact.toFixed(1)}% + 10% bilateral factor = {bilateralValue.toFixed(1)}% (treated as one disability)
+                      </ThemedText>
+                      <ThemedText style={[styles.breakdownStep, { color: tc.tactical, fontWeight: '700', marginTop: 4 }]}>
+                        Step 2 — combine that with your other ratings:
+                      </ThemedText>
+                      {walkThrough(
+                        [...otherRatings, { id: '__bilateral__', pct: bilateralValue }],
+                        '100%',
+                      )}
+                    </>
+                  );
                 })()}
                 <ThemedText style={[styles.breakdownStep, { color: tc.textHint }]}>
                   {combined.exact.toFixed(1)}% → rounds to <ThemedText style={{ fontWeight: '800', color: ratingColor }}>{combined.rounded}%</ThemedText>
@@ -230,12 +344,90 @@ export default function VaDisabilityScreen() {
                   </View>
                 </View>
 
-                {(hasSpouse || numChildren > 0) && (
+                {/* Progressive disclosure — kept collapsed by default so the
+                    common case (spouse + regular kids) stays a simple
+                    calculator. Expands to spouse Aid & Attendance, school-age
+                    (18-23) children, and dependent parent(s) — each a real,
+                    separate VA add-on this app didn't account for before. */}
+                <Pressable onPress={() => setShowAdvancedDeps((v) => !v)} style={styles.advancedDepsToggle}>
+                  <ThemedText style={[styles.advancedDepsToggleText, { color: tc.tactical }]}>
+                    {showAdvancedDeps ? '▾' : '▸'} Additional VA Dependents / Special Circumstances
+                  </ThemedText>
+                </Pressable>
+
+                {showAdvancedDeps && (
+                  <View style={{ gap: Spacing.two }}>
+                    {hasSpouse && (
+                      <View style={styles.toggleRow}>
+                        <View style={{ flex: 1 }}>
+                          <ThemedText style={[styles.toggleLabel, { color: tc.textPrimary }]}>Spouse needs Aid & Attendance</ThemedText>
+                          <ThemedText type="small" style={{ color: tc.textHint }}>Housebound or needs regular help — a separate VA add-on</ThemedText>
+                        </View>
+                        <Pressable
+                          onPress={() => setSpouseAidAttendance((v) => !v)}
+                          style={[styles.toggle, { borderColor: tc.borderColor }, spouseAidAttendance && styles.toggleActive]}>
+                          <ThemedText style={[styles.toggleText, { color: tc.textHint }, spouseAidAttendance && styles.toggleTextActive]}>
+                            {spouseAidAttendance ? 'YES' : 'NO'}
+                          </ThemedText>
+                        </Pressable>
+                      </View>
+                    )}
+
+                    <View style={styles.toggleRow}>
+                      <View style={{ flex: 1 }}>
+                        <ThemedText style={[styles.toggleLabel, { color: tc.textPrimary }]}>School children 18-23 ({numSchoolChildren})</ThemedText>
+                        <ThemedText type="small" style={{ color: tc.textHint }}>In a VA-qualifying school program — a higher add-on than a regular child</ThemedText>
+                      </View>
+                      <View style={styles.childCounter}>
+                        <Pressable
+                          onPress={() => setNumSchoolChildren((v) => Math.max(0, v - 1))}
+                          style={[styles.counterBtn, { borderColor: tc.borderColor }]}>
+                          <ThemedText style={[styles.counterBtnText, { color: tc.textPrimary }]}>−</ThemedText>
+                        </Pressable>
+                        <ThemedText style={[styles.counterVal, { color: tc.textPrimary }]}>{numSchoolChildren}</ThemedText>
+                        <Pressable
+                          onPress={() => setNumSchoolChildren((v) => Math.min(10, v + 1))}
+                          style={[styles.counterBtn, { borderColor: tc.borderColor }]}>
+                          <ThemedText style={[styles.counterBtnText, { color: tc.textPrimary }]}>+</ThemedText>
+                        </Pressable>
+                      </View>
+                    </View>
+
+                    <View style={styles.toggleRow}>
+                      <ThemedText style={[styles.toggleLabel, { color: tc.textPrimary }]}>Dependent parent(s)</ThemedText>
+                      <View style={styles.childCounter}>
+                        {([0, 1, 2] as const).map((n) => (
+                          <Pressable
+                            key={n}
+                            onPress={() => setNumDependentParents(n)}
+                            style={[styles.counterBtn, { borderColor: tc.borderColor, width: 32 }, numDependentParents === n && styles.toggleActive]}>
+                            <ThemedText style={[styles.counterBtnText, { color: tc.textPrimary }, numDependentParents === n && { color: '#000' }]}>{n}</ThemedText>
+                          </Pressable>
+                        ))}
+                      </View>
+                    </View>
+                  </View>
+                )}
+
+                {(hasSpouse || numChildren > 0 || hasAdvancedDeps) && (
                   <View style={[styles.depResult, { borderTopColor: tc.borderColor }]}>
                     <ThemedText style={[styles.depResultLabel, { color: tc.textHint }]}>Monthly with dependents</ThemedText>
                     <ThemedText style={[styles.depResultVal, { color: ratingColor }]}>
                       {fmtDollar(monthly)}
                     </ThemedText>
+                  </View>
+                )}
+
+                {hasAdvancedDeps && (
+                  <View style={[styles.breakdownBox, { backgroundColor: tc.background }]}>
+                    <ThemedText style={[styles.breakdownTitle, { color: tc.textMuted }]}>HOW THIS WAS CALCULATED</ThemedText>
+                    <ThemedText style={[styles.breakdownStep, { color: tc.textHint }]}>Base ({combined.rounded}%, no dependents): {fmtDollar(detailedBreakdown.base)}</ThemedText>
+                    {detailedBreakdown.spouseAdd > 0 && <ThemedText style={[styles.breakdownStep, { color: tc.textHint }]}>+ Spouse: {fmtDollar(detailedBreakdown.spouseAdd)}</ThemedText>}
+                    {detailedBreakdown.spouseAaAdd > 0 && <ThemedText style={[styles.breakdownStep, { color: tc.textHint }]}>+ Spouse Aid & Attendance: {fmtDollar(detailedBreakdown.spouseAaAdd)}</ThemedText>}
+                    {detailedBreakdown.childrenAdd > 0 && <ThemedText style={[styles.breakdownStep, { color: tc.textHint }]}>+ Children ({numChildren}): {fmtDollar(detailedBreakdown.childrenAdd)}</ThemedText>}
+                    {detailedBreakdown.schoolChildrenAdd > 0 && <ThemedText style={[styles.breakdownStep, { color: tc.textHint }]}>+ School children ({numSchoolChildren}): {fmtDollar(detailedBreakdown.schoolChildrenAdd)}</ThemedText>}
+                    {detailedBreakdown.parentsAdd > 0 && <ThemedText style={[styles.breakdownStep, { color: tc.textHint }]}>+ Dependent parent(s) ({numDependentParents}): {fmtDollar(detailedBreakdown.parentsAdd)}</ThemedText>}
+                    <ThemedText style={[styles.breakdownStep, { color: ratingColor, fontWeight: '800' }]}>= Total: {fmtDollar(detailedBreakdown.total)}/mo</ThemedText>
                   </View>
                 )}
               </ThemedView>
@@ -317,12 +509,24 @@ const styles = StyleSheet.create({
   tabBtnText: { fontSize: 9, fontWeight: '800', letterSpacing: 0.5 },
   tabBtnTextActive: { color: '#fff' },
 
+  relatedToolRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: Spacing.three,
+    paddingBottom: Spacing.two,
+    gap: Spacing.two,
+  },
+  relatedToolText: { fontSize: 11, flex: 1, lineHeight: 15 },
+  relatedToolChevron: { fontSize: 16, fontWeight: '700' },
+
   content: { paddingHorizontal: Spacing.three, gap: Spacing.two },
 
   card: { borderRadius: 4, padding: Spacing.three, gap: Spacing.two },
   cardLabel: { fontSize: 9, fontWeight: '800', letterSpacing: 1 },
   cardHint: { fontSize: 11, lineHeight: 16 },
 
+  ratingBlock: { gap: 4, marginBottom: Spacing.one, paddingBottom: Spacing.one, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: Brand.border },
   ratingRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.one },
   ratingIndex: { fontSize: 11, fontWeight: '700', width: 22 },
   ratingPickerWrap: { flex: 1 },
@@ -333,6 +537,14 @@ const styles = StyleSheet.create({
   ratingChipTextActive: { color: '#fff' },
   removeBtn: { padding: 6 },
   removeBtnText: { fontSize: 14, color: Brand.danger },
+
+  limbRow: { paddingLeft: 30, gap: 4 },
+  limbLabel: { fontSize: 8, fontWeight: '700', letterSpacing: 0.3 },
+  limbChips: { flexDirection: 'row', flexWrap: 'wrap', gap: 4 },
+  limbChip: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10, borderWidth: 1 },
+  limbChipActive: { backgroundColor: Brand.tactical, borderColor: Brand.tactical },
+  limbChipText: { fontSize: 9, fontWeight: '700' },
+  limbChipTextActive: { color: '#fff' },
 
   addRatingBtn: { alignSelf: 'center', paddingVertical: Spacing.one + 2, paddingHorizontal: Spacing.three, borderRadius: 4, borderWidth: 1, borderStyle: 'dashed', borderColor: Brand.border },
   addRatingText: { fontSize: 12, fontWeight: '600' },
@@ -347,9 +559,13 @@ const styles = StyleSheet.create({
   resultMonthly: { fontSize: 26, fontWeight: '900' },
   resultAnnual: { fontSize: 11 },
 
+  bilateralBanner: { borderRadius: 4, padding: Spacing.two, marginTop: 2 },
   breakdownBox: { borderRadius: 4, padding: Spacing.two, gap: 4 },
   breakdownTitle: { fontSize: 8, fontWeight: '800', letterSpacing: 0.8, marginBottom: 4 },
   breakdownStep: { fontSize: 11, lineHeight: 17 },
+
+  advancedDepsToggle: { paddingVertical: 4 },
+  advancedDepsToggleText: { fontSize: 11, fontWeight: '700' },
 
   toggleRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   toggleLabel: { fontSize: 13 },

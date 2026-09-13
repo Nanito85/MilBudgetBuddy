@@ -37,6 +37,8 @@ const DEFAULTS: UserPreferences = {
   drillsPerMonth: undefined,
   retirementDate: undefined,
   vaDisabilityPercent: undefined,
+  sbpEnabled: false,
+  sbpCoveragePct: 1,
   alsoGsCivilian: false,
   familySeparated: false,
   dependentsMhaZip: undefined,
@@ -73,6 +75,7 @@ interface UserState extends UserPreferences {
   setGSInfo: (gsGrade: number, gsStep: number, lastName: string, nickname: string, dateOfEnlistment?: string, gsLocalityKey?: string) => void;
   setReserveInfo: (drillsPerMonth: number) => void;
   setRetiredInfo: (retirementDate: string | undefined, vaDisabilityPercent: number) => void;
+  setSbpInfo: (sbpEnabled: boolean, sbpCoveragePct: number) => void;
   setAlsoGsCivilian: (enabled: boolean, gsGrade: number, gsStep: number, gsLocalityKey: string) => void;
   setFamilySeparation: (familySeparated: boolean, dependentsMhaZip: string) => void;
   setDeploymentStatus: (isDeployed: boolean, deploymentLocationId: string) => void;
@@ -125,6 +128,8 @@ function snapshot(get: () => UserState): UserPreferences {
     drillsPerMonth: s.drillsPerMonth,
     retirementDate: s.retirementDate,
     vaDisabilityPercent: s.vaDisabilityPercent,
+    sbpEnabled: s.sbpEnabled,
+    sbpCoveragePct: s.sbpCoveragePct,
     tspContribPct: s.tspContribPct,
     rothTspPct: s.rothTspPct,
     hasDentalFamily: s.hasDentalFamily,
@@ -252,6 +257,11 @@ export const useUserStore = create<UserState>((set, get) => ({
   setRetiredInfo: (retirementDate, vaDisabilityPercent) => {
     set({ retirementDate, vaDisabilityPercent });
     save({ ...snapshot(get), retirementDate, vaDisabilityPercent });
+  },
+
+  setSbpInfo: (sbpEnabled, sbpCoveragePct) => {
+    set({ sbpEnabled, sbpCoveragePct });
+    save({ ...snapshot(get), sbpEnabled, sbpCoveragePct });
   },
 
   // A retiree who's also currently a GS civilian employee — independent of

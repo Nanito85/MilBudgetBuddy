@@ -1109,7 +1109,13 @@ function LocationFamilyStep({
       </View>
 
       <View style={styles.fieldBlock}>
-        <ThemedText type="smallBold" themeColor="textSecondary" style={styles.fieldLabel}>SPOUSE / DOMESTIC PARTNER</ThemedText>
+        {/* This drives hasSpouse, which feeds BAH-with-dependents eligibility,
+            VA spouse compensation, and the federal tax filing-status estimate
+            — all of which require a legally recognized spouse under actual
+            military/VA/IRS rules. "Domestic Partner" doesn't qualify for any
+            of those without marriage, so labeling it that way overstated
+            what this toggle actually means. */}
+        <ThemedText type="smallBold" themeColor="textSecondary" style={styles.fieldLabel}>MARRIED (SPOUSE)</ThemedText>
         <View style={styles.toggle}>
           {([false, true] as const).map((val) => (
             <Pressable
@@ -1223,6 +1229,7 @@ function NotificationsStep({ onFinish }: { onFinish: () => void }) {
   const setNotifications            = useUserStore((s) => s.setNotifications);
   const notificationHour            = useUserStore((s) => s.notificationHour);
   const notificationMinute          = useUserStore((s) => s.notificationMinute);
+  const serviceStatus                = useUserStore((s) => s.serviceStatus);
 
   const handleToggle = async (value: boolean) => {
     setEnabled(value);
@@ -1231,7 +1238,7 @@ function NotificationsStep({ onFinish }: { onFinish: () => void }) {
       if (granted) {
         setNotifications(true);
         scheduleWeeklyTip(notificationHour, notificationMinute);
-        schedulePayDayReminders();
+        schedulePayDayReminders(undefined, serviceStatus === 'retired');
       } else {
         setEnabled(false);
       }

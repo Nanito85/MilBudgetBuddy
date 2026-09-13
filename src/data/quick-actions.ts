@@ -55,6 +55,7 @@ export const ALL_QUICK_ACTIONS: QuickAction[] = [
   { id: 'va_dis',     icon: catalogTool('va_disability').icon,label: 'VA DIS',   sublabel: 'RATING',   route: catalogTool('va_disability').route,color: catalogTool('va_disability').color },
   { id: 'gi_bill',    icon: catalogTool('gi_bill').icon,      label: 'GI BILL',  sublabel: 'CALC',     route: catalogTool('gi_bill').route,      color: catalogTool('gi_bill').color },
   { id: 'debt',       icon: catalogTool('debt').icon,         label: 'DEBT',     sublabel: 'PAYOFF',   route: catalogTool('debt').route,         color: catalogTool('debt').color },
+  { id: 'va_claims',  icon: catalogTool('va_claims').icon,    label: 'VA CLAIMS',sublabel: 'TRACKER',  route: catalogTool('va_claims').route,    color: catalogTool('va_claims').color },
 ];
 
 export const DEFAULT_QUICK_ACCESS_IDS = ['budget', 'debt', 'credit', 'retirement'];
@@ -64,7 +65,7 @@ export function getDefaultQuickAccessIds(
   financialGoal?: string,
 ): string[] {
   if (serviceStatus === 'retired') {
-    return ['retirement', 'va_dis', 'ets', 'tricare'];
+    return ['retirement', 'va_dis', 'va_claims', 'tricare'];
   }
   // A pure civilian (GS employee, no active/reserve/retired military status —
   // see lesCalc.ts's isCivilianOnly) has no PCS orders, TRICARE, SCRA

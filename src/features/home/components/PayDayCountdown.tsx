@@ -4,59 +4,23 @@ import { StyleSheet, View } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { Brand, Spacing } from '@/constants/theme';
 import { fmtPay } from '@/features/home/utils/lesCalc';
+import { getPayDayInfo } from '@/features/home/utils/payScheduleCalc';
 import { useThemeColors } from '@/hooks/use-theme';
 
 interface Props {
   netPay: number;
+  // Military retired pay is disbursed once a month (the 1st calendar day,
+  // moved to the prior business day if the 1st falls on a weekend — DFAS
+  // Retired & Annuitant Pay schedule) — NOT the active-duty 1st-and-15th
+  // mid-month/end-of-month split. Defaults to the active-duty schedule so
+  // every existing call site (none of which passed this before) keeps its
+  // current behavior.
+  isRetired?: boolean;
 }
 
-function getPayDayInfo(): { label: string; daysAway: number; date: Date } {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = now.getMonth();
-  const today = now.getDate();
-
-  const first = new Date(year, month, 1);
-  const fifteenth = new Date(year, month, 15);
-
-  // Adjust for weekends: if payday falls on weekend, it moves to the prior Friday
-  function adjustedPayDay(d: Date): Date {
-    const day = d.getDay(); // 0=Sun, 6=Sat
-    if (day === 0) { const r = new Date(d); r.setDate(d.getDate() - 2); return r; }
-    if (day === 6) { const r = new Date(d); r.setDate(d.getDate() - 1); return r; }
-    return d;
-  }
-
-  const adj1st = adjustedPayDay(first);
-  const adj15th = adjustedPayDay(fifteenth);
-
-  // Next month's 1st
-  const nextFirst = adjustedPayDay(new Date(year, month + 1, 1));
-
-  const todayMidnight = new Date(year, month, today);
-
-  function daysUntil(target: Date): number {
-    return Math.round((target.getTime() - todayMidnight.getTime()) / 86400000);
-  }
-
-  const candidates: Array<{ label: string; date: Date }> = [
-    { label: '1st', date: adj1st },
-    { label: '15th', date: adj15th },
-    { label: '1st', date: nextFirst },
-  ];
-
-  for (const c of candidates) {
-    const d = daysUntil(c.date);
-    if (d >= 0) return { ...c, daysAway: d };
-  }
-
-  // Fallback — should never reach
-  return { label: '1st', date: nextFirst, daysAway: daysUntil(nextFirst) };
-}
-
-export function PayDayCountdown({ netPay }: Props) {
+export function PayDayCountdown({ netPay, isRetired = false }: Props) {
   const tc = useThemeColors();
-  const { label, daysAway, date } = useMemo(() => getPayDayInfo(), []);
+  const { label, daysAway, date } = useMemo(() => getPayDayInfo(isRetired), [isRetired]);
 
   const isToday = daysAway === 0;
   const isTomorrow = daysAway === 1;
@@ -66,7 +30,7 @@ export function PayDayCountdown({ netPay }: Props) {
   return (
     <View style={[styles.container, { backgroundColor: tc.surface }]}>
       <View style={styles.left}>
-        <ThemedText style={[styles.eyebrow, { color: tc.tactical }]}>NEXT PAY DAY</ThemedText>
+        <ThemedText style={[styles.eyebrow, { color: tc.tactical }]}>{isRetired ? 'NEXT RETIRED PAY DAY' : 'NEXT PAY DAY'}</ThemedText>
         {isToday ? (
           <ThemedText style={[styles.countdownBig, { color: tc.textPrimary }]}>PAY DAY 🎉</ThemedText>
         ) : (
@@ -82,10 +46,16 @@ export function PayDayCountdown({ netPay }: Props) {
       </View>
       {netPay > 0 && (
         <View style={styles.right}>
-          <ThemedText style={[styles.payLabel, { color: tc.textHint }]}>EST. TAKE-HOME</ThemedText>
-          <ThemedText style={[styles.payAmount, { color: tc.accent }]}>{fmtPay(netPay / 2)}</ThemedText>
-          <ThemedText style={[styles.payNote, { color: tc.textMuted }]}>per paycheck</ThemedText>
-          <ThemedText style={[styles.payMonthly, { color: tc.textMuted }]}>{fmtPay(netPay)}/mo</ThemedText>
+          <ThemedText style={[styles.payLabel, { color: tc.textHint }]}>{isRetired ? 'EST. MONTHLY NET' : 'EST. TAKE-HOME'}</ThemedText>
+          {isRetired ? (
+            <ThemedText style={[styles.payAmount, { color: tc.accent }]}>{fmtPay(netPay)}</ThemedText>
+          ) : (
+            <>
+              <ThemedText style={[styles.payAmount, { color: tc.accent }]}>{fmtPay(netPay / 2)}</ThemedText>
+              <ThemedText style={[styles.payNote, { color: tc.textMuted }]}>per paycheck</ThemedText>
+              <ThemedText style={[styles.payMonthly, { color: tc.textMuted }]}>{fmtPay(netPay)}/mo</ThemedText>
+            </>
+          )}
         </View>
       )}
     </View>
