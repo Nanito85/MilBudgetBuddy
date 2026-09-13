@@ -486,25 +486,36 @@ export function EditPayModal({ visible, onClose }: { visible: boolean; onClose: 
                 style={[editStyles.input, { color: tc.textPrimary, flex: 1 }]} returnKeyType="next" />
             </View>
 
-            {/* TSP — not applicable to retired pay (a pension, not payroll
-                earnings you can contribute from) */}
+            {/* TSP — off active-duty base pay for BRS, or off GS wages for
+                FERS (pure civilian, or a retiree who's alsoGsCivilian).
+                Retired pay itself is never TSP-eligible (a pension, not
+                payroll earnings) — see calcLES's tspEligiblePay, which this
+                UI mirrors. A retiree with no GS job at all has no payroll
+                wages of any kind to contribute from, so stays "not
+                applicable"; this used to say that for EVERY retiree
+                regardless of alsoGsCivilian, and even told an
+                alsoGsCivilian retiree their GS-job TSP "isn't tracked here
+                yet" — which was true only because calcLES computed TSP off
+                basePay alone (always 0 for a civilian, a pension for a
+                retiree) and never looked at gsGrossMonthly at all. */}
             <View style={[editStyles.sectionHead, { borderTopColor: tc.borderColor }]}>
               <ThemedText style={[editStyles.sectionHeadText, { color: tc.textPrimary }]}>📈 TSP / RETIREMENT</ThemedText>
             </View>
-            {isRetired ? (
+            {isRetired && !alsoGsCivilian ? (
               <ThemedText style={[editStyles.fieldHint, { color: tc.textMuted }]}>
                 Not applicable — retired pay is a pension, not payroll earnings, so it can&apos;t be contributed to TSP.
-                {alsoGsCivilian ? " If you contribute to TSP through your GS civilian job, that isn't tracked here yet." : ''}
               </ThemedText>
             ) : (
               <>
                 <ThemedText style={[editStyles.fieldHint, { color: tc.textMuted }]}>
-                  Enter the % you contribute from your base pay. Check your LES block "DEDUCTIONS" — look for Traditional TSP and/or Roth TSP lines.
+                  {isCivilianOnly || (isRetired && alsoGsCivilian)
+                    ? 'Enter the % you contribute from your GS salary (FERS TSP). Check your Earnings and Leave Statement "Deductions" section — look for Traditional TSP and/or Roth TSP lines.'
+                    : 'Enter the % you contribute from your base pay. Check your LES block "DEDUCTIONS" — look for Traditional TSP and/or Roth TSP lines.'}
                 </ThemedText>
                 <NumberStepper label="Traditional TSP" value={tsp} min={0} max={100} onChange={setTsp} unit="%" />
                 <NumberStepper label="Roth TSP" value={rothTsp} min={0} max={100} onChange={setRothTsp} unit="%" />
                 <ThemedText style={[editStyles.fieldHint, { color: tc.textMuted }]}>
-                  Total TSP: {tsp + rothTsp}% of base pay. Combined cannot exceed IRS annual limit ($24,500 for FY2026).
+                  Total TSP: {tsp + rothTsp}% of {isCivilianOnly || (isRetired && alsoGsCivilian) ? 'GS salary' : 'base pay'}. Combined cannot exceed IRS annual limit ($24,500 for FY2026).
                 </ThemedText>
               </>
             )}
@@ -664,15 +675,28 @@ export function EditPayModal({ visible, onClose }: { visible: boolean; onClose: 
               <ThemedText style={[editStyles.sectionHeadText, { color: tc.textPrimary }]}>📉 DEDUCTIONS</ThemedText>
             </View>
 
-            <View style={editStyles.toggleRow}>
-              <View style={{ flex: 1, gap: 2 }}>
-                <ThemedText style={[editStyles.toggleLabel, { color: tc.textPrimary }]}>Family Dental Plan</ThemedText>
-                <ThemedText style={[editStyles.toggleSub, { color: tc.textHint }]}>
-                  -${dentalFamilyRate(payGrade ?? 'E5').toFixed(2)}/mo deduction
-                </ThemedText>
+            {/* Family Dental Plan here means TDP (TRICARE Dental Program) — a
+                uniformed-services-only benefit. A pure civilian never served
+                and has no TDP eligibility at all (federal civilians get
+                dental through FEDVIP instead, a completely different
+                enrollee-pays-full-premium plan this app doesn't model), so
+                this toggle is hidden for isCivilianOnly the same way SGLI is
+                below — lesCalc.ts already zeroes the deduction regardless,
+                but a visible toggle that looks like it does something for a
+                civilian (and didn't) was itself the bug. Still shown for a
+                retiree who's alsoGsCivilian — they can enroll in TDP as a
+                retiree same as anyone else. */}
+            {!isCivilianOnly && (
+              <View style={editStyles.toggleRow}>
+                <View style={{ flex: 1, gap: 2 }}>
+                  <ThemedText style={[editStyles.toggleLabel, { color: tc.textPrimary }]}>Family Dental Plan</ThemedText>
+                  <ThemedText style={[editStyles.toggleSub, { color: tc.textHint }]}>
+                    -${dentalFamilyRate(payGrade ?? 'E5').toFixed(2)}/mo deduction
+                  </ThemedText>
+                </View>
+                <Switch value={dental} onValueChange={setDental} trackColor={{ true: Brand.accent }} thumbColor="#FFF" />
               </View>
-              <Switch value={dental} onValueChange={setDental} trackColor={{ true: Brand.accent }} thumbColor="#FFF" />
-            </View>
+            )}
 
             {/* SGLI coverage (and its premium) ends at separation/retirement,
                 and never existed for a pure civilian who never served —
