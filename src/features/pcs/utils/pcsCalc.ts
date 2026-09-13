@@ -19,6 +19,24 @@ function countryMatches(instState: string, locCountry: string): boolean {
   return !!alias && (a.includes(alias) || alias.includes(b) || b.includes(alias));
 }
 
+// The country-then-name match below still mis-resolves a handful of installations
+// whose OWN NAME shares no word at all with their correct OCONUS_LOCATIONS entry —
+// name-scoring then falls back to whichever same-country entry happens to contain a
+// generic word ("naval", "station") that isn't actually location-identifying, instead
+// of the correct one scoring 0 and losing. Found auditing Okinawa specifically:
+//   - 'Torii Station' (Army, Yomitan) contains no "Okinawa"/"Kadena"/"Foster" — its
+//     only overlap word is "station", which only matches oc_sasebo's "Naval Station
+//     Sasebo" (Nagasaki, ~450mi away, less than half Okinawa's per diem rate).
+//   - 'White Beach Naval Facility' (Navy, Uruma) overlaps only on "naval", which
+//     matches oc_yokosuka's "Naval Base Yokosuka" (Kanagawa, a different rate).
+// Both are actually on Okinawa and share OHA area "Okinawa (All Installations)" (see
+// oha-rates.ts's installationIds) — apply that same known-correct grouping here
+// directly, by installation id, rather than trusting fuzzy name overlap for these.
+const PERDIEM_ID_OVERRIDE: Record<string, string> = {
+  torii_station: 'oc_kadena',
+  white_beach: 'oc_kadena',
+};
+
 export interface StationPerDiem {
   total: number;      // lodging + M&IE, $/day
   lodging: number;    // max lodging rate, $/night
@@ -48,6 +66,15 @@ export function getStationPerDiem(inst: Installation): StationPerDiem {
   if (!inst.oconus) {
     const pd = lookupPerDiemByZip(inst.mhaZip);
     return { total: pd.total, lodging: pd.lodging, meals: pd.meals, oconus: false, matched: true, label: pd.isStandard ? 'Standard CONUS rate' : `${pd.city}, ${pd.state}` };
+  }
+
+  // Known-correct override for installations whose name shares no identifying word
+  // with the right entry — see PERDIEM_ID_OVERRIDE's comment above. Checked before
+  // the generic country+name match so it can't be outscored by a generic-word tie.
+  const overrideId = PERDIEM_ID_OVERRIDE[inst.id];
+  if (overrideId) {
+    const loc = OCONUS_LOCATIONS.find((l) => l.id === overrideId);
+    if (loc) return { total: loc.total, lodging: loc.lodging, meals: loc.meals, oconus: true, matched: true, label: loc.name };
   }
 
   // Two-phase match: first narrow OCONUS_LOCATIONS to the installation's own country/territory
