@@ -195,6 +195,16 @@ export default function SettingsScreen() {
   const [showFeedback, setShowFeedback] = useState(false);
   const [showPINManage, setShowPINManage] = useState(false);
   const [showTutorial, setShowTutorial] = useState(false);
+  // Manual OTA check — the automatic on-launch check is a background,
+  // best-effort thing with no visible feedback, so a member stuck on an
+  // old update (network hiccup, a check that silently failed, etc) had no
+  // way to force it or see WHY it wasn't updating. This surfaces the real
+  // expo-updates result/error instead of asking them to just "close and
+  // reopen it a few more times."
+  const [updateCheckState, setUpdateCheckState] = useState<
+    'idle' | 'checking' | 'up_to_date' | 'downloading' | 'ready' | 'error' | 'unsupported'
+  >('idle');
+  const [updateCheckError, setUpdateCheckError] = useState<string | null>(null);
   const { isAdmin, resolving: adminResolving } = useIsAdmin();
   const isPro = useIsPro();
   const proExpiresAt = useUserStore((s) => s.proExpiresAt);
@@ -224,6 +234,38 @@ export default function SettingsScreen() {
       await deepLinkToSubscriptions({ skuAndroid: ANDROID_PRODUCT_ID, packageNameAndroid: ANDROID_PACKAGE });
     } catch {
       Alert.alert('Unavailable', 'Could not open subscription management. Check your device\'s App Store or Play Store settings directly.');
+    }
+  };
+
+  const handleCheckForUpdates = async () => {
+    // Expo Go / a dev client build can't fetch OTA updates at all — checking
+    // throws immediately, and that's expected, not a bug to report as one.
+    if (__DEV__ || !Updates.isEnabled) {
+      setUpdateCheckState('unsupported');
+      return;
+    }
+    setUpdateCheckState('checking');
+    setUpdateCheckError(null);
+    try {
+      const result = await Updates.checkForUpdateAsync();
+      if (!result.isAvailable) {
+        setUpdateCheckState('up_to_date');
+        return;
+      }
+      setUpdateCheckState('downloading');
+      await Updates.fetchUpdateAsync();
+      setUpdateCheckState('ready');
+      Alert.alert(
+        'Update Ready',
+        'A new version has been downloaded. Restart now to apply it?',
+        [
+          { text: 'Later', style: 'cancel' },
+          { text: 'Restart Now', onPress: () => Updates.reloadAsync() },
+        ],
+      );
+    } catch (e) {
+      setUpdateCheckState('error');
+      setUpdateCheckError(e instanceof Error ? e.message : String(e));
     }
   };
 
@@ -790,6 +832,26 @@ export default function SettingsScreen() {
             : `Update: ${Updates.updateId?.slice(0, 8) ?? 'unknown'}`}
         </ThemedText>
 
+        <Pressable
+          onPress={handleCheckForUpdates}
+          disabled={updateCheckState === 'checking' || updateCheckState === 'downloading'}
+          style={styles.checkUpdateBtn}>
+          <ThemedText type="small" style={{ color: Brand.tactical, fontWeight: '700' }}>
+            {updateCheckState === 'checking' ? 'Checking…'
+              : updateCheckState === 'downloading' ? 'Downloading update…'
+              : 'Check for Updates'}
+          </ThemedText>
+        </Pressable>
+        {updateCheckState === 'up_to_date' && (
+          <ThemedText type="small" themeColor="textMuted" style={styles.versionText}>You&apos;re on the latest update.</ThemedText>
+        )}
+        {updateCheckState === 'unsupported' && (
+          <ThemedText type="small" themeColor="textMuted" style={styles.versionText}>OTA checks aren&apos;t available in this build (dev/Expo Go).</ThemedText>
+        )}
+        {updateCheckState === 'error' && (
+          <ThemedText type="small" style={[styles.versionText, { color: Brand.danger }]}>Check failed: {updateCheckError}</ThemedText>
+        )}
+
       </ScrollView>
 
       <FeedbackModal visible={showFeedback} onClose={() => setShowFeedback(false)} />
@@ -820,6 +882,7 @@ const styles = StyleSheet.create({
   content: { paddingHorizontal: Spacing.three, gap: Spacing.three, paddingTop: Spacing.three },
   section: { gap: Spacing.one },
   versionText: { textAlign: 'center', marginTop: Spacing.three, marginBottom: Spacing.two },
+  checkUpdateBtn: { alignItems: 'center', paddingVertical: Spacing.one },
   eyebrow: { fontSize: 9 },
   sectionTitle: { fontSize: 20, fontWeight: '900', letterSpacing: 1 },
   sectionDesc: { fontSize: 13, lineHeight: 18 },
