@@ -14,6 +14,11 @@ import { getPayDayInfo } from '@/features/home/utils/payScheduleCalc';
 import { calcLES } from '@/features/home/utils/lesCalc';
 import { getBasicPay, getHigh3Average, getHigh3AverageDetailed } from '@/data/basic-pay-rates';
 import { combinedRating, monthlyCompensationDetailed, monthlyCompensation } from '@/features/va/utils/vaDisabilityCalc';
+import { getInstallationById } from '@/data/installations';
+import { getOhaAreaForInstallation, getOhaRate } from '@/data/oha-rates';
+import { getOconusCola } from '@/data/oconus-cola';
+import { getDeploymentLocation } from '@/data/deployment-locations';
+import { getStationPerDiem } from '@/features/pcs/utils/pcsCalc';
 
 let pass = 0;
 let fail = 0;
@@ -278,6 +283,95 @@ console.log('\n[14] GS wages always use the standard state tax table, never a mi
     stateResidence: 'KS',
   });
   assertTrue(retiredGsInKS.stateTax > 0, 'A retiree-who-also-works-GS living in a retirement-pay-exempt state (KS) is still taxed on their GS wages');
+}
+
+// ── 15. Okinawa OCONUS audit (2026-09-13) ────────────────────────────────────
+// Verifies the specific gaps this pass checked for real families stationed at
+// Okinawa: real (non-placeholder) OHA, a genuine (not silently-missing) $0
+// OCONUS COLA result, no CZTE/IDP hazard pay, and — the actual bug found this
+// pass — that every Okinawa installation resolves its TLA per-diem locality to
+// the real Okinawa rate rather than a same-country name-matching fluke.
+console.log('\n[15] Okinawa OCONUS: OHA / COLA / no-hazard-pay / TLA per-diem locality');
+{
+  const kadena = getInstallationById('kadena');
+  if (!kadena) throw new Error('Fixture installation "kadena" not found in installations.ts');
+
+  // OHA: resolves to the real "Okinawa (All Installations)" area, not a missing/
+  // approximate-placeholder $0 result. E1 w/ dep = $1,403 rent + $662 utility,
+  // confirmed against the May 2026 USFJ increase (Stars and Stripes, citing the
+  // DTMO calculator) per oha-rates.ts's own header note.
+  const area = getOhaAreaForInstallation('kadena');
+  assertTrue(!!area, 'Kadena AB resolves to a real OHA area (not undefined)');
+  const kadenaOha = area ? getOhaRate(area.locationLabel, 'E1', true) : null;
+  assertEqual(kadenaOha?.rentCeilingUSD, 1403, 'Okinawa E1 w/dep OHA rent ceiling matches the confirmed May 2026 USFJ rate ($1,403)');
+  assertEqual(kadenaOha?.utilityAllowanceUSD, 662, 'Okinawa OHA utility allowance matches the confirmed flat USFJ rate ($662, all grades)');
+
+  // COLA: a real, tracked $0 (index <= 100 as of the 2026-09-01 indices) — NOT
+  // colaTracked:false / null, which would look like "we have no data" rather
+  // than "DoD currently authorizes none here". See oconus-cola.ts's header for
+  // the sourcing (regenerated from the actual 26-09-01 DTMO indices file) and
+  // corroborating Stars and Stripes reporting (2026-07-14) on the weak-yen-
+  // driven Japan-wide COLA decline toward zero.
+  const okinawaCola = getOconusCola('Okinawa (All Installations)', 'E4', 4, false);
+  assertEqual(okinawaCola, 0, 'Okinawa OCONUS COLA is a real, confirmed $0 as of the 2026-09-01 DTMO indices (not a missing-data gap)');
+  const noDataLoc = getOconusCola('Not A Real Location', 'E4', 4, false);
+  assertEqual(noDataLoc, null, 'An untracked location still correctly returns null (distinct from a real $0), confirming $0 above is not just the null-fallback in disguise');
+
+  // No deployment/hazard pay: Okinawa is a normal PCS station, not on the
+  // IDP/CZTE designated-areas list — calcLES must never show IDP or a CZTE
+  // exclusion for a member "deployed" to a duty-station string that isn't a
+  // real DEPLOYMENT_LOCATIONS entry (Okinawa has no entry there at all).
+  assertEqual(getDeploymentLocation('okinawa'), undefined, 'Okinawa has no entry in DEPLOYMENT_LOCATIONS — not an IDP/CZTE area');
+  const okinawaMemberDeployedToggleOn = calcLES({
+    payGrade: 'E4', yos: 4, mhaZip: undefined, dutyStationId: 'kadena', hasSpouse: false, numChildren: 0,
+    specialPaysTotal: 0, tspContribPct: 0, hasDentalFamily: false, sglOptOut: true,
+    serviceStatus: 'active', isDeployed: true, deploymentLocationId: 'okinawa',
+  });
+  assertEqual(okinawaMemberDeployedToggleOn.idp, 0, 'Even with the deployment toggle flipped on, Okinawa (not a real IDP area) shows $0 IDP');
+  assertEqual(okinawaMemberDeployedToggleOn.isCzte, false, 'Okinawa never shows CZTE — it is not a designated Combat Zone');
+
+  // Family separation: unaccompanied E4 at Kadena, dependents at a real CONUS
+  // BAH ZIP — member's own housing switches to the without-dependents OHA
+  // rate, FSA is the flat $300, and the dependents' own with-dependents BAH is
+  // added as a separate line (familyBahResolved true for a real ZIP).
+  const unaccompanied = calcLES({
+    payGrade: 'E4', yos: 4, mhaZip: undefined, dutyStationId: 'kadena', hasSpouse: true, numChildren: 0,
+    specialPaysTotal: 0, tspContribPct: 0, hasDentalFamily: false, sglOptOut: true,
+    serviceStatus: 'active', familySeparated: true, dependentsMhaZip: '76544', // Fort Cavazos-area ZIP
+  });
+  assertTrue(unaccompanied.familySeparated, 'Unaccompanied Okinawa tour with a dependent correctly activates family separation');
+  assertEqual(unaccompanied.fsa, 300, 'Family Separation Allowance is the flat $300/mo rate (FY2026 NDAA)');
+  assertTrue(unaccompanied.familyBahResolved, 'Dependents\' real CONUS ZIP resolves to actual BAH (not a silent $0)');
+  assertTrue(unaccompanied.familyBah > 0, 'Dependents draw a nonzero with-dependents BAH at their own CONUS location');
+  const accompaniedOha = getOhaRate('Okinawa (All Installations)', 'E4', true)!;
+  const unaccompaniedOha = getOhaRate('Okinawa (All Installations)', 'E4', false)!;
+  assertEqual(
+    unaccompanied.bah,
+    unaccompaniedOha.rentCeilingUSD + unaccompaniedOha.utilityAllowanceUSD,
+    'Unaccompanied member\'s OWN Okinawa OHA drops to the without-dependents rate (dependents aren\'t there)',
+  );
+  assertTrue(
+    unaccompanied.bah < accompaniedOha.rentCeilingUSD + accompaniedOha.utilityAllowanceUSD,
+    'Sanity check: without-dependents OHA is strictly less than the with-dependents rate it would otherwise have used',
+  );
+
+  // TLA per-diem locality: every Okinawa installation resolves to the real
+  // Okinawa per-diem rate ($469/day, oc_kadena) for the PCS calculator's TLA
+  // estimate. Torii Station and White Beach were the actual bug found this
+  // pass — their own installation names ("Torii Station", "White Beach Naval
+  // Facility") share no word with any Okinawa-labeled OCONUS_LOCATIONS entry,
+  // so the generic country+name-word match fell through to whichever other
+  // Japan locality happened to share a generic word ("station" -> Naval
+  // Station Sasebo; "naval" -> Naval Base Yokosuka) — both the wrong region
+  // and roughly half Okinawa's real rate. Fixed with an explicit
+  // installation-id override in pcsCalc.ts (PERDIEM_ID_OVERRIDE).
+  for (const id of ['kadena', 'camp_foster', 'camp_kinser', 'camp_hansen', 'camp_schwab', 'torii_station', 'white_beach', 'mcas_futenma', 'mcb_butler']) {
+    const inst = getInstallationById(id);
+    if (!inst) throw new Error(`Fixture installation "${id}" not found in installations.ts`);
+    const pd = getStationPerDiem(inst);
+    assertEqual(pd.total, 469, `${id}: TLA per diem resolves to Okinawa's real $469/day rate, not a wrong-region fallback`);
+    assertTrue(pd.matched, `${id}: per diem lookup reports a real match (not the unmatched placeholder)`);
+  }
 }
 
 // ── Summary ────────────────────────────────────────────────────────────────────
