@@ -9,6 +9,7 @@ import { getGSMonthly } from '@/data/gs-pay-rates';
 import { getOconusCola } from '@/data/oconus-cola';
 import { getOhaAreaForInstallation, getOhaRate } from '@/data/oha-rates';
 import { getRetirementStateTaxRate, getStateTaxRate } from '@/data/state-tax';
+import { calcSbpPremium } from '@/features/retirement/utils/sbpCalc';
 import { HousingStatus, LESOverrides, ServiceStatus } from '@/types/user.types';
 
 // Family Separation Allowance — flat monthly rate, effective January 1, 2026
@@ -61,6 +62,7 @@ export interface LESBreakdown {
   traditionalTsp: number;
   rothTsp: number;
   sgli: number;
+  sbp: number;
   dental: number;
   extraDeductions: number;
   totalDeductions: number;
@@ -163,6 +165,14 @@ export interface LESInputs {
   // data/deployment-locations.ts to have any effect.
   isDeployed?: boolean;
   deploymentLocationId?: string;
+  // SBP (Survivor Benefit Plan) is a retiree-only, opt-in premium deducted
+  // from retired pay — it has no active-duty equivalent and is never
+  // deducted unless serviceStatus is 'retired' AND the member has actually
+  // elected coverage (sbpEnabled). sbpCoveragePct is the % of retired pay
+  // elected as the covered base (0-1, e.g. 1.0 = full retired pay); ignored
+  // when sbpEnabled is false/omitted.
+  sbpEnabled?: boolean;
+  sbpCoveragePct?: number;
 }
 
 interface HousingResult {
@@ -218,7 +228,7 @@ export function calcLES(inputs: LESInputs): LESBreakdown {
     payGrade, yos, mhaZip, dutyStationId, hasSpouse, numChildren = 0, housingStatus = 'off_base', specialPaysTotal,
     tspContribPct, rothTspPct = 0, hasDentalFamily, sglOptOut, stateResidence, overrides, serviceStatus,
     familySeparated, dependentsMhaZip, alsoGsCivilian, gsGrade, gsStep, gsLocalityKey,
-    isDeployed, deploymentLocationId,
+    isDeployed, deploymentLocationId, sbpEnabled, sbpCoveragePct = 1,
   } = inputs;
 
   const isRetired = serviceStatus === 'retired';
@@ -363,11 +373,28 @@ export function calcLES(inputs: LESInputs): LESBreakdown {
   const traditionalTsp = isRetired ? 0 : basePay * (tspContribPct / 100);
   const rothTsp        = isRetired ? 0 : basePay * (rothTspPct / 100);
   const tsp            = traditionalTsp + rothTsp;
-  const sgli           = sglOptOut ? 0 : SGLI_MONTHLY;
+  // SGLI (Servicemembers' Group Life Insurance) only covers members while
+  // actively serving — it terminates at separation/retirement (with a 120-
+  // day free extension, then an option to convert to VGLI, an entirely
+  // separate policy this app doesn't model as a payroll deduction). A
+  // retiree was previously charged the active-duty SGLI premium every
+  // month with no way to remove it apart from the unrelated sglOptOut
+  // toggle, which most retirees would have no reason to know to flip.
+  // Also never applies to a pure civilian (serviceStatus === 'civilian',
+  // never served) — SGLI is a uniformed-service-only benefit, and unlike
+  // TSP/BAH/BAS above (which zero out naturally because they're computed
+  // off `basePay`, itself 0 for a civilian), SGLI is a flat dollar amount
+  // that doesn't zero out on its own. A pure civilian was being charged
+  // the same $26/mo as an active-duty member with no military affiliation
+  // at all to justify it.
+  const sgli = (!isRetired && !isCivilianOnly && !sglOptOut) ? SGLI_MONTHLY : 0;
+  // SBP (Survivor Benefit Plan) is the retiree-side analog: an opt-in
+  // premium against retired pay, never active-duty pay. See sbpCalc.ts.
+  const sbp = (isRetired && sbpEnabled) ? calcSbpPremium(basePay, sbpCoveragePct) : 0;
   const dental   = hasDentalFamily ? dentalFamilyRate(payGrade) : 0;
   const gsFica = gsGrossMonthly * FICA_RATE;
 
-  const totalDeductions = fica + fedTax + stateTax + tsp + sgli + dental + extraDeductions;
+  const totalDeductions = fica + fedTax + stateTax + tsp + sgli + sbp + dental + extraDeductions;
   const netPay = grossPay - totalDeductions;
 
   return {
@@ -375,7 +402,7 @@ export function calcLES(inputs: LESInputs): LESBreakdown {
     cola, colaTracked,
     specialPays: specialPaysTotal,
     extraIncome, grossPay,
-    fica, fedTax, stateTax, tsp, traditionalTsp, rothTsp, sgli, dental,
+    fica, fedTax, stateTax, tsp, traditionalTsp, rothTsp, sgli, sbp, dental,
     extraDeductions, totalDeductions, netPay,
     bahOverridden: overrides?.bahOverride != null,
     basOverridden: overrides?.basOverride != null,

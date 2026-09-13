@@ -18,6 +18,7 @@ import { useNetWorthStore } from '@/store/networth.store';
 import { useNwSnapshotsStore } from '@/store/networth-snapshots.store';
 import { useLifeEventsStore } from '@/store/life-events.store';
 import { useTipsStore } from '@/store/tips.store';
+import { useVaClaimsStore } from '@/store/va-claims.store';
 
 // One active set of listeners per session (remote → local)
 const listeners: Unsubscribe[] = [];
@@ -70,7 +71,7 @@ function safeSetDoc(docRef: ReturnType<typeof userDoc>, data: Record<string, unk
 }
 
 const ALL_COLLECTIONS = [
-  'profile', 'budget', 'debt', 'expenses', 'kids', 'goals', 'networth', 'nwSnapshots', 'lifeEvents', 'tips',
+  'profile', 'budget', 'debt', 'expenses', 'kids', 'goals', 'networth', 'nwSnapshots', 'lifeEvents', 'tips', 'vaClaims',
 ] as const;
 
 // Permanently deletes every synced document for this user. Call this — and
@@ -95,6 +96,7 @@ export async function pushToCloud(uid: string) {
     safeSetDoc(userDoc(uid, 'nwSnapshots'), { snapshots: useNwSnapshotsStore.getState().snapshots }),
     safeSetDoc(userDoc(uid, 'lifeEvents'),  { events: useLifeEventsStore.getState().events }),
     safeSetDoc(userDoc(uid, 'tips'),        { savedTipIds: useTipsStore.getState().savedTipIds }),
+    safeSetDoc(userDoc(uid, 'vaClaims'),    { claims: useVaClaimsStore.getState().claims }),
   ];
   await Promise.all(writes);
 }
@@ -105,7 +107,7 @@ export async function pullFromCloud(uid: string): Promise<boolean> {
   const snap = await getDoc(userDoc(uid, 'profile'));
   if (!snap.exists()) return false; // No cloud data yet — first-ever login
 
-  const [profile, budget, debt, expenses, kids, goals, networth, nwSnapshots, lifeEvents, tips] = await Promise.all([
+  const [profile, budget, debt, expenses, kids, goals, networth, nwSnapshots, lifeEvents, tips, vaClaims] = await Promise.all([
     getDoc(userDoc(uid, 'profile')),
     getDoc(userDoc(uid, 'budget')),
     getDoc(userDoc(uid, 'debt')),
@@ -116,6 +118,7 @@ export async function pullFromCloud(uid: string): Promise<boolean> {
     getDoc(userDoc(uid, 'nwSnapshots')),
     getDoc(userDoc(uid, 'lifeEvents')),
     getDoc(userDoc(uid, 'tips')),
+    getDoc(userDoc(uid, 'vaClaims')),
   ]);
 
   if (profile.exists())     applyUser(profile.data());
@@ -128,6 +131,7 @@ export async function pullFromCloud(uid: string): Promise<boolean> {
   if (nwSnapshots.exists()) applyRemote('nwSnapshots', () => useNwSnapshotsStore.setState({ snapshots: nwSnapshots.data()?.snapshots ?? [] }));
   if (lifeEvents.exists())  applyRemote('lifeEvents', () => useLifeEventsStore.setState({ events: lifeEvents.data()?.events ?? [] }));
   if (tips.exists())        applyRemote('tips',       () => useTipsStore.setState({ savedTipIds: tips.data()?.savedTipIds ?? [] }));
+  if (vaClaims.exists())    applyRemote('vaClaims',   () => useVaClaimsStore.setState({ claims: vaClaims.data()?.claims ?? [] }));
 
   return true;
 }
@@ -148,6 +152,7 @@ export function startSync(uid: string) {
     { key: 'nwSnapshots', apply: (d) => useNwSnapshotsStore.setState({ snapshots: d.snapshots ?? [] }) },
     { key: 'lifeEvents', apply: (d) => useLifeEventsStore.setState({ events: d.events ?? [] }) },
     { key: 'tips',       apply: (d) => useTipsStore.setState({ savedTipIds: d.savedTipIds ?? [] }) },
+    { key: 'vaClaims',   apply: (d) => useVaClaimsStore.setState({ claims: d.claims ?? [] }) },
   ];
 
   for (const { key, apply } of collections) {
@@ -232,6 +237,11 @@ function startAutoPush(uid: string) {
         syncCollection(uid, 'tips');
       }
     }),
+    useVaClaimsStore.subscribe((state, prev) => {
+      if (state.claims !== prev.claims && !applyingRemote.has('vaClaims')) {
+        syncCollection(uid, 'vaClaims');
+      }
+    }),
   ];
   pushUnsubs.push(...subs);
 }
@@ -241,7 +251,7 @@ function startAutoPush(uid: string) {
 // out of sync with the subscription list the same way the old two-copies-
 // of-the-store-list bug did for OHA locations.
 const SYNCED_COLLECTION_KEYS = [
-  'profile', 'budget', 'debt', 'expenses', 'kids', 'goals', 'networth', 'nwSnapshots', 'lifeEvents', 'tips',
+  'profile', 'budget', 'debt', 'expenses', 'kids', 'goals', 'networth', 'nwSnapshots', 'lifeEvents', 'tips', 'vaClaims',
 ];
 
 // Exposed for resetAllLocalData() (services/reset-local-data.ts) — a local-
@@ -296,6 +306,8 @@ function snapshotUser() {
     drillsPerMonth: s.drillsPerMonth ?? null,
     retirementDate: s.retirementDate ?? null,
     vaDisabilityPercent: s.vaDisabilityPercent ?? null,
+    sbpEnabled: s.sbpEnabled ?? false,
+    sbpCoveragePct: s.sbpCoveragePct ?? null,
     tspContribPct: s.tspContribPct,
     rothTspPct: s.rothTspPct,
     hasDentalFamily: s.hasDentalFamily,
@@ -360,6 +372,9 @@ export function syncCollection(uid: string | null, collection: string) {
       break;
     case 'tips':
       safeSetDoc(userDoc(uid, 'tips'), { savedTipIds: useTipsStore.getState().savedTipIds });
+      break;
+    case 'vaClaims':
+      safeSetDoc(userDoc(uid, 'vaClaims'), { claims: useVaClaimsStore.getState().claims });
       break;
   }
 }

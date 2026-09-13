@@ -79,10 +79,68 @@ export function getBasicPay(grade: PayGrade, yos: number): number {
  * Approximates the high-3 average basic pay.
  * Uses pay at YOS and pay at YOS-1, YOS-2 (one grade lower would be more accurate
  * but we don't track promotions — same grade at each YOS is a reasonable proxy).
+ *
+ * This is the "Quick Estimate" path: it assumes the member held their final
+ * grade for the entire 36-month High-3 window. That's exactly right for
+ * anyone who's been in their final grade 3+ years, but overstates the
+ * pension for someone promoted within the last 3 years, who spent part of
+ * that window at a lower grade's pay. See getHigh3AverageDetailed for the
+ * promotion-aware "Detailed" path.
  */
 export function getHigh3Average(grade: PayGrade, retirementYOS: number): number {
   const p0 = getBasicPay(grade, retirementYOS);
   const p1 = getBasicPay(grade, Math.max(retirementYOS - 1, 0));
   const p2 = getBasicPay(grade, Math.max(retirementYOS - 2, 0));
   return (p0 + p1 + p2) / 3;
+}
+
+export interface High3DetailedResult {
+  average: number;
+  // True when the member has held their final grade less than 36 months —
+  // i.e. when the previous-grade blend below actually changed the result
+  // versus the plain getHigh3Average proxy.
+  usedPreviousGrade: boolean;
+}
+
+/**
+ * Promotion-aware High-3 average: blends the final grade's pay (for however
+ * many of the last 36 months were actually spent in that grade) with the
+ * previous grade's pay (for the remainder), rather than assuming the final
+ * grade the whole time.
+ *
+ * This still uses CURRENT (single-year) pay tables for both grades, since
+ * this app doesn't maintain historical pay tables for prior years — it is
+ * not the literal DFAS calculation (which averages the actual monthly rates
+ * in effect during each of those 36 months, including past years' annual
+ * raises), but it correctly captures the grade-mix a member's feedback
+ * flagged as missing, which the plain single-grade proxy cannot. Callers
+ * should surface `usedPreviousGrade` so the UI can label this as an
+ * estimate and explain the assumption.
+ *
+ * @param finalGrade grade held at retirement
+ * @param retirementYOS years of service at retirement
+ * @param monthsAtFinalGrade how many of the last 36 months were at finalGrade (0-36)
+ * @param previousGrade grade held immediately before finalGrade — required
+ *   whenever monthsAtFinalGrade < 36; ignored otherwise
+ */
+export function getHigh3AverageDetailed(
+  finalGrade: PayGrade,
+  retirementYOS: number,
+  monthsAtFinalGrade: number,
+  previousGrade?: PayGrade,
+): High3DetailedResult {
+  const monthsFinal = Math.min(36, Math.max(0, monthsAtFinalGrade));
+  if (monthsFinal >= 36 || !previousGrade) {
+    return { average: getHigh3Average(finalGrade, retirementYOS), usedPreviousGrade: false };
+  }
+  const monthsPrevious = 36 - monthsFinal;
+  // Final grade's rate at retirement — same single-rate proxy as the Quick
+  // Estimate for the portion of the window actually spent at this grade.
+  const finalGradePay = getBasicPay(finalGrade, retirementYOS);
+  // Previous grade's rate at the YOS the member held when promoted (i.e.
+  // retirementYOS minus the time since spent in the final grade).
+  const yosAtPromotion = Math.max(0, retirementYOS - monthsFinal / 12);
+  const previousGradePay = getBasicPay(previousGrade, yosAtPromotion);
+  const average = (finalGradePay * monthsFinal + previousGradePay * monthsPrevious) / 36;
+  return { average, usedPreviousGrade: true };
 }

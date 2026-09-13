@@ -9,12 +9,9 @@ import { Brand, Spacing } from '@/constants/theme';
 import { getHigh3Average } from '@/data/basic-pay-rates';
 import { retiredPayMultiplier } from '@/features/home/utils/lesCalc';
 import { NumberStepper } from '@/features/retirement/components/NumberStepper';
+import { SBP_ANNUITY_PCT, SBP_PREMIUM_PCT } from '@/features/retirement/utils/sbpCalc';
 import { useThemeColors } from '@/hooks/use-theme';
 import { useUserStore } from '@/store/user.store';
-
-// SBP constants (FY2026)
-const SBP_ANNUITY_PCT   = 0.55;   // spouse receives 55% of covered base
-const SBP_PREMIUM_PCT   = 0.065;  // 6.5% of covered base
 
 function fmtDollar(n: number) {
   return '$' + Math.round(n).toLocaleString('en-US');

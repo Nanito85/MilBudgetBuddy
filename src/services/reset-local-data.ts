@@ -12,6 +12,7 @@ import { useNwSnapshotsStore } from '@/store/networth-snapshots.store';
 import { useSavingsGoalsStore } from '@/store/savings-goals.store';
 import { useTipsStore } from '@/store/tips.store';
 import { useUserStore } from '@/store/user.store';
+import { useVaClaimsStore } from '@/store/va-claims.store';
 
 /**
  * Wipes every locally-persisted store, then AsyncStorage.clear() as a final
@@ -50,6 +51,7 @@ export async function resetAllLocalData(): Promise<void> {
     useExpensesStore.getState().resetAll();
     useKidsStore.getState().resetAll();
     useLifeEventsStore.getState().resetAll();
+    useVaClaimsStore.getState().resetAll();
   });
   // Kid Mode's PIN is SecureStore-backed and deliberately excluded from
   // sync (per-device by design), so it doesn't need the suppression above.

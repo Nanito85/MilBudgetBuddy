@@ -245,6 +245,7 @@ export function EditPayModal({ visible, onClose }: { visible: boolean; onClose: 
   // retired would otherwise keep seeing a phantom TSP deduction taken out of
   // retired pay that DFAS would never actually withhold.
   const isRetired = serviceStatus === 'retired';
+  const isCivilianOnly = serviceStatus === 'civilian';
 
   const specialPaysTotal = specialPays.reduce((s, p) => s + p.monthlyAmount, 0);
   const calculated = payGrade
@@ -673,13 +674,20 @@ export function EditPayModal({ visible, onClose }: { visible: boolean; onClose: 
               <Switch value={dental} onValueChange={setDental} trackColor={{ true: Brand.accent }} thumbColor="#FFF" />
             </View>
 
-            <View style={editStyles.toggleRow}>
-              <View style={{ flex: 1, gap: 2 }}>
-                <ThemedText style={[editStyles.toggleLabel, { color: tc.textPrimary }]}>Opt Out of SGLI</ThemedText>
-                <ThemedText style={[editStyles.toggleSub, { color: tc.textHint }]}>-$26/mo savings (removes coverage)</ThemedText>
+            {/* SGLI coverage (and its premium) ends at separation/retirement,
+                and never existed for a pure civilian who never served —
+                lesCalc.ts already zeroes it for both regardless of this
+                toggle, so showing it here would just be a dead control that
+                looks like it does something but doesn't. */}
+            {!isRetired && !isCivilianOnly && (
+              <View style={editStyles.toggleRow}>
+                <View style={{ flex: 1, gap: 2 }}>
+                  <ThemedText style={[editStyles.toggleLabel, { color: tc.textPrimary }]}>Opt Out of SGLI</ThemedText>
+                  <ThemedText style={[editStyles.toggleSub, { color: tc.textHint }]}>-$26/mo savings (removes coverage)</ThemedText>
+                </View>
+                <Switch value={sgl} onValueChange={setSgl} trackColor={{ true: Brand.classified }} thumbColor="#FFF" />
               </View>
-              <Switch value={sgl} onValueChange={setSgl} trackColor={{ true: Brand.classified }} thumbColor="#FFF" />
-            </View>
+            )}
 
             {/* Additional Deductions */}
             <View style={[editStyles.sectionHead, { borderTopColor: tc.borderColor }]}>

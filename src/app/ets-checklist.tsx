@@ -273,6 +273,13 @@ export default function EtsChecklistScreen() {
         <ThemedText style={[styles.relatedToolChevron, { color: tc.accent }]}>›</ThemedText>
       </Pressable>
 
+      <Pressable onPress={() => router.push('/va-claims-tracker' as any)} style={styles.relatedToolRow}>
+        <ThemedText style={[styles.relatedToolText, { color: tc.textSecondary }]}>
+          Filing a VA claim? Track its stage and appeal deadline in the VA Claims & Appeals Tracker
+        </ThemedText>
+        <ThemedText style={[styles.relatedToolChevron, { color: tc.accent }]}>›</ThemedText>
+      </Pressable>
+
       {/* Without an explicit flex:1 here, this ScrollView only sized itself
           to its own content instead of properly bounding to the remaining
           screen space below the header/progress bar — the full checklist

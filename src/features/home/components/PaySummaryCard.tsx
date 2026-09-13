@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Pressable, StyleSheet, TextInput, View } from 'react-native';
+import { Alert, Pressable, StyleSheet, TextInput, View } from 'react-native';
 
 import { TacticalCard } from '@/components/TacticalCard';
 import { ThemedText } from '@/components/themed-text';
 import { Brand, Fonts, Spacing } from '@/constants/theme';
+import { getStateTaxInfo, RETIREMENT_TAX_EXEMPT_STATES } from '@/data/state-tax';
 import { EditPayModal } from '@/features/home/components/EditPayModal';
 import { LESBreakdown, fmtPay } from '@/features/home/utils/lesCalc';
 import { useUserStore } from '@/store/user.store';
@@ -19,9 +20,14 @@ interface RowProps {
   bold?: boolean;
   indent?: boolean;
   overridden?: boolean;
+  // Shows a small "ⓘ" next to the label that opens an explanatory alert —
+  // for a line whose $0.00 could otherwise read as "not considered" rather
+  // than "considered and came out to zero" (e.g. state tax in a no-tax or
+  // retirement-exempt state).
+  onInfoPress?: () => void;
 }
 
-function Row({ label, value, positive, negative, bold, indent, overridden }: RowProps) {
+function Row({ label, value, positive, negative, bold, indent, overridden, onInfoPress }: RowProps) {
   const tc = useThemeColors();
   const valueColor = positive ? Brand.tactical : negative ? Brand.danger : tc.textPrimary;
   return (
@@ -35,6 +41,11 @@ function Row({ label, value, positive, negative, bold, indent, overridden }: Row
         ]}>
         {label}{overridden ? ' ✎' : ''}
       </ThemedText>
+      {onInfoPress && (
+        <Pressable onPress={onInfoPress} hitSlop={8}>
+          <ThemedText style={[rowStyles.infoIcon, { color: tc.textMuted }]}>ⓘ</ThemedText>
+        </Pressable>
+      )}
       <View style={[rowStyles.dotLine, { backgroundColor: tc.borderColor }]} />
       <ThemedText style={[rowStyles.value, bold && rowStyles.valueBold, { color: valueColor }]}>
         {value}
@@ -52,6 +63,7 @@ const rowStyles = StyleSheet.create({
   dotLine: { flex: 1, height: StyleSheet.hairlineWidth, marginBottom: 1 },
   value: { fontSize: 13, fontWeight: '700', fontFamily: Fonts.data, letterSpacing: 0.5 },
   valueBold: { fontSize: 14 },
+  infoIcon: { fontSize: 12 },
 });
 
 // ── Main Card ─────────────────────────────────────────────────────────────────
@@ -70,6 +82,7 @@ export function PaySummaryCard({ breakdown }: Props) {
   const spouseMonthlyIncome = useUserStore((s) => s.spouseMonthlyIncome);
   const setSpouseMonthlyIncome = useUserStore((s) => s.setSpouseMonthlyIncome);
   const housingStatus       = useUserStore((s) => s.housingStatus);
+  const stateResidence      = useUserStore((s) => s.stateResidence);
 
   const bahLabel = breakdown.bahOverridden
     ? (breakdown.isOha ? 'OHA' : 'BAH')
@@ -85,11 +98,42 @@ export function PaySummaryCard({ breakdown }: Props) {
     spouseMonthlyIncome > 0 ? String(spouseMonthlyIncome) : '',
   );
 
-  const perPaycheck       = breakdown.netPay / 2;
+  // Active duty is paid semi-monthly (1st and 15th); military retired pay is
+  // a single monthly disbursement. Dividing a retiree's monthly net by 2
+  // fabricated a second "paycheck" that DFAS never actually sends — this
+  // drives every "per paycheck" figure below, including the quick bar.
+  const payPeriodsPerMonth = breakdown.isRetiredPay ? 1 : 2;
+  const perPaycheck       = breakdown.netPay / payPeriodsPerMonth;
+  // Spouse income's own pay cadence isn't tracked separately (there's no
+  // spouse-pay-period field in the data model) — it's still shown on the
+  // active-duty semi-monthly cadence here since that's the only one this
+  // app currently models for a second income.
   const spousePerPaycheck = spouseMonthlyIncome / 2;
   const householdMonthly  = breakdown.netPay + spouseMonthlyIncome;
-  const householdPerCheck = householdMonthly / 2;
+  const householdPerCheck = householdMonthly / payPeriodsPerMonth;
   const hasSpouseIncome   = spouseMonthlyIncome > 0;
+
+  const stateTaxExplanation = (() => {
+    if (breakdown.stateTax > 0) {
+      return `Estimated state income tax on your ${breakdown.isRetiredPay ? 'retired pay' : 'base pay'}, based on your state of residence in Profile.`;
+    }
+    if (!stateResidence) {
+      return 'No state of residence is set in Profile, so state tax can’t be estimated. Add it in Profile › Edit Personal to see an estimate here.';
+    }
+    const info = getStateTaxInfo(stateResidence);
+    const stateName = info?.name ?? stateResidence;
+    if (breakdown.isRetiredPay && RETIREMENT_TAX_EXEMPT_STATES.has(stateResidence)) {
+      return info?.effectiveRate === 0
+        ? `${stateName} has no state income tax, so your retired pay isn’t taxed at the state level.`
+        : `${stateName} fully exempts military retired pay from state income tax, even though it taxes other income.`;
+    }
+    if (info?.militaryExempt) {
+      return info.effectiveRate === 0
+        ? `${stateName} has no state income tax.`
+        : `${stateName} exempts active-duty military pay from state income tax.`;
+    }
+    return `${stateName} state tax on this income currently estimates to $0.`;
+  })();
 
   const hasOverrides = !!(
     lesOverrides.bahOverride != null ||
@@ -123,11 +167,18 @@ export function PaySummaryCard({ breakdown }: Props) {
       {/* Net pay hero */}
       <View style={styles.hero}>
         <View>
-          <ThemedText type="label" style={[styles.netLabel, { color: tc.textHint }]}>EST. NET / PAYCHECK</ThemedText>
-          <ThemedText style={[styles.netAmount, { color: tc.accent }]}>{fmtPay(perPaycheck)}</ThemedText>
-          <ThemedText style={[styles.netMonthly, { color: tc.textHint }]}>
-            {fmtPay(breakdown.netPay)}<ThemedText style={[styles.netMonthlyUnit, { color: tc.textMuted }]}> / month</ThemedText>
+          <ThemedText type="label" style={[styles.netLabel, { color: tc.textHint }]}>
+            {breakdown.isRetiredPay ? 'EST. NET (MONTHLY)' : 'EST. NET / PAYCHECK'}
           </ThemedText>
+          <ThemedText style={[styles.netAmount, { color: tc.accent }]}>{fmtPay(perPaycheck)}</ThemedText>
+          {/* Retired pay is one deposit a month — repeating the same number
+              as a second "/ month" line would just be confusing, not
+              informative, so it's only shown for the semi-monthly schedule. */}
+          {!breakdown.isRetiredPay && (
+            <ThemedText style={[styles.netMonthly, { color: tc.textHint }]}>
+              {fmtPay(breakdown.netPay)}<ThemedText style={[styles.netMonthlyUnit, { color: tc.textMuted }]}> / month</ThemedText>
+            </ThemedText>
+          )}
         </View>
         <View style={styles.heroRight}>
           <Pressable onPress={() => setExpanded((v) => !v)} style={styles.expandBtn} hitSlop={12}>
@@ -169,17 +220,17 @@ export function PaySummaryCard({ breakdown }: Props) {
         <View style={[styles.quickBar, { borderTopColor: tc.borderColor }]}>
           <View style={styles.quickItem}>
             <ThemedText type="label" style={[styles.quickLabel, { color: tc.textMuted }]}>GROSS</ThemedText>
-            <ThemedText style={[styles.quickValue, { color: tc.tactical }]}>{fmtPay(breakdown.grossPay / 2)}</ThemedText>
+            <ThemedText style={[styles.quickValue, { color: tc.tactical }]}>{fmtPay(breakdown.grossPay / payPeriodsPerMonth)}</ThemedText>
           </View>
           <View style={[styles.quickSep, { backgroundColor: tc.borderColor }]} />
           <View style={styles.quickItem}>
             <ThemedText type="label" style={[styles.quickLabel, { color: tc.textMuted }]}>DEDUCTIONS</ThemedText>
-            <ThemedText style={[styles.quickValue, { color: Brand.danger }]}>-{fmtPay(breakdown.totalDeductions / 2)}</ThemedText>
+            <ThemedText style={[styles.quickValue, { color: Brand.danger }]}>-{fmtPay(breakdown.totalDeductions / payPeriodsPerMonth)}</ThemedText>
           </View>
           <View style={[styles.quickSep, { backgroundColor: tc.borderColor }]} />
           <View style={styles.quickItem}>
             <ThemedText type="label" style={[styles.quickLabel, { color: tc.textMuted }]}>TSP</ThemedText>
-            <ThemedText style={[styles.quickValue, { color: tc.accent }]}>{fmtPay(breakdown.tsp / 2)}</ThemedText>
+            <ThemedText style={[styles.quickValue, { color: tc.accent }]}>{fmtPay(breakdown.tsp / payPeriodsPerMonth)}</ThemedText>
           </View>
         </View>
       )}
@@ -237,13 +288,37 @@ export function PaySummaryCard({ breakdown }: Props) {
               ✓ COMBAT ZONE — {fmtPay(breakdown.czteExcluded)} of base pay excluded from fed/state income tax this month (FICA still applies)
             </ThemedText>
           )}
-          {breakdown.stateTax > 0 && (
-            <Row label="STATE TAX (EST.)" value={`-${fmtPay(breakdown.stateTax)}`} indent negative />
+          {/* Always shown, even at $0.00 — a hidden row here used to read as
+              "state tax wasn't considered" when it was actually calculated
+              and came out to zero (no state selected, a no-income-tax
+              state, or a state that exempts military retired pay). The info
+              icon explains which of those applies instead of the member
+              having to dig through their profile to find out. */}
+          <Row
+            label="STATE TAX (EST.)"
+            value={breakdown.stateTax > 0 ? `-${fmtPay(breakdown.stateTax)}` : '$0.00'}
+            indent negative={breakdown.stateTax > 0}
+            onInfoPress={() => Alert.alert('State Tax', stateTaxExplanation)}
+          />
+          {/* Retired pay isn't TSP-eligible (see lesCalc.ts) — showing a
+              "$0" TSP row for a retiree implies it's a live decision to
+              make, when it structurally doesn't apply anymore. */}
+          {!breakdown.isRetiredPay && (
+            <>
+              {breakdown.traditionalTsp > 0 && <Row label="TSP (TRADITIONAL)" value={`-${fmtPay(breakdown.traditionalTsp)}`} indent negative />}
+              {breakdown.rothTsp > 0       && <Row label="TSP (ROTH)"        value={`-${fmtPay(breakdown.rothTsp)}`}        indent negative />}
+              {breakdown.tsp === 0         && <Row label="TSP CONTRIB"       value="$0"                                      indent negative />}
+            </>
           )}
-          {breakdown.traditionalTsp > 0 && <Row label="TSP (TRADITIONAL)" value={`-${fmtPay(breakdown.traditionalTsp)}`} indent negative />}
-          {breakdown.rothTsp > 0       && <Row label="TSP (ROTH)"        value={`-${fmtPay(breakdown.rothTsp)}`}        indent negative />}
-          {breakdown.tsp === 0         && <Row label="TSP CONTRIB"       value="$0"                                      indent negative />}
           {breakdown.sgli > 0  && <Row label="SGLI"          value={`-${fmtPay(breakdown.sgli)}`}   indent negative />}
+          {breakdown.sbp > 0   && (
+            <Row
+              label="SBP (SURVIVOR BENEFIT)"
+              value={`-${fmtPay(breakdown.sbp)}`}
+              indent negative
+              onInfoPress={() => Alert.alert('Survivor Benefit Plan', 'You elected SBP coverage — 6.5% of your covered retired pay is deducted each month so your spouse/beneficiary can receive a 55% annuity if you die first. Change this in Profile.')}
+            />
+          )}
           {breakdown.dental > 0 && <Row label="DENTAL (TDP)" value={`-${fmtPay(breakdown.dental)}`} indent negative />}
           {breakdown.extraDeductionItems.map(item => (
             <Row key={item.id} label={item.label.toUpperCase()} value={`-${fmtPay(item.amount)}`} indent negative />
@@ -253,7 +328,12 @@ export function PaySummaryCard({ breakdown }: Props) {
           <View style={[styles.divider, { backgroundColor: tc.borderColor }]} />
 
           <Row label="MONTHLY NET"      value={fmtPay(breakdown.netPay)}   bold />
-          <Row label="PER PAYCHECK (÷2)" value={fmtPay(perPaycheck)}        bold />
+          {/* Retired pay is a single monthly deposit — there's no second
+              "paycheck" to break out, so this row would just repeat
+              MONTHLY NET above under a misleading "÷2" label. */}
+          {!breakdown.isRetiredPay && (
+            <Row label="PER PAYCHECK (÷2)" value={fmtPay(perPaycheck)}        bold />
+          )}
 
           {hasSpouseIncome && (
             <>

@@ -59,6 +59,8 @@ export const RETIREMENT_VA: ToolItem[] = [
   { id: 'sbp',         icon: '🛡️', color: '#1A237E', title: 'Survivor Benefit Plan',   description: 'SBP premium, 55% annuity, break-even, and actuarial scenario',           route: '/sbp-calculator',     available: true, tags: ['sbp','survivor','spouse','pension','widow'] },
   { id: 'va_loan',     icon: '🏠', color: '#B71C1C', title: 'VA Loan Calculator',       description: 'How much home you can afford using your VA benefit — no PMI',            route: '/va-loan-calculator', available: true, tags: ['va loan','home','mortgage','house','buy'] },
   { id: 'va_disability',icon: '🎖️',color: '#B71C1C', title: 'VA Disability Calculator', description: 'Combined rating using the official VA formula — FY2026 compensation',   route: '/va-disability',      available: true, tags: ['va','disability','rating','compensation','100%'] },
+  { id: 'va_claims',   icon: '📋', color: '#B71C1C', title: 'VA Claims & Appeals Tracker', badge: 'New',
+    description: 'Track every claim, increase, or appeal by stage — with your one-year appeal deadline', route: '/va-claims-tracker', available: true, tags: ['va','claim','appeal','c&p exam','decision','hlr','supplemental'] },
   { id: 'gi_bill',     icon: '🎓', color: '#1A237E', title: 'GI Bill Calculator',       description: 'Chapter 33 BAH by ZIP, eligibility tiers, and remaining benefit',        route: '/gi-bill-calculator', available: true, tags: ['gi bill','education','college','chapter 33','mha'] },
 ];
 

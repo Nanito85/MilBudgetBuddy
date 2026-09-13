@@ -55,6 +55,19 @@ function DebtFormModal({
   const [apr, setApr]         = useState(initial ? String(initial.apr)        : '');
   const [min, setMin]         = useState(initial ? String(initial.minPayment) : '');
 
+  // Re-seed fields when switching which debt this modal is editing. Since
+  // this modal is rendered inline (not a real overlay <Modal>), the debt
+  // list underneath stays tappable while it's open — tapping "edit" on a
+  // different debt swaps `initial` without unmounting this component, so
+  // without this effect the form would keep showing the previous debt's
+  // stale values while saving them onto the newly-selected debt's id.
+  useEffect(() => {
+    setName(initial?.name ?? '');
+    setBalance(initial ? String(initial.balance) : '');
+    setApr(initial ? String(initial.apr) : '');
+    setMin(initial ? String(initial.minPayment) : '');
+  }, [initial?.id]);
+
   const canSave =
     name.trim().length > 0 &&
     parseFloat(balance) > 0 &&

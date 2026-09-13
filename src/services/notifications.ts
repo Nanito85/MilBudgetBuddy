@@ -83,7 +83,7 @@ function adjustedPayDay(year: number, month: number, day: number): Date {
  * sent at 18:00 the evening before each pay day.
  * Uses a unique identifier per date so they coexist with the daily tip.
  */
-export async function schedulePayDayReminders(netPay?: number): Promise<void> {
+export async function schedulePayDayReminders(netPay?: number, isRetired?: boolean): Promise<void> {
   if (Platform.OS === 'web') return;
   try {
     // Cancel any previously scheduled pay day notifications
@@ -104,7 +104,12 @@ export async function schedulePayDayReminders(netPay?: number): Promise<void> {
       const month = (today.getMonth() + m) % 12;
       const year  = today.getFullYear() + Math.floor((today.getMonth() + m) / 12);
 
-      for (const day of [1, 15]) {
+      // Retired pay is disbursed once a month (the 1st, or the prior
+      // business day) — not the active-duty 1st-and-15th schedule. A
+      // retiree used to get a spurious "pay day tomorrow" reminder every
+      // 15th for a paycheck that was never coming.
+      const payDays = isRetired ? [1] : [1, 15];
+      for (const day of payDays) {
         const payDate = adjustedPayDay(year, month, day);
         // Reminder fires the evening before at 18:00
         const reminderDate = new Date(payDate);
@@ -120,7 +125,7 @@ export async function schedulePayDayReminders(netPay?: number): Promise<void> {
         await Notifications.scheduleNotificationAsync({
           identifier: id,
           content: {
-            title: `💵 Pay Day Tomorrow (${label})`,
+            title: isRetired ? '💵 Retired Pay Tomorrow' : `💵 Pay Day Tomorrow (${label})`,
             body: payBody,
           },
           trigger: {

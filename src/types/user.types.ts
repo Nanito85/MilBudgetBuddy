@@ -171,6 +171,12 @@ export interface UserPreferences {
   // Retired info
   retirementDate?: string;      // YYYY-MM-DD (date of retirement)
   vaDisabilityPercent?: number; // 0-100, in 10% increments
+  // Survivor Benefit Plan — an opt-in premium deducted from retired pay
+  // (never active-duty pay; see lesCalc.ts). Defaults to false/undefined
+  // rather than assuming every retiree elected it — SBP is a real choice
+  // made at retirement, and a meaningful share of retirees decline it.
+  sbpEnabled?: boolean;
+  sbpCoveragePct?: number; // 0-1 (e.g. 1.0 = full retired pay), only meaningful when sbpEnabled
   // A retiree who ALSO currently works as a GS civilian employee — retired
   // pay, VA disability, and a GS paycheck are three separate, independently
   // stacking income sources for the same real person, not mutually exclusive

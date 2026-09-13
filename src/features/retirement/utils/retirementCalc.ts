@@ -1,5 +1,5 @@
 import { PayGrade } from '@/data/bah-rates';
-import { getBasicPay, getHigh3Average } from '@/data/basic-pay-rates';
+import { getBasicPay, getHigh3AverageDetailed } from '@/data/basic-pay-rates';
 
 // ── TSP future value ──────────────────────────────────────────────────────────
 
@@ -50,12 +50,21 @@ export interface RetirementInputs {
   currentYOS: number;
   tspContribRate: number;   // 0–0.15 (e.g., 0.05 = 5%)
   tspAnnualReturn: number;  // 0.04–0.10 (e.g., 0.07 = 7%)
+  // Detailed (promotion-aware) High-3 — both optional; omit either (or leave
+  // yearsAtGrade at 3+) to fall back to the Quick Estimate, which assumes
+  // `grade` the whole 36-month window. See getHigh3AverageDetailed.
+  yearsAtGrade?: number;
+  previousGrade?: PayGrade;
 }
 
 export interface High3Result {
   monthlyPension: number;
   annualPension: number;
   high3AvgPay: number;
+  // True when the promotion-aware Detailed calculation actually changed the
+  // result (i.e. yearsAtGrade < 3 and previousGrade was supplied) — lets the
+  // UI label this result as "Detailed" vs the default "Quick Estimate".
+  usedDetailedCalc: boolean;
 }
 
 export interface BRSResult {
@@ -86,13 +95,16 @@ export function calcRetirement(inputs: RetirementInputs): RetirementResult {
     currentYOS,
     tspContribRate,
     tspAnnualReturn,
+    yearsAtGrade,
+    previousGrade,
   } = inputs;
 
   const yearsToRetirement = Math.max(0, retirementYOS - currentYOS);
   const retirementAge = currentAge + yearsToRetirement;
 
   // ── High-3 pension ──────────────────────────────────────────────────────────
-  const high3Avg = getHigh3Average(grade, retirementYOS);
+  const detailed = getHigh3AverageDetailed(grade, retirementYOS, (yearsAtGrade ?? 3) * 12, previousGrade);
+  const high3Avg = detailed.average;
   const h3MonthlyPension = retirementYOS * 0.025 * high3Avg;
   const h3AnnualPension = h3MonthlyPension * 12;
 
@@ -141,6 +153,7 @@ export function calcRetirement(inputs: RetirementInputs): RetirementResult {
       monthlyPension: h3MonthlyPension,
       annualPension: h3AnnualPension,
       high3AvgPay: high3Avg,
+      usedDetailedCalc: detailed.usedPreviousGrade,
     },
     brs: {
       monthlyPension: brsMonthlyPension,
