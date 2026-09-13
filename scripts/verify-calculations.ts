@@ -297,14 +297,23 @@ console.log('\n[15] Okinawa OCONUS: OHA / COLA / no-hazard-pay / TLA per-diem lo
   if (!kadena) throw new Error('Fixture installation "kadena" not found in installations.ts');
 
   // OHA: resolves to the real "Okinawa (All Installations)" area, not a missing/
-  // approximate-placeholder $0 result. E1 w/ dep = $1,403 rent + $662 utility,
-  // confirmed against the May 2026 USFJ increase (Stars and Stripes, citing the
-  // DTMO calculator) per oha-rates.ts's own header note.
+  // approximate-placeholder $0 result. E1 w/ dep = $1,746 rent + $704 utility,
+  // queried live against DTMO's own OHA calculator on 2026-09-13 (effective
+  // 2026-08-01) — see oha-rates.ts's header note.
   const area = getOhaAreaForInstallation('kadena');
   assertTrue(!!area, 'Kadena AB resolves to a real OHA area (not undefined)');
   const kadenaOha = area ? getOhaRate(area.locationLabel, 'E1', true) : null;
-  assertEqual(kadenaOha?.rentCeilingUSD, 1403, 'Okinawa E1 w/dep OHA rent ceiling matches the confirmed May 2026 USFJ rate ($1,403)');
-  assertEqual(kadenaOha?.utilityAllowanceUSD, 662, 'Okinawa OHA utility allowance matches the confirmed flat USFJ rate ($662, all grades)');
+  assertEqual(kadenaOha?.rentCeilingUSD, 1746, 'Okinawa E1 w/dep OHA rent ceiling matches the live-confirmed 2026-08-01 rate ($1,746)');
+  assertEqual(kadenaOha?.utilityAllowanceUSD, 704, 'Okinawa OHA utility allowance matches the live-confirmed flat rate ($704, all grades)');
+  assertEqual(area?.approximate, false, 'Okinawa OHA is no longer flagged approximate — every grade was independently confirmed live');
+
+  // Without-dependents multiplier: DTMO's own E6 without-dep query returned
+  // exactly 0.90x rent / 0.75x utility of the with-dep figures (to the cent),
+  // confirming RENT_NO_DEP_MULT/UTIL_NO_DEP_MULT aren't just an approximation
+  // for this location.
+  const kadenaE6NoDep = area ? getOhaRate(area.locationLabel, 'E6', false) : null;
+  assertEqual(kadenaE6NoDep?.rentCeilingUSD, 1980, 'Okinawa E6 without-dep rent matches DTMO\'s own 0.90x ratio ($1,980)');
+  assertEqual(kadenaE6NoDep?.utilityAllowanceUSD, 528, 'Okinawa E6 without-dep utility matches DTMO\'s own 0.75x ratio ($528)');
 
   // COLA: a real, tracked $0 (index <= 100 as of the 2026-09-01 indices) — NOT
   // colaTracked:false / null, which would look like "we have no data" rather
