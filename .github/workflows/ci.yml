@@ -21,6 +21,19 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # expo-env.d.ts is gitignored (Expo's own generated-file convention —
+      # see its own "should be in your gitignore" comment) and only exists
+      # locally because running any `expo` command creates it. Its one line
+      # is what pulls in expo/types' ambient `declare module '*.module.css'`
+      # (among other ambient types) via a triple-slash reference — without
+      # it, tsc has no idea what a `.module.css` import is. A fresh CI
+      # checkout never had this file, so every CSS Modules import (e.g.
+      # animated-icon.web.tsx) failed here even though local typechecks
+      # were clean. Content matches exactly what `expo start`/`expo
+      # customize expo-env.d.ts` generates.
+      - name: Generate expo-env.d.ts
+        run: echo '/// <reference types="expo/types" />' > expo-env.d.ts
+
       - name: TypeScript check
         run: npx tsc --noEmit
 
