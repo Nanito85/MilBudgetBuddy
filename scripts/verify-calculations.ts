@@ -381,6 +381,27 @@ console.log('\n[15] Okinawa OCONUS: OHA / COLA / no-hazard-pay / TLA per-diem lo
     assertEqual(pd.total, 469, `${id}: TLA per diem resolves to Okinawa's real $469/day rate, not a wrong-region fallback`);
     assertTrue(pd.matched, `${id}: per diem lookup reports a real match (not the unmatched placeholder)`);
   }
+
+  // [16] Bulk OCONUS OHA re-verification (2026-09-13) — spot-check a few more
+  // locations beyond Okinawa, one per continent/region, confirmed live
+  // against DTMO's calculator (E5 with dependents). Regression-locks the
+  // ratio-rescaling in oha-rates.ts so a future edit can't silently drift
+  // these back toward the old (wrong) numbers.
+  const ramstein = getOhaAreaForInstallation('ramstein');
+  assertTrue(!!ramstein, 'Ramstein AB resolves to a real OHA area');
+  const ramsteinE5 = ramstein ? getOhaRate(ramstein.locationLabel, 'E5', true) : null;
+  assertEqual(ramsteinE5?.rentCeilingUSD, 1865, 'Ramstein E5 w/dep rent matches the live-confirmed 2026-09-13 rate (~$1,865) — was $1,450, understated');
+  assertEqual(ramsteinE5?.utilityAllowanceUSD, 1163, 'Ramstein OHA utility matches the live-confirmed flat Germany rate ($1,163)');
+
+  const princeSultan = getOhaAreaForInstallation('prince_sultan');
+  assertTrue(!!princeSultan, 'Prince Sultan AB resolves to a real OHA area');
+  const princeSultanE5 = princeSultan ? getOhaRate(princeSultan.locationLabel, 'E5', true) : null;
+  assertEqual(princeSultanE5?.rentCeilingUSD, 555, 'Prince Sultan E5 w/dep rent matches the live-confirmed 2026-09-13 rate (~$555) — was $1,700, OVERstated by ~3x');
+
+  const alUdeid = getOhaAreaForInstallation('al_udeid');
+  assertTrue(!!alUdeid, 'Al Udeid AB resolves to a real OHA area');
+  const alUdeidE5 = alUdeid ? getOhaRate(alUdeid.locationLabel, 'E5', true) : null;
+  assertEqual(alUdeidE5?.rentCeilingUSD, 5895, 'Al Udeid E5 w/dep rent matches the live-confirmed 2026-09-13 rate (~$5,895) — Doha\'s off-base market is genuinely this expensive per DTMO, not a data error');
 }
 
 // ── Summary ────────────────────────────────────────────────────────────────────
