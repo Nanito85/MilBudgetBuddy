@@ -10,6 +10,7 @@ import { OfflineBanner } from '@/components/OfflineBanner';
 import { ProGateOverlay } from '@/components/ProGateOverlay';
 import { OnboardingFlow } from '@/features/profile/components/OnboardingFlow';
 import { useAppTheme } from '@/hooks/use-theme';
+import { useEntitlementRefresh } from '@/hooks/use-entitlement-refresh';
 import { useAuthStore } from '@/store/auth.store';
 import { useKidModeStore } from '@/store/kid-mode.store';
 import { useLifeEventsStore } from '@/store/life-events.store';
@@ -35,6 +36,8 @@ export default function RootLayout() {
   const kidModeActive = useKidModeStore((s) => s.active);
   const { user, initialized, init: initAuth } = useAuthStore();
   const pathname = usePathname();
+
+  useEntitlementRefresh();
 
   // Track every screen/tool navigation — powers the admin "Tool Usage" chart.
   // Fires on the actual route (e.g. "/bah-guide", "/(tabs)/budget"), not the

@@ -76,6 +76,49 @@ export async function verifyPurchaseWithServer(purchaseToken: string, productId:
   return res.json();
 }
 
+export interface EntitlementResponse {
+  status: 'pro' | 'free';
+  proExpiresAt: string | null;
+  verifiedAt?: string;
+  foundingMember: boolean;
+}
+
+/**
+ * Pulls the latest server-side entitlement and returns it — does NOT write
+ * to the store itself (see hooks/use-entitlement-refresh.ts, the only
+ * caller). Added 2026-09-14: proExpiresAt was previously written once at
+ * purchase/restore time and never refreshed, so a subscriber whose trial
+ * converted to paid (or whose monthly sub renewed) kept the ORIGINAL,
+ * now-passed expiry date forever and got wrongly re-gated until they
+ * happened to tap Restore Purchases. This calls the (until now unused)
+ * GET /api/iap/entitlement, which re-checks Android subscriptions live
+ * against Google Play (iOS not yet supported server-side — see that route's
+ * comment).
+ *
+ * Deliberately silent on failure (returns null) — this is a best-effort
+ * background refresh, not something that should ever surface an error to a
+ * member who's just trying to use the app.
+ */
+export async function fetchEntitlement(): Promise<EntitlementResponse | null> {
+  const idToken = await auth.currentUser?.getIdToken().catch(() => undefined);
+  if (!idToken) return null;
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 15000);
+  try {
+    const res = await fetch(`${API_BASE}/api/iap/entitlement`, {
+      headers: { Authorization: `Bearer ${idToken}` },
+      signal: controller.signal,
+    });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
 // NOTE: client-side promo code redemption (unlocking Pro outside the App
 // Store / Play Store purchase flow) was removed per Apple Guideline 3.1.1 —
 // see paywall.tsx. The admin code-generation panel (admin/codes.tsx) and its
