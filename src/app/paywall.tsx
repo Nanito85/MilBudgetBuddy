@@ -99,9 +99,33 @@ export default function PaywallScreen() {
     },
   });
 
+  // Sentry issue MILBUDGETBUDDY-1 ("Failed to query product",
+  // _construct/index.android, 100+ events/7 users, ongoing since launch):
+  // useIAP's fetchProducts() logs + reports the failure itself via onError
+  // above, then RETHROWS — this effect called it with no .catch(), so every
+  // single failure also became a second, unhandled-promise-rejection report
+  // for the exact same error. Same class of bug as the requestPurchase()
+  // fix on 2026-09-12, just a different call site that hadn't been caught
+  // yet. The events show one device retrying every ~10-15s for minutes at a
+  // time — almost certainly a real member re-opening this screen over and
+  // over after seeing what looked like a normal paywall (prices fall back
+  // to hardcoded placeholders — see monthlyDisplayPrice/annualDisplayPrice
+  // below — so nothing on screen signals that pricing/purchase is actually
+  // broken) with no way to tell what was wrong or retry directly. This is
+  // Google Play Billing failing to return product/subscription details for
+  // that specific device/account — not something reachable from here — so
+  // the real fix is surfacing it honestly instead of a paywall that quietly
+  // doesn't work: productsFailedToLoad below drives a visible retry banner.
+  const [productsFailedToLoad, setProductsFailedToLoad] = useState(false);
+
+  const loadProducts = React.useCallback(() => {
+    setProductsFailedToLoad(false);
+    fetchProducts({ skus: PRO_SKUS, type: 'subs' }).catch(() => setProductsFailedToLoad(true));
+  }, [fetchProducts]);
+
   useEffect(() => {
-    if (connected) fetchProducts({ skus: PRO_SKUS, type: 'subs' });
-  }, [connected]);
+    if (connected) loadProducts();
+  }, [connected, loadProducts]);
 
   // Sentry issue 41cc5c8f (2026-09-09, iOS): a real user hit
   // notAvailable()'s "IAP product not loaded at purchase time" error — the
@@ -556,6 +580,23 @@ export default function PaywallScreen() {
                 </Pressable>
               </View>
 
+              {/* Only shown once we've actually given the store a real
+                  chance to respond (productsTimedOut) AND it still hasn't —
+                  productsFailedToLoad alone can be a transient in-flight
+                  retry, not a real dead end yet. See loadProducts() above
+                  for why this exists instead of a silently-broken CTA. */}
+              {productsTimedOut && productsFailedToLoad && !productsReady && (
+                <View style={[styles.loadErrorBanner, { borderColor: tc.tactical, backgroundColor: tc.surface }]}>
+                  <ThemedText style={[styles.loadErrorText, { color: tc.textSecondary }]}>
+                    Couldn&apos;t load pricing from the {Platform.OS === 'ios' ? 'App Store' : 'Play Store'}.
+                    Check your connection and try again.
+                  </ThemedText>
+                  <Pressable onPress={loadProducts} style={[styles.loadErrorRetryBtn, { borderColor: tc.tactical }]}>
+                    <ThemedText style={[styles.loadErrorRetryText, { color: tc.tactical }]}>RETRY</ThemedText>
+                  </Pressable>
+                </View>
+              )}
+
               {/* No sign-in required to purchase (Apple Guideline 5.1.1(v) —
                   registration can't be required for an IAP that isn't itself
                   account-based content). This is just an optional heads-up;
@@ -642,6 +683,11 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.three, alignItems: 'center', marginTop: Spacing.two,
   },
   ctaBtnText: { color: '#04080F', fontSize: 14, fontWeight: '900', letterSpacing: 1 },
+
+  loadErrorBanner: { borderWidth: 1, borderRadius: Spacing.two, padding: Spacing.three, marginTop: Spacing.three, alignItems: 'center', gap: Spacing.two },
+  loadErrorText: { fontSize: 13, lineHeight: 18, textAlign: 'center' },
+  loadErrorRetryBtn: { borderWidth: 1.5, borderRadius: Spacing.two, paddingHorizontal: Spacing.four, paddingVertical: Spacing.two },
+  loadErrorRetryText: { fontSize: 12, fontWeight: '900', letterSpacing: 1 },
 
   legalNote: { textAlign: 'center', lineHeight: 17, marginTop: Spacing.one },
   signInNotice: { textAlign: 'center', lineHeight: 17, fontWeight: '600' },
