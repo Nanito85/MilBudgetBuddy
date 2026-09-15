@@ -234,10 +234,21 @@ export default function ReservesScreen() {
         </View>
       </View>
 
-      {/* Tab bar */}
+      {/* Tab bar. style (not just contentContainerStyle) needs its own
+          flexGrow: 0 / flexShrink: 0 — without it, this horizontal
+          ScrollView has no explicit cross-axis height of its own, and at
+          larger Settings > Text Size scales (the tab labels' lineHeight
+          already has to account for that — see tabLabel below) or on
+          narrower screens it was expanding well past its content's actual
+          height instead of sizing to it, visually eating up to half the
+          screen and pushing the real tab content down/off-screen. The
+          second (vertical) ScrollView below had the mirror-image bug fixed
+          already (needed flex: 1 to NOT overflow) — this one needed the
+          opposite: pinned to content size, never allowed to grow. */}
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
+        style={styles.tabBarScroll}
         contentContainerStyle={[styles.tabBar, { borderBottomColor: tc.borderColor }]}>
         {TABS.map((t) => (
           <Pressable
@@ -640,6 +651,7 @@ const styles = StyleSheet.create({
   eyebrow: { fontSize: 9, fontWeight: '800', letterSpacing: 1 },
   title: { fontSize: 20, fontWeight: '800' },
 
+  tabBarScroll: { flexGrow: 0, flexShrink: 0 },
   tabBar: {
     paddingHorizontal: Spacing.three, paddingVertical: Spacing.two,
     gap: Spacing.two, flexDirection: 'row',
