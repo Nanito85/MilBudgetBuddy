@@ -104,7 +104,7 @@ function DetailModal({ item, onClose, onUpdate }: { item: FeedbackRow; onClose: 
 
           {/* Status */}
           <ThemedText style={[detail.sectionLabel, { color: tc.textMuted }]}>UPDATE STATUS</ThemedText>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={detail.statusRow}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={detail.statusRowScroll} contentContainerStyle={detail.statusRow}>
             {STATUSES.filter((s) => s !== 'All').map((s) => (
               <Pressable
                 key={s}
@@ -153,6 +153,10 @@ const detail = StyleSheet.create({
   sectionLabel: { fontSize: 10, fontWeight: '700', letterSpacing: 0.5, marginTop: Spacing.one },
   messageBox: { borderWidth: 1, borderRadius: 6, padding: Spacing.three },
   message: { fontSize: 14, lineHeight: 21 },
+  // flexGrow/flexShrink: 0 on the wrapping ScrollView's own style — same fix
+  // as reserves.tsx's Reserve Hub tab bar, which visibly overflowed to cover
+  // half the screen without it.
+  statusRowScroll: { flexGrow: 0, flexShrink: 0 },
   statusRow: { gap: Spacing.one + 2, paddingVertical: Spacing.one },
   statusChip: { paddingHorizontal: Spacing.two, paddingVertical: Spacing.one + 2, borderRadius: 4, borderWidth: 1 },
   statusChipText: { fontSize: 10, fontWeight: '800', letterSpacing: 0.3 },
@@ -255,7 +259,7 @@ export default function AdminFeedbackScreen() {
       </View>
 
       {/* Category filter */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterRow}>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterRowScroll} contentContainerStyle={styles.filterRow}>
         {CATEGORIES.map((cat) => (
           <Pressable key={cat} onPress={() => setCatFilter(cat)}
             style={[styles.filterChip, { borderColor: tc.borderColor, backgroundColor: tc.surface }, catFilter === cat && styles.filterChipActive]}>
@@ -267,7 +271,7 @@ export default function AdminFeedbackScreen() {
       </ScrollView>
 
       {/* Status filter */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={[styles.filterRow, { paddingTop: 0 }]}>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterRowScroll} contentContainerStyle={[styles.filterRow, { paddingTop: 0 }]}>
         {STATUSES.map((s) => (
           <Pressable key={s} onPress={() => setStatus(s)}
             style={[styles.filterChip, { borderColor: tc.borderColor, backgroundColor: tc.surface }, statusFilter === s && styles.filterChipActive]}>
@@ -342,6 +346,8 @@ const styles = StyleSheet.create({
   statsBar: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: Spacing.three, paddingVertical: Spacing.one + 2, borderBottomWidth: StyleSheet.hairlineWidth },
   statsText: { fontSize: 11 },
   exportBtn: { fontSize: 10, fontWeight: '800', letterSpacing: 0.5 },
+  // Same flexGrow/flexShrink: 0 fix as statusRowScroll above.
+  filterRowScroll: { flexGrow: 0, flexShrink: 0 },
   filterRow: { paddingHorizontal: Spacing.three, paddingVertical: Spacing.two, gap: Spacing.one + 2 },
   filterChip: { paddingHorizontal: Spacing.two, paddingVertical: 5, borderRadius: 3, borderWidth: 1 },
   filterChipActive: { borderColor: Brand.tactical, backgroundColor: Brand.tactical + '20' },

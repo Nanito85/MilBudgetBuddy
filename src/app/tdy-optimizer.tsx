@@ -226,7 +226,12 @@ export default function TdyOptimizerScreen() {
                 placeholder="City, county, or state..."
                 placeholderTextColor={tc.textMuted}
               />
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginHorizontal: -Spacing.three }}>
+              {/* flexGrow/flexShrink: 0 — same fix as reserves.tsx's Reserve
+                  Hub tab bar, which visibly overflowed to cover half the
+                  screen without an explicit height constraint on the
+                  ScrollView's own style (a style prop with only a margin,
+                  like this one previously had, isn't enough on its own). */}
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginHorizontal: -Spacing.three, flexGrow: 0, flexShrink: 0 }}>
                 <View style={[styles.chipRow, { paddingHorizontal: Spacing.three }]}>
                   {conusResults.map((d) => (
                     <Pressable key={d.did} onPress={() => { setSelected(destToRate(d)); setCitySearch(''); Keyboard.dismiss(); }} style={[styles.locChip, { backgroundColor: tc.background, borderColor: tc.borderColor }, selected.label === `${d.city}, ${d.state}` && styles.locChipSelected]}>
@@ -248,7 +253,12 @@ export default function TdyOptimizerScreen() {
                 placeholder="Installation, city, or country..."
                 placeholderTextColor={tc.textMuted}
               />
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginHorizontal: -Spacing.three }}>
+              {/* flexGrow/flexShrink: 0 — same fix as reserves.tsx's Reserve
+                  Hub tab bar, which visibly overflowed to cover half the
+                  screen without an explicit height constraint on the
+                  ScrollView's own style (a style prop with only a margin,
+                  like this one previously had, isn't enough on its own). */}
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginHorizontal: -Spacing.three, flexGrow: 0, flexShrink: 0 }}>
                 <View style={[styles.chipRow, { paddingHorizontal: Spacing.three }]}>
                   {oconusResults.map((l) => (
                     <Pressable key={l.id} onPress={() => { setSelected(oconusToRate(l)); setCitySearch(''); Keyboard.dismiss(); }} style={[styles.locChip, { backgroundColor: tc.background, borderColor: tc.borderColor }, selected.label === l.name && styles.locChipSelected]}>

@@ -375,7 +375,9 @@ export default function NetWorthScreen() {
 
                   <ThemedView type="backgroundElement" style={styles.chartCard}>
                     <ThemedText style={[styles.cardLabel, { color: tc.textHint }]}>NET WORTH TREND</ThemedText>
-                    <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                    {/* flexGrow/flexShrink: 0 — same fix as reserves.tsx's
+                        Reserve Hub tab bar, applied defensively here too. */}
+                    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0, flexShrink: 0 }}>
                       <HistoryChart snapshots={snapshots} />
                     </ScrollView>
                   </ThemedView>

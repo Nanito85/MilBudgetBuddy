@@ -127,9 +127,17 @@ export function FeedbackModal({ visible, onClose }: Props) {
 
               {/* Category */}
               <ThemedText style={[styles.fieldLabel, { color: tc.textHint }]}>CATEGORY</ThemedText>
+              {/* style: { flexGrow: 0, flexShrink: 0 } — same fix as
+                  reserves.tsx's Reserve Hub tab bar (which visibly
+                  overflowed to cover half the screen without it): a
+                  horizontal ScrollView needs an explicit cross-axis height
+                  constraint of its own, contentContainerStyle alone isn't
+                  enough to reliably pin it to its content's small natural
+                  height. */}
               <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
+                style={styles.chipScroll}
                 contentContainerStyle={styles.chipRow}>
                 {CATEGORIES.map((cat) => {
                   const active = category === cat;
@@ -237,6 +245,7 @@ const styles = StyleSheet.create({
   fieldLabel: { fontSize: 11, fontWeight: '600', letterSpacing: 0.5 },
   required: { color: Brand.classified },
 
+  chipScroll: { flexGrow: 0, flexShrink: 0 },
   chipRow: { paddingVertical: Spacing.one, gap: Spacing.one + 2, flexDirection: 'row' },
   chip: {
     paddingHorizontal: Spacing.two + 2,

@@ -91,6 +91,7 @@ function AddGoalModal({ visible, accentColor, onClose, onAdd }: {
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
+              style={addGoalStyles.emojiScrollWrap}
               contentContainerStyle={addGoalStyles.emojiScroll}>
               {GOAL_EMOJIS.map((e) => (
                 <Pressable
@@ -183,6 +184,10 @@ const addGoalStyles = StyleSheet.create({
 
   fieldLabel: { fontSize: 10, fontWeight: '900', letterSpacing: 2, textTransform: 'uppercase' },
 
+  // flexGrow/flexShrink: 0 on the wrapping ScrollView's own style (see both
+  // emoji-picker call sites below) — same fix as reserves.tsx's Reserve Hub
+  // tab bar, which visibly overflowed to cover half the screen without it.
+  emojiScrollWrap: { flexGrow: 0, flexShrink: 0 },
   emojiScroll: { paddingVertical: Spacing.one, gap: Spacing.one },
   emojiBtn: {
     width: 52, height: 52, borderRadius: 26,
@@ -290,6 +295,7 @@ function EditGoalModal({ visible, goal, accentColor, onClose, onSave, onDelete }
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
+              style={addGoalStyles.emojiScrollWrap}
               contentContainerStyle={addGoalStyles.emojiScroll}>
               {GOAL_EMOJIS.map((e) => (
                 <Pressable
