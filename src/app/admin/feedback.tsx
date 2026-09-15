@@ -177,6 +177,17 @@ export default function AdminFeedbackScreen() {
   const [search, setSearch]          = useState('');
   const [selected, setSelected]      = useState<FeedbackRow | null>(null);
   const [exporting, setExporting]    = useState(false);
+  // Separate from adminLoading (the shared "a fetch is in flight" flag used
+  // for EVERY load — initial mount, filter taps, load-more, and manual pull-
+  // to-refresh alike). FlatList's refreshing prop drives its native
+  // pull-to-refresh spinner, which is meant to appear only when the user
+  // physically pulls the list down. Passing adminLoading straight into it
+  // made that spinner pop in on every category/status filter tap too, with
+  // no pull gesture behind it — reported as the filter rows "glitching" and
+  // covering part of the screen on tap. This only ever gets set true from
+  // the FlatList's own onRefresh callback below, so the spinner now shows
+  // only for an actual manual pull.
+  const [manualRefreshing, setManualRefreshing] = useState(false);
 
   // adminFeedback.length must be in the dependency array — without it, this
   // closure freezes on whatever the length was when catFilter/statusFilter/
@@ -196,6 +207,11 @@ export default function AdminFeedbackScreen() {
   }, [catFilter, statusFilter, search, adminFeedback.length]);
 
   useEffect(() => { load(true); }, [catFilter, statusFilter]);
+
+  // Clears the manual pull-to-refresh spinner once whatever fetch is in
+  // flight (the pull-triggered one, in practice — see manualRefreshing's
+  // comment above) actually finishes.
+  useEffect(() => { if (!adminLoading) setManualRefreshing(false); }, [adminLoading]);
 
   // Was hand-building a CSV from only adminFeedback — the currently loaded
   // PAGE (as few as 50 rows), with no escaping (a message containing a
@@ -314,8 +330,8 @@ export default function AdminFeedbackScreen() {
           contentContainerStyle={styles.list}
           onEndReached={() => load(false)}
           onEndReachedThreshold={0.3}
-          onRefresh={() => load(true)}
-          refreshing={adminLoading}
+          onRefresh={() => { setManualRefreshing(true); load(true); }}
+          refreshing={manualRefreshing}
           ListEmptyComponent={
             <View style={styles.emptyBox}>
               <ThemedText style={[styles.emptyText, { color: tc.textHint }]}>No feedback found.</ThemedText>
