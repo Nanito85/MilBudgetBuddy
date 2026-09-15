@@ -37,6 +37,7 @@ import {
   FINANCIAL_GOAL_LABELS,
   FinancialGoal,
   GUARD_DUTY_STATUS_DESCRIPTIONS,
+  GUARD_DUTY_STATUS_FIELD_HINT,
   GUARD_DUTY_STATUS_LABELS,
   GuardDutyStatus,
   HOUSING_STATUS_DESCRIPTIONS,
@@ -662,15 +663,19 @@ function ServiceInfoStep({
 
       {/* Guard duty status — only meaningful for Guard members, since it
           drives real differences in TRICARE/SCRA/retirement-point crediting
-          (see app/reserves.tsx). A snapshot of their current/primary status,
-          not a log of every order they've ever held. */}
+          (see app/reserves.tsx). This is what their status IS RIGHT NOW, not
+          a permanent fact — a real Guard member's status genuinely changes
+          month to month (routine Title 32 drill, then a Title 10 AT period,
+          then maybe a state SAD callout), so the copy below must say so and
+          the field must stay easy to come back and update, not read like a
+          one-time onboarding answer that's "done" forever. */}
       {isReserve && hasGuardOption && reserveComponent === 'guard' && (
         <View style={styles.fieldBlock}>
           <ThemedText type="smallBold" themeColor="textSecondary" style={styles.fieldLabel}>
-            CURRENT DUTY STATUS
+            YOUR STATUS RIGHT NOW
           </ThemedText>
           <ThemedText type="small" themeColor="textSecondary" style={{ lineHeight: 18 }}>
-            Your current/primary status — this changes your TRICARE, SCRA, and retirement-point eligibility.
+            {GUARD_DUTY_STATUS_FIELD_HINT} This affects your TRICARE, SCRA, and retirement-point eligibility, so keep it current — you can update it any time in your Profile.
           </ThemedText>
           {(['title32', 'title10', 'sad'] as const).map((s) => (
             <Pressable

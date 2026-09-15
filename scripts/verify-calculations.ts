@@ -532,6 +532,23 @@ console.log('\n[18] Branch/component-aware Reserve Hub guidance — Guard vs Res
   assertTrue(/\$80,000/.test(sripGuidanceFor('navy')), 'Navy Reserve SRB guidance cites the confirmed $80k career cap');
   assertTrue(/independently by each branch/.test(sripGuidanceFor('marines')), 'Marine Corps Reserve (no confirmed figure) gets the explicit "set independently by branch" framing rather than an invented number');
   assertTrue(!/\$20,000/.test(sripGuidanceFor('marines')), 'Marine Corps Reserve guidance does NOT borrow the Army-specific $20k figure');
+
+  // guardDutyStatus is a snapshot the member typed in, not a real-time read
+  // of their actual current orders (a real Guard member's status genuinely
+  // changes month to month) — every "guard_known" message must lead with
+  // "Based on what you've told us" rather than a bare assertion, and must
+  // include a reminder to update Profile if orders have changed, so the app
+  // never reads as more authoritative about the member's current status
+  // than it actually is. "guard_unknown" messages, by contrast, are already
+  // hedged by construction (no status was given at all).
+  for (const msgFn of [tricareGuardMessage, scraGuardMessage, retirementPointsGuardMessage, mobilizationGuardMessage]) {
+    const sadMsg = msgFn(sadStatus);
+    const t10Msg = msgFn(title10Status);
+    assertTrue(/Based on what you've told us/.test(sadMsg), `${msgFn.name}: SAD (guard_known) message leads with "Based on what you've told us"`);
+    assertTrue(/Based on what you've told us/.test(t10Msg), `${msgFn.name}: Title 10 (guard_known) message leads with "Based on what you've told us"`);
+    assertTrue(/update your status in Profile/.test(sadMsg), `${msgFn.name}: SAD (guard_known) message reminds the member to update Profile if orders changed`);
+    assertTrue(/update your status in Profile/.test(t10Msg), `${msgFn.name}: Title 10 (guard_known) message reminds the member to update Profile if orders changed`);
+  }
 }
 
 // ── Summary ────────────────────────────────────────────────────────────────────

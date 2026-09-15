@@ -44,6 +44,7 @@ import { Installation, getInstallationById, getInstallationByZip } from '@/data/
 import {
   BRANCH_LABELS,
   GUARD_DUTY_STATUS_DESCRIPTIONS,
+  GUARD_DUTY_STATUS_FIELD_HINT,
   GUARD_DUTY_STATUS_LABELS,
   GuardDutyStatus,
   HOUSING_STATUS_DESCRIPTIONS,
@@ -300,6 +301,7 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
   const storedDrills   = useUserStore((s) => s.drillsPerMonth);
   const storedReserveComponent = useUserStore((s) => s.reserveComponent);
   const storedGuardDutyStatus  = useUserStore((s) => s.guardDutyStatus);
+  const storedGuardDutyStatusUpdatedAt = useUserStore((s) => s.guardDutyStatusUpdatedAt);
   const storedRetDate  = useUserStore((s) => s.retirementDate);
   const storedVaPct    = useUserStore((s) => s.vaDisabilityPercent);
   const storedSbpEnabled = useUserStore((s) => s.sbpEnabled);
@@ -704,15 +706,23 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
                 )}
 
                 {/* Guard duty status — drives TRICARE/SCRA/retirement-point
-                    eligibility differently (see app/reserves.tsx). A snapshot
-                    of the member's current/primary status, not a log of
-                    every order they've ever held. */}
+                    eligibility differently (see app/reserves.tsx). This is
+                    what their status IS RIGHT NOW, not a permanent fact — a
+                    real Guard member's status genuinely changes month to
+                    month, so this is the one place in the app to come back
+                    and update it, with a visible "last updated" note so a
+                    months-old answer doesn't quietly look current. */}
                 {hasGuardOption && reserveComponent === 'guard' && (
                   <>
-                    <ThemedText style={[editStyles.fieldLabel, { color: tc.textHint, marginTop: Spacing.two }]}>CURRENT DUTY STATUS</ThemedText>
+                    <ThemedText style={[editStyles.fieldLabel, { color: tc.textHint, marginTop: Spacing.two }]}>YOUR STATUS RIGHT NOW</ThemedText>
                     <ThemedText style={[editStyles.fieldHint, { color: tc.textHint, marginTop: -Spacing.two }]}>
-                      Changes your TRICARE, SCRA, and retirement-point eligibility.
+                      {GUARD_DUTY_STATUS_FIELD_HINT} Affects your TRICARE, SCRA, and retirement-point eligibility.
                     </ThemedText>
+                    {storedGuardDutyStatusUpdatedAt && (
+                      <ThemedText style={[editStyles.fieldHint, { color: tc.textHint, marginTop: -Spacing.two, fontStyle: 'italic' }]}>
+                        Last updated {new Date(storedGuardDutyStatusUpdatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} — update it below if that&apos;s no longer right.
+                      </ThemedText>
+                    )}
                     <View style={{ gap: Spacing.one }}>
                       {(['title32', 'title10', 'sad'] as const).map((s) => (
                         <Pressable

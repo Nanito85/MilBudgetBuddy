@@ -37,6 +37,7 @@ const DEFAULTS: UserPreferences = {
   drillsPerMonth: undefined,
   reserveComponent: undefined,
   guardDutyStatus: undefined,
+  guardDutyStatusUpdatedAt: undefined,
   retirementDate: undefined,
   vaDisabilityPercent: undefined,
   sbpEnabled: false,
@@ -130,6 +131,7 @@ function snapshot(get: () => UserState): UserPreferences {
     drillsPerMonth: s.drillsPerMonth,
     reserveComponent: s.reserveComponent,
     guardDutyStatus: s.guardDutyStatus,
+    guardDutyStatusUpdatedAt: s.guardDutyStatusUpdatedAt,
     retirementDate: s.retirementDate,
     vaDisabilityPercent: s.vaDisabilityPercent,
     sbpEnabled: s.sbpEnabled,
@@ -259,8 +261,21 @@ export const useUserStore = create<UserState>((set, get) => ({
   // reserveComponent === 'guard' — explicitly clearing it otherwise (rather
   // than leaving a stale value behind) matches how setLocationFamily/
   // setGSInfo already handle "only sometimes relevant" fields here.
+  //
+  // guardDutyStatusUpdatedAt is stamped to "now" every time a real
+  // guardDutyStatus is set here — including re-saving the SAME status —
+  // since a Guard member's status genuinely changes month to month and
+  // re-confirming it (e.g. reopening Profile and hitting Save again) is a
+  // meaningful "still accurate as of today" signal, not a no-op. Cleared
+  // alongside guardDutyStatus when the member isn't Guard.
   setReserveInfo: (drillsPerMonth, reserveComponent, guardDutyStatus) => {
-    const update = { drillsPerMonth, reserveComponent, guardDutyStatus: reserveComponent === 'guard' ? guardDutyStatus : undefined };
+    const resolvedGuardDutyStatus = reserveComponent === 'guard' ? guardDutyStatus : undefined;
+    const update = {
+      drillsPerMonth,
+      reserveComponent,
+      guardDutyStatus: resolvedGuardDutyStatus,
+      guardDutyStatusUpdatedAt: resolvedGuardDutyStatus ? new Date().toISOString() : undefined,
+    };
     set(update);
     save({ ...snapshot(get), ...update });
   },

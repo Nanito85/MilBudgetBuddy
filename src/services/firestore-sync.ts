@@ -306,6 +306,7 @@ function snapshotUser() {
     drillsPerMonth: s.drillsPerMonth ?? null,
     reserveComponent: s.reserveComponent ?? null,
     guardDutyStatus: s.guardDutyStatus ?? null,
+    guardDutyStatusUpdatedAt: s.guardDutyStatusUpdatedAt ?? null,
     retirementDate: s.retirementDate ?? null,
     vaDisabilityPercent: s.vaDisabilityPercent ?? null,
     sbpEnabled: s.sbpEnabled ?? false,
