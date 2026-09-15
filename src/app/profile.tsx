@@ -43,11 +43,16 @@ import { KidProfile, PendingCompletion } from '@/types/kids.types';
 import { Installation, getInstallationById, getInstallationByZip } from '@/data/installations';
 import {
   BRANCH_LABELS,
+  GUARD_DUTY_STATUS_DESCRIPTIONS,
+  GUARD_DUTY_STATUS_LABELS,
+  GuardDutyStatus,
   HOUSING_STATUS_DESCRIPTIONS,
   HOUSING_STATUS_LABELS,
   HousingStatus,
   MilitaryBranch,
+  RESERVE_COMPONENT_LABELS,
   RankVariant,
+  ReserveComponent,
   ServiceStatus,
   getRankAbbrev,
 } from '@/types/user.types';
@@ -293,6 +298,8 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
   const storedGsStep   = useUserStore((s) => s.gsStep);
   const serviceStatus  = useUserStore((s) => s.serviceStatus);
   const storedDrills   = useUserStore((s) => s.drillsPerMonth);
+  const storedReserveComponent = useUserStore((s) => s.reserveComponent);
+  const storedGuardDutyStatus  = useUserStore((s) => s.guardDutyStatus);
   const storedRetDate  = useUserStore((s) => s.retirementDate);
   const storedVaPct    = useUserStore((s) => s.vaDisabilityPercent);
   const storedSbpEnabled = useUserStore((s) => s.sbpEnabled);
@@ -314,6 +321,8 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
 
   const [status, setStatus] = useState<ServiceStatus | undefined>(serviceStatus);
   const [drillsPerMonth, setDrillsPerMonth] = useState(storedDrills ?? 4);
+  const [reserveComponent, setReserveComponentLocal] = useState<ReserveComponent>(storedReserveComponent ?? 'reserve');
+  const [guardDutyStatus, setGuardDutyStatusLocal] = useState<GuardDutyStatus>(storedGuardDutyStatus ?? 'title32');
   const [retirementDate, setRetDate] = useState(storedRetDate ?? '');
   const [vaPercent, setVaPercent]    = useState(storedVaPct ?? 0);
   const [showRetDatePicker, setShowRetDatePicker] = useState(false);
@@ -323,6 +332,10 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
   const isCivilian = branch === 'other' || status === 'civilian';
   const isReserve  = status === 'reserve';
   const isRetired  = status === 'retired';
+  // Only Army and Air Force have a federal National Guard (Army National
+  // Guard, Air National Guard) — Navy/Marine Corps/Coast Guard have Reserve
+  // components only, so the Guard-vs-Reserve question is only meaningful here.
+  const hasGuardOption = branch === 'army' || branch === 'air_force';
 
   const [grade, setGrade]         = useState<PayGrade>(payGrade ?? 'E5');
   const [rankVariant, setRankVariant] = useState<RankVariant>(storedVariant ?? 'default');
@@ -372,6 +385,8 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
     if (!visible) return;
     setStatus(serviceStatus);
     setDrillsPerMonth(storedDrills ?? 4);
+    setReserveComponentLocal(storedReserveComponent ?? 'reserve');
+    setGuardDutyStatusLocal(storedGuardDutyStatus ?? 'title32');
     setRetDate(storedRetDate ?? '');
     setVaPercent(storedVaPct ?? 0);
     setSbpEnabledLocal(storedSbpEnabled ?? false);
@@ -414,7 +429,7 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
       setGSInfo(gsGrade, gsStep, ln, nn, enlistDate || undefined, gsLocality);
     }
     if (isReserve) {
-      setReserveInfo(drillsPerMonth);
+      setReserveInfo(drillsPerMonth, hasGuardOption ? reserveComponent : undefined, guardDutyStatus);
     }
     if (isRetired) {
       // A retiree can ALSO currently be a GS civilian — retired pay, VA
@@ -665,6 +680,66 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
                 <ThemedText style={[editStyles.dateHint, { color: tc.tactical }]}>
                   ↳ Est. drill pay: {fmtPay(getDrillPay(grade, y, drillsPerMonth))}/mo
                 </ThemedText>
+
+                {/* Guard vs Reserve — only Army/Air Force have a federal Guard */}
+                {hasGuardOption && (
+                  <>
+                    <ThemedText style={[editStyles.fieldLabel, { color: tc.textHint, marginTop: Spacing.two }]}>GUARD OR RESERVE?</ThemedText>
+                    <View style={{ flexDirection: 'row', gap: Spacing.one }}>
+                      {(['guard', 'reserve'] as const).map((c) => (
+                        <Pressable
+                          key={c}
+                          onPress={() => setReserveComponentLocal(c)}
+                          style={[
+                            editStyles.inputWrap,
+                            { backgroundColor: inputBg, borderColor: reserveComponent === c ? Brand.accent : tc.borderColor, flex: 1, alignItems: 'center', paddingVertical: Spacing.two },
+                          ]}>
+                          <ThemedText style={[editStyles.toggleLabel, { color: reserveComponent === c ? Brand.accent : tc.textPrimary, fontSize: 14 }]}>
+                            {RESERVE_COMPONENT_LABELS[c]}
+                          </ThemedText>
+                        </Pressable>
+                      ))}
+                    </View>
+                  </>
+                )}
+
+                {/* Guard duty status — drives TRICARE/SCRA/retirement-point
+                    eligibility differently (see app/reserves.tsx). A snapshot
+                    of the member's current/primary status, not a log of
+                    every order they've ever held. */}
+                {hasGuardOption && reserveComponent === 'guard' && (
+                  <>
+                    <ThemedText style={[editStyles.fieldLabel, { color: tc.textHint, marginTop: Spacing.two }]}>CURRENT DUTY STATUS</ThemedText>
+                    <ThemedText style={[editStyles.fieldHint, { color: tc.textHint, marginTop: -Spacing.two }]}>
+                      Changes your TRICARE, SCRA, and retirement-point eligibility.
+                    </ThemedText>
+                    <View style={{ gap: Spacing.one }}>
+                      {(['title32', 'title10', 'sad'] as const).map((s) => (
+                        <Pressable
+                          key={s}
+                          onPress={() => setGuardDutyStatusLocal(s)}
+                          style={[
+                            editStyles.inputWrap,
+                            { backgroundColor: inputBg, borderColor: guardDutyStatus === s ? Brand.accent : tc.borderColor, paddingVertical: Spacing.two },
+                          ]}>
+                          <View style={{ flexDirection: 'row', alignItems: 'center', gap: Spacing.two }}>
+                            <ThemedText style={{ fontSize: 16, color: guardDutyStatus === s ? Brand.accent : tc.textHint }}>
+                              {guardDutyStatus === s ? '●' : '○'}
+                            </ThemedText>
+                            <View style={{ flex: 1 }}>
+                              <ThemedText style={[editStyles.toggleLabel, { color: tc.textPrimary, fontSize: 14 }]}>
+                                {GUARD_DUTY_STATUS_LABELS[s]}
+                              </ThemedText>
+                              <ThemedText style={[editStyles.fieldHint, { color: tc.textHint, marginTop: 2 }]}>
+                                {GUARD_DUTY_STATUS_DESCRIPTIONS[s]}
+                              </ThemedText>
+                            </View>
+                          </View>
+                        </Pressable>
+                      ))}
+                    </View>
+                  </>
+                )}
               </>
             )}
 

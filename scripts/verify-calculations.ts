@@ -20,6 +20,16 @@ import { getOconusCola } from '@/data/oconus-cola';
 import { getDeploymentLocation } from '@/data/deployment-locations';
 import { getStationPerDiem } from '@/features/pcs/utils/pcsCalc';
 import { calcCzteExcludedBasicPay } from '@/features/deployment/utils/deploymentCalc';
+import {
+  classifyGuardStatus,
+  drillTermFor,
+  idtTravelGuidanceFor,
+  mobilizationGuardMessage,
+  retirementPointsGuardMessage,
+  scraGuardMessage,
+  sripGuidanceFor,
+  tricareGuardMessage,
+} from '@/features/reserves/utils/reserveComponentGuidance';
 
 let pass = 0;
 let fail = 0;
@@ -459,6 +469,69 @@ console.log('\n[17] Reserve/Guard pay audit — drill pay, AT days, retirement H
   const e5BasicPay = getBasicPay('E5', 6);
   const e5Excluded = calcCzteExcludedBasicPay(e5BasicPay, false);
   assertEqual(e5Excluded, e5BasicPay, 'Enlisted CZTE-excluded basic pay is the member\'s full basic pay (no officer-style cap)');
+}
+
+// ── [18] Branch/component-aware Reserve Hub guidance (2026-09-14) ──────────────
+console.log('\n[18] Branch/component-aware Reserve Hub guidance — Guard vs Reserve, Title 10/32/SAD');
+{
+  // Only Army and Air Force have a federal National Guard — every other
+  // branch (and an unset branch) must classify as 'not_guard_branch',
+  // regardless of whatever reserveComponent/guardDutyStatus values might be
+  // sitting in the store (e.g. stale data from before this feature shipped,
+  // or a user who switched branches without re-answering).
+  assertEqual(classifyGuardStatus('navy', 'guard', 'sad').kind, 'not_guard_branch', 'Navy has no Guard option — classifies as not_guard_branch even if reserveComponent/guardDutyStatus are somehow set');
+  assertEqual(classifyGuardStatus('marines', undefined, undefined).kind, 'not_guard_branch', 'Marine Corps has no Guard option');
+  assertEqual(classifyGuardStatus('coast_guard', undefined, undefined).kind, 'not_guard_branch', 'Coast Guard has no Guard option');
+  assertEqual(classifyGuardStatus(undefined, undefined, undefined).kind, 'not_guard_branch', 'No branch set at all classifies as not_guard_branch (generic guidance)');
+
+  // Army/Air Force members who picked Reserve (not Guard) are NOT subject to
+  // Title 10/32/SAD ambiguity — their activations are always Title 10.
+  assertEqual(classifyGuardStatus('army', 'reserve', undefined).kind, 'reserve_component', 'Army Reserve (not Guard) classifies as reserve_component');
+  assertEqual(classifyGuardStatus('air_force', 'reserve', 'sad').kind, 'reserve_component', 'Air Force Reserve classifies as reserve_component even if a stray guardDutyStatus value is present');
+
+  // Guard members: unknown duty status vs. a specific known one.
+  assertEqual(classifyGuardStatus('army', 'guard', undefined).kind, 'guard_unknown', 'Army National Guard member with no duty status set yet classifies as guard_unknown');
+  const knownTitle32 = classifyGuardStatus('air_force', 'guard', 'title32');
+  assertEqual(knownTitle32.kind, 'guard_known', 'Air National Guard member with Title 32 set classifies as guard_known');
+  assertTrue(knownTitle32.kind === 'guard_known' && knownTitle32.status === 'title32', 'guard_known classification carries the actual duty status through');
+
+  // TRICARE/SCRA/retirement-point messages must give the definitive "does
+  // NOT apply" answer for SAD, and a definitive "DOES apply" answer for
+  // Title 10/32 — never a hedge for a case we can actually resolve.
+  const sadStatus = classifyGuardStatus('army', 'guard', 'sad');
+  const title10Status = classifyGuardStatus('army', 'guard', 'title10');
+  assertTrue(/does NOT/.test(tricareGuardMessage(sadStatus)), 'SAD Guard member gets a definitive "does NOT" TRICARE answer, not a hedge');
+  assertTrue(!/does NOT/.test(tricareGuardMessage(title10Status)), 'Title 10 Guard member does NOT get the SAD "does NOT" TRICARE answer');
+  assertTrue(/do NOT/.test(scraGuardMessage(sadStatus)), 'SAD Guard member gets a definitive "do NOT" SCRA answer');
+  assertTrue(/is covered by SCRA/.test(scraGuardMessage(title10Status)), 'Title 10 Guard member gets a definitive "is covered" SCRA answer');
+  assertTrue(/do NOT count/.test(retirementPointsGuardMessage(sadStatus)), 'SAD Guard member gets a definitive "do NOT count" retirement-points answer');
+  assertTrue(/federally creditable/.test(retirementPointsGuardMessage(title10Status)), 'Title 10 Guard member gets a definitive "federally creditable" retirement-points answer');
+
+  // Reserve (non-Guard) members and not-Guard-eligible branches get the same
+  // "always Title 10, no ambiguity" framing rather than SAD-flavored hedging.
+  const armyReserve = classifyGuardStatus('army', 'reserve', undefined);
+  const navyReserve = classifyGuardStatus('navy', undefined, undefined);
+  assertTrue(/Reserve, not Guard/.test(mobilizationGuardMessage(armyReserve)), 'Army Reserve (non-Guard) mobilization message identifies them as Reserve, not Guard');
+  assertTrue(/no Title 32/.test(mobilizationGuardMessage(navyReserve)), 'Navy (no Guard option) mobilization message states there is no Title 32 option for them');
+
+  // Terminology genuinely varies by branch/component — regression-lock that
+  // Army gets Battle Assembly language and other branches don't.
+  assertTrue(/Battle Assembly/.test(drillTermFor('army')), 'Army drill terminology mentions "Battle Assembly"');
+  assertTrue(!/Battle Assembly/.test(drillTermFor('navy')), 'Navy drill terminology does NOT mention "Battle Assembly" (not Army-specific)');
+
+  // IDT-TRP guidance: Guard components (state-level) must not get the
+  // federal Army/AFR 150-mile framing that only applies to the Reserve.
+  assertTrue(/state level/.test(idtTravelGuidanceFor('army', 'guard')), 'Guard component gets state-level IDT travel guidance, not the federal Reserve program framing');
+  assertTrue(/150\+ miles/.test(idtTravelGuidanceFor('army', 'reserve')), 'Army Reserve (non-Guard) gets the confirmed 150-mile IDT-TRP framing');
+  assertTrue(/does not fund/.test(idtTravelGuidanceFor('navy', 'reserve')), 'Navy Reserve gets the "does not fund an equivalent program" framing, not a false universal');
+
+  // SRIP/bonus guidance: only give a branch-specific figure where actually
+  // confirmed (Army/Navy/Air Force here); every other branch gets the
+  // explicit "varies, check your own service" framing rather than a guess.
+  assertTrue(/\$20,000/.test(sripGuidanceFor('army')), 'Army Reserve SRIP guidance cites the confirmed ~$20k figure');
+  assertTrue(/\$80,000/.test(sripGuidanceFor('navy')), 'Navy Reserve SRB guidance cites the confirmed $80k career cap');
+  assertTrue(/independently by each branch/.test(sripGuidanceFor('marines')), 'Marine Corps Reserve (no confirmed figure) gets the explicit "set independently by branch" framing rather than an invented number');
+  assertTrue(!/\$20,000/.test(sripGuidanceFor('marines')), 'Marine Corps Reserve guidance does NOT borrow the Army-specific $20k figure');
 }
 
 // ── Summary ────────────────────────────────────────────────────────────────────

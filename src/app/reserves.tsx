@@ -14,6 +14,16 @@ import { Brand, Fonts, Spacing } from '@/constants/theme';
 import { PayGrade } from '@/data/bah-rates';
 import { getBasicPay, getHigh3Average } from '@/data/basic-pay-rates';
 import { calcCzteExcludedBasicPay } from '@/features/deployment/utils/deploymentCalc';
+import {
+  classifyGuardStatus,
+  drillTermFor,
+  idtTravelGuidanceFor,
+  mobilizationGuardMessage,
+  retirementPointsGuardMessage,
+  scraGuardMessage,
+  sripGuidanceFor,
+  tricareGuardMessage,
+} from '@/features/reserves/utils/reserveComponentGuidance';
 import { useThemeColors } from '@/hooks/use-theme';
 import { useUserStore } from '@/store/user.store';
 
@@ -109,6 +119,13 @@ export default function ReservesScreen() {
   const storeGrade = useUserStore((s) => s.payGrade);
   const storeYos   = useUserStore((s) => s.yos);
   const storeDrillsPerMonth = useUserStore((s) => s.drillsPerMonth);
+  const storeBranch = useUserStore((s) => s.branch);
+  const storeReserveComponent = useUserStore((s) => s.reserveComponent);
+  const storeGuardDutyStatus = useUserStore((s) => s.guardDutyStatus);
+  const guardStatus = useMemo(
+    () => classifyGuardStatus(storeBranch, storeReserveComponent, storeGuardDutyStatus),
+    [storeBranch, storeReserveComponent, storeGuardDutyStatus],
+  );
 
   const [activeTab, setActiveTab] = useState<Tab>('drill_pay');
   const [grade, setGrade] = useState<PayGrade>(storeGrade ?? 'E5');
@@ -315,12 +332,12 @@ export default function ReservesScreen() {
               <ThemedText style={[styles.cardLabel, { color: tc.textSecondary }]}>HOW DRILL PAY WORKS</ThemedText>
               {[
                 { q: 'What is an IDT?', a: 'Inactive Duty Training — one 4-hour drill period, so called because you’re not on active duty status while performing it (despite drawing active-duty-rate pay for it). You get paid for 2 IDTs per day (1/15 of monthly basic pay per drill day).' },
-                { q: 'What is a UTA?', a: 'Unit Training Assembly — most services’ term for an IDT period, used interchangeably with "drill." A standard drill weekend is a "MUTA-4" (4 UTAs, 2 per day × 2 days). Terminology differs by service: Army Reserve calls the same weekend a "Battle Assembly" (BA) instead; sailors, airmen/Guardians, Marines, and Coast Guardsmen more commonly just say "drill weekend." Same activity, same 1/30-per-period pay — the name just varies by branch.' },
+                { q: 'What is a UTA?', a: `Unit Training Assembly — most services' term for an IDT period, used interchangeably with "drill." A standard drill weekend is a "MUTA-4" (4 UTAs, 2 per day × 2 days). For you, this is ${drillTermFor(storeBranch)}. Same activity, same 1/30-per-period pay — the name just varies by branch.` },
                 { q: 'Do I get BAH at drill?', a: 'No BAH for IDT/drill weekend. BAH only applies during active duty orders of 30+ days, or ADOS/AT orders depending on your status.' },
                 { q: 'Do I get BAS at drill?', a: 'BAS is paid for any day of active duty. For short drill periods, it is typically not paid unless serving continuous active duty.' },
                 { q: 'What about SGLI?', a: 'SELRES members get SGLI automatically at the same rates as active duty ($26/mo for $500K coverage, incl. $1 TSGLI, effective July 2025).' },
-                { q: 'Do I get paid mileage to drill?', a: 'Usually no — your normal commute to your home unit’s drill site is not reimbursed, and this genuinely varies by branch (not just by unit). Army Reserve and Air Force Reserve each run an IDT Travel Reimbursement Program (IDT-TRP) for members living 150+ miles from their unit, subject to prior authorization and an annual funding cap. Navy Reserve does not fund an equivalent program for routine IDT travel. Marine Corps Reserve, Coast Guard Reserve, and Army/Air National Guard components set their own separate policies and thresholds, which change by fiscal year. There is no single number that applies to every service — ask your own branch’s current-FY IDT-TRP guidance (unit admin/S1) rather than assuming the Army/AFR 150-mile figure applies to you.' },
-                { q: 'Are drill/affiliation bonuses available?', a: 'Yes, but Selected Reserve Incentive Pay (SRIP), affiliation bonuses, and reenlistment bonuses are set independently by each service (and sometimes each state, for Guard SRIP) — restricted to specific critical MOSs/ratings/AFSCs, unit vacancies, and contract lengths that all change by fiscal year. There is no single dollar figure or eligibility rule that applies across Army Reserve, Army/Air National Guard, Navy Reserve, Air Force Reserve, Marine Corps Reserve, and Coast Guard Reserve — check your own service’s current SRIP/incentives policy (unit career counselor or retention NCO) rather than a generic number.' },
+                { q: 'Do I get paid mileage to drill?', a: `Usually no — your normal commute to your home unit's drill site is not reimbursed, and this genuinely varies by branch (not just by unit). ${idtTravelGuidanceFor(storeBranch, storeReserveComponent)}` },
+                { q: 'Are drill/affiliation bonuses available?', a: `Sometimes — but the specifics genuinely vary by branch, MOS/rating, and fiscal year. ${sripGuidanceFor(storeBranch)}` },
               ].map((item, i) => (
                 <View key={i} style={[styles.faqItem, i > 0 && styles.itemBorderTop, i > 0 && { borderTopColor: tc.borderColor }]}>
                   <ThemedText style={[styles.faqQ, { color: tc.textPrimary }]}>{item.q}</ThemedText>
@@ -448,7 +465,7 @@ export default function ReservesScreen() {
                 { title: 'High-3 Average', body: 'Pay is calculated using the highest 36 months of basic pay (same as active duty). Your grade on your retirement date matters.' },
                 { title: 'COLA Adjustments', body: 'Reserve retirement pay is indexed to inflation (CPI-based COLA), same as active duty retirees.' },
                 { title: 'Point Cap (annually)', body: 'Maximum creditable points per year: 365 (366 in leap years). No cap on total career points.' },
-                { title: 'National Guard: Not All Duty Status Counts', body: 'This calculator assumes federally creditable service. Army/Air National Guard members should know that pure State Active Duty (SAD) — activated and paid by your governor alone, with no federal recognition (e.g., most disaster-response callouts) — does NOT earn points toward this federal retirement, and pay for it comes from the state, not this screen\'s active-duty-rate math. Federal Title 32 duty (annual training, or a federally-funded 502(f) call-up) and Title 10 duty both count normally. If your state emergency orders don\'t cite federal funding/recognition, confirm point crediting with your state J1/G1 before counting on it here.' },
+                { title: 'Does All My Duty Status Count?', body: retirementPointsGuardMessage(guardStatus) },
               ].map((item, i) => (
                 <View key={i} style={[styles.faqItem, i > 0 && styles.itemBorderTop, i > 0 && { borderTopColor: tc.borderColor }]}>
                   <ThemedText style={[styles.faqQ, { color: tc.textPrimary }]}>{item.title}</ThemedText>
@@ -505,7 +522,7 @@ export default function ReservesScreen() {
                 { q: 'Who is eligible?', a: 'SELRES members (Army Reserve, Navy Reserve, AFRC, SMCR, SELRES USCG) not on active duty orders of 30+ days. IRR members do not qualify. One easy-to-miss disqualifier: you (or a family member) being eligible for or enrolled in the Federal Employees Health Benefits (FEHB) program blocks TRS enrollment — this hits federal-civilian dual-status technicians and traditional guardsmen with federal civilian jobs especially often. That FEHB restriction is scheduled to end Jan 1, 2030.' },
                 { q: 'When can I enroll?', a: 'Any time — unlike TRICARE Prime/Select, TRS is a premium-based plan and isn’t restricted to a qualifying life event window or the annual TRICARE Open Season.' },
                 { q: 'What if I get activated?', a: 'TRS terminates when you go on active duty 30+ days. You convert to TRICARE Prime/Select as an active duty family member at no premium cost.' },
-                { q: 'Does this work differently for National Guard?', a: 'It can. Army/Air National Guard members on Title 10 federal orders, or Title 32 orders of 30+ days, generally gain the same TRICARE access as any activated reservist. Pure State Active Duty (SAD) — governor-activated, state-funded, with no federal recognition — typically does NOT come with TRICARE; you\'d instead be covered under your state\'s own workers\' comp/benefits program, which varies by state. Check your specific orders (Title 10, Title 32, or state-only) before assuming activation automatically means TRICARE.' },
+                { q: 'Does this work differently for me if I\'m in the National Guard?', a: tricareGuardMessage(guardStatus) },
                 { q: 'Does it cover dental/vision?', a: 'No. Dental coverage is through TRICARE Dental Program (TDP). Vision through FEDVIP for reservists.' },
                 { q: 'Enrollment phone / website', a: 'Call 1-800-538-9552 or visit tricare.mil to enroll or change coverage.' },
               ].map((item, i) => (
@@ -524,9 +541,9 @@ export default function ReservesScreen() {
             <SectionHeader title="Mobilization Pay" subtitle="What changes on Title 10 federal active duty (or qualifying Title 32 orders)" />
 
             <ThemedView type="backgroundElement" style={styles.card}>
-              <ThemedText style={[styles.cardLabel, { color: tc.textSecondary }]}>NATIONAL GUARD: KNOW YOUR ORDERS</ThemedText>
+              <ThemedText style={[styles.cardLabel, { color: tc.textSecondary }]}>YOUR DUTY STATUS</ThemedText>
               <ThemedText style={[styles.cardHint, { color: tc.textMuted }]}>
-                Everything below assumes federal Title 10 active duty, or Title 32 orders of 30+ consecutive days under a presidential/SecDef call (10/32 U.S.C. §12301/§502(f)) — the two situations where you draw federal active-duty-equivalent pay and benefits. Pure State Active Duty (SAD) — a governor-only activation (e.g. most hurricane/wildfire/civil-disturbance response), state-funded and state-controlled — runs on a different, state-set pay scale and generally does NOT include TRICARE, SCRA protections, or federal retirement point credit. Always check whether your specific orders are Title 10, Title 32, or state SAD before assuming this tab applies.
+                {mobilizationGuardMessage(guardStatus)}
               </ThemedText>
             </ThemedView>
 
@@ -585,7 +602,7 @@ export default function ReservesScreen() {
               <ThemedText style={[styles.cardLabel, { color: tc.textSecondary }]}>KEY LEGAL PROTECTIONS (USERRA / SCRA)</ThemedText>
               {[
                 { q: 'USERRA Job Protection', a: 'Your civilian employer must re-employ you in the same or equivalent position after return. You cannot be fired solely for being a reservist.' },
-                { q: 'SCRA Interest Rate Cap', a: '6% max interest on pre-service debts (credit cards, car loans, mortgages) while on active duty. Request in writing to each creditor. For National Guard members: this applies on Title 10 duty and on Title 32 §502(f) call-ups of 30+ consecutive days, but NOT during routine drill or pure State Active Duty (SAD) — a common gap that surprises Guard members activated only under state orders.' },
+                { q: 'SCRA Interest Rate Cap', a: `6% max interest on pre-service debts (credit cards, car loans, mortgages) while on active duty. Request in writing to each creditor. ${scraGuardMessage(guardStatus)}` },
                 { q: 'SCRA Lease Termination', a: 'You can break a housing lease with 30 days written notice plus a copy of orders. Protections kick in immediately.' },
                 { q: 'SDP (Savings Deposit Program)', a: 'Invest up to $10,000 in SDP while deployed and earn 10% APY — guaranteed by DoD. Enrollment through Finance.' },
                 { q: 'Civilian Pay Differential', a: 'Some states and federal agencies pay the difference if active duty pay is less than your civilian salary. Check your employer policy.' },

@@ -36,10 +36,15 @@ import {
   FINANCIAL_GOAL_ICONS,
   FINANCIAL_GOAL_LABELS,
   FinancialGoal,
+  GUARD_DUTY_STATUS_DESCRIPTIONS,
+  GUARD_DUTY_STATUS_LABELS,
+  GuardDutyStatus,
   HOUSING_STATUS_DESCRIPTIONS,
   HOUSING_STATUS_LABELS,
   HousingStatus,
   MilitaryBranch,
+  RESERVE_COMPONENT_LABELS,
+  ReserveComponent,
   ServiceStatus,
 } from '@/types/user.types';
 
@@ -462,7 +467,7 @@ function ServiceInfoStep({
 }: {
   branch?: MilitaryBranch;
   status?: ServiceStatus;
-  onNext: (grade: PayGrade | undefined, lastName: string, nickname: string, yos: number, variant: RankVariant, enlistDate: string, rankDate: string, drillsPerMonth: number) => void;
+  onNext: (grade: PayGrade | undefined, lastName: string, nickname: string, yos: number, variant: RankVariant, enlistDate: string, rankDate: string, drillsPerMonth: number, reserveComponent?: ReserveComponent, guardDutyStatus?: GuardDutyStatus) => void;
 }) {
   // Defaults to a real grade (not undefined) so what's visually shown as
   // selected in GradePicker always matches what actually gets saved — a user
@@ -476,6 +481,11 @@ function ServiceInfoStep({
   const [enlistDate, setEnlistDate] = useState('');
   const [rankDate, setRankDate]     = useState('');
   const [drillsPerMonth, setDrillsPerMonth] = useState(4);
+  // Only Army and Air Force have a federal National Guard — this question
+  // (and the duty-status follow-up) only ever appears for those two branches.
+  const hasGuardOption = branch === 'army' || branch === 'air_force';
+  const [reserveComponent, setReserveComponentLocal] = useState<ReserveComponent>('reserve');
+  const [guardDutyStatus, setGuardDutyStatus] = useState<GuardDutyStatus>('title32');
   const [showEnlistPicker, setShowEnlistPicker] = useState(false);
   const [showRankPicker, setShowRankPicker]     = useState(false);
 
@@ -629,14 +639,63 @@ function ServiceInfoStep({
         </View>
       )}
 
+      {/* Guard vs Reserve — only Army/Air Force have a federal Guard */}
+      {isReserve && hasGuardOption && (
+        <View style={styles.fieldBlock}>
+          <ThemedText type="smallBold" themeColor="textSecondary" style={styles.fieldLabel}>
+            GUARD OR RESERVE?
+          </ThemedText>
+          <View style={styles.toggle}>
+            {(['guard', 'reserve'] as const).map((c) => (
+              <Pressable
+                key={c}
+                onPress={() => setReserveComponentLocal(c)}
+                style={[styles.toggleBtn, reserveComponent === c && styles.toggleBtnActive]}>
+                <ThemedText style={[styles.toggleText, reserveComponent === c && styles.toggleTextActive]}>
+                  {RESERVE_COMPONENT_LABELS[c]}
+                </ThemedText>
+              </Pressable>
+            ))}
+          </View>
+        </View>
+      )}
+
+      {/* Guard duty status — only meaningful for Guard members, since it
+          drives real differences in TRICARE/SCRA/retirement-point crediting
+          (see app/reserves.tsx). A snapshot of their current/primary status,
+          not a log of every order they've ever held. */}
+      {isReserve && hasGuardOption && reserveComponent === 'guard' && (
+        <View style={styles.fieldBlock}>
+          <ThemedText type="smallBold" themeColor="textSecondary" style={styles.fieldLabel}>
+            CURRENT DUTY STATUS
+          </ThemedText>
+          <ThemedText type="small" themeColor="textSecondary" style={{ lineHeight: 18 }}>
+            Your current/primary status — this changes your TRICARE, SCRA, and retirement-point eligibility.
+          </ThemedText>
+          {(['title32', 'title10', 'sad'] as const).map((s) => (
+            <Pressable
+              key={s}
+              onPress={() => setGuardDutyStatus(s)}
+              style={[styles.radioRow, guardDutyStatus === s && styles.radioRowActive]}>
+              <ThemedText style={[styles.radioLabel, guardDutyStatus === s && styles.radioLabelActive]}>
+                {GUARD_DUTY_STATUS_LABELS[s]}
+              </ThemedText>
+              <ThemedText type="small" themeColor="textSecondary" style={styles.radioDesc}>
+                {GUARD_DUTY_STATUS_DESCRIPTIONS[s]}
+              </ThemedText>
+            </Pressable>
+          ))}
+        </View>
+      )}
+
       <View style={styles.btnGroup}>
         <Pressable
-          onPress={() => onNext(grade, lastName, nickname, yos, rankVariant, enlistDate, rankDate, drillsPerMonth)}
+          onPress={() => onNext(grade, lastName, nickname, yos, rankVariant, enlistDate, rankDate, drillsPerMonth, hasGuardOption ? reserveComponent : undefined, guardDutyStatus)}
           style={({ pressed }) => [styles.primaryBtn, pressed && styles.btnPressed]}>
           <ThemedText style={styles.primaryBtnText}>Continue  →</ThemedText>
         </Pressable>
         <Pressable
-          onPress={() => onNext(undefined, '', '', yos, 'default', '', '', drillsPerMonth)}
+          onPress={() => onNext(undefined, '', '', yos, 'default', '', '', drillsPerMonth, hasGuardOption ? reserveComponent : undefined, guardDutyStatus)}
           hitSlop={8}
           style={styles.skipBtn}>
           <ThemedText type="small" themeColor="textSecondary">Skip for now</ThemedText>
@@ -1327,12 +1386,14 @@ export function OnboardingFlow() {
     enlistDate: string,
     rankDate: string,
     drillsPerMonth: number,
+    reserveComponent?: ReserveComponent,
+    guardDutyStatus?: GuardDutyStatus,
   ) => {
     if (grade) {
       setServiceInfo(grade, lastName, nickname, yos, enlistDate || undefined, rankDate || undefined);
       setRankVariant(variant);
     }
-    if (pendingStatus === 'reserve') setReserveInfo(drillsPerMonth);
+    if (pendingStatus === 'reserve') setReserveInfo(drillsPerMonth, reserveComponent, guardDutyStatus);
     setStep(5);
   };
 
@@ -1526,6 +1587,18 @@ const styles = StyleSheet.create({
   // stopped being enough room and its rounded border clipped the letters.
   toggleText: { fontSize: 14, lineHeight: 18, fontWeight: '600' },
   toggleTextActive: { color: '#FFFFFF' },
+  radioRow: {
+    padding: Spacing.two,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(128,128,128,0.25)',
+    marginTop: Spacing.one,
+    gap: 2,
+  },
+  radioRowActive: { borderColor: Brand.primary, backgroundColor: 'rgba(128,128,128,0.08)' },
+  radioLabel: { fontSize: 14, fontWeight: '700' },
+  radioLabelActive: { color: Brand.primary },
+  radioDesc: { lineHeight: 16 },
   toggleRow: {
     flexDirection: 'row',
     alignItems: 'center',

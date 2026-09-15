@@ -90,6 +90,47 @@ export type { RankVariant };
 
 export type ServiceStatus = 'active' | 'reserve' | 'retired' | 'civilian';
 
+// Which Reserve Component a reservist serves in. Only meaningful when
+// serviceStatus === 'reserve'. Only the Army and Air Force have a federal
+// National Guard (Army National Guard, Air National Guard) — the Navy,
+// Marine Corps, and Coast Guard have Reserve components only, with no Guard
+// equivalent. So this field should only ever be asked/shown for branch ===
+// 'army' or 'air_force'; for every other branch a reservist is necessarily
+// 'reserve' and this question is not applicable (leave it undefined).
+export type ReserveComponent = 'guard' | 'reserve';
+
+export const RESERVE_COMPONENT_LABELS: Record<ReserveComponent, string> = {
+  guard: 'National Guard',
+  reserve: 'Reserve',
+};
+
+// For Guard members only (reserveComponent === 'guard'): a snapshot of their
+// PRIMARY/current duty status. This materially changes TRICARE eligibility,
+// SCRA coverage, and federal retirement-point crediting — see app/reserves.tsx.
+//  'title10' — federal active duty (mobilization, AT/ADT under Title 10 orders).
+//  'title32' — federal Title 32 duty: routine drill/AT, or a §502(f) call-up
+//              of 30+ consecutive days under presidential/SecDef authority.
+//              Both carry full federal benefits the same as Title 10 does.
+//  'sad'     — State Active Duty: governor-activated and state-funded only
+//              (e.g. most disaster-response callouts), with no federal
+//              recognition. Does NOT carry TRICARE, SCRA, or federal
+//              retirement-point credit — pay/benefits are set by the state.
+// This is a simplifying snapshot of the member's current/primary status for
+// estimate purposes, not an attempt to track every order they've ever held.
+export type GuardDutyStatus = 'title10' | 'title32' | 'sad';
+
+export const GUARD_DUTY_STATUS_LABELS: Record<GuardDutyStatus, string> = {
+  title10: 'Title 10 (Federal)',
+  title32: 'Title 32 (incl. AT & routine drill)',
+  sad: 'State Active Duty (SAD)',
+};
+
+export const GUARD_DUTY_STATUS_DESCRIPTIONS: Record<GuardDutyStatus, string> = {
+  title10: 'Federal active duty — mobilization or AT/ADT under Title 10 orders. Full federal pay, TRICARE, SCRA, and retirement-point credit apply.',
+  title32: 'Federal Title 32 duty — routine drill/annual training, or a §502(f) call-up of 30+ consecutive days. Same federal benefits as Title 10.',
+  sad: 'State Active Duty — activated and paid by your governor only (e.g. most disaster-response callouts), with no federal recognition. Does not carry TRICARE, SCRA, or federal retirement-point credit.',
+};
+
 // Where the member currently lives — determines their actual BAH entitlement.
 // 'off_base'              → full BAH (with or without dependents) based on rank/MHA
 // 'barracks'               → Partial BAH only (flat $50.10/mo); government single-type
@@ -168,6 +209,8 @@ export interface UserPreferences {
   gsLocalityKey?: string; // GSLocality.key from data/gs-pay-rates.ts, e.g. 'DC', 'RUS'
   // Reserve / Guard pay info
   drillsPerMonth?: number;   // typically 4 (one battle assembly weekend)
+  reserveComponent?: ReserveComponent; // only asked for army/air_force (only branches with a Guard)
+  guardDutyStatus?: GuardDutyStatus;   // only meaningful when reserveComponent === 'guard'
   // Retired info
   retirementDate?: string;      // YYYY-MM-DD (date of retirement)
   vaDisabilityPercent?: number; // 0-100, in 10% increments

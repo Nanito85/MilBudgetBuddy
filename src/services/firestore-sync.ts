@@ -304,6 +304,8 @@ function snapshotUser() {
     deploymentLocationId: s.deploymentLocationId ?? null,
     serviceStatus: s.serviceStatus ?? null,
     drillsPerMonth: s.drillsPerMonth ?? null,
+    reserveComponent: s.reserveComponent ?? null,
+    guardDutyStatus: s.guardDutyStatus ?? null,
     retirementDate: s.retirementDate ?? null,
     vaDisabilityPercent: s.vaDisabilityPercent ?? null,
     sbpEnabled: s.sbpEnabled ?? false,
