@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 
 import { PayGrade } from '@/data/bah-rates';
-import { FinancialGoal, HousingStatus, LESOverrides, MilitaryBranch, ProSource, RankVariant, ServiceStatus, SpecialPay, SpecialPayType, UserPreferences } from '@/types/user.types';
+import { FinancialGoal, GuardDutyStatus, HousingStatus, LESOverrides, MilitaryBranch, ProSource, RankVariant, ReserveComponent, ServiceStatus, SpecialPay, SpecialPayType, UserPreferences } from '@/types/user.types';
 
 const STORAGE_KEY = 'mbb_user_prefs';
 
@@ -35,6 +35,9 @@ const DEFAULTS: UserPreferences = {
   gsStep: undefined,
   gsLocalityKey: undefined,
   drillsPerMonth: undefined,
+  reserveComponent: undefined,
+  guardDutyStatus: undefined,
+  guardDutyStatusUpdatedAt: undefined,
   retirementDate: undefined,
   vaDisabilityPercent: undefined,
   sbpEnabled: false,
@@ -73,7 +76,7 @@ interface UserState extends UserPreferences {
   setHasSeenTutorial: () => void;
   setServiceInfo: (payGrade: PayGrade, lastName: string, nickname: string, yos: number, dateOfEnlistment?: string, dateOfRank?: string) => void;
   setGSInfo: (gsGrade: number, gsStep: number, lastName: string, nickname: string, dateOfEnlistment?: string, gsLocalityKey?: string) => void;
-  setReserveInfo: (drillsPerMonth: number) => void;
+  setReserveInfo: (drillsPerMonth: number, reserveComponent?: ReserveComponent, guardDutyStatus?: GuardDutyStatus) => void;
   setRetiredInfo: (retirementDate: string | undefined, vaDisabilityPercent: number) => void;
   setSbpInfo: (sbpEnabled: boolean, sbpCoveragePct: number) => void;
   setAlsoGsCivilian: (enabled: boolean, gsGrade: number, gsStep: number, gsLocalityKey: string) => void;
@@ -126,6 +129,9 @@ function snapshot(get: () => UserState): UserPreferences {
     dateOfEnlistment: s.dateOfEnlistment,
     dateOfRank: s.dateOfRank,
     drillsPerMonth: s.drillsPerMonth,
+    reserveComponent: s.reserveComponent,
+    guardDutyStatus: s.guardDutyStatus,
+    guardDutyStatusUpdatedAt: s.guardDutyStatusUpdatedAt,
     retirementDate: s.retirementDate,
     vaDisabilityPercent: s.vaDisabilityPercent,
     sbpEnabled: s.sbpEnabled,
@@ -249,9 +255,29 @@ export const useUserStore = create<UserState>((set, get) => ({
     save({ ...snapshot(get), ...update });
   },
 
-  setReserveInfo: (drillsPerMonth) => {
-    set({ drillsPerMonth });
-    save({ ...snapshot(get), drillsPerMonth });
+  // reserveComponent/guardDutyStatus are optional so existing call sites
+  // (and any branch where Guard doesn't apply) can keep calling this with
+  // just drillsPerMonth. guardDutyStatus is only meaningful when
+  // reserveComponent === 'guard' — explicitly clearing it otherwise (rather
+  // than leaving a stale value behind) matches how setLocationFamily/
+  // setGSInfo already handle "only sometimes relevant" fields here.
+  //
+  // guardDutyStatusUpdatedAt is stamped to "now" every time a real
+  // guardDutyStatus is set here — including re-saving the SAME status —
+  // since a Guard member's status genuinely changes month to month and
+  // re-confirming it (e.g. reopening Profile and hitting Save again) is a
+  // meaningful "still accurate as of today" signal, not a no-op. Cleared
+  // alongside guardDutyStatus when the member isn't Guard.
+  setReserveInfo: (drillsPerMonth, reserveComponent, guardDutyStatus) => {
+    const resolvedGuardDutyStatus = reserveComponent === 'guard' ? guardDutyStatus : undefined;
+    const update = {
+      drillsPerMonth,
+      reserveComponent,
+      guardDutyStatus: resolvedGuardDutyStatus,
+      guardDutyStatusUpdatedAt: resolvedGuardDutyStatus ? new Date().toISOString() : undefined,
+    };
+    set(update);
+    save({ ...snapshot(get), ...update });
   },
 
   setRetiredInfo: (retirementDate, vaDisabilityPercent) => {

@@ -90,6 +90,64 @@ export type { RankVariant };
 
 export type ServiceStatus = 'active' | 'reserve' | 'retired' | 'civilian';
 
+// Which Reserve Component a reservist serves in. Only meaningful when
+// serviceStatus === 'reserve'. Only the Army and Air Force have a federal
+// National Guard (Army National Guard, Air National Guard) — the Navy,
+// Marine Corps, and Coast Guard have Reserve components only, with no Guard
+// equivalent. So this field should only ever be asked/shown for branch ===
+// 'army' or 'air_force'; for every other branch a reservist is necessarily
+// 'reserve' and this question is not applicable (leave it undefined).
+export type ReserveComponent = 'guard' | 'reserve';
+
+export const RESERVE_COMPONENT_LABELS: Record<ReserveComponent, string> = {
+  guard: 'National Guard',
+  reserve: 'Reserve',
+};
+
+// For Guard members only (reserveComponent === 'guard'): what their duty
+// status is RIGHT NOW. This materially changes TRICARE eligibility, SCRA
+// coverage, and federal retirement-point crediting — see app/reserves.tsx.
+//  'title10' — federal active duty (mobilization, AT/ADT under Title 10 orders).
+//  'title32' — federal Title 32 duty: routine drill/AT, or a §502(f) call-up
+//              of 30+ consecutive days under presidential/SecDef authority.
+//              Both carry full federal benefits the same as Title 10 does.
+//  'sad'     — State Active Duty: governor-activated and state-funded only
+//              (e.g. most disaster-response callouts), with no federal
+//              recognition. Does NOT carry TRICARE, SCRA, or federal
+//              retirement-point credit — pay/benefits are set by the state.
+//
+// IMPORTANT: this is a snapshot, not a tracked history. A real Guard
+// member's status routinely changes within the same year (a normal Title 32
+// drill weekend, then a Title 10 AT period, then maybe a state emergency
+// SAD callout) — a value set once at onboarding can go stale the moment
+// orders change, and reserves.tsx would then confidently tell the member
+// something no longer true. Both the onboarding question and the profile.tsx
+// editor must frame this as "your status right now" (not a one-time fact)
+// and make clear it should be updated whenever orders change; reserves.tsx's
+// guidance copy (reserveComponentGuidance.ts) must lead with "based on what
+// you've told us" rather than asserting this as an authoritative real-time
+// read of the member's actual current orders.
+export type GuardDutyStatus = 'title10' | 'title32' | 'sad';
+
+export const GUARD_DUTY_STATUS_LABELS: Record<GuardDutyStatus, string> = {
+  title10: 'Title 10 (Federal)',
+  title32: 'Title 32 (incl. AT & routine drill)',
+  sad: 'State Active Duty (SAD)',
+};
+
+export const GUARD_DUTY_STATUS_DESCRIPTIONS: Record<GuardDutyStatus, string> = {
+  title10: 'Federal active duty — mobilization or AT/ADT under Title 10 orders. Full federal pay, TRICARE, SCRA, and retirement-point credit apply.',
+  title32: 'Federal Title 32 duty — routine drill/annual training, or a §502(f) call-up of 30+ consecutive days. Same federal benefits as Title 10.',
+  sad: 'State Active Duty — activated and paid by your governor only (e.g. most disaster-response callouts), with no federal recognition. Does not carry TRICARE, SCRA, or federal retirement-point credit.',
+};
+
+// Shared copy — this status changes month to month for a lot of Guard
+// members, so both places that ask/show it (onboarding, profile.tsx) use
+// this exact wording rather than each hand-typing a slightly different
+// version that could drift out of sync.
+export const GUARD_DUTY_STATUS_FIELD_HINT =
+  'What\'s your status right now? This can change with new orders (e.g. a normal drill weekend vs. an AT period vs. a state emergency callout) — come back and update it whenever it does.';
+
 // Where the member currently lives — determines their actual BAH entitlement.
 // 'off_base'              → full BAH (with or without dependents) based on rank/MHA
 // 'barracks'               → Partial BAH only (flat $50.10/mo); government single-type
@@ -168,6 +226,14 @@ export interface UserPreferences {
   gsLocalityKey?: string; // GSLocality.key from data/gs-pay-rates.ts, e.g. 'DC', 'RUS'
   // Reserve / Guard pay info
   drillsPerMonth?: number;   // typically 4 (one battle assembly weekend)
+  reserveComponent?: ReserveComponent; // only asked for army/air_force (only branches with a Guard)
+  guardDutyStatus?: GuardDutyStatus;   // only meaningful when reserveComponent === 'guard'
+  // When guardDutyStatus was last set/confirmed — lets profile.tsx show a
+  // "last updated" note so a value from months ago visibly looks stale
+  // rather than looking as current as one set yesterday. Set automatically
+  // whenever guardDutyStatus is set (onboarding or profile.tsx); cleared
+  // alongside it if the member switches from Guard back to Reserve.
+  guardDutyStatusUpdatedAt?: string;   // ISO 8601 timestamp
   // Retired info
   retirementDate?: string;      // YYYY-MM-DD (date of retirement)
   vaDisabilityPercent?: number; // 0-100, in 10% increments
