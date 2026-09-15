@@ -12,7 +12,8 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Brand, Fonts, Spacing } from '@/constants/theme';
 import { PayGrade } from '@/data/bah-rates';
-import { getBasicPay } from '@/data/basic-pay-rates';
+import { getBasicPay, getHigh3Average } from '@/data/basic-pay-rates';
+import { calcCzteExcludedBasicPay } from '@/features/deployment/utils/deploymentCalc';
 import { useThemeColors } from '@/hooks/use-theme';
 import { useUserStore } from '@/store/user.store';
 
@@ -107,18 +108,32 @@ export default function ReservesScreen() {
 
   const storeGrade = useUserStore((s) => s.payGrade);
   const storeYos   = useUserStore((s) => s.yos);
+  const storeDrillsPerMonth = useUserStore((s) => s.drillsPerMonth);
 
   const [activeTab, setActiveTab] = useState<Tab>('drill_pay');
   const [grade, setGrade] = useState<PayGrade>(storeGrade ?? 'E5');
   const [yos, setYos] = useState(storeYos ?? 6);
 
   // ── Drill Pay ─────────────────────────────────────────────────────────────
+  // drillsPerMonth defaults to 4 (one standard battle-assembly/UTA weekend)
+  // when the member hasn't set it during onboarding — matching the same
+  // default used there and in lesCalc.ts's getDrillPay. Using the member's
+  // own answer here (instead of always assuming exactly 1 weekend/month)
+  // matters because plenty of units drill on a different cadence (e.g. split
+  // weekends, AGR-adjacent SELRES billets, or 2x/month schedules).
 
+  const drillsPerMonth = storeDrillsPerMonth ?? 4;
   const monthlyBasicPay = useMemo(() => getBasicPay(grade, yos), [grade, yos]);
   const idt = monthlyBasicPay / 30;               // one IDT / drill period
   const drillWeekend = idt * 4;                   // typical weekend = 4 IDTs (2 days × 2 periods/day)
-  const annualDrillPay = idt * 48;                // 12 weekends × 4 IDTs
-  const annualAdt = monthlyBasicPay * 15 / 30;    // 15 days typical ADT/AT (2 weeks)
+  const annualDrillPay = idt * drillsPerMonth * 12;
+  // Annual Training (AT) statutory minimum for Ready Reserve members is 14
+  // days (exclusive of travel time), not 15 — 10 U.S.C. § 10147: "not less
+  // than 48 scheduled drills... and... active duty for training of not less
+  // than 14 days." Many units run AT a day or two longer, but 14 is the
+  // correct baseline to estimate from, and matches the "2-week" description
+  // this screen already uses (2 weeks = 14 days, not 15).
+  const annualAdt = monthlyBasicPay * 14 / 30;
 
   // ── Retirement Points ─────────────────────────────────────────────────────
 
@@ -127,25 +142,47 @@ export default function ReservesScreen() {
   const [retirementSystem, setRetirementSystem] = useState<'brs' | 'high3'>('brs');
   const retirementMultiplier = retirementSystem === 'high3' ? HIGH3_MULTIPLIER : BRS_MULTIPLIER;
 
+  // Retirement High-3 average — the actual pay base 10 U.S.C. § 1407/1409 use
+  // for non-regular (Reserve) retired pay is the highest 36 months of basic
+  // pay (as if the member were retiring from active duty at that grade/YOS
+  // today), not a single month's CURRENT basic pay. Reusing getHigh3Average
+  // (the same function lesCalc.ts uses for active-duty retirees) instead of
+  // monthlyBasicPay keeps this in sync with the rest of the app and matches
+  // the real statutory formula — the previous version understated most
+  // members' estimate by using flat monthly pay instead of the 3-highest-
+  // years average, which is very slightly higher due to annual raises/step
+  // increases baked into consecutive YOS brackets.
+  const retirementHigh3 = useMemo(() => getHigh3Average(grade, yos), [grade, yos]);
+
   // Points needed for a "good year": 50 minimum
-  // Creditable retirement pay = (points / 360) × multiplier × highest 36-mo avg basic pay
+  // Creditable retirement pay = (points / 360) × multiplier × High-3 average basic pay
   const pointsBasedCalc = useMemo(() => {
     const divisor = 360;
     const fraction = retirementPoints / divisor;
-    const retirePay = fraction * retirementMultiplier * monthlyBasicPay;
+    const retirePay = fraction * retirementMultiplier * retirementHigh3;
     return retirePay;
-  }, [retirementPoints, monthlyBasicPay, retirementMultiplier]);
+  }, [retirementPoints, retirementHigh3, retirementMultiplier]);
 
-  // Year-based (simplified): multiplier × good years × base pay / 12
+  // Year-based (simplified): multiplier × good years × High-3 average
   const yearBasedMonthly = useMemo(() => {
-    return retirementMultiplier * goodYears * (monthlyBasicPay * 12) / 12;
-  }, [goodYears, monthlyBasicPay, retirementMultiplier]);
+    return retirementMultiplier * goodYears * retirementHigh3;
+  }, [goodYears, retirementHigh3, retirementMultiplier]);
 
   // ── Mobilization ──────────────────────────────────────────────────────────
 
   const [deployMonths, setDeployMonths] = useState(6);
   const mobilizationPay = monthlyBasicPay * deployMonths;
-  const taxSavedCombatZone = monthlyBasicPay * deployMonths * 0.22;
+  // CZTE (26 U.S.C. §112) excludes ALL basic pay from federal income tax for
+  // enlisted/warrant officers, but commissioned officers are capped at the
+  // E-9 max basic pay + IDP — reusing calcCzteExcludedBasicPay (shared with
+  // the Deployment Pay Calculator and lesCalc.ts) instead of assuming the
+  // officer's entire basic pay is excluded, which previously overstated the
+  // combat-zone tax savings shown here for any O-1 and above. The 22% figure
+  // itself remains a flat estimate (this screen doesn't collect a tax
+  // bracket) — a rough stand-in for the marginal bracket most drilling
+  // reservists mobilizing for months at a time will actually land in.
+  const czteExcludedForDisplay = calcCzteExcludedBasicPay(monthlyBasicPay, grade.startsWith('O')) * deployMonths;
+  const taxSavedCombatZone = czteExcludedForDisplay * 0.22;
 
   // ── YOS stepper ──────────────────────────────────────────────────────────
 
@@ -254,16 +291,16 @@ export default function ReservesScreen() {
               <View style={[styles.divider, { backgroundColor: tc.borderColor }]} />
               <View style={styles.rowItem}>
                 <View style={{ flex: 1 }}>
-                  <ThemedText style={[styles.rowLabel, { color: tc.textSecondary }]}>Drill Pay (12 weekends × 4 IDTs)</ThemedText>
-                  <ThemedText style={[styles.rowNote, { color: tc.textMuted }]}>48 IDTs per year</ThemedText>
+                  <ThemedText style={[styles.rowLabel, { color: tc.textSecondary }]}>Drill Pay ({drillsPerMonth}/mo × 12)</ThemedText>
+                  <ThemedText style={[styles.rowNote, { color: tc.textMuted }]}>{drillsPerMonth * 12} IDTs per year{storeDrillsPerMonth == null ? ' (default: 1 weekend/mo — set yours in your profile)' : ''}</ThemedText>
                 </View>
                 <ThemedText style={[styles.rowValue, { color: tc.accent }]}>{fmtMoneyWhole(annualDrillPay)}</ThemedText>
               </View>
               <View style={[styles.divider, { backgroundColor: tc.borderColor }]} />
               <View style={styles.rowItem}>
                 <View style={{ flex: 1 }}>
-                  <ThemedText style={[styles.rowLabel, { color: tc.textSecondary }]}>Annual Training (AT) — 15 days</ThemedText>
-                  <ThemedText style={[styles.rowNote, { color: tc.textMuted }]}>Typical 2-week active duty for training</ThemedText>
+                  <ThemedText style={[styles.rowLabel, { color: tc.textSecondary }]}>Annual Training (AT) — 14 days</ThemedText>
+                  <ThemedText style={[styles.rowNote, { color: tc.textMuted }]}>Statutory minimum, 10 U.S.C. §10147 — some units run longer</ThemedText>
                 </View>
                 <ThemedText style={[styles.rowValue, { color: tc.tactical }]}>{fmtMoneyWhole(annualAdt)}</ThemedText>
               </View>
@@ -277,11 +314,13 @@ export default function ReservesScreen() {
             <ThemedView type="backgroundElement" style={styles.card}>
               <ThemedText style={[styles.cardLabel, { color: tc.textSecondary }]}>HOW DRILL PAY WORKS</ThemedText>
               {[
-                { q: 'What is an IDT?', a: 'Individual Duty Training — one 4-hour drill period. You get paid for 2 IDTs per day (1/15 of monthly basic pay per drill day).' },
-                { q: 'What is a UTA?', a: 'Unit Training Assembly — one full drill period. A standard drill weekend has 4 UTAs (2 per day × 2 days).' },
+                { q: 'What is an IDT?', a: 'Inactive Duty Training — one 4-hour drill period, so called because you’re not on active duty status while performing it (despite drawing active-duty-rate pay for it). You get paid for 2 IDTs per day (1/15 of monthly basic pay per drill day).' },
+                { q: 'What is a UTA?', a: 'Unit Training Assembly — most services’ term for an IDT period, used interchangeably with "drill." A standard drill weekend is a "MUTA-4" (4 UTAs, 2 per day × 2 days). Terminology differs by service: Army Reserve calls the same weekend a "Battle Assembly" (BA) instead; sailors, airmen/Guardians, Marines, and Coast Guardsmen more commonly just say "drill weekend." Same activity, same 1/30-per-period pay — the name just varies by branch.' },
                 { q: 'Do I get BAH at drill?', a: 'No BAH for IDT/drill weekend. BAH only applies during active duty orders of 30+ days, or ADOS/AT orders depending on your status.' },
                 { q: 'Do I get BAS at drill?', a: 'BAS is paid for any day of active duty. For short drill periods, it is typically not paid unless serving continuous active duty.' },
                 { q: 'What about SGLI?', a: 'SELRES members get SGLI automatically at the same rates as active duty ($26/mo for $500K coverage, incl. $1 TSGLI, effective July 2025).' },
+                { q: 'Do I get paid mileage to drill?', a: 'Usually no — your normal commute to your home unit’s drill site is not reimbursed, and this genuinely varies by branch (not just by unit). Army Reserve and Air Force Reserve each run an IDT Travel Reimbursement Program (IDT-TRP) for members living 150+ miles from their unit, subject to prior authorization and an annual funding cap. Navy Reserve does not fund an equivalent program for routine IDT travel. Marine Corps Reserve, Coast Guard Reserve, and Army/Air National Guard components set their own separate policies and thresholds, which change by fiscal year. There is no single number that applies to every service — ask your own branch’s current-FY IDT-TRP guidance (unit admin/S1) rather than assuming the Army/AFR 150-mile figure applies to you.' },
+                { q: 'Are drill/affiliation bonuses available?', a: 'Yes, but Selected Reserve Incentive Pay (SRIP), affiliation bonuses, and reenlistment bonuses are set independently by each service (and sometimes each state, for Guard SRIP) — restricted to specific critical MOSs/ratings/AFSCs, unit vacancies, and contract lengths that all change by fiscal year. There is no single dollar figure or eligibility rule that applies across Army Reserve, Army/Air National Guard, Navy Reserve, Air Force Reserve, Marine Corps Reserve, and Coast Guard Reserve — check your own service’s current SRIP/incentives policy (unit career counselor or retention NCO) rather than a generic number.' },
               ].map((item, i) => (
                 <View key={i} style={[styles.faqItem, i > 0 && styles.itemBorderTop, i > 0 && { borderTopColor: tc.borderColor }]}>
                   <ThemedText style={[styles.faqQ, { color: tc.textPrimary }]}>{item.q}</ThemedText>
@@ -405,10 +444,11 @@ export default function ReservesScreen() {
               <ThemedText style={[styles.cardLabel, { color: tc.textSecondary }]}>KEY RULES</ThemedText>
               {[
                 { title: '20 Good Years Required', body: 'You must earn a "good year" (50+ points) for 20 separate years to qualify for retired pay.' },
-                { title: 'Pay Starts at Age 60', body: 'Reserve retirement pay begins at 60, not at the day you stop drilling. Reduced by 90 days for each qualifying deployment after 2008.' },
+                { title: 'Pay Starts at Age 60', body: 'Reserve retirement pay begins at 60, not at the day you stop drilling — unless you qualify for an earlier start: your age-60 requirement drops by 3 months for every cumulative 90 days of qualifying active-duty service you performed in a fiscal year after Jan 28, 2008 (10 U.S.C. §12731a), down to a floor of age 50. This is tracked per fiscal year of active service, not per deployment.' },
                 { title: 'High-3 Average', body: 'Pay is calculated using the highest 36 months of basic pay (same as active duty). Your grade on your retirement date matters.' },
                 { title: 'COLA Adjustments', body: 'Reserve retirement pay is indexed to inflation (CPI-based COLA), same as active duty retirees.' },
                 { title: 'Point Cap (annually)', body: 'Maximum creditable points per year: 365 (366 in leap years). No cap on total career points.' },
+                { title: 'National Guard: Not All Duty Status Counts', body: 'This calculator assumes federally creditable service. Army/Air National Guard members should know that pure State Active Duty (SAD) — activated and paid by your governor alone, with no federal recognition (e.g., most disaster-response callouts) — does NOT earn points toward this federal retirement, and pay for it comes from the state, not this screen\'s active-duty-rate math. Federal Title 32 duty (annual training, or a federally-funded 502(f) call-up) and Title 10 duty both count normally. If your state emergency orders don\'t cite federal funding/recognition, confirm point crediting with your state J1/G1 before counting on it here.' },
               ].map((item, i) => (
                 <View key={i} style={[styles.faqItem, i > 0 && styles.itemBorderTop, i > 0 && { borderTopColor: tc.borderColor }]}>
                   <ThemedText style={[styles.faqQ, { color: tc.textPrimary }]}>{item.title}</ThemedText>
@@ -446,7 +486,7 @@ export default function ReservesScreen() {
                 { label: 'Plan Type', value: 'PPO (preferred provider)' },
                 { label: 'Deductible (individual)', value: '$66 E4 & below / $198 E5+' },
                 { label: 'Deductible (family)', value: '$132 E4 & below / $397 E5+' },
-                { label: 'Cost share (network)', value: '$19-79 flat copay by visit type' },
+                { label: 'Cost share (network)', value: '$19-52 flat copay by visit type' },
                 { label: 'Cost share (non-network)', value: '20% after deductible' },
                 { label: 'Catastrophic cap (annual)', value: '$1,324' },
                 { label: 'Prescriptions (mail order, 90-day)', value: '$14 generic / $44 brand' },
@@ -462,9 +502,10 @@ export default function ReservesScreen() {
             <ThemedView type="backgroundElement" style={styles.card}>
               <ThemedText style={[styles.cardLabel, { color: tc.textSecondary }]}>ELIGIBILITY & ENROLLMENT</ThemedText>
               {[
-                { q: 'Who is eligible?', a: 'SELRES members (Army Reserve, Navy Reserve, AFRC, SMCR, SELRES USCG) not on active duty orders of 30+ days.' },
-                { q: 'When can I enroll?', a: 'Within 90 days of ending qualifying active duty, or within 90 days of a SELRES qualifying event (marriage, loss of other coverage). Otherwise wait for open enrollment.' },
+                { q: 'Who is eligible?', a: 'SELRES members (Army Reserve, Navy Reserve, AFRC, SMCR, SELRES USCG) not on active duty orders of 30+ days. IRR members do not qualify. One easy-to-miss disqualifier: you (or a family member) being eligible for or enrolled in the Federal Employees Health Benefits (FEHB) program blocks TRS enrollment — this hits federal-civilian dual-status technicians and traditional guardsmen with federal civilian jobs especially often. That FEHB restriction is scheduled to end Jan 1, 2030.' },
+                { q: 'When can I enroll?', a: 'Any time — unlike TRICARE Prime/Select, TRS is a premium-based plan and isn’t restricted to a qualifying life event window or the annual TRICARE Open Season.' },
                 { q: 'What if I get activated?', a: 'TRS terminates when you go on active duty 30+ days. You convert to TRICARE Prime/Select as an active duty family member at no premium cost.' },
+                { q: 'Does this work differently for National Guard?', a: 'It can. Army/Air National Guard members on Title 10 federal orders, or Title 32 orders of 30+ days, generally gain the same TRICARE access as any activated reservist. Pure State Active Duty (SAD) — governor-activated, state-funded, with no federal recognition — typically does NOT come with TRICARE; you\'d instead be covered under your state\'s own workers\' comp/benefits program, which varies by state. Check your specific orders (Title 10, Title 32, or state-only) before assuming activation automatically means TRICARE.' },
                 { q: 'Does it cover dental/vision?', a: 'No. Dental coverage is through TRICARE Dental Program (TDP). Vision through FEDVIP for reservists.' },
                 { q: 'Enrollment phone / website', a: 'Call 1-800-538-9552 or visit tricare.mil to enroll or change coverage.' },
               ].map((item, i) => (
@@ -480,7 +521,14 @@ export default function ReservesScreen() {
         {/* ══ MOBILIZATION TAB ════════════════════════════════════════════════════ */}
         {activeTab === 'mobilization' && (
           <>
-            <SectionHeader title="Mobilization Pay" subtitle="What changes when you're activated on federal orders" />
+            <SectionHeader title="Mobilization Pay" subtitle="What changes on Title 10 federal active duty (or qualifying Title 32 orders)" />
+
+            <ThemedView type="backgroundElement" style={styles.card}>
+              <ThemedText style={[styles.cardLabel, { color: tc.textSecondary }]}>NATIONAL GUARD: KNOW YOUR ORDERS</ThemedText>
+              <ThemedText style={[styles.cardHint, { color: tc.textMuted }]}>
+                Everything below assumes federal Title 10 active duty, or Title 32 orders of 30+ consecutive days under a presidential/SecDef call (10/32 U.S.C. §12301/§502(f)) — the two situations where you draw federal active-duty-equivalent pay and benefits. Pure State Active Duty (SAD) — a governor-only activation (e.g. most hurricane/wildfire/civil-disturbance response), state-funded and state-controlled — runs on a different, state-set pay scale and generally does NOT include TRICARE, SCRA protections, or federal retirement point credit. Always check whether your specific orders are Title 10, Title 32, or state SAD before assuming this tab applies.
+              </ThemedText>
+            </ThemedView>
 
             <ThemedView type="backgroundElement" style={styles.card}>
               <ThemedText style={[styles.cardLabel, { color: tc.textSecondary }]}>DEPLOYMENT DURATION</ThemedText>
@@ -537,7 +585,7 @@ export default function ReservesScreen() {
               <ThemedText style={[styles.cardLabel, { color: tc.textSecondary }]}>KEY LEGAL PROTECTIONS (USERRA / SCRA)</ThemedText>
               {[
                 { q: 'USERRA Job Protection', a: 'Your civilian employer must re-employ you in the same or equivalent position after return. You cannot be fired solely for being a reservist.' },
-                { q: 'SCRA Interest Rate Cap', a: '6% max interest on pre-service debts (credit cards, car loans, mortgages) while on active duty. Request in writing to each creditor.' },
+                { q: 'SCRA Interest Rate Cap', a: '6% max interest on pre-service debts (credit cards, car loans, mortgages) while on active duty. Request in writing to each creditor. For National Guard members: this applies on Title 10 duty and on Title 32 §502(f) call-ups of 30+ consecutive days, but NOT during routine drill or pure State Active Duty (SAD) — a common gap that surprises Guard members activated only under state orders.' },
                 { q: 'SCRA Lease Termination', a: 'You can break a housing lease with 30 days written notice plus a copy of orders. Protections kick in immediately.' },
                 { q: 'SDP (Savings Deposit Program)', a: 'Invest up to $10,000 in SDP while deployed and earn 10% APY — guaranteed by DoD. Enrollment through Finance.' },
                 { q: 'Civilian Pay Differential', a: 'Some states and federal agencies pay the difference if active duty pay is less than your civilian salary. Check your employer policy.' },

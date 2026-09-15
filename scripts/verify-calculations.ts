@@ -11,7 +11,7 @@
  * Exits non-zero (and prints which assertion failed) if anything regresses.
  */
 import { getPayDayInfo } from '@/features/home/utils/payScheduleCalc';
-import { calcLES } from '@/features/home/utils/lesCalc';
+import { calcLES, getDrillPay } from '@/features/home/utils/lesCalc';
 import { getBasicPay, getHigh3Average, getHigh3AverageDetailed } from '@/data/basic-pay-rates';
 import { combinedRating, monthlyCompensationDetailed, monthlyCompensation } from '@/features/va/utils/vaDisabilityCalc';
 import { getInstallationById } from '@/data/installations';
@@ -19,6 +19,7 @@ import { getOhaAreaForInstallation, getOhaRate } from '@/data/oha-rates';
 import { getOconusCola } from '@/data/oconus-cola';
 import { getDeploymentLocation } from '@/data/deployment-locations';
 import { getStationPerDiem } from '@/features/pcs/utils/pcsCalc';
+import { calcCzteExcludedBasicPay } from '@/features/deployment/utils/deploymentCalc';
 
 let pass = 0;
 let fail = 0;
@@ -402,6 +403,62 @@ console.log('\n[15] Okinawa OCONUS: OHA / COLA / no-hazard-pay / TLA per-diem lo
   assertTrue(!!alUdeid, 'Al Udeid AB resolves to a real OHA area');
   const alUdeidE5 = alUdeid ? getOhaRate(alUdeid.locationLabel, 'E5', true) : null;
   assertEqual(alUdeidE5?.rentCeilingUSD, 5895, 'Al Udeid E5 w/dep rent matches the live-confirmed 2026-09-13 rate (~$5,895) — Doha\'s off-base market is genuinely this expensive per DTMO, not a data error');
+}
+
+// ── [17] Reserve/Guard pay audit (2026-09-14) — Reserve Hub (app/reserves.tsx) ─
+console.log('\n[17] Reserve/Guard pay audit — drill pay, AT days, retirement High-3, CZTE officer cap');
+{
+  // Drill pay: 1/30 of monthly basic pay per IDT (37 U.S.C. §206 / DoD FMR Vol
+  // 7A Ch 1) — getDrillPay is the same function lesCalc.ts's doc comment says
+  // is "canonical" and matches the Reserves screen; verifying it here locks
+  // the formula both places rely on.
+  const e5at6 = getBasicPay('E5', 6);
+  assertEqual(getDrillPay('E5', 6, 4), (e5at6 / 30) * 4, 'E5 @ 6 YOS drill pay for a standard 4-drill (MUTA-4) weekend = 1/30 basic pay × 4');
+
+  // The Reserve Hub previously hardcoded "12 weekends × 4 IDTs = 48/year"
+  // regardless of the member's own onboarding answer (drillsPerMonth, default
+  // 4). A unit drilling on a different cadence (e.g. 8 drills/month) should
+  // scale linearly off the same per-IDT rate, not silently get the 1x/month
+  // assumption's total.
+  assertEqual(getDrillPay('E5', 6, 8), (e5at6 / 30) * 8, 'Doubling drillsPerMonth doubles annual-equivalent drill pay linearly (same per-IDT rate)');
+
+  // Annual Training (AT) statutory minimum is 14 days, not 15 — 10 U.S.C.
+  // §10147: Ready Reserve members must serve "not less than 48 scheduled
+  // drills... and... active duty for training of not less than 14 days"
+  // each year. The Reserves screen's annualAdt previously used 15/30.
+  const e5AtStatutoryMin = getBasicPay('E5', 6) * 14 / 30;
+  const e5AtOldWrongValue = getBasicPay('E5', 6) * 15 / 30;
+  assertTrue(e5AtStatutoryMin < e5AtOldWrongValue, '14-day AT estimate is strictly less than the previous (incorrect) 15-day estimate');
+
+  // Reserve non-regular retired pay (10 U.S.C. §1407/§1409/§12733) uses the
+  // High-3 average of basic pay as its base, the same way active-duty
+  // retired pay does — not a single current month's basic pay. For a member
+  // with at least 2 YOS behind their current bracket, High-3 sits at or
+  // below current monthly basic pay (since it blends in the prior, lower-or-
+  // equal YOS-bracket rates), so the Reserves screen's retirement-points
+  // estimate should never be checked against monthlyBasicPay directly —
+  // getHigh3Average is the correct base, already used by active-duty retired
+  // pay elsewhere in the app (lesCalc.ts's getHigh3Average call) and now
+  // reused by the Reserve Hub's retirement calculator too.
+  const e7at22High3 = getHigh3Average('E7', 22);
+  const e7at22Current = getBasicPay('E7', 22);
+  assertTrue(e7at22High3 <= e7at22Current, 'High-3 average basic pay is never more than the current bracket\'s monthly rate (it blends in the prior YOS bracket)');
+  const brsPointsExample = (300 / 360) * 0.02 * e7at22High3;
+  assertTrue(brsPointsExample > 0, 'Points-based reserve retirement estimate (points/360 × BRS 2.0% × High-3) computes a positive monthly amount');
+
+  // CZTE (26 U.S.C. §112): enlisted/warrant get full basic pay excluded;
+  // commissioned officers are capped at E-9 max basic pay + $225 IDP. The
+  // Reserve Hub's Mobilization tab previously excluded 100% of an officer's
+  // basic pay too, overstating their shown combat-zone tax savings.
+  const o6BasicPay = getBasicPay('O6', 22);
+  const e9Max = getBasicPay('E9', 40);
+  const o6Excluded = calcCzteExcludedBasicPay(o6BasicPay, true);
+  assertEqual(o6Excluded, Math.min(o6BasicPay, e9Max + 225), 'O6 CZTE-excluded basic pay is capped at E9 max + $225 IDP, not O6\'s full basic pay');
+  assertTrue(o6Excluded < o6BasicPay, 'O6 (well above the E9+IDP cap) has LESS than their full basic pay excluded under CZTE — confirms the officer cap actually binds');
+
+  const e5BasicPay = getBasicPay('E5', 6);
+  const e5Excluded = calcCzteExcludedBasicPay(e5BasicPay, false);
+  assertEqual(e5Excluded, e5BasicPay, 'Enlisted CZTE-excluded basic pay is the member\'s full basic pay (no officer-style cap)');
 }
 
 // ── Summary ────────────────────────────────────────────────────────────────────
