@@ -669,10 +669,14 @@ function AddGoalModal({
           />
 
           <ThemedText style={[styles.fieldLabel, { color: tc.textMuted, marginTop: Spacing.two }]}>CATEGORY</ThemedText>
+          {/* flexGrow/flexShrink: 0 — same fix as reserves.tsx's Reserve Hub
+              tab bar, which visibly overflowed to cover half the screen
+              without an explicit height constraint on the ScrollView's own
+              style. */}
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
-            style={{ marginBottom: Spacing.two }}
+            style={{ marginBottom: Spacing.two, flexGrow: 0, flexShrink: 0 }}
             contentContainerStyle={{ gap: Spacing.one, paddingVertical: Spacing.one }}>
             {CATS.map(([key, meta]) => (
               <Pressable

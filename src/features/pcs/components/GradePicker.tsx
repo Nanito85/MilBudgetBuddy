@@ -26,9 +26,14 @@ export function GradePicker({ selected, onSelect }: Props) {
           <ThemedText type="small" themeColor="textSecondary" style={styles.groupLabel}>
             {group.label}
           </ThemedText>
+          {/* style: { flexGrow: 0, flexShrink: 0 } — same fix as
+              reserves.tsx's Reserve Hub tab bar, which visibly overflowed to
+              cover half the screen without an explicit height constraint on
+              the ScrollView's own style. */}
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
+            style={styles.rowScroll}
             contentContainerStyle={styles.row}>
             {group.grades.map((grade) => {
               const active = grade === selected;
@@ -69,6 +74,7 @@ const styles = StyleSheet.create({
     fontSize: 10,
     paddingHorizontal: Spacing.one,
   },
+  rowScroll: { flexGrow: 0, flexShrink: 0 },
   row: { flexDirection: 'row', gap: Spacing.one, paddingHorizontal: Spacing.one },
   chip: {
     paddingHorizontal: Spacing.two + 2,
