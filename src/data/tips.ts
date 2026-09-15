@@ -418,4 +418,55 @@ export const TIPS: Tip[] = [
     category: 'insurance',
     tags: ['SCRA', 'life insurance', 'deployment'],
   },
+
+  // ─── RESERVE / GUARD ───────────────────────────────────────────────────────
+  {
+    id: 'tsp-011',
+    title: 'BRS Auto 1% Still Hits Your Drill Pay — Even Without Matching',
+    body: 'Under BRS, your service automatically contributes 1% of your pay to TSP once you have 2 years of service — and for Selected Reserve members, that 1% applies to your drill (IDT) pay too, not just active duty. The up-to-4% matching contribution, though, only kicks in during actual active-duty periods (AT, ADOS, mobilization) — it does not match your regular drill weekends. Don\'t assume "no match this month" means "no TSP contribution at all."',
+    category: 'tsp',
+    tags: ['reserve', 'guard', 'BRS', 'drill pay', 'match', 'IDT'],
+  },
+  {
+    id: 'insure-009',
+    title: 'A Federal Civilian Job Can Disqualify You From TRICARE Reserve Select',
+    body: 'If you (or a family member) are eligible for or enrolled in the Federal Employees Health Benefits (FEHB) program, you generally cannot enroll in TRICARE Reserve Select — a rule that catches a lot of dual-status technicians and traditional Guard/Reserve members who also hold a federal civilian job. This restriction is set to end January 1, 2030 under current law, so check whether it still applies to you before assuming you\'re locked out.',
+    category: 'insurance',
+    tags: ['reserve', 'guard', 'TRS', 'TRICARE Reserve Select', 'FEHB', 'dual status'],
+  },
+  {
+    id: 'insure-010',
+    title: 'TRICARE Reserve Select Has No Open Season — Enroll Any Time',
+    body: 'Unlike TRICARE Prime or Select, TRICARE Reserve Select is a premium-based plan you can purchase any time of year — you don\'t need a Qualifying Life Event or to wait for the annual TRICARE Open Season. If a recruiter, admin, or unit buddy tells you to "wait for open enrollment," that only applies to other TRICARE plans, not TRS.',
+    category: 'insurance',
+    tags: ['reserve', 'guard', 'TRS', 'TRICARE Reserve Select', 'open season', 'enrollment'],
+  },
+  {
+    id: 'budget-011',
+    title: 'Drill Weekend Mileage Reimbursement Is the Exception, Not the Rule',
+    body: 'Your normal commute to your home unit for a regular drill weekend is not reimbursed — that\'s treated the same as any civilian commuting to work. A separate, funding-limited IDT Travel Reimbursement Program exists for members who live beyond a distance threshold from their unit (specifics vary by service and by fiscal year), but it requires prior authorization and is capped per round trip. Don\'t budget around mileage reimbursement for drill unless your unit admin has confirmed you\'re actually enrolled in it.',
+    category: 'budgeting',
+    tags: ['reserve', 'guard', 'IDT', 'travel', 'mileage', 'drill'],
+  },
+  {
+    id: 'budget-012',
+    title: 'Reserve Retirement Pay Doesn\'t Start at 20 Years — It Starts at 60',
+    body: 'Unlike active duty, hitting 20 "good years" as a reservist doesn\'t start your retired pay immediately — it just qualifies you for it. You typically don\'t see a dime until age 60. One partial exception: your eligibility age drops by 3 months for every cumulative 90 days of qualifying active-duty service (AT, mobilization, etc.) you performed in a fiscal year after January 28, 2008, down to a floor of age 50 — so time spent mobilized can meaningfully move your start date up. Track your DD Form 214s/orders; NPC/HRC won\'t automatically apply this credit for you.',
+    category: 'budgeting',
+    tags: ['reserve', 'guard', 'retirement', 'age 60', 'reduced age', 'good years'],
+  },
+  {
+    id: 'credit-011',
+    title: 'SCRA Protections Don\'t Cover a Routine Drill Weekend',
+    body: 'SCRA\'s 6% interest rate cap and other protections apply during a qualifying period of "military service" — for reservists, that generally means active duty under Title 10 orders (annual training, mobilization, etc.), not routine weekend IDT/drill status. Sending a lender your drill schedule instead of a copy of active-duty orders is a common mistake that gets an SCRA request denied.',
+    category: 'credit',
+    tags: ['reserve', 'guard', 'SCRA', 'active duty orders', 'IDT'],
+  },
+  {
+    id: 'budget-013',
+    title: 'Drill Days Don\'t Count Toward Your Post-9/11 GI Bill Eligibility',
+    body: 'Post-9/11 GI Bill eligibility is generally built on cumulative days of actual active duty service (at least 90 aggregate days after Sept. 10, 2001, with the percentage of benefit scaling up from there) — regular IDT/drill weekends do NOT count toward that total, only orders like AT, ADOS, or mobilization do. If you\'re Selected Reserve and have never been activated, you may have little or no Post-9/11 benefit built up even after years of drilling — check Chapter 1606 (Montgomery GI Bill Selected Reserve) instead, which is tied to your 6-year Selected Reserve obligation rather than active-duty days, but pays a substantially lower monthly rate.',
+    category: 'budgeting',
+    tags: ['reserve', 'guard', 'GI Bill', 'Post-9/11', 'Chapter 1606', 'MGIB-SR', 'education'],
+  },
 ];
