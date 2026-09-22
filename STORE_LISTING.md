@@ -49,7 +49,9 @@ MilBudgetBuddy is the all-in-one financial companion for active duty, Guard, and
 - **Pay Day Countdown** — Always know how many days until the 1st or 15th (adjusted for weekends)
 - **Push Notifications** — Optional daily finance tips + evening-before pay day reminders
 - **AI Finance Chat** — Ask military pay, benefits, or budgeting questions in plain English
-- **Offline-first** — All data stays on your device. No account. No subscription.
+- **Offline-first** — All data stays on your device. No account required.
+
+**Free to download.** Core tools are free. MilBudgetBuddy Pro ($4.99/mo or $49.99/yr, 7-day free trial) unlocks the full pay & entitlements suite, PCS/DITY/TLE/TLA calculators, retirement/TSP/VA projections, and budget/debt/net worth tracking.
 
 ---
 
@@ -66,7 +68,7 @@ military finance, army pay, navy pay, BAH calculator, LES decoder, GI Bill, VA d
 - **Google Play:** Finance
 
 ## Content Rating
-Everyone (no mature content, no violence, no IAP)
+Everyone (no mature content, no violence). Includes in-app purchases (MilBudgetBuddy Pro subscription).
 
 ---
 

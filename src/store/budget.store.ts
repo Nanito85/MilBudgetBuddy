@@ -106,6 +106,7 @@ interface BudgetState {
   updateCategory: (id: string, monthlyBudget: number, name?: string) => void;
   addCategory: (name: string, emoji: string, idPrefix?: string, group?: BudgetGroup) => void;
   removeCategory: (id: string) => void;
+  moveCategory: (id: string, group: BudgetGroup) => void;
   totalBudgeted: () => number;
   resetAll: () => void;
 }
@@ -172,6 +173,12 @@ export const useBudgetStore = create<BudgetState>((set, get) => ({
       set({ deletedDefaultIds });
       saveDeletedDefaults(deletedDefaultIds);
     }
+  },
+
+  moveCategory: (id, group) => {
+    const categories = get().categories.map((c) => (c.id === id ? { ...c, group } : c));
+    set({ categories });
+    saveCategories(categories);
   },
 
   totalBudgeted: () => get().categories.reduce((sum, c) => sum + c.monthlyBudget, 0),

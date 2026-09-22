@@ -111,8 +111,10 @@ function CategoryRow({ cat, netPay }: { cat: BudgetCategory; netPay: number }) {
   const [editingName, setEditingName] = useState(false);
   const [amountVal, setAmountVal] = useState(cat.monthlyBudget > 0 ? String(cat.monthlyBudget) : '');
   const [nameVal, setNameVal] = useState(cat.name);
+  const [moving, setMoving] = useState(false);
   const updateCategory = useBudgetStore((s) => s.updateCategory);
   const removeCategory = useBudgetStore((s) => s.removeCategory);
+  const moveCategory = useBudgetStore((s) => s.moveCategory);
 
   const pct =
     netPay > 0 && cat.monthlyBudget > 0
@@ -134,6 +136,7 @@ function CategoryRow({ cat, netPay }: { cat: BudgetCategory; netPay: number }) {
   const handleOptions = () => {
     Alert.alert(cat.name, 'What would you like to do?', [
       { text: 'Rename', onPress: () => { setNameVal(cat.name); setEditingName(true); } },
+      { text: 'Move to Category', onPress: () => setMoving(true) },
       { text: 'Delete', style: 'destructive', onPress: () => {
         Alert.alert('Delete Category', `Remove "${cat.name}" from your budget?`, [
           { text: 'Cancel', style: 'cancel' },
@@ -195,11 +198,75 @@ function CategoryRow({ cat, netPay }: { cat: BudgetCategory; netPay: number }) {
             <ThemedText style={[styles.catOptionsDots, { color: tc.textMuted }]}>···</ThemedText>
           </Pressable>
         </ThemedView>
+      <MoveCategoryModal
+        visible={moving}
+        currentGroup={cat.group}
+        onClose={() => setMoving(false)}
+        onSelect={(group) => moveCategory(cat.id, group)}
+      />
     </Pressable>
   );
 }
 
-function AddCustomRow({ onAdd }: { onAdd: (name: string) => void }) {
+function MoveCategoryModal({
+  visible,
+  currentGroup,
+  onClose,
+  onSelect,
+}: {
+  visible: boolean;
+  currentGroup: BudgetGroup;
+  onClose: () => void;
+  onSelect: (group: BudgetGroup) => void;
+}) {
+  const tc = useThemeColors();
+
+  return (
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
+      <Pressable style={styles.modalOverlay} onPress={onClose}>
+        <Pressable style={[styles.modalCard, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
+          <ThemedText style={[styles.modalTitle, { color: tc.textPrimary }]}>Move to Category</ThemedText>
+          <View style={{ gap: Spacing.one }}>
+            {GROUP_ORDER.map((group) => {
+              const meta = GROUP_META[group];
+              const isCurrent = group === currentGroup;
+              return (
+                <Pressable
+                  key={group}
+                  disabled={isCurrent}
+                  onPress={() => { onSelect(group); onClose(); }}
+                  style={[
+                    styles.moveGroupRow,
+                    { borderColor: tc.borderColor },
+                    isCurrent && { opacity: 0.4 },
+                  ]}>
+                  <ThemedText style={styles.moveGroupEmoji}>{meta.emoji}</ThemedText>
+                  <ThemedText style={[styles.moveGroupLabel, { color: tc.textPrimary }]}>
+                    {meta.label}
+                  </ThemedText>
+                  {isCurrent && (
+                    <ThemedText type="small" themeColor="textSecondary">Current</ThemedText>
+                  )}
+                </Pressable>
+              );
+            })}
+          </View>
+          <Pressable onPress={onClose} style={[styles.modalCancelBtn, { borderColor: tc.borderColor, marginTop: Spacing.two }]}>
+            <ThemedText style={[styles.modalCancelText, { color: tc.textHint }]}>Cancel</ThemedText>
+          </Pressable>
+        </Pressable>
+      </Pressable>
+    </Modal>
+  );
+}
+
+function AddCustomRow({
+  onAdd,
+  placeholder = 'Add custom category...',
+}: {
+  onAdd: (name: string) => void;
+  placeholder?: string;
+}) {
   const tc = useThemeColors();
   const [name, setName] = useState('');
 
@@ -216,7 +283,7 @@ function AddCustomRow({ onAdd }: { onAdd: (name: string) => void }) {
       <TextInput
         value={name}
         onChangeText={setName}
-        placeholder="Add custom category..."
+        placeholder={placeholder}
         placeholderTextColor={tc.textHint}
         style={[styles.addInput, { color: tc.tactical }]}
         returnKeyType="done"
@@ -246,6 +313,14 @@ function GroupSection({
   const meta = GROUP_META[group];
   const subtotal = cats.reduce((s, c) => s + c.monthlyBudget, 0);
   const pctOfNet = netPay > 0 && subtotal > 0 ? Math.round((subtotal / netPay) * 100) : null;
+  const addCategory = useBudgetStore((s) => s.addCategory);
+  const canAddMore = useBudgetStore((s) => s.categories.length) < MAX_TOTAL_CATEGORIES;
+  const [adding, setAdding] = useState(false);
+
+  const handleAdd = (name: string) => {
+    addCategory(name, meta.emoji, CUSTOM_PREFIX, group);
+    setAdding(false);
+  };
 
   return (
     <View style={[styles.groupCard, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
@@ -268,12 +343,23 @@ function GroupSection({
               </ThemedText>
             )}
           </View>
+          {canAddMore && (
+            <Pressable
+              onPress={() => setAdding((v) => !v)}
+              hitSlop={8}
+              style={[styles.groupAddBtn, { borderColor: meta.color }]}>
+              <ThemedText style={[styles.groupAddBtnText, { color: meta.color }]}>
+                {adding ? '×' : '+'}
+              </ThemedText>
+            </Pressable>
+          )}
         </View>
         <View style={styles.groupDivider} />
         <View style={styles.groupRows}>
           {cats.map((cat) => (
             <CategoryRow key={cat.id} cat={cat} netPay={netPay} />
           ))}
+          {adding && <AddCustomRow onAdd={handleAdd} placeholder={`Add item to ${meta.label}...`} />}
         </View>
       </View>
     </View>
@@ -1268,6 +1354,16 @@ const styles = StyleSheet.create({
   groupLabel: { fontSize: 12, fontWeight: '800', letterSpacing: 0.8 },
   groupHeaderRight: { alignItems: 'flex-end', gap: 1 },
   groupSubtotal: { fontSize: 15, fontWeight: '800' },
+  groupAddBtn: {
+    marginLeft: Spacing.two,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  groupAddBtnText: { fontSize: 15, fontWeight: '900', lineHeight: 17 },
   groupDivider: {
     height: StyleSheet.hairlineWidth,
     backgroundColor: 'rgba(128,128,128,0.2)',
@@ -1556,4 +1652,16 @@ const styles = StyleSheet.create({
   },
   catChipEmoji: { fontSize: 14, lineHeight: 18 },
   catChipText: { fontSize: 11, fontWeight: '600' },
+
+  moveGroupRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
+    borderWidth: 1,
+    borderRadius: Spacing.two,
+    paddingHorizontal: Spacing.two + 2,
+    paddingVertical: Spacing.two,
+  },
+  moveGroupEmoji: { fontSize: 18, width: 26 },
+  moveGroupLabel: { fontSize: 14, fontWeight: '700', flex: 1 },
 });
