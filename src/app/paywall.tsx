@@ -25,6 +25,19 @@ import { useUserStore } from '@/store/user.store';
 
 type Plan = 'monthly' | 'annual';
 
+// Sentry issue MILBUDGETBUDDY-5 (iOS): backing out of the purchase sheet on
+// iOS doesn't reject with code 'user-cancelled' directly — Expo wraps it in a
+// generic "Calling the 'requestPurchase' function has failed" error whose
+// `cause` carries the real cancellation. Checking only the top-level code/
+// message missed that, so an ordinary cancel got reported as an error.
+function isUserCancelled(e: any): boolean {
+  for (let err = e, depth = 0; err && depth < 3; err = err.cause, depth++) {
+    if (err.code === 'user-cancelled' || err.code === 'E_USER_CANCELLED') return true;
+    if (typeof err.message === 'string' && /user cancell?ed/i.test(err.message)) return true;
+  }
+  return false;
+}
+
 // Cloud sync deliberately isn't listed here — it's not actually Pro-gated
 // (see _layout.tsx's sign-in effect and ProGateOverlay's always-allowed
 // /auth route: any signed-in account gets real-time sync regardless of Pro
@@ -84,7 +97,7 @@ export default function PaywallScreen() {
       }
     },
     onPurchaseError: (error) => {
-      if (error.code !== 'user-cancelled') {
+      if (!isUserCancelled(error)) {
         captureError(error, { stage: 'purchase-error', platform: Platform.OS, code: error.code ?? 'unknown' });
         Alert.alert('Purchase Error', error.message);
       }
@@ -465,7 +478,7 @@ export default function PaywallScreen() {
         },
       });
     } catch (e: any) {
-      if (e?.code !== 'user-cancelled' && e?.message !== 'User cancelled the operation') {
+      if (!isUserCancelled(e)) {
         captureError(e, { stage: 'request-purchase', platform: Platform.OS });
       }
     }
