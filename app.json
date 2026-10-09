@@ -2,7 +2,7 @@
   "expo": {
     "name": "MilBudgetBuddy",
     "slug": "MilBudgetBuddy",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "milbudgetbuddy",
@@ -11,7 +11,6 @@
       "icon": "./assets/images/icon.png",
       "bundleIdentifier": "com.nanito85.MilBudgetBuddy",
       "supportsTablet": false,
-      "deploymentTarget": "16.0",
       "infoPlist": {
         "NSUserNotificationsUsageDescription": "MilBudgetBuddy sends pay day reminders and daily finance tips to help you stay on top of your military finances.",
         "ITSAppUsesNonExemptEncryption": false,

@@ -37,6 +37,9 @@ jobs:
       - name: TypeScript check
         run: npx tsc --noEmit
 
+      - name: Calculation tests
+        run: npm test
+
   build-android:
     name: EAS Build — Android Preview
     runs-on: ubuntu-latest
