@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import {
   Animated,
   Dimensions,
@@ -113,22 +113,27 @@ interface TutorialModalProps {
   onDismiss: () => void;
 }
 
+// FlatList requires viewabilityConfig to never change identity.
+const VIEWABILITY_CONFIG = { viewAreaCoveragePercentThreshold: 60 };
+
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export function TutorialModal({ visible, onDismiss }: TutorialModalProps) {
   const tc = useThemeColors();
   const [activeIndex, setActiveIndex] = useState(0);
   const flatRef = useRef<FlatList>(null);
-  const fadeAnim = useRef(new Animated.Value(1)).current;
+  // useState initializers / useCallback rather than reading ref.current
+  // during render, which made React Compiler skip this component (it sits
+  // on Home, so it re-rendered with every Home update). Same stable identities.
+  const [fadeAnim] = useState(() => new Animated.Value(1));
 
   const isLast = activeIndex === SLIDES.length - 1;
 
-  const onViewRef = useRef(({ viewableItems }: { viewableItems: ViewToken[] }) => {
+  const onViewableItemsChanged = useCallback(({ viewableItems }: { viewableItems: ViewToken[] }) => {
     if (viewableItems.length > 0) {
       setActiveIndex(viewableItems[0].index ?? 0);
     }
-  });
-  const viewConfigRef = useRef({ viewAreaCoveragePercentThreshold: 60 });
+  }, []);
 
   const goNext = () => {
     if (isLast) {
@@ -172,8 +177,8 @@ export function TutorialModal({ visible, onDismiss }: TutorialModalProps) {
             pagingEnabled
             showsHorizontalScrollIndicator={false}
             keyExtractor={(s) => s.id}
-            onViewableItemsChanged={onViewRef.current}
-            viewabilityConfig={viewConfigRef.current}
+            onViewableItemsChanged={onViewableItemsChanged}
+            viewabilityConfig={VIEWABILITY_CONFIG}
             renderItem={({ item }) => (
               <View style={styles.slide}>
                 <ThemedText style={styles.slideIcon}>{item.icon}</ThemedText>

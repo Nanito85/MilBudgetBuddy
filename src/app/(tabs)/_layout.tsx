@@ -36,6 +36,9 @@ export default function TabLayout() {
           letterSpacing: 1,
         },
         headerShown: false,
+        // Tabs that aren't showing stop re-rendering until they're opened
+        // again — see the matching comment on the root Stack.
+        freezeOnBlur: true,
       }}>
       <Tabs.Screen
         name="index"

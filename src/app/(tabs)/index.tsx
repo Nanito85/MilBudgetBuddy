@@ -14,7 +14,8 @@ import { DashboardHeader } from '@/features/home/components/DashboardHeader';
 import { PayDayCountdown } from '@/features/home/components/PayDayCountdown';
 import { PaySummaryCard } from '@/features/home/components/PaySummaryCard';
 import { QuickActionsGrid } from '@/features/home/components/QuickActionsGrid';
-import { calcLES, fmtPay, getDrillPay } from '@/features/home/utils/lesCalc';
+import { useProfileLES } from '@/features/home/hooks/useProfileLES';
+import { fmtPay, getDrillPay } from '@/features/home/utils/lesCalc';
 import { monthlyCompensation } from '@/features/va/utils/vaDisabilityCalc';
 import { TipCard } from '@/features/daily-tip/components/TipCard';
 import { useWeeklyTip } from '@/features/daily-tip/hooks/useWeeklyTip';
@@ -122,35 +123,20 @@ export default function DashboardScreen() {
   const lastName = useUserStore((s) => s.lastName);
   const nickname = useUserStore((s) => s.nickname);
   const greetingStyle = useUserStore((s) => s.greetingStyle);
-  const specialPays = useUserStore((s) => s.specialPays);
   const yos = useUserStore((s) => s.yos);
   const mhaZip = useUserStore((s) => s.mhaZip);
   const dutyStationId = useUserStore((s) => s.dutyStationId);
   const hasSpouse = useUserStore((s) => s.hasSpouse);
-  const housingStatus = useUserStore((s) => s.housingStatus);
   const tspContribPct = useUserStore((s) => s.tspContribPct);
-  const rothTspPct    = useUserStore((s) => s.rothTspPct);
-  const hasDentalFamily = useUserStore((s) => s.hasDentalFamily);
-  const sglOptOut = useUserStore((s) => s.sglOptOut);
   const stateResidence = useUserStore((s) => s.stateResidence);
-  const sbpEnabled = useUserStore((s) => s.sbpEnabled);
-  const sbpCoveragePct = useUserStore((s) => s.sbpCoveragePct);
-  const lesOverrides = useUserStore((s) => s.lesOverrides);
   const installationName = useUserStore((s) => s.installationName);
   const serviceStatus    = useUserStore((s) => s.serviceStatus);
   const numChildren      = useUserStore((s) => s.numChildren);
   const drillsPerMonth   = useUserStore((s) => s.drillsPerMonth);
   const vaDisabilityPercent = useUserStore((s) => s.vaDisabilityPercent);
   const financialGoal = useUserStore((s) => s.financialGoal);
-  const familySeparated  = useUserStore((s) => s.familySeparated);
-  const dependentsMhaZip = useUserStore((s) => s.dependentsMhaZip);
-  const isDeployed = useUserStore((s) => s.isDeployed);
-  const deploymentLocationId = useUserStore((s) => s.deploymentLocationId);
-  const alsoGsCivilian   = useUserStore((s) => s.alsoGsCivilian);
-  const gsGrade          = useUserStore((s) => s.gsGrade);
-  const gsStep           = useUserStore((s) => s.gsStep);
-  const gsLocalityKey    = useUserStore((s) => s.gsLocalityKey);
   const tip = useWeeklyTip(financialGoal);
+  const breakdown = useProfileLES();
 
   const debtEntries   = useDebtStore((s) => s.debts);
   const debtExtraMonthly = useDebtStore((s) => s.extraMonthly);
@@ -192,11 +178,6 @@ export default function DashboardScreen() {
     }
   }, [disclaimerAcknowledged, hasSeenTutorial]);
 
-  const specialPaysTotal = useMemo(
-    () => specialPays.reduce((sum, p) => sum + p.monthlyAmount, 0),
-    [specialPays],
-  );
-
   const budgetCategories = useBudgetStore((s) => s.categories);
   const budgetTop3 = useMemo(
     () =>
@@ -210,17 +191,6 @@ export default function DashboardScreen() {
     () => budgetCategories.reduce((sum, c) => sum + c.monthlyBudget, 0),
     [budgetCategories],
   );
-
-  const breakdown = useMemo(() => {
-    if (!payGrade) return null;
-    return calcLES({
-      payGrade, yos, mhaZip, dutyStationId, hasSpouse, numChildren, housingStatus, specialPaysTotal,
-      tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence,
-      overrides: lesOverrides, serviceStatus,
-      familySeparated, dependentsMhaZip, alsoGsCivilian, gsGrade, gsStep, gsLocalityKey,
-      isDeployed, deploymentLocationId, sbpEnabled, sbpCoveragePct,
-    });
-  }, [payGrade, yos, mhaZip, dutyStationId, hasSpouse, numChildren, housingStatus, specialPaysTotal, tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence, lesOverrides, serviceStatus, familySeparated, dependentsMhaZip, alsoGsCivilian, gsGrade, gsStep, gsLocalityKey, isDeployed, deploymentLocationId, sbpEnabled, sbpCoveragePct]);
 
   // ── Mission Readiness Score (0-100) ─────────────────────────────────────────
   // Retired pay isn't TSP-eligible (see lesCalc.ts) — the TSP checks below

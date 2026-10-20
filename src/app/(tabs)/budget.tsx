@@ -15,7 +15,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Brand, Spacing } from '@/constants/theme';
-import { calcLES, fmtPay } from '@/features/home/utils/lesCalc';
+import { useProfileLES } from '@/features/home/hooks/useProfileLES';
+import { fmtPay } from '@/features/home/utils/lesCalc';
 import { useThemeColors } from '@/hooks/use-theme';
 import {
   BudgetCategory,
@@ -33,7 +34,6 @@ import {
   SavingsGoal,
   useSavingsGoalsStore,
 } from '@/store/savings-goals.store';
-import { useUserStore } from '@/store/user.store';
 
 // ── Military savings tips ──────────────────────────────────────────────────────
 
@@ -906,71 +906,27 @@ export default function BudgetScreen() {
   const totalSpent = useExpensesStore((s) => s.totalSpent)(mk);
   const allExpenses = useExpensesStore((s) => s.expenses).filter((e) => e.date.startsWith(mk));
 
-  const payGrade = useUserStore((s) => s.payGrade);
-  const yos = useUserStore((s) => s.yos);
-  const mhaZip = useUserStore((s) => s.mhaZip);
-  const dutyStationId = useUserStore((s) => s.dutyStationId);
-  const hasSpouse = useUserStore((s) => s.hasSpouse);
-  const numChildren = useUserStore((s) => s.numChildren);
-  const housingStatus = useUserStore((s) => s.housingStatus);
-  const specialPays = useUserStore((s) => s.specialPays);
-  const tspContribPct = useUserStore((s) => s.tspContribPct);
-  const rothTspPct    = useUserStore((s) => s.rothTspPct);
-  const hasDentalFamily = useUserStore((s) => s.hasDentalFamily);
-  const sglOptOut = useUserStore((s) => s.sglOptOut);
-  const serviceStatus = useUserStore((s) => s.serviceStatus);
-  const familySeparated  = useUserStore((s) => s.familySeparated);
-  const dependentsMhaZip = useUserStore((s) => s.dependentsMhaZip);
-  const isDeployed = useUserStore((s) => s.isDeployed);
-  const deploymentLocationId = useUserStore((s) => s.deploymentLocationId);
-  const alsoGsCivilian   = useUserStore((s) => s.alsoGsCivilian);
-  const gsGrade          = useUserStore((s) => s.gsGrade);
-  const gsStep           = useUserStore((s) => s.gsStep);
-  const gsLocalityKey    = useUserStore((s) => s.gsLocalityKey);
-  const stateResidence = useUserStore((s) => s.stateResidence);
-  const lesOverrides = useUserStore((s) => s.lesOverrides);
-
   useEffect(() => {
     useBudgetStore.getState().hydrate();
     useExpensesStore.getState().hydrate();
     useSavingsGoalsStore.getState().hydrate();
   }, []);
 
-  // Was missing `overrides` and `stateResidence` — both of which the
-  // identical calcLES call on Home (index.tsx) already includes. Without
-  // them, Budget's net pay silently ignored any manual LES corrections the
-  // member entered in Profile > Pay (an actual-vs-estimated BAH/BAS/base pay
-  // fix), and never subtracted state income tax at all — a real, sometimes
-  // large discrepancy from what Home shows for the exact same person.
-  const netPay = React.useMemo(() => {
-    if (!payGrade) return 0;
-    const specialPaysTotal = specialPays.reduce((s: number, p: any) => s + p.monthlyAmount, 0);
-    return calcLES({
-      payGrade,
-      yos,
-      mhaZip,
-      dutyStationId,
-      hasSpouse,
-      numChildren,
-      housingStatus,
-      specialPaysTotal,
-      tspContribPct,
-      rothTspPct,
-      hasDentalFamily,
-      sglOptOut,
-      stateResidence,
-      overrides: lesOverrides,
-      serviceStatus,
-      familySeparated, dependentsMhaZip, alsoGsCivilian, gsGrade, gsStep, gsLocalityKey,
-      isDeployed, deploymentLocationId,
-    }).netPay;
-  }, [payGrade, yos, mhaZip, dutyStationId, hasSpouse, numChildren, housingStatus, specialPays, tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence, lesOverrides, serviceStatus, familySeparated, dependentsMhaZip, alsoGsCivilian, gsGrade, gsStep, gsLocalityKey, isDeployed, deploymentLocationId]);
+  // Same shared engine + inputs as Home (see useProfileLES), so Budget's
+  // net pay can't drift from Home's again. It already had once (missing LES
+  // overrides and state tax), and later missed SBP, which left a retiree
+  // with SBP seeing a higher take-home here than on Home.
+  const netPay = useProfileLES()?.netPay ?? 0;
 
   const remaining = netPay - totalBudgeted;
   const overBudget = remaining < 0;
 
   // ── Budget Health Score ──────────────────────────────────────────────────────
-  const budgetHealthScore = React.useMemo(() => {
+  // No manual useMemo here or on groupedCategories/catMap below: React
+  // Compiler memoizes these itself, and the hand-written useMemos were what
+  // made it give up on this whole screen ("existing memoization could not be
+  // preserved"), so nothing on the Budget tab was being auto-memoized.
+  const budgetHealthScore = (() => {
     if (!netPay) return null;
     let score = 0;
     const setCats = categories.filter((c) => c.monthlyBudget > 0).length;
@@ -981,7 +937,7 @@ export default function BudgetScreen() {
       c.name.toLowerCase().includes('sav') || c.id === 'savings_goal');
     if (savingsCat && savingsCat.monthlyBudget > 0) score += 25; // savings allocated
     return score;
-  }, [categories, netPay, totalBudgeted, overBudget, totalSpent]);
+  })();
 
   const healthLabel = budgetHealthScore === null ? null
     : budgetHealthScore >= 75 ? { text: 'EXCELLENT', color: '#00B27A' }
@@ -998,18 +954,13 @@ export default function BudgetScreen() {
     addCategory(name, emoji, CUSTOM_PREFIX, 'other');
   };
 
-  const groupedCategories = React.useMemo(() => {
-    return GROUP_ORDER.map((group) => ({
-      group,
-      cats: categories.filter((c) => c.group === group),
-    })).filter((g) => g.cats.length > 0);
-  }, [categories]);
+  const groupedCategories = GROUP_ORDER.map((group) => ({
+    group,
+    cats: categories.filter((c) => c.group === group),
+  })).filter((g) => g.cats.length > 0);
 
-  const catMap = React.useMemo(() => {
-    const m: Record<string, BudgetCategory> = {};
-    for (const c of categories) m[c.id] = c;
-    return m;
-  }, [categories]);
+  const catMap: Record<string, BudgetCategory> = {};
+  for (const c of categories) catMap[c.id] = c;
 
   const monthLabel = new Date(mk + '-01').toLocaleDateString('en-US', {
     month: 'long',

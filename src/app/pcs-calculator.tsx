@@ -144,7 +144,14 @@ export default function PCSCalculatorScreen() {
   const insets = useSafeAreaInsets();
   const tc = useThemeColors();
 
-  const { payGrade: profileGrade, hasSpouse: profileHasSpouse, numChildren: profileNumChildren, mhaZip: profileZip, yos: profileYos, hydrated } = useUserStore();
+  // Individual selectors, not a bare useUserStore() — that re-rendered this
+  // whole screen on ANY profile change, not just these six fields.
+  const profileGrade       = useUserStore((s) => s.payGrade);
+  const profileHasSpouse   = useUserStore((s) => s.hasSpouse);
+  const profileNumChildren = useUserStore((s) => s.numChildren);
+  const profileZip         = useUserStore((s) => s.mhaZip);
+  const profileYos         = useUserStore((s) => s.yos);
+  const hydrated           = useUserStore((s) => s.hydrated);
   // DLA/BAH "with dependents" applies to any dependent, not just a spouse —
   // a single parent's default here used to come from profileHasSpouse alone,
   // defaulting them (wrongly) to the no-dependents rate even though the
@@ -157,6 +164,11 @@ export default function PCSCalculatorScreen() {
   const [withDep, setWithDep] = useState(profileGrade ? profileHasDependents : true);
   const [profileApplied, setProfileApplied] = useState(false);
 
+  // Declared before the effect below that sets them — declaring them after
+  // worked at runtime but made React Compiler skip this whole screen.
+  const [currentStation, setCurrentStation] = useState<Installation | null>(null);
+  const [gainingStation, setGainingStation] = useState<Installation | null>(null);
+
   useEffect(() => {
     if (hydrated && !profileApplied) {
       if (profileGrade) setGrade(profileGrade);
@@ -166,9 +178,6 @@ export default function PCSCalculatorScreen() {
       setProfileApplied(true);
     }
   }, [hydrated]);
-
-  const [currentStation, setCurrentStation] = useState<Installation | null>(null);
-  const [gainingStation, setGainingStation] = useState<Installation | null>(null);
 
   // PCS details
   const [isDriving,       setIsDriving]        = useState(true);

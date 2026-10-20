@@ -27,6 +27,20 @@ import { startAnalytics, stopAnalytics, trackEvent, trackScreen } from '@/servic
 // Init Sentry at module load time — before any component renders
 initSentry();
 
+// Track every screen/tool navigation — powers the admin "Tool Usage" chart.
+// Fires on the actual route (e.g. "/bah-guide", "/(tabs)/budget"), not the
+// label shown in the UI, so it stays accurate as screens are added/renamed.
+// Its own component so the pathname subscription only re-renders this,
+// not RootLayout: reading usePathname() in RootLayout itself re-rendered the
+// whole app shell (Stack, overlays, banners) on every single navigation.
+function ScreenTracker() {
+  const pathname = usePathname();
+  useEffect(() => {
+    if (pathname) trackScreen(pathname);
+  }, [pathname]);
+  return null;
+}
+
 export default function RootLayout() {
   const appTheme = useAppTheme();
   const hydrated = useUserStore((s) => s.hydrated);
@@ -34,17 +48,14 @@ export default function RootLayout() {
   const notificationsEnabled = useUserStore((s) => s.notificationsEnabled);
   const serviceStatus = useUserStore((s) => s.serviceStatus);
   const kidModeActive = useKidModeStore((s) => s.active);
-  const { user, initialized, init: initAuth } = useAuthStore();
-  const pathname = usePathname();
+  // Individual selectors, not a bare useAuthStore() — that subscribed to the
+  // whole store, so every loading/error toggle during sign-in/sign-up also
+  // re-rendered the entire app shell.
+  const user = useAuthStore((s) => s.user);
+  const initialized = useAuthStore((s) => s.initialized);
+  const initAuth = useAuthStore((s) => s.init);
 
   useEntitlementRefresh();
-
-  // Track every screen/tool navigation — powers the admin "Tool Usage" chart.
-  // Fires on the actual route (e.g. "/bah-guide", "/(tabs)/budget"), not the
-  // label shown in the UI, so it stays accurate as screens are added/renamed.
-  useEffect(() => {
-    if (pathname) trackScreen(pathname);
-  }, [pathname]);
 
   // Hydrate local stores on mount + initialize Firebase auth listener
   useEffect(() => {
@@ -128,8 +139,13 @@ export default function RootLayout() {
     <ThemeProvider value={appTheme === 'light' ? DefaultTheme : DarkTheme}>
       <AnimatedSplashOverlay />
       <DisclaimerModal />
+      <ScreenTracker />
+      {/* freezeOnBlur: a screen covered by another one (e.g. the whole tab
+          group while a calculator is open) stops re-rendering until it's
+          visible again, instead of recomputing on every store change —
+          cloud sync, profile edits, etc. — while nobody can see it. */}
       <ProGateOverlay>
-      <Stack screenOptions={{ headerShown: false }}>
+      <Stack screenOptions={{ headerShown: false, freezeOnBlur: true }}>
         {/* ── Tab group (Home/Budget/Kids/Tools/Settings) — the only screen
             with a bottom tab bar. Everything below is pushed on top of it,
             so router.back() returns to whatever screen actually launched it

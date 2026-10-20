@@ -8,6 +8,7 @@ import { ThemedView } from '@/components/themed-view';
 import { Brand, Fonts, Spacing } from '@/constants/theme';
 import { PayGrade } from '@/data/bah-rates';
 import { getBasicPay } from '@/data/basic-pay-rates';
+import { useProfileLESInputs } from '@/features/home/hooks/useProfileLES';
 import { calcLES } from '@/features/home/utils/lesCalc';
 import { useThemeColors } from '@/hooks/use-theme';
 import { useUserStore } from '@/store/user.store';
@@ -53,27 +54,7 @@ export default function CarLoanScreen() {
 
   const storeGrade      = useUserStore((s) => s.payGrade);
   const storeYos        = useUserStore((s) => s.yos);
-  const mhaZip           = useUserStore((s) => s.mhaZip);
-  const dutyStationId    = useUserStore((s) => s.dutyStationId);
-  const hasSpouse        = useUserStore((s) => s.hasSpouse);
-  const numChildren      = useUserStore((s) => s.numChildren);
-  const housingStatus    = useUserStore((s) => s.housingStatus);
-  const specialPays      = useUserStore((s) => s.specialPays);
-  const tspContribPct    = useUserStore((s) => s.tspContribPct);
-  const rothTspPct       = useUserStore((s) => s.rothTspPct);
-  const hasDentalFamily  = useUserStore((s) => s.hasDentalFamily);
-  const sglOptOut        = useUserStore((s) => s.sglOptOut);
-  const stateResidence   = useUserStore((s) => s.stateResidence);
-  const lesOverrides     = useUserStore((s) => s.lesOverrides);
-  const serviceStatus    = useUserStore((s) => s.serviceStatus);
-  const familySeparated  = useUserStore((s) => s.familySeparated);
-  const dependentsMhaZip = useUserStore((s) => s.dependentsMhaZip);
-  const isDeployed = useUserStore((s) => s.isDeployed);
-  const deploymentLocationId = useUserStore((s) => s.deploymentLocationId);
-  const alsoGsCivilian   = useUserStore((s) => s.alsoGsCivilian);
-  const gsGrade          = useUserStore((s) => s.gsGrade);
-  const gsStep           = useUserStore((s) => s.gsStep);
-  const gsLocalityKey    = useUserStore((s) => s.gsLocalityKey);
+  const profileInputs    = useProfileLESInputs();
 
   const [grade, setGrade]       = useState<PayGrade>(storeGrade ?? 'E4');
   const [price, setPrice]       = useState(20000);
@@ -81,11 +62,6 @@ export default function CarLoanScreen() {
   const [apr, setApr]           = useState(8.9);
   const [aprInput, setAprInput] = useState('8.9');
   const [term, setTerm]         = useState(60);
-
-  const specialPaysTotal = useMemo(
-    () => specialPays.reduce((sum, p) => sum + p.monthlyAmount, 0),
-    [specialPays],
-  );
 
   // Use the same net-pay engine as Home/Pay Chart/Budget instead of a rough
   // guess, so "take-home" here means the same thing it means everywhere else
@@ -96,16 +72,12 @@ export default function CarLoanScreen() {
   const breakdown = useMemo(
     () =>
       calcLES({
+        ...profileInputs,
         payGrade: grade,
         yos: storeYos ?? 4,
-        mhaZip, dutyStationId, hasSpouse, numChildren, housingStatus, specialPaysTotal,
-        tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence,
-        overrides: grade === storeGrade ? lesOverrides : undefined,
-        serviceStatus,
-        familySeparated, dependentsMhaZip, alsoGsCivilian, gsGrade, gsStep, gsLocalityKey,
-        isDeployed, deploymentLocationId,
+        overrides: grade === storeGrade ? profileInputs.overrides : undefined,
       }),
-    [grade, storeYos, mhaZip, dutyStationId, hasSpouse, numChildren, housingStatus, specialPaysTotal, tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence, lesOverrides, storeGrade, serviceStatus, familySeparated, dependentsMhaZip, alsoGsCivilian, gsGrade, gsStep, gsLocalityKey, isDeployed, deploymentLocationId],
+    [profileInputs, grade, storeYos, storeGrade],
   );
   const takeHome   = Math.round(breakdown.netPay);
   const principal  = Math.max(0, price - downPmt);

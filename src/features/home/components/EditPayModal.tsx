@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
   Alert,
   Keyboard,
@@ -17,7 +17,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ThemedText } from '@/components/themed-text';
 import { Brand, Fonts, Spacing } from '@/constants/theme';
 import { DEPLOYMENT_LOCATIONS, DeploymentLocation, getDeploymentLocation } from '@/data/deployment-locations';
-import { calcLES, dentalFamilyRate, fmtPay } from '@/features/home/utils/lesCalc';
+import { useProfileLES } from '@/features/home/hooks/useProfileLES';
+import { dentalFamilyRate, fmtPay } from '@/features/home/utils/lesCalc';
 import { NumberStepper } from '@/features/retirement/components/NumberStepper';
 import { useThemeColors } from '@/hooks/use-theme';
 import { useUserStore } from '@/store/user.store';
@@ -221,23 +222,15 @@ export function EditPayModal({ visible, onClose }: { visible: boolean; onClose: 
   // fields AND show a full read-only summary of everything already on the
   // pay screen — matching what the user sees on Home before they edit it.
   const payGrade         = useUserStore((s) => s.payGrade);
-  const yos              = useUserStore((s) => s.yos);
-  const mhaZip           = useUserStore((s) => s.mhaZip);
-  const dutyStationId    = useUserStore((s) => s.dutyStationId);
-  const hasSpouse        = useUserStore((s) => s.hasSpouse);
-  const numChildren      = useUserStore((s) => s.numChildren);
-  const housingStatus    = useUserStore((s) => s.housingStatus);
-  const stateResidence   = useUserStore((s) => s.stateResidence);
   const serviceStatus    = useUserStore((s) => s.serviceStatus);
-  const familySeparated  = useUserStore((s) => s.familySeparated);
-  const dependentsMhaZip = useUserStore((s) => s.dependentsMhaZip);
   const isDeployed = useUserStore((s) => s.isDeployed);
   const deploymentLocationId = useUserStore((s) => s.deploymentLocationId);
   const setDeploymentStatus = useUserStore((s) => s.setDeploymentStatus);
   const alsoGsCivilian   = useUserStore((s) => s.alsoGsCivilian);
-  const storedGsGradeLES = useUserStore((s) => s.gsGrade);
-  const storedGsStepLES  = useUserStore((s) => s.gsStep);
-  const gsLocalityKey    = useUserStore((s) => s.gsLocalityKey);
+  // Same shared engine + inputs as Home (see useProfileLES) — this modal
+  // previously built its own copy and, like four other screens, never
+  // passed SBP, so a retiree's NET PAY here didn't match Home's.
+  const calculated = useProfileLES();
 
   // Retired pay is a pension, not earned wages — it isn't TSP-eligible (you
   // can't contribute a portion of a pension disbursement to TSP, only actual
@@ -247,16 +240,6 @@ export function EditPayModal({ visible, onClose }: { visible: boolean; onClose: 
   const isRetired = serviceStatus === 'retired';
   const isCivilianOnly = serviceStatus === 'civilian';
 
-  const specialPaysTotal = specialPays.reduce((s, p) => s + p.monthlyAmount, 0);
-  const calculated = payGrade
-    ? calcLES({
-        payGrade, yos, mhaZip, dutyStationId, hasSpouse, numChildren, housingStatus, specialPaysTotal,
-        tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence, serviceStatus,
-        familySeparated, dependentsMhaZip, alsoGsCivilian, gsGrade: storedGsGradeLES, gsStep: storedGsStepLES, gsLocalityKey,
-        isDeployed, deploymentLocationId,
-        overrides: lesOverrides,
-      })
-    : null;
 
   const [tsp, setTsp]         = useState(tspContribPct);
   const [rothTsp, setRothTsp] = useState(rothTspPct);
@@ -299,22 +282,28 @@ export function EditPayModal({ visible, onClose }: { visible: boolean; onClose: 
   // without this, fields only ever reflect what the store held when this
   // component first mounted, so pay data set later (onboarding, cloud sync,
   // a rank/duty-station change made elsewhere) never shows.
-  useEffect(() => {
-    if (!visible) return;
-    setTsp(tspContribPct);
-    setRothTsp(rothTspPct);
-    setDental(hasDentalFamily);
-    setSgl(sglOptOut);
-    setSpouseAmt(spouseIncome > 0 ? spouseIncome.toString() : '');
-    setBasePayStr(lesOverrides.basePayOverride ? lesOverrides.basePayOverride.toString() : calculated ? String(Math.round(calculated.basePay)) : '');
-    setBahStr(lesOverrides.bahOverride ? lesOverrides.bahOverride.toString() : calculated ? String(Math.round(calculated.bah)) : '');
-    setBasStr(lesOverrides.basOverride ? lesOverrides.basOverride.toString() : calculated ? String(Math.round(calculated.bas)) : '');
-    setExtraIncome(lesOverrides.extraIncome);
-    setExtraDeductions(lesOverrides.extraDeductions);
-    setDeployed(!!isDeployed);
-    setLocationId(deploymentLocationId ?? '');
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [visible]);
+  // Done during render on the closed->open transition (React's documented
+  // "adjust state when a prop changes" pattern) rather than in an effect
+  // keyed only on `visible` — that effect needed an exhaustive-deps
+  // eslint-disable, which made React Compiler skip this whole component.
+  const [wasVisible, setWasVisible] = useState(false);
+  if (visible !== wasVisible) {
+    setWasVisible(visible);
+    if (visible) {
+      setTsp(tspContribPct);
+      setRothTsp(rothTspPct);
+      setDental(hasDentalFamily);
+      setSgl(sglOptOut);
+      setSpouseAmt(spouseIncome > 0 ? spouseIncome.toString() : '');
+      setBasePayStr(lesOverrides.basePayOverride ? lesOverrides.basePayOverride.toString() : calculated ? String(Math.round(calculated.basePay)) : '');
+      setBahStr(lesOverrides.bahOverride ? lesOverrides.bahOverride.toString() : calculated ? String(Math.round(calculated.bah)) : '');
+      setBasStr(lesOverrides.basOverride ? lesOverrides.basOverride.toString() : calculated ? String(Math.round(calculated.bas)) : '');
+      setExtraIncome(lesOverrides.extraIncome);
+      setExtraDeductions(lesOverrides.extraDeductions);
+      setDeployed(!!isDeployed);
+      setLocationId(deploymentLocationId ?? '');
+    }
+  }
 
   function parseAmount(raw: string): number {
     return parseFloat(raw.replace(',', '.').trim());
