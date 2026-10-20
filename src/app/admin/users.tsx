@@ -29,6 +29,14 @@ interface LastResult {
   proExpiresAt?: string;
 }
 
+interface SubscriberSummary {
+  paying: { android: number; ios: number; total: number };
+  comped: number;
+  expiredStillMarkedPro: number;
+  markedPro: number;
+  truncated: boolean;
+}
+
 interface EntitlementRow {
   uid: string;
   email: string | null;
@@ -115,7 +123,14 @@ export default function AdminUsersScreen() {
     }
   };
 
-  useEffect(() => { fetchRows(); }, []);
+  // Paying vs. comped counts (see the backend route for exactly what each
+  // number means). Failure just hides the card — the list below still works.
+  const [summary, setSummary] = useState<SubscriberSummary | null>(null);
+  const fetchSummary = async () => {
+    try { setSummary(await request('/api/admin/subscriber-summary')); } catch { setSummary(null); }
+  };
+
+  useEffect(() => { fetchRows(); fetchSummary(); }, []);
 
   const handleGrant = async () => {
     const trimmed = email.trim();
@@ -208,6 +223,22 @@ export default function AdminUsersScreen() {
             there's no in-app way for a member to redeem one, so use this screen instead to actually comp someone.)
           </ThemedText>
         </View>
+
+        {summary && (
+          <View style={[s.card, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
+            <ThemedText style={[s.cardTitle, { color: tc.tactical }]}>{'// SUBSCRIBERS RIGHT NOW'}</ThemedText>
+            <ThemedText style={[s.noticeText, { color: tc.textPrimary }]}>
+              {summary.paying.total} paying ({summary.paying.android} Android · {summary.paying.ios} iOS)
+            </ThemedText>
+            <ThemedText style={[s.noticeText, { color: tc.textSecondary }]}>
+              {summary.comped} comped by an admin · {summary.expiredStillMarkedPro} ended or expired
+            </ThemedText>
+            <ThemedText style={[s.hint, { color: tc.textMuted }]}>
+              Counts active store purchases only. Free trials count as paying until they lapse. Members who
+              redeemed a promo code aren&apos;t included.{summary.truncated ? ' List was capped at 5,000.' : ''}
+            </ThemedText>
+          </View>
+        )}
 
         <View style={[s.card, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
           <ThemedText style={[s.cardTitle, { color: tc.tactical }]}>// MEMBER EMAIL</ThemedText>
