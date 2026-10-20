@@ -22,8 +22,13 @@ service cloud.firestore {
         allow delete: if request.auth != null && request.auth.uid == uid;
       }
 
-      match /{document=**} {
-        allow read, write: if request.auth != null && request.auth.uid == uid;
+      // All other synced docs (users/{uid}/data/*). Deliberately NOT a
+      // recursive {document=**} wildcard: Firestore ORs every matching rule,
+      // so a wildcard here would re-allow writes to data/profile and defeat
+      // the proExpiresAt/proSource protection above.
+      match /data/{docId} {
+        allow read, write: if request.auth != null && request.auth.uid == uid
+          && docId != 'profile';
       }
     }
 
