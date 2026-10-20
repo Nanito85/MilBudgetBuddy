@@ -12,6 +12,7 @@ import {
 } from 'firebase/auth';
 import { create } from 'zustand';
 
+import { trackSignup } from '@/services/analytics';
 import { auth } from '@/services/firebase';
 import { deleteCloudData } from '@/services/firestore-sync';
 
@@ -80,6 +81,8 @@ export const useAuthStore = create<AuthState>((set) => ({
       } else {
         await createUserWithEmailAndPassword(auth, email, password);
       }
+      // Reached only on success (both calls above throw on failure).
+      trackSignup();
     } catch (e: any) {
       set({ error: friendlyError(e.code) });
     } finally {

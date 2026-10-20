@@ -29,6 +29,7 @@ interface AccountRow {
   lastSignIn?: string;
   disabled: boolean;
   lastKnownPlatform: string | null;
+  signupPlatform?: string | null;
 }
 
 async function request(path: string) {
@@ -191,6 +192,7 @@ export default function AdminAccountsScreen() {
             </View>
             <ThemedText style={[s.rowMeta, { color: tc.textSecondary }]}>
               Joined {row.createdAt ? new Date(row.createdAt).toLocaleDateString() : 'unknown'}
+              {row.signupPlatform ? ` on ${platformLabel(row.signupPlatform)}` : ''}
               {row.lastSignIn ? ` · last seen ${new Date(row.lastSignIn).toLocaleDateString()}` : ''}
             </ThemedText>
           </View>
