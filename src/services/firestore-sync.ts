@@ -157,7 +157,18 @@ export function startSync(uid: string) {
 
   for (const { key, apply } of collections) {
     const unsub = onSnapshot(userDoc(uid, key), (snap) => {
-      if (snap.exists()) applyRemote(key, () => apply(snap.data()));
+      if (!snap.exists()) return;
+      // Firestore fires this listener for our own local writes too, with
+      // hasPendingWrites set. Re-applying that echo replaced the whole store
+      // with a freshly parsed copy of data we'd just written -- a second full
+      // re-render of every screen reading it (Kids, Profile) after every
+      // edit, for no new information.
+      if (snap.metadata.hasPendingWrites) return;
+      // A local edit is still waiting out its push debounce: applying the
+      // older cloud copy now would silently revert that edit, and the push
+      // that follows would then upload the reverted state.
+      if (pushTimers.has(key)) return;
+      applyRemote(key, () => apply(snap.data()));
     });
     listeners.push(unsub);
   }
@@ -170,6 +181,8 @@ export function stopSync() {
   listeners.length = 0;
   pushUnsubs.forEach((u) => u());
   pushUnsubs.length = 0;
+  pushTimers.forEach((t) => clearTimeout(t));
+  pushTimers.clear();
 }
 
 // Marks a collection as "currently being written from a remote snapshot" for
@@ -185,61 +198,78 @@ function applyRemote(key: string, apply: () => void) {
 
 // ── Auto-push (push local edits up in real time) ───────────────────────────────
 
+// Trailing debounce per collection. Each store change used to fire a full
+// Firestore setDoc immediately, so a burst of edits (e.g. Profile's Save,
+// which calls several setters back to back) meant a burst of identical
+// whole-document writes. syncCollection reads the latest store state when it
+// runs, so collapsing the burst into one write loses nothing.
+const PUSH_DEBOUNCE_MS = 1500;
+const pushTimers = new Map<string, ReturnType<typeof setTimeout>>();
+
+function schedulePush(uid: string, key: string) {
+  const pending = pushTimers.get(key);
+  if (pending) clearTimeout(pending);
+  pushTimers.set(key, setTimeout(() => {
+    pushTimers.delete(key);
+    syncCollection(uid, key);
+  }, PUSH_DEBOUNCE_MS));
+}
+
 function startAutoPush(uid: string) {
   const subs: Array<() => void> = [
     useBudgetStore.subscribe((state, prev) => {
       if (state.categories !== prev.categories && !applyingRemote.has('budget')) {
-        syncCollection(uid, 'budget');
+        schedulePush(uid, 'budget');
       }
     }),
     useDebtStore.subscribe((state, prev) => {
       if ((state.debts !== prev.debts || state.extraMonthly !== prev.extraMonthly) && !applyingRemote.has('debt')) {
-        syncCollection(uid, 'debt');
+        schedulePush(uid, 'debt');
       }
     }),
     useExpensesStore.subscribe((state, prev) => {
       if (state.expenses !== prev.expenses && !applyingRemote.has('expenses')) {
-        syncCollection(uid, 'expenses');
+        schedulePush(uid, 'expenses');
       }
     }),
     useKidsStore.subscribe((state, prev) => {
       if (state.kids !== prev.kids && !applyingRemote.has('kids')) {
-        syncCollection(uid, 'kids');
+        schedulePush(uid, 'kids');
       }
     }),
     useSavingsGoalsStore.subscribe((state, prev) => {
       if (state.goals !== prev.goals && !applyingRemote.has('goals')) {
-        syncCollection(uid, 'goals');
+        schedulePush(uid, 'goals');
       }
     }),
     useNetWorthStore.subscribe((state, prev) => {
       if (state.entries !== prev.entries && !applyingRemote.has('networth')) {
-        syncCollection(uid, 'networth');
+        schedulePush(uid, 'networth');
       }
     }),
     useNwSnapshotsStore.subscribe((state, prev) => {
       if (state.snapshots !== prev.snapshots && !applyingRemote.has('nwSnapshots')) {
-        syncCollection(uid, 'nwSnapshots');
+        schedulePush(uid, 'nwSnapshots');
       }
     }),
     useLifeEventsStore.subscribe((state, prev) => {
       if (state.events !== prev.events && !applyingRemote.has('lifeEvents')) {
-        syncCollection(uid, 'lifeEvents');
+        schedulePush(uid, 'lifeEvents');
       }
     }),
     useUserStore.subscribe((_state, _prev) => {
       if (!applyingRemote.has('profile')) {
-        syncCollection(uid, 'profile');
+        schedulePush(uid, 'profile');
       }
     }),
     useTipsStore.subscribe((state, prev) => {
       if (state.savedTipIds !== prev.savedTipIds && !applyingRemote.has('tips')) {
-        syncCollection(uid, 'tips');
+        schedulePush(uid, 'tips');
       }
     }),
     useVaClaimsStore.subscribe((state, prev) => {
       if (state.claims !== prev.claims && !applyingRemote.has('vaClaims')) {
-        syncCollection(uid, 'vaClaims');
+        schedulePush(uid, 'vaClaims');
       }
     }),
   ];

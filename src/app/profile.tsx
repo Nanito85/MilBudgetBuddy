@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Alert,
   Keyboard,
@@ -25,6 +25,15 @@ import { TIPS } from '@/data/tips';
 import { GradePicker } from '@/features/pcs/components/GradePicker';
 import { NumberStepper } from '@/features/retirement/components/NumberStepper';
 import { BranchSelector } from '@/features/profile/components/BranchSelector';
+import { editStyles } from '@/features/profile/components/editStyles';
+import {
+  FamilySeparationSection,
+  GsPaySelector,
+  HousingSection,
+  ReserveSection,
+  RetiredPaySection,
+  VaDisabilitySection,
+} from '@/features/profile/components/EditPersonalSections';
 import { StationPicker } from '@/features/pcs/components/StationPicker';
 import { useThemeColors } from '@/hooks/use-theme';
 import {
@@ -34,7 +43,7 @@ import {
   scheduleWeeklyTip,
   schedulePayDayReminders,
 } from '@/services/notifications';
-import { resetAllLocalData } from '@/services/reset-local-data';
+import { resetAllData } from '@/services/reset-local-data';
 import { AddKidModal } from '@/features/kids/components/AddKidModal';
 import { useKidsStore } from '@/store/kids.store';
 import { useTipsStore } from '@/store/tips.store';
@@ -43,28 +52,16 @@ import { KidProfile, PendingCompletion } from '@/types/kids.types';
 import { Installation, getInstallationById, getInstallationByZip } from '@/data/installations';
 import {
   BRANCH_LABELS,
-  GUARD_DUTY_STATUS_DESCRIPTIONS,
-  GUARD_DUTY_STATUS_FIELD_HINT,
-  GUARD_DUTY_STATUS_LABELS,
   GuardDutyStatus,
-  HOUSING_STATUS_DESCRIPTIONS,
-  HOUSING_STATUS_LABELS,
   HousingStatus,
   MilitaryBranch,
-  RESERVE_COMPONENT_LABELS,
   RankVariant,
   ReserveComponent,
   ServiceStatus,
   getRankAbbrev,
 } from '@/types/user.types';
-import { VALID_RATINGS, monthlyCompensation } from '@/features/va/utils/vaDisabilityCalc';
-import { getDrillPay, fmtPay, FSA_MONTHLY, retiredPayMultiplier } from '@/features/home/utils/lesCalc';
-import { getHigh3Average } from '@/data/basic-pay-rates';
-import { calcSbpPremium } from '@/features/retirement/utils/sbpCalc';
 import { EditPayModal } from '@/features/home/components/EditPayModal';
-import { GS_LOCALITIES } from '@/data/gs-pay-rates';
 
-const HOUSING_STATUS_ORDER: HousingStatus[] = ['off_base', 'barracks', 'on_base_family_housing'];
 import { PayGrade } from '@/data/bah-rates';
 import { getDualVariants } from '@/data/rank-insignia';
 
@@ -95,8 +92,6 @@ function yearsBetweenDates(startIso: string | undefined, endIso: string | undefi
   return Math.floor(ms / (365.25 * 24 * 3600 * 1000));
 }
 
-const VA_PICKER_OPTIONS = [0, ...VALID_RATINGS];
-
 const STATUS_CHOICES: { value: ServiceStatus; label: string; emoji: string }[] = [
   { value: 'active',   label: 'ACTIVE',   emoji: '🪖' },
   { value: 'reserve',  label: 'RESERVE',  emoji: '🎖️' },
@@ -118,7 +113,7 @@ function SectionLabel({ text, accentColor }: { text: string; accentColor?: strin
 
 // ── State Picker Modal ─────────────────────────────────────────────────────────
 
-function StatePickerModal({ visible, selected, onSelect, onClose, retired = false }: {
+const StatePickerModal = React.memo(function StatePickerModal({ visible, selected, onSelect, onClose, retired = false }: {
   visible: boolean;
   selected: string | undefined;
   onSelect: (code: string) => void;
@@ -132,11 +127,10 @@ function StatePickerModal({ visible, selected, onSelect, onClose, retired = fals
 }) {
   const tc = useThemeColors();
   const [query, setQuery] = useState('');
-  const filtered = US_STATES.filter(
-    (s) =>
-      s.name.toLowerCase().includes(query.toLowerCase()) ||
-      s.code.toLowerCase().includes(query.toLowerCase()),
-  );
+  const filtered = useMemo(() => {
+    const q = query.toLowerCase();
+    return US_STATES.filter((s) => s.name.toLowerCase().includes(q) || s.code.toLowerCase().includes(q));
+  }, [query]);
   return (
     <Modal visible={visible} animationType="slide" presentationStyle="pageSheet">
       <View style={[stateStyles.bg, { backgroundColor: tc.background }]}>
@@ -188,7 +182,7 @@ function StatePickerModal({ visible, selected, onSelect, onClose, retired = fals
       </View>
     </Modal>
   );
-}
+});
 
 const stateStyles = StyleSheet.create({
   bg: { flex: 1 },
@@ -310,17 +304,13 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
   const storedAlsoGsCivilian = useUserStore((s) => s.alsoGsCivilian);
   const storedFamilySeparated  = useUserStore((s) => s.familySeparated);
   const storedDependentsMhaZip = useUserStore((s) => s.dependentsMhaZip);
-  const setPersonalDetails = useUserStore((s) => s.setPersonalDetails);
-  const setGSInfo      = useUserStore((s) => s.setGSInfo);
-  const setBranch      = useUserStore((s) => s.setBranch);
-  const setServiceStatus = useUserStore((s) => s.setServiceStatus);
-  const setReserveInfo = useUserStore((s) => s.setReserveInfo);
-  const setRetiredInfo = useUserStore((s) => s.setRetiredInfo);
-  const setSbpInfo     = useUserStore((s) => s.setSbpInfo);
-  const setAlsoGsCivilian   = useUserStore((s) => s.setAlsoGsCivilian);
-  const setFamilySeparation = useUserStore((s) => s.setFamilySeparation);
-  const branch         = useUserStore((s) => s.branch);
+  const updateProfile  = useUserStore((s) => s.updateProfile);
+  const storedBranch   = useUserStore((s) => s.branch);
 
+  // Held locally and only committed on SAVE, like every other field here --
+  // writing straight to the store on tap persisted and cloud-synced the whole
+  // profile for each branch change, even if the user then hit CANCEL.
+  const [branch, setBranch] = useState<MilitaryBranch | undefined>(storedBranch);
   const [status, setStatus] = useState<ServiceStatus | undefined>(serviceStatus);
   const [drillsPerMonth, setDrillsPerMonth] = useState(storedDrills ?? 4);
   const [reserveComponent, setReserveComponentLocal] = useState<ReserveComponent>(storedReserveComponent ?? 'reserve');
@@ -385,6 +375,7 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
   // `visible`), so data saved later — e.g. during onboarding — would never show.
   useEffect(() => {
     if (!visible) return;
+    setBranch(storedBranch);
     setStatus(serviceStatus);
     setDrillsPerMonth(storedDrills ?? 4);
     setReserveComponentLocal(storedReserveComponent ?? 'reserve');
@@ -425,36 +416,39 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
 
   const save = () => {
     Keyboard.dismiss();
-    if (branch) setBranch(branch);
-    if (status) setServiceStatus(status);
-    if (isCivilian) {
-      setGSInfo(gsGrade, gsStep, ln, nn, enlistDate || undefined, gsLocality);
-    }
-    if (isReserve) {
-      setReserveInfo(drillsPerMonth, hasGuardOption ? reserveComponent : undefined, guardDutyStatus);
-    }
-    if (isRetired) {
+    // Everything is committed in one updateProfile() call (one store update,
+    // one AsyncStorage write) rather than one setter per section.
+    const reserveComp = hasGuardOption ? reserveComponent : undefined;
+    const resolvedGuardStatus = reserveComp === 'guard' ? guardDutyStatus : undefined;
+    updateProfile({
+      ...(branch ? { branch } : {}),
+      ...(status ? { serviceStatus: status } : {}),
+      ...(isCivilian ? { gsGrade, gsStep, gsLocalityKey: gsLocality } : {}),
+      ...(isReserve ? {
+        drillsPerMonth,
+        reserveComponent: reserveComp,
+        guardDutyStatus: resolvedGuardStatus,
+        guardDutyStatusUpdatedAt: resolvedGuardStatus ? new Date().toISOString() : undefined,
+      } : {}),
       // A retiree can ALSO currently be a GS civilian — retired pay, VA
       // disability, and a GS paycheck stack as three independent income
       // sources for the same person (see lesCalc.ts). Only meaningful here;
-      // the pure-civilian case already sets gsGrade/gsStep via setGSInfo above.
-      setAlsoGsCivilian(alsoGsCivilian, gsGrade, gsStep, gsLocality);
-    }
-    // VA disability rating applies regardless of service status — this used
-    // to only save when isRetired, so a non-retired member's rating was
-    // silently discarded on save even after the UI let them pick one.
-    setRetiredInfo(isRetired ? (retirementDate || undefined) : undefined, vaPercent);
-    // SBP is a retiree-only election — never persist it as "on" for someone
-    // who isn't retired (e.g. if they were retired earlier, un-set it, then
-    // switched status back before saving).
-    setSbpInfo(isRetired ? sbpEnabled : false, sbpCoveragePct);
-    if (!isRetired && !isCivilian) {
+      // the pure-civilian case already sets gsGrade/gsStep above.
+      ...(isRetired ? { alsoGsCivilian, gsGrade, gsStep, gsLocalityKey: gsLocality } : {}),
+      // VA disability rating applies regardless of service status — this used
+      // to only save when isRetired, so a non-retired member's rating was
+      // silently discarded on save even after the UI let them pick one.
+      retirementDate: isRetired ? (retirementDate || undefined) : undefined,
+      vaDisabilityPercent: vaPercent,
+      // SBP is a retiree-only election — never persist it as "on" for someone
+      // who isn't retired (e.g. if they were retired earlier, un-set it, then
+      // switched status back before saving).
+      sbpEnabled: isRetired ? sbpEnabled : false,
+      sbpCoveragePct,
       // Family separation (unaccompanied OCONUS tour, sea duty, etc.) only
       // applies to someone actually drawing active/reserve BAH — a retiree
       // or civilian has no BAH/OHA/FSA to split between two locations.
-      setFamilySeparation(familySeparated, dependentsStation?.mhaZip ?? '');
-    }
-    setPersonalDetails({
+      ...(!isRetired && !isCivilian ? { familySeparated, dependentsMhaZip: dependentsStation?.mhaZip ?? '' } : {}),
       payGrade: grade,
       lastName: ln,
       nickname: nn,
@@ -473,6 +467,7 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
     onClose();
   };
 
+  const closeStatePicker = useCallback(() => setShowStatePicker(false), []);
   const stateInfo = US_STATES.find((s) => s.code === state);
 
   return (
@@ -529,55 +524,7 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
             {/* GS Grade/Step — civilian only */}
             {isCivilian && (
               <>
-                <ThemedText style={[editStyles.fieldLabel, { color: tc.textHint }]}>GS GRADE</ThemedText>
-                <View style={editStyles.gsRow}>
-                  {Array.from({ length: 15 }, (_, i) => i + 1).map((g) => (
-                    <Pressable
-                      key={g}
-                      onPress={() => setGsGrade(g)}
-                      style={[editStyles.gsChip, { borderColor: tc.borderColor, backgroundColor: tc.surface }, gsGrade === g && editStyles.gsChipActive]}>
-                      <ThemedText style={[editStyles.gsChipText, { color: tc.textHint }, gsGrade === g && { color: tc.accent }]}>
-                        {g}
-                      </ThemedText>
-                    </Pressable>
-                  ))}
-                </View>
-
-                <ThemedText style={[editStyles.fieldLabel, { color: tc.textHint }]}>GS STEP</ThemedText>
-                <View style={editStyles.gsRow}>
-                  {Array.from({ length: 10 }, (_, i) => i + 1).map((s) => (
-                    <Pressable
-                      key={s}
-                      onPress={() => setGsStep(s)}
-                      style={[editStyles.gsChip, { borderColor: tc.borderColor, backgroundColor: tc.surface }, gsStep === s && editStyles.gsChipActive]}>
-                      <ThemedText style={[editStyles.gsChipText, { color: tc.textHint }, gsStep === s && { color: tc.accent }]}>
-                        {s}
-                      </ThemedText>
-                    </Pressable>
-                  ))}
-                </View>
-
-                <ThemedText style={[editStyles.fieldLabel, { color: tc.textHint }]}>GS LOCALITY PAY AREA</ThemedText>
-                <View style={{ gap: Spacing.one }}>
-                  {GS_LOCALITIES.map((loc) => (
-                    <Pressable
-                      key={loc.key}
-                      onPress={() => setGsLocality(loc.key)}
-                      style={[
-                        editStyles.inputWrap,
-                        { backgroundColor: inputBg, borderColor: gsLocality === loc.key ? Brand.accent : tc.borderColor, paddingVertical: Spacing.two },
-                      ]}>
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: Spacing.two }}>
-                        <ThemedText style={{ fontSize: 16, color: gsLocality === loc.key ? Brand.accent : tc.textHint }}>
-                          {gsLocality === loc.key ? '●' : '○'}
-                        </ThemedText>
-                        <ThemedText style={[editStyles.toggleLabel, { color: tc.textPrimary, fontSize: 14 }]}>
-                          {loc.label} ({(loc.rate * 100).toFixed(2)}%)
-                        </ThemedText>
-                      </View>
-                    </Pressable>
-                  ))}
-                </View>
+              <GsPaySelector gsGrade={gsGrade} gsStep={gsStep} gsLocality={gsLocality} onGradeChange={setGsGrade} onStepChange={setGsStep} onLocalityChange={setGsLocality} />
               </>
             )}
 
@@ -674,82 +621,7 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
             {/* Reserve/Guard — drills per month (drives drill pay) */}
             {isReserve && (
               <>
-                <ThemedText style={[editStyles.fieldLabel, { color: tc.textHint }]}>DRILLS PER MONTH</ThemedText>
-                <ThemedText style={[editStyles.fieldHint, { color: tc.textHint, marginTop: -Spacing.two }]}>
-                  One battle assembly weekend = 4 drills. Used to estimate your monthly drill pay.
-                </ThemedText>
-                <NumberStepper label="Drills" value={drillsPerMonth} min={0} max={20} onChange={setDrillsPerMonth} unit="drills" />
-                <ThemedText style={[editStyles.dateHint, { color: tc.tactical }]}>
-                  ↳ Est. drill pay: {fmtPay(getDrillPay(grade, y, drillsPerMonth))}/mo
-                </ThemedText>
-
-                {/* Guard vs Reserve — only Army/Air Force have a federal Guard */}
-                {hasGuardOption && (
-                  <>
-                    <ThemedText style={[editStyles.fieldLabel, { color: tc.textHint, marginTop: Spacing.two }]}>GUARD OR RESERVE?</ThemedText>
-                    <View style={{ flexDirection: 'row', gap: Spacing.one }}>
-                      {(['guard', 'reserve'] as const).map((c) => (
-                        <Pressable
-                          key={c}
-                          onPress={() => setReserveComponentLocal(c)}
-                          style={[
-                            editStyles.inputWrap,
-                            { backgroundColor: inputBg, borderColor: reserveComponent === c ? Brand.accent : tc.borderColor, flex: 1, alignItems: 'center', paddingVertical: Spacing.two },
-                          ]}>
-                          <ThemedText style={[editStyles.toggleLabel, { color: reserveComponent === c ? Brand.accent : tc.textPrimary, fontSize: 14 }]}>
-                            {RESERVE_COMPONENT_LABELS[c]}
-                          </ThemedText>
-                        </Pressable>
-                      ))}
-                    </View>
-                  </>
-                )}
-
-                {/* Guard duty status — drives TRICARE/SCRA/retirement-point
-                    eligibility differently (see app/reserves.tsx). This is
-                    what their status IS RIGHT NOW, not a permanent fact — a
-                    real Guard member's status genuinely changes month to
-                    month, so this is the one place in the app to come back
-                    and update it, with a visible "last updated" note so a
-                    months-old answer doesn't quietly look current. */}
-                {hasGuardOption && reserveComponent === 'guard' && (
-                  <>
-                    <ThemedText style={[editStyles.fieldLabel, { color: tc.textHint, marginTop: Spacing.two }]}>YOUR STATUS RIGHT NOW</ThemedText>
-                    <ThemedText style={[editStyles.fieldHint, { color: tc.textHint, marginTop: -Spacing.two }]}>
-                      {GUARD_DUTY_STATUS_FIELD_HINT} Affects your TRICARE, SCRA, and retirement-point eligibility.
-                    </ThemedText>
-                    {storedGuardDutyStatusUpdatedAt && (
-                      <ThemedText style={[editStyles.fieldHint, { color: tc.textHint, marginTop: -Spacing.two, fontStyle: 'italic' }]}>
-                        Last updated {new Date(storedGuardDutyStatusUpdatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} — update it below if that&apos;s no longer right.
-                      </ThemedText>
-                    )}
-                    <View style={{ gap: Spacing.one }}>
-                      {(['title32', 'title10', 'sad'] as const).map((s) => (
-                        <Pressable
-                          key={s}
-                          onPress={() => setGuardDutyStatusLocal(s)}
-                          style={[
-                            editStyles.inputWrap,
-                            { backgroundColor: inputBg, borderColor: guardDutyStatus === s ? Brand.accent : tc.borderColor, paddingVertical: Spacing.two },
-                          ]}>
-                          <View style={{ flexDirection: 'row', alignItems: 'center', gap: Spacing.two }}>
-                            <ThemedText style={{ fontSize: 16, color: guardDutyStatus === s ? Brand.accent : tc.textHint }}>
-                              {guardDutyStatus === s ? '●' : '○'}
-                            </ThemedText>
-                            <View style={{ flex: 1 }}>
-                              <ThemedText style={[editStyles.toggleLabel, { color: tc.textPrimary, fontSize: 14 }]}>
-                                {GUARD_DUTY_STATUS_LABELS[s]}
-                              </ThemedText>
-                              <ThemedText style={[editStyles.fieldHint, { color: tc.textHint, marginTop: 2 }]}>
-                                {GUARD_DUTY_STATUS_DESCRIPTIONS[s]}
-                              </ThemedText>
-                            </View>
-                          </View>
-                        </Pressable>
-                      ))}
-                    </View>
-                  </>
-                )}
+              <ReserveSection grade={grade} y={y} drillsPerMonth={drillsPerMonth} onDrillsChange={setDrillsPerMonth} hasGuardOption={hasGuardOption} reserveComponent={reserveComponent} onReserveComponentChange={setReserveComponentLocal} guardDutyStatus={guardDutyStatus} onGuardDutyStatusChange={setGuardDutyStatusLocal} storedGuardDutyStatusUpdatedAt={storedGuardDutyStatusUpdatedAt} />
               </>
             )}
 
@@ -775,125 +647,12 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
                 under isRetired, so anyone else had no way to enter one at all
                 and the Home screen's VA card silently never showed for them,
                 even though they may be owed real, separate compensation. */}
-            <ThemedText style={[editStyles.fieldLabel, { color: tc.textHint }]}>VA DISABILITY RATING (IF ANY)</ThemedText>
-            <ThemedText style={[editStyles.fieldHint, { color: tc.textHint, marginTop: -Spacing.two }]}>
-              Optional — set this even if you're still serving or separated without retiring. VA compensation is separate, tax-free income independent of any other pay.
-            </ThemedText>
-            <View style={editStyles.gsRow}>
-              {VA_PICKER_OPTIONS.map((p) => (
-                <Pressable
-                  key={p}
-                  onPress={() => setVaPercent(p)}
-                  style={[editStyles.gsChip, { width: 52, borderColor: tc.borderColor, backgroundColor: tc.surface }, vaPercent === p && editStyles.gsChipActive]}>
-                  <ThemedText style={[editStyles.gsChipText, { color: tc.textHint }, vaPercent === p && { color: tc.accent }]}>
-                    {p}%
-                  </ThemedText>
-                </Pressable>
-              ))}
-            </View>
-            {vaPercent > 0 && (
-              <ThemedText style={[editStyles.dateHint, { color: tc.tactical }]}>
-                ↳ Est. VA compensation: {fmtPay(monthlyCompensation(vaPercent, spouse, children))}/mo
-              </ThemedText>
-            )}
+            <VaDisabilitySection vaPercent={vaPercent} onChange={setVaPercent} spouse={spouse} childCount={children} />
 
             {/* Retired-only settings continue below */}
             {isRetired && (
               <>
-                {/* Retired + currently working GS civilian — retired pay, VA
-                    disability, and a GS paycheck all stack together, so this
-                    doesn't replace anything above; it adds to it. */}
-                <View style={editStyles.toggleRow}>
-                  <ThemedText style={[editStyles.toggleLabel, { color: tc.textPrimary }]}>Also Working GS Civilian Job</ThemedText>
-                  <Switch value={alsoGsCivilian} onValueChange={setAlsoGsCivilianLocal} trackColor={{ true: Brand.accent }} thumbColor="#FFF" />
-                </View>
-                {alsoGsCivilian && (
-                  <>
-                    <ThemedText style={[editStyles.fieldHint, { color: tc.textHint, marginTop: -Spacing.two }]}>
-                      Added to your retired pay and VA disability as a separate income source in your Pay Statement.
-                    </ThemedText>
-                    <ThemedText style={[editStyles.fieldLabel, { color: tc.textHint }]}>GS GRADE</ThemedText>
-                    <View style={editStyles.gsRow}>
-                      {Array.from({ length: 15 }, (_, i) => i + 1).map((g) => (
-                        <Pressable
-                          key={g}
-                          onPress={() => setGsGrade(g)}
-                          style={[editStyles.gsChip, { borderColor: tc.borderColor, backgroundColor: tc.surface }, gsGrade === g && editStyles.gsChipActive]}>
-                          <ThemedText style={[editStyles.gsChipText, { color: tc.textHint }, gsGrade === g && { color: tc.accent }]}>
-                            {g}
-                          </ThemedText>
-                        </Pressable>
-                      ))}
-                    </View>
-
-                    <ThemedText style={[editStyles.fieldLabel, { color: tc.textHint }]}>GS STEP</ThemedText>
-                    <View style={editStyles.gsRow}>
-                      {Array.from({ length: 10 }, (_, i) => i + 1).map((s) => (
-                        <Pressable
-                          key={s}
-                          onPress={() => setGsStep(s)}
-                          style={[editStyles.gsChip, { borderColor: tc.borderColor, backgroundColor: tc.surface }, gsStep === s && editStyles.gsChipActive]}>
-                          <ThemedText style={[editStyles.gsChipText, { color: tc.textHint }, gsStep === s && { color: tc.accent }]}>
-                            {s}
-                          </ThemedText>
-                        </Pressable>
-                      ))}
-                    </View>
-
-                    <ThemedText style={[editStyles.fieldLabel, { color: tc.textHint }]}>GS LOCALITY PAY AREA</ThemedText>
-                    <View style={{ gap: Spacing.one }}>
-                      {GS_LOCALITIES.map((loc) => (
-                        <Pressable
-                          key={loc.key}
-                          onPress={() => setGsLocality(loc.key)}
-                          style={[
-                            editStyles.inputWrap,
-                            { backgroundColor: inputBg, borderColor: gsLocality === loc.key ? Brand.accent : tc.borderColor, paddingVertical: Spacing.two },
-                          ]}>
-                          <View style={{ flexDirection: 'row', alignItems: 'center', gap: Spacing.two }}>
-                            <ThemedText style={{ fontSize: 16, color: gsLocality === loc.key ? Brand.accent : tc.textHint }}>
-                              {gsLocality === loc.key ? '●' : '○'}
-                            </ThemedText>
-                            <ThemedText style={[editStyles.toggleLabel, { color: tc.textPrimary, fontSize: 14 }]}>
-                              {loc.label} ({(loc.rate * 100).toFixed(2)}%)
-                            </ThemedText>
-                          </View>
-                        </Pressable>
-                      ))}
-                    </View>
-                  </>
-                )}
-
-                {/* SBP is an opt-in premium against retired pay — it must
-                    never be assumed on for every retiree (a real share of
-                    retirees decline it), and it has no active-duty
-                    equivalent (see lesCalc.ts). */}
-                <View style={editStyles.toggleRow}>
-                  <ThemedText style={[editStyles.toggleLabel, { color: tc.textPrimary }]}>Survivor Benefit Plan (SBP)</ThemedText>
-                  <Switch value={sbpEnabled} onValueChange={setSbpEnabledLocal} trackColor={{ true: Brand.accent }} thumbColor="#FFF" />
-                </View>
-                {sbpEnabled && (
-                  <>
-                    <ThemedText style={[editStyles.fieldHint, { color: tc.textHint, marginTop: -Spacing.two }]}>
-                      Coverage — the % of your retired pay your spouse/beneficiary is insured for. Deducted from retired pay at 6.5% of the covered amount.
-                    </ThemedText>
-                    <View style={editStyles.gsRow}>
-                      {[1, 0.75, 0.5, 0.25].map((pct) => (
-                        <Pressable
-                          key={pct}
-                          onPress={() => setSbpCoveragePctLocal(pct)}
-                          style={[editStyles.gsChip, { width: 60, borderColor: tc.borderColor, backgroundColor: tc.surface }, sbpCoveragePct === pct && editStyles.gsChipActive]}>
-                          <ThemedText style={[editStyles.gsChipText, { color: tc.textHint }, sbpCoveragePct === pct && { color: tc.accent }]}>
-                            {Math.round(pct * 100)}%
-                          </ThemedText>
-                        </Pressable>
-                      ))}
-                    </View>
-                    <ThemedText style={[editStyles.dateHint, { color: tc.tactical }]}>
-                      ↳ Est. premium: {fmtPay(calcSbpPremium(getHigh3Average(grade, y) * retiredPayMultiplier(y), sbpCoveragePct))}/mo, deducted from retired pay
-                    </ThemedText>
-                  </>
-                )}
+              <RetiredPaySection grade={grade} y={y} alsoGsCivilian={alsoGsCivilian} onAlsoGsCivilianChange={setAlsoGsCivilianLocal} gsGrade={gsGrade} gsStep={gsStep} gsLocality={gsLocality} setGsGrade={setGsGrade} setGsStep={setGsStep} setGsLocality={setGsLocality} sbpEnabled={sbpEnabled} onSbpEnabledChange={setSbpEnabledLocal} sbpCoveragePct={sbpCoveragePct} onSbpCoveragePctChange={setSbpCoveragePctLocal} />
               </>
             )}
 
@@ -925,35 +684,7 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
             <NumberStepper label="Dependent Children" value={children} min={0} max={8} onChange={setChildren} />
 
             {/* Housing status */}
-            <ThemedText style={[editStyles.fieldLabel, { color: tc.textHint }]}>CURRENT HOUSING</ThemedText>
-            <ThemedText style={[editStyles.fieldHint, { color: tc.textHint, marginTop: -Spacing.two }]}>
-              This determines your actual BAH entitlement.
-            </ThemedText>
-            <View style={{ gap: Spacing.one }}>
-              {HOUSING_STATUS_ORDER.map((hs) => (
-                <Pressable
-                  key={hs}
-                  onPress={() => setHousing(hs)}
-                  style={[
-                    editStyles.inputWrap,
-                    { backgroundColor: inputBg, borderColor: housing === hs ? Brand.accent : tc.borderColor, paddingVertical: Spacing.two },
-                  ]}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: Spacing.two }}>
-                    <ThemedText style={{ fontSize: 16, color: housing === hs ? Brand.accent : tc.textHint }}>
-                      {housing === hs ? '●' : '○'}
-                    </ThemedText>
-                    <View style={{ flex: 1 }}>
-                      <ThemedText style={[editStyles.toggleLabel, { color: tc.textPrimary, fontSize: 14 }]}>
-                        {HOUSING_STATUS_LABELS[hs]}
-                      </ThemedText>
-                      <ThemedText style={[editStyles.fieldHint, { color: tc.textHint, marginTop: 2 }]}>
-                        {HOUSING_STATUS_DESCRIPTIONS[hs]}
-                      </ThemedText>
-                    </View>
-                  </View>
-                </Pressable>
-              ))}
-            </View>
+            <HousingSection housing={housing} onChange={setHousing} />
 
             {/* Family Separation — unaccompanied OCONUS tour, sea duty, etc.
                 Doesn't apply to a retiree or pure civilian (no BAH/OHA/FSA to
@@ -966,26 +697,7 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
                 represents — from single military parents. */}
             {!isRetired && !isCivilian && (spouse || children > 0) && (
               <>
-                <View style={editStyles.toggleRow}>
-                  <ThemedText style={[editStyles.toggleLabel, { color: tc.textPrimary }]}>Currently Separated From Family</ThemedText>
-                  <Switch value={familySeparated} onValueChange={setFamilySeparatedLocal} trackColor={{ true: Brand.accent }} thumbColor="#FFF" />
-                </View>
-                {familySeparated && (
-                  <>
-                    <ThemedText style={[editStyles.fieldHint, { color: tc.textHint, marginTop: -Spacing.two }]}>
-                      Unaccompanied OCONUS tour, sea duty, or similar orders where your family lives elsewhere.
-                      Your OHA/BAH above switches to the without-dependents rate, your family draws BAH at their
-                      own location, and you&apos;re added Family Separation Allowance (FSA, ${FSA_MONTHLY}/mo).
-                    </ThemedText>
-                    <ThemedText style={[editStyles.fieldLabel, { color: tc.textHint }]}>WHERE YOUR FAMILY LIVES</ThemedText>
-                    <StationPicker label="Family's Location" selected={dependentsStation} onSelect={setDependentsStation} conusOnly />
-                    {!dependentsStation && (
-                      <ThemedText style={[editStyles.fieldHint, { color: Brand.danger, marginTop: -Spacing.two }]}>
-                        Set this so we can calculate your family&apos;s actual BAH — without it, that entitlement won&apos;t show up in your Pay Statement.
-                      </ThemedText>
-                    )}
-                  </>
-                )}
+              <FamilySeparationSection familySeparated={familySeparated} onFamilySeparatedChange={setFamilySeparatedLocal} dependentsStation={dependentsStation} onDependentsStationChange={setDependentsStation} />
               </>
             )}
 
@@ -997,7 +709,7 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
         visible={showStatePicker}
         selected={state}
         onSelect={setState}
-        onClose={() => setShowStatePicker(false)}
+        onClose={closeStatePicker}
         retired={isRetired}
       />
       <DatePickerModal
@@ -1025,81 +737,7 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
   );
 }
 
-const editStyles = StyleSheet.create({
-  header: {
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    paddingHorizontal: Spacing.three, paddingVertical: Spacing.two + 2,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-  },
-  title: { fontSize: 13, fontWeight: '800', letterSpacing: 0.8 },
-  cancel: { fontSize: 13, fontWeight: '700', letterSpacing: 0.5 },
-  save: { fontSize: 13, fontWeight: '800', letterSpacing: 0.5 },
-  content: { paddingHorizontal: Spacing.three, paddingTop: Spacing.three, paddingBottom: Spacing.six, gap: Spacing.three },
-  fieldLabel: { fontSize: 11, fontWeight: '700', letterSpacing: 1 },
-  fieldHint: { fontSize: 10, lineHeight: 14 },
-  dateHint: { fontSize: 10, marginTop: -Spacing.two },
-  emptyHint: { fontSize: 11, textAlign: 'center', paddingVertical: Spacing.two },
-  inputWrap: { borderWidth: 1, borderRadius: 6, paddingHorizontal: Spacing.three },
-  input: { fontSize: 16, fontWeight: '600', paddingVertical: Spacing.two + 4 },
-  toggleRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: Spacing.two },
-  toggleLabel: { fontSize: 15, fontWeight: '600' },
-  toggleSub: { fontSize: 10 },
 
-  sectionHead: { gap: 4, paddingTop: Spacing.two, borderTopWidth: StyleSheet.hairlineWidth },
-  sectionHeadText: { fontSize: 12, fontWeight: '900', letterSpacing: 0.5 },
-  sectionHeadSub: { fontSize: 10, lineHeight: 14 },
-
-  payRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two, paddingVertical: Spacing.one },
-  payIcon: { fontSize: 20, width: 28, textAlign: 'center' },
-  payLabel: { fontSize: 14, fontWeight: '600' },
-  payAmt: { fontSize: 10 },
-  // A fixed 28x28 circle couldn't grow with the "✕" inside it at larger
-  // Settings > Text Size scales. minWidth/minHeight + padding keeps the
-  // circle shape at the default size but lets it grow instead of clipping.
-  removeBtn: { minWidth: 28, minHeight: 28, borderRadius: 14, paddingHorizontal: 3, paddingVertical: 3, backgroundColor: Brand.classified + '20', alignItems: 'center', justifyContent: 'center' },
-  removeBtnText: { color: Brand.classified, fontSize: 13, lineHeight: 16, fontWeight: '700' },
-  totalRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: Spacing.one },
-  totalLabel: { fontSize: 10 },
-  totalAmt: { fontSize: 16, fontWeight: '700' },
-
-  addPayForm: { gap: Spacing.two },
-  payTypeDropdown: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderRadius: 6, paddingHorizontal: Spacing.two + 2, paddingVertical: Spacing.two, gap: Spacing.two },
-  payTypeDropdownLabel: { fontSize: 14, fontWeight: '600' },
-  payTypeDropdownRange: { fontSize: 9, marginTop: 2 },
-  payTypeDropdownChevron: { fontSize: 12 },
-  numpadGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.one },
-  numpadKey: { width: '30.5%', paddingVertical: Spacing.two, alignItems: 'center', borderRadius: 4, backgroundColor: 'rgba(255,255,255,0.05)' },
-  numpadKeyBlank: { backgroundColor: 'transparent' },
-  numpadKeyText: { fontSize: 20, fontWeight: '500' },
-  amountDisplay: { fontSize: 28, fontWeight: '800', fontFamily: Fonts.data, textAlign: 'center' },
-  formButtons: { flexDirection: 'row', gap: Spacing.two },
-  formBtnCancel: { flex: 1, borderWidth: 1, borderRadius: 4, padding: Spacing.two, alignItems: 'center' },
-  formBtnAdd: { flex: 1, backgroundColor: Brand.accent, borderRadius: 4, padding: Spacing.two, alignItems: 'center' },
-  addRowBtn: { paddingVertical: Spacing.two, alignItems: 'center' },
-  addRowBtnText: { fontSize: 10, fontWeight: '700', letterSpacing: 0.5 },
-
-  variantRow: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.one + 2 },
-  variantChip: { flexBasis: '48%', flex: 1, borderWidth: 1.5, borderRadius: 8, padding: Spacing.two, gap: 2, alignItems: 'center' },
-  variantChipActive: { borderColor: Brand.accent, backgroundColor: Brand.accent + '12' },
-  variantAbbrev: { fontSize: 15, fontWeight: '900', letterSpacing: 0.5, fontFamily: Fonts.data },
-  variantName: { fontSize: 10, fontWeight: '600', textAlign: 'center' },
-
-  gsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.one + 2 },
-  gsChip: {
-    width: 44, height: 38, borderWidth: 1, borderRadius: 6,
-    alignItems: 'center', justifyContent: 'center',
-  },
-  gsChipActive: { borderColor: Brand.accent, backgroundColor: Brand.accent + '15' },
-  gsChipText: { fontSize: 13, fontWeight: '700' },
-
-  statusChip: {
-    flexBasis: '48%', flex: 1, flexDirection: 'row', alignItems: 'center', gap: 6,
-    borderWidth: 1, borderRadius: 8, paddingVertical: Spacing.two, paddingHorizontal: Spacing.two,
-  },
-  statusChipActive: { borderColor: Brand.accent, backgroundColor: Brand.accent + '15' },
-  statusChipEmoji: { fontSize: 16 },
-  statusChipText: { fontSize: 12, fontWeight: '700', letterSpacing: 0.3 },
-});
 
 // ── Main Screen ────────────────────────────────────────────────────────────────
 
@@ -1194,13 +832,18 @@ export default function ProfileScreen() {
   };
 
   const handleResetApp = () => {
-    Alert.alert('Reset All App Data', 'This will permanently delete your profile, budget, goals, and all saved data.', [
+    Alert.alert('Reset All App Data', 'This will permanently delete your profile, budget, goals, and all saved data, on this device and in your cloud backup.', [
       { text: 'Cancel', style: 'cancel' },
       { text: 'Continue', style: 'destructive', onPress: () => {
         Alert.alert('Final Confirmation', 'Are you absolutely sure? All data will be erased.', [
           { text: 'Go Back', style: 'cancel' },
           { text: 'Erase All Data', style: 'destructive', onPress: async () => {
-            await resetAllLocalData();
+            try {
+              await resetAllData();
+            } catch {
+              Alert.alert('Reset Failed', 'Could not clear your cloud backup. Check your connection and try again — nothing was changed.');
+              return;
+            }
             router.replace('/');
           }},
         ]);

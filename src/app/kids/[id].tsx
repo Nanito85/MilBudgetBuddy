@@ -63,7 +63,7 @@ function AddGoalModal({ visible, accentColor, onClose, onAdd }: {
   return (
     <Modal visible={visible} animationType="slide" presentationStyle="pageSheet">
       <KeyboardAvoidingView
-        style={{ flex: 1 }}
+        style={{ flex: 1, backgroundColor: tc.surface }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <SafeAreaView style={[addGoalStyles.container, { backgroundColor: tc.surface, borderTopColor: accentColor }]}>
           {/* Header */}
@@ -272,7 +272,7 @@ function EditGoalModal({ visible, goal, accentColor, onClose, onSave, onDelete }
   return (
     <Modal visible={visible} animationType="slide" presentationStyle="pageSheet">
       <KeyboardAvoidingView
-        style={{ flex: 1 }}
+        style={{ flex: 1, backgroundColor: tc.surface }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <SafeAreaView style={[addGoalStyles.container, { backgroundColor: tc.surface, borderTopColor: accentColor }]}>
           <View style={[addGoalStyles.header, { borderBottomColor: tc.borderColor }]}>
@@ -405,7 +405,7 @@ function AddChoreModal({ visible, defaultFrequency, accentColor, onClose, onAdd 
   return (
     <Modal visible={visible} animationType="slide" presentationStyle="pageSheet">
       <KeyboardAvoidingView
-        style={{ flex: 1 }}
+        style={{ flex: 1, backgroundColor: tc.surface }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <SafeAreaView style={[addGoalStyles.container, { backgroundColor: tc.surface, borderTopColor: accentColor }]}>
           <View style={[addGoalStyles.header, { borderBottomColor: tc.borderColor }]}>
@@ -526,7 +526,7 @@ function EditKidModal({ visible, nickname, gender, onClose, onSave }: {
   return (
     <Modal visible={visible} animationType="slide" presentationStyle="pageSheet">
       <KeyboardAvoidingView
-        style={{ flex: 1 }}
+        style={{ flex: 1, backgroundColor: tc.surface }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <SafeAreaView style={[addGoalStyles.container, { backgroundColor: tc.surface, borderTopColor: theme.accent }]}>
           <View style={[addGoalStyles.header, { borderBottomColor: tc.borderColor }]}>

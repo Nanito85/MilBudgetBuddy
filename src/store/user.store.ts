@@ -84,6 +84,7 @@ interface UserState extends UserPreferences {
   setDeploymentStatus: (isDeployed: boolean, deploymentLocationId: string) => void;
   setLocationFamily: (mhaZip: string, hasSpouse: boolean, numChildren: number, housingStatus: HousingStatus, installationName?: string, dutyStationId?: string) => void;
   setPersonalDetails: (params: { payGrade: PayGrade; lastName: string; nickname: string; yos: number; mhaZip: string; installationName: string; dutyStationId?: string; hasSpouse: boolean; numChildren: number; housingStatus: HousingStatus; stateResidence: string; dateOfEnlistment: string; dateOfRank: string; rankVariant: RankVariant }) => void;
+  updateProfile: (update: Partial<UserPreferences>) => void;
   setPayDetails: (params: { tspContribPct: number; rothTspPct: number; hasDentalFamily: boolean; sglOptOut: boolean; spouseMonthlyIncome: number; bahOverride?: number; basOverride?: number; basePayOverride?: number }) => void;
   setStateResidence: (stateCode: string) => void;
   addSpecialPay: (type: SpecialPayType, monthlyAmount: number, customLabel?: string) => void;
@@ -383,6 +384,13 @@ export const useUserStore = create<UserState>((set, get) => ({
 
   setPersonalDetails: ({ payGrade, lastName, nickname, yos, mhaZip, installationName, dutyStationId, hasSpouse, numChildren, housingStatus, stateResidence, dateOfEnlistment, dateOfRank, rankVariant }) => {
     const update = { payGrade, lastName, nickname, yos, mhaZip, installationName, dutyStationId, hasSpouse, numChildren, housingStatus, stateResidence, dateOfEnlistment, dateOfRank, rankVariant };
+    set(update);
+    save({ ...snapshot(get), ...update });
+  },
+
+  // Applies several profile fields as one set() and one AsyncStorage write,
+  // instead of one of each per individual setter.
+  updateProfile: (update) => {
     set(update);
     save({ ...snapshot(get), ...update });
   },

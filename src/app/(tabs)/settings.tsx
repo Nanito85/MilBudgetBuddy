@@ -15,7 +15,7 @@ import { ALL_QUICK_ACTIONS } from '@/data/quick-actions';
 import { useThemeColors } from '@/hooks/use-theme';
 import { useIsAdmin } from '@/hooks/use-admin';
 import { useIsPro } from '@/hooks/use-is-pro';
-import { resetAllLocalData } from '@/services/reset-local-data';
+import { resetAllData } from '@/services/reset-local-data';
 import { ANDROID_PRODUCT_ID } from '@/services/iap';
 import { useAuthStore } from '@/store/auth.store';
 import { useKidModeStore } from '@/store/kid-mode.store';
@@ -647,14 +647,19 @@ export default function SettingsScreen() {
           onPress={() =>
             Alert.alert(
               'Reset All Data',
-              'This will wipe your profile, budget, debts, goals, kids, and all other saved data. This cannot be undone.',
+              'This will wipe your profile, budget, debts, goals, kids, and all other saved data — on this device and in your cloud backup. This cannot be undone.',
               [
                 { text: 'Cancel', style: 'cancel' },
                 {
                   text: 'Reset Everything',
                   style: 'destructive',
                   onPress: async () => {
-                    await resetAllLocalData();
+                    try {
+                      await resetAllData();
+                    } catch {
+                      Alert.alert('Reset Failed', 'Could not clear your cloud backup. Check your connection and try again — nothing was changed.');
+                      return;
+                    }
                     router.replace('/' as any);
                   },
                 },
