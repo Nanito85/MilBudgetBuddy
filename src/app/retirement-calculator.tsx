@@ -49,7 +49,7 @@ export default function RetirementCalculatorScreen() {
   const serviceStatus = useUserStore((s) => s.serviceStatus);
   const isCivilianOnly = serviceStatus === 'civilian';
 
-  const [grade, setGrade] = useState<PayGrade>('E7');
+  const [grade, setGrade] = useState<PayGrade>(profilePayGrade ?? 'E7');
   // Grade the member holds today — distinct from "grade" (grade at retirement)
   // above. Without this, "Current Basic Pay" and the TSP contribution preview
   // were silently computed from the RETIREMENT grade instead of today's grade,
@@ -78,7 +78,12 @@ export default function RetirementCalculatorScreen() {
     setPreviousGrade(PAY_GRADES[Math.max(0, idx - 1)]);
   }, [grade]);
   const [retirementYOS, setRetirementYOS] = useState(20);
-  const [system, setSystem] = useState<RetirementSystem>('both');
+  // Anyone who entered service on/after 2018-01-01 is automatically BRS, so
+  // start them there; everyone else may be either (2018 opt-in), so compare.
+  const profileEnlisted = useUserStore((s) => s.dateOfEnlistment);
+  const [system, setSystem] = useState<RetirementSystem>(
+    profileEnlisted && profileEnlisted >= '2018-01-01' ? 'brs' : 'both',
+  );
   const [tspContribIdx, setTspContribIdx] = useState(4);  // 5%
   const [tspReturnIdx, setTspReturnIdx] = useState(3);    // 7%
   const [vaRating, setVaRating] = useState(0);

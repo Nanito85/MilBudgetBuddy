@@ -1,5 +1,5 @@
-import React, { useMemo } from 'react';
-import { StyleSheet, View } from 'react-native';
+import React, { useEffect, useMemo, useState } from 'react';
+import { AppState, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { Brand, Spacing } from '@/constants/theme';
@@ -20,7 +20,19 @@ interface Props {
 
 export function PayDayCountdown({ netPay, isRetired = false }: Props) {
   const tc = useThemeColors();
-  const { label, daysAway, date } = useMemo(() => getPayDayInfo(isRetired), [isRetired]);
+  // Recomputed when the calendar day changes. Memoizing on isRetired alone
+  // kept "N days" frozen across midnight while the app stayed open (and
+  // freezeOnBlur keeps Home mounted), so the count could be a day or more off.
+  const [dayKey, setDayKey] = useState(() => new Date().toDateString());
+  useEffect(() => {
+    const refresh = () => setDayKey(new Date().toDateString());
+    const sub = AppState.addEventListener('change', (s) => { if (s === 'active') refresh(); });
+    const timer = setInterval(refresh, 60_000);
+    return () => { sub.remove(); clearInterval(timer); };
+  }, []);
+  // dayKey is only a recompute trigger; getPayDayInfo reads the clock itself.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const { label, daysAway, date } = useMemo(() => getPayDayInfo(isRetired), [isRetired, dayKey]);
 
   const isToday = daysAway === 0;
   const isTomorrow = daysAway === 1;

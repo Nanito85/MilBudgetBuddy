@@ -14,8 +14,10 @@ export const Colors = {
     inputBg: '#E9EFF6',
     border: '#C7D6E3',
     borderStrong: '#9FB6CC',
-    textHint: '#5A748C',
-    textMuted: '#6E859B',
+    // Both meet WCAG AA (4.5:1) on the light background and card colors —
+    // textMuted was #6E859B (~3.5:1), below AA for body text.
+    textHint: '#4F6880',
+    textMuted: '#55697D',
   },
   dark: {
     // Brightened for legibility on the near-black tactical background.

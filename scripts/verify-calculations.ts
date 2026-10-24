@@ -10,7 +10,7 @@
  * Run: npx tsx scripts/verify-calculations.ts
  * Exits non-zero (and prints which assertion failed) if anything regresses.
  */
-import { getPayDayInfo } from '@/features/home/utils/payScheduleCalc';
+import { adjustedPayDay, getPayDayInfo } from '@/features/home/utils/payScheduleCalc';
 import { calcLES, getDrillPay } from '@/features/home/utils/lesCalc';
 import { estimateAnnualFedTax } from '@/data/federal-tax';
 import { getBasicPay, getHigh3Average, getHigh3AverageDetailed } from '@/data/basic-pay-rates';
@@ -61,6 +61,17 @@ console.log('\n[1/2] Pay day schedule');
 
   const retiredInfo = getPayDayInfo(true);
   assertEqual(retiredInfo.label, '1st', 'Retiree next payday label is always 1st (never 15th)');
+}
+
+// ── Payday moves to the prior business day for weekends and holidays ─────────
+console.log('[Payday] Weekend and federal holiday shifts');
+{
+  const iso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  assertEqual(iso(adjustedPayDay(new Date(2027, 0, 1))), '2026-12-31', 'Jan 1, 2027 (Fri, New Year) pays Thu Dec 31');
+  assertEqual(iso(adjustedPayDay(new Date(2025, 8, 1))), '2025-08-29', 'Sep 1, 2025 (Labor Day Mon) pays Fri Aug 29');
+  assertEqual(iso(adjustedPayDay(new Date(2029, 0, 15))), '2029-01-12', 'Jan 15, 2029 (MLK Day Mon) pays Fri Jan 12');
+  assertEqual(iso(adjustedPayDay(new Date(2026, 10, 15))), '2026-11-13', 'Nov 15, 2026 (Sun) pays Fri Nov 13');
+  assertEqual(iso(adjustedPayDay(new Date(2026, 9, 15))), '2026-10-15', 'Oct 15, 2026 (Thu) is unchanged');
 }
 
 // ── 3/11. SGLI: retiree never charged, active duty still charged ─────────────

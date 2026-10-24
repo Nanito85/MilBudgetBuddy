@@ -5,15 +5,33 @@
  * can't transform. Used by PayDayCountdown.tsx.
  */
 
-// Adjust for weekends: if payday falls on a weekend, it moves to the prior
-// Friday. Federal holidays can also shift the actual DFAS deposit by a day
-// or two beyond this — this app doesn't maintain a federal holiday
-// calendar, so this is a close estimate, not a guarantee of the exact date.
+// The federal holidays that can land on a 1st or 15th payday: New Year's Day
+// (always Jan 1), MLK Day and Presidents' Day (3rd Monday, the 15th–21st),
+// and Labor Day (1st Monday of September). The others never fall on either.
+function nthMonday(year: number, month: number, n: number): number {
+  const firstDow = new Date(year, month, 1).getDay();
+  const firstMonday = 1 + ((8 - firstDow) % 7);
+  return firstMonday + (n - 1) * 7;
+}
+
+export function isPaydayHoliday(d: Date): boolean {
+  const m = d.getMonth();
+  const day = d.getDate();
+  const y = d.getFullYear();
+  if (m === 0 && day === 1) return true;
+  if ((m === 0 || m === 1) && day === nthMonday(y, m, 3)) return true;
+  if (m === 8 && day === nthMonday(y, m, 1)) return true;
+  return false;
+}
+
+// DFAS pays on the preceding business day when the 1st or 15th falls on a
+// weekend or federal holiday (so Jan 1 pay lands on Dec 31 or earlier).
 export function adjustedPayDay(d: Date): Date {
-  const day = d.getDay(); // 0=Sun, 6=Sat
-  if (day === 0) { const r = new Date(d); r.setDate(d.getDate() - 2); return r; }
-  if (day === 6) { const r = new Date(d); r.setDate(d.getDate() - 1); return r; }
-  return d;
+  const r = new Date(d);
+  while (r.getDay() === 0 || r.getDay() === 6 || isPaydayHoliday(r)) {
+    r.setDate(r.getDate() - 1);
+  }
+  return r;
 }
 
 /**
