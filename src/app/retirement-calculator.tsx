@@ -7,6 +7,8 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { PAY_GRADES, PayGrade } from '@/data/bah-rates';
 import { BASIC_PAY_DATA_YEAR, getBasicPay } from '@/data/basic-pay-rates';
+import { estimateAnnualFedTax, FEDERAL_TAX_DATA_YEAR } from '@/data/federal-tax';
+import { getRetirementStateTaxRate, getStateTaxInfo, RETIREMENT_TAX_EXEMPT_STATES, US_STATES } from '@/data/state-tax';
 import { BreakEvenChart } from '@/features/retirement/components/BreakEvenChart';
 import { NumberStepper } from '@/features/retirement/components/NumberStepper';
 import { BRSCard, High3Card } from '@/features/retirement/components/RetirementSummaryCard';
@@ -80,6 +82,14 @@ export default function RetirementCalculatorScreen() {
   const [tspContribIdx, setTspContribIdx] = useState(4);  // 5%
   const [tspReturnIdx, setTspReturnIdx] = useState(3);    // 7%
   const [vaRating, setVaRating] = useState(0);
+  // Family + state pre-fill from the profile but stay editable here — the
+  // state a member retires TO is often not the one they're stationed in.
+  const profileHasSpouse = useUserStore((s) => s.hasSpouse);
+  const profileNumChildren = useUserStore((s) => s.numChildren);
+  const profileState = useUserStore((s) => s.stateResidence);
+  const [married, setMarried] = useState(!!profileHasSpouse);
+  const [numChildren, setNumChildren] = useState(profileNumChildren ?? 0);
+  const [retireState, setRetireState] = useState<string | undefined>(profileState);
 
   const tspContribRate = CONTRIB_STEPS[tspContribIdx] / 100;
   const tspAnnualReturn = RETURN_STEPS[tspReturnIdx] / 100;
@@ -102,12 +112,29 @@ export default function RetirementCalculatorScreen() {
   const currentPay = getBasicPay(currentGrade, currentYOS);
 
   // VA disability — same canonical rate table as the dedicated VA Disability calculator
-  const vaMonthly = monthlyCompensation(vaRating, false, 0);
+  const vaMonthly = monthlyCompensation(vaRating, married, numChildren);
   const pensionMonthly = showHigh3 ? result.high3.monthlyPension : result.brs.monthlyPension;
   // CRDP: ≥50% rating = full pension + full VA (concurrent receipt, no offset)
   // <50% rating = retirement pay offset by VA amount; net income same as pension (VA portion is tax-free)
   const crdpEligible = vaRating >= 50;
   const combinedMonthly = crdpEligible ? pensionMonthly + vaMonthly : pensionMonthly;
+
+  // Taxes on the pension. Under the <50% offset the waived portion of
+  // retirement pay is replaced by tax-free VA comp, so only the remainder
+  // is taxable. Assumes the pension is the household's only taxable income
+  // (no spouse wages, no second career) — a floor, not a ceiling, on tax.
+  const taxablePensionMonthly = crdpEligible || vaRating === 0
+    ? pensionMonthly
+    : Math.max(0, pensionMonthly - vaMonthly);
+  const annualTaxable = taxablePensionMonthly * 12;
+  const fedTaxMonthly = estimateAnnualFedTax(annualTaxable, married) / 12;
+  const stateRate = getRetirementStateTaxRate(retireState);
+  const stateTaxMonthly = taxablePensionMonthly * stateRate;
+  const stateInfo = getStateTaxInfo(retireState);
+  const stateExempt = !!retireState && RETIREMENT_TAX_EXEMPT_STATES.has(retireState);
+  const afterTaxPensionMonthly = pensionMonthly - fedTaxMonthly - stateTaxMonthly;
+  // VA comp is tax-free; under the offset it's already inside pensionMonthly.
+  const afterTaxTotalMonthly = afterTaxPensionMonthly + (crdpEligible ? vaMonthly : 0);
 
   return (
     <ThemedView style={styles.container}>
@@ -366,12 +393,12 @@ export default function RetirementCalculatorScreen() {
         {/* VA DISABILITY */}
         <View style={styles.section}>
           <ThemedText type="smallBold" themeColor="textSecondary" style={styles.sectionLabel}>
-            VA DISABILITY (OPTIONAL)
+            VA DISABILITY &amp; TAXES (OPTIONAL)
           </ThemedText>
           <ThemedView type="backgroundElement" style={styles.card}>
             <View style={styles.cardPadded}>
               <ThemedText type="small" themeColor="textSecondary" style={styles.fieldLabel}>
-                Combined VA Rating (FY2026 rates, no dependents)
+                Combined VA Rating (FY2026 rates)
               </ThemedText>
               <View style={styles.chipRow}>
                 {VA_RATINGS.map((r) => (
@@ -385,6 +412,94 @@ export default function RetirementCalculatorScreen() {
                   </Pressable>
                 ))}
               </View>
+
+              <View style={styles.divider} />
+              <ThemedText type="small" themeColor="textSecondary" style={styles.fieldLabel}>
+                Marital status
+              </ThemedText>
+              <View style={styles.systemToggle}>
+                {([[false, 'Single'], [true, 'Married']] as [boolean, string][]).map(([val, label]) => (
+                  <Pressable
+                    key={label}
+                    onPress={() => setMarried(val)}
+                    style={[styles.systemBtn, married === val && styles.systemBtnActive]}>
+                    <ThemedText style={[styles.systemBtnText, married === val && styles.systemBtnTextActive]}>
+                      {label}
+                    </ThemedText>
+                  </Pressable>
+                ))}
+              </View>
+              <NumberStepper
+                label="Dependent children"
+                value={numChildren}
+                min={0}
+                max={10}
+                onChange={setNumChildren}
+                unit="kids"
+              />
+              <ThemedText type="small" themeColor="textSecondary">
+                {vaRating > 0 && vaRating < 30
+                  ? 'VA pays no dependent add-on below a 30% rating. Marital status still sets your tax filing status.'
+                  : 'Spouse and children raise VA pay at 30% and above, and married filing sets the tax brackets.'}
+              </ThemedText>
+
+              <View style={styles.divider} />
+              <ThemedText type="small" themeColor="textSecondary" style={styles.fieldLabel}>
+                State you&apos;ll retire in
+              </ThemedText>
+              <View style={styles.chipRow}>
+                {US_STATES.map((s) => (
+                  <Pressable
+                    key={s.code}
+                    onPress={() => setRetireState(s.code)}
+                    style={[styles.pctChip, retireState === s.code && styles.pctChipActive]}>
+                    <ThemedText style={[styles.pctChipText, retireState === s.code && styles.pctChipTextActive]}>
+                      {s.code}
+                    </ThemedText>
+                  </Pressable>
+                ))}
+              </View>
+              {stateInfo && (
+                <ThemedText type="small" themeColor="textSecondary">
+                  {stateInfo.name}: {stateExempt
+                    ? 'military retirement pay is not taxed by the state.'
+                    : `about ${(stateRate * 100).toFixed(2)}% effective state tax on your pension (partial exemptions or age/income breaks may lower it).`}
+                </ThemedText>
+              )}
+
+              <View style={styles.divider} />
+              <ThemedText type="small" themeColor="textSecondary" style={styles.fieldLabel}>
+                ESTIMATED PENSION AFTER TAXES
+              </ThemedText>
+              <View style={styles.sliderRow}>
+                <ThemedText style={styles.sliderLabel}>Gross pension</ThemedText>
+                <ThemedText style={styles.sliderLabel}>{formatMoney(pensionMonthly)}/mo</ThemedText>
+              </View>
+              <View style={styles.sliderRow}>
+                <ThemedText style={styles.sliderLabel}>Federal tax ({FEDERAL_TAX_DATA_YEAR}, {married ? 'married' : 'single'})</ThemedText>
+                <ThemedText style={styles.sliderLabel}>−{formatMoney(fedTaxMonthly)}/mo</ThemedText>
+              </View>
+              <View style={styles.sliderRow}>
+                <ThemedText style={styles.sliderLabel}>State tax{retireState ? ` (${retireState})` : ' (pick a state)'}</ThemedText>
+                <ThemedText style={styles.sliderLabel}>−{formatMoney(stateTaxMonthly)}/mo</ThemedText>
+              </View>
+              <View style={styles.sliderRow}>
+                <ThemedText style={styles.sliderLabel}>Pension after tax</ThemedText>
+                <ThemedText style={[styles.sliderValue, { color: tc.accent }]}>
+                  {formatMoney(afterTaxPensionMonthly)}/mo
+                </ThemedText>
+              </View>
+              {crdpEligible && (
+                <View style={styles.sliderRow}>
+                  <ThemedText style={styles.sliderLabel}>Pension after tax + tax-free VA</ThemedText>
+                  <ThemedText style={[styles.sliderValue, { color: tc.accent }]}>
+                    {formatMoney(afterTaxTotalMonthly)}/mo
+                  </ThemedText>
+                </View>
+              )}
+              <ThemedText type="small" themeColor="textSecondary">
+                Assumes the pension is your only taxable income and uses the standard deduction. SBP premiums, Medicare/TRICARE fees and other income are not included.
+              </ThemedText>
 
               {vaRating > 0 && (
                 <>
