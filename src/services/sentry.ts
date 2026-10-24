@@ -1,5 +1,6 @@
 import * as Sentry from '@sentry/react-native';
 import Constants from 'expo-constants';
+import * as Updates from 'expo-updates';
 
 const DSN = process.env.EXPO_PUBLIC_SENTRY_DSN;
 
@@ -14,6 +15,13 @@ export function initSentry() {
     enableAutoSessionTracking: true,
     debug: false,
   });
+  // Every OTA update shares one `release` (the native app version), so tag
+  // which update is actually running — lets a regression be traced to the
+  // specific `eas update` that introduced it. 'embedded' = the code that
+  // shipped inside the store build, no OTA applied yet.
+  Sentry.setTag('update_id', Updates.updateId ?? 'embedded');
+  Sentry.setTag('update_channel', Updates.channel ?? 'none');
+  if (Updates.createdAt) Sentry.setTag('update_created', Updates.createdAt.toISOString());
 }
 
 // Simple djb2 hash — anonymizes the UID so Sentry never receives the raw Firebase UID
