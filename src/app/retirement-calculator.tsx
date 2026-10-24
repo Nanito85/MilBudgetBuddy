@@ -8,7 +8,7 @@ import { ThemedView } from '@/components/themed-view';
 import { PAY_GRADES, PayGrade } from '@/data/bah-rates';
 import { BASIC_PAY_DATA_YEAR, getBasicPay } from '@/data/basic-pay-rates';
 import { estimateAnnualFedTax, FEDERAL_TAX_DATA_YEAR } from '@/data/federal-tax';
-import { getRetirementStateTaxRate, getStateTaxInfo, RETIREMENT_TAX_EXEMPT_STATES, US_STATES } from '@/data/state-tax';
+import { getRetirementStateTaxRate, getStateTaxInfo, RETIREMENT_TAX_EXEMPT_STATES, stateTaxBadge, US_STATES } from '@/data/state-tax';
 import { BreakEvenChart } from '@/features/retirement/components/BreakEvenChart';
 import { NumberStepper } from '@/features/retirement/components/NumberStepper';
 import { BRSCard, High3Card } from '@/features/retirement/components/RetirementSummaryCard';
@@ -466,8 +466,8 @@ export default function RetirementCalculatorScreen() {
                       <ThemedText style={[styles.dropdownText, retireState === s.code && { fontWeight: '700' }]}>
                         {s.name} ({s.code})
                       </ThemedText>
-                      {RETIREMENT_TAX_EXEMPT_STATES.has(s.code) && (
-                        <ThemedText type="small" style={{ color: tc.success, fontWeight: '600' }}>PENSION EXEMPT</ThemedText>
+                      {stateTaxBadge(s.code, true) && (
+                        <ThemedText type="small" style={{ color: tc.success, fontWeight: '600' }}>{stateTaxBadge(s.code, true)}</ThemedText>
                       )}
                     </Pressable>
                   ))}

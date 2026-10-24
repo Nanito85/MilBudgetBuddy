@@ -167,6 +167,27 @@ console.log('\n[FedTax] Credits, HOH, pre-tax TSP, special pays');
   }
 }
 
+// ── State tax: exempt-while-stationed-outside states ─────────────────────────
+console.log('\n[StateTax] Stationed in vs outside the home state');
+{
+  const base = {
+    payGrade: 'E5', yos: 6, hasSpouse: false, numChildren: 0,
+    specialPaysTotal: 0, tspContribPct: 0, hasDentalFamily: false, sglOptOut: true, serviceStatus: 'active' as const,
+  };
+  const caAtBragg = calcLES({ ...base, stateResidence: 'CA', dutyStationId: 'fort_liberty', mhaZip: '28301' });
+  assertEqual(caAtBragg.stateTax, 0, 'CA resident stationed at Fort Bragg (NC) owes no CA tax');
+  const caAtPendleton = calcLES({ ...base, stateResidence: 'CA', dutyStationId: 'camp_pendleton', mhaZip: '92058' });
+  assertTrue(caAtPendleton.stateTax > 0, 'CA resident stationed at Camp Pendleton (CA) is taxed by CA');
+  const paAtCarlisle = calcLES({ ...base, stateResidence: 'PA', dutyStationId: 'carlisle_barracks', mhaZip: '17013' });
+  assertTrue(paAtCarlisle.stateTax > 0, 'PA resident stationed in PA is taxed by PA');
+  const paAtBragg = calcLES({ ...base, stateResidence: 'PA', dutyStationId: 'fort_liberty', mhaZip: '28301' });
+  assertEqual(paAtBragg.stateTax, 0, 'PA resident stationed outside PA is not taxed by PA');
+  const mi = calcLES({ ...base, stateResidence: 'MI', dutyStationId: 'fort_liberty', mhaZip: '28301' });
+  assertEqual(mi.stateTax, 0, 'Michigan exempts military pay');
+  const caUnknown = calcLES({ ...base, stateResidence: 'CA', mhaZip: undefined });
+  assertTrue(caUnknown.stateTax > 0, 'Unknown duty station is treated as in-state (taxed), not assumed exempt');
+}
+
 // ── 4. State tax always computed (never silently skipped) ────────────────────
 console.log('\n[4] State tax');
 {

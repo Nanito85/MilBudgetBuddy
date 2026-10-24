@@ -8,7 +8,8 @@ import { calcCzteExcludedBasicPay } from '@/features/deployment/utils/deployment
 import { getGSMonthly } from '@/data/gs-pay-rates';
 import { getOconusCola } from '@/data/oconus-cola';
 import { getOhaAreaForInstallation, getOhaRate } from '@/data/oha-rates';
-import { getRetirementStateTaxRate, getStateTaxRate } from '@/data/state-tax';
+import { getInstallationById, getInstallationByZip } from '@/data/installations';
+import { getActiveDutyStateTaxRate, getRetirementStateTaxRate, getStateTaxRate } from '@/data/state-tax';
 import { calcSbpPremium } from '@/features/retirement/utils/sbpCalc';
 import { HousingStatus, LESOverrides, ServiceStatus } from '@/types/user.types';
 
@@ -447,7 +448,16 @@ export function calcLES(inputs: LESInputs): LESBreakdown {
   // state tax deduction on their pension that doesn't actually apply. A
   // stacked GS paycheck is ordinary civilian wage income, though — it always
   // uses the regular rate even when basePay (the pension portion) doesn't.
-  const stateRate      = isRetired ? getRetirementStateTaxRate(stateResidence) : getStateTaxRate(stateResidence);
+  //
+  // Several states (CA, NY, NJ, PA, OH, ...) exempt active-duty pay only
+  // while the member is stationed outside the state, so the duty station's
+  // state matters too. A deployed member is outside every state.
+  const dutyStationState = deploymentLoc
+    ? 'DEPLOYED'
+    : (getInstallationById(dutyStationId) ?? getInstallationByZip(mhaZip))?.state;
+  const stateRate      = isRetired
+    ? getRetirementStateTaxRate(stateResidence)
+    : isCivilianOnly ? 0 : getActiveDutyStateTaxRate(stateResidence, dutyStationState);
   const gsStateRate     = getStateTaxRate(stateResidence);
   const stateTax       = (taxableBasePay + taxablePays) * stateRate + gsGrossMonthly * gsStateRate;
   // TDP (TRICARE Dental Program) is a uniformed-services-only benefit — it

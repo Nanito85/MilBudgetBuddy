@@ -19,7 +19,7 @@ import { ThemedView } from '@/components/themed-view';
 import { Brand, Spacing } from '@/constants/theme';
 import { useThemeColors } from '@/hooks/use-theme';
 import { PayGrade } from '@/data/bah-rates';
-import { RETIREMENT_TAX_EXEMPT_STATES, US_STATES } from '@/data/state-tax';
+import { stateTaxBadge, US_STATES } from '@/data/state-tax';
 import { GradePicker } from '@/features/pcs/components/GradePicker';
 import { StationPicker } from '@/features/pcs/components/StationPicker';
 import { NumberStepper } from '@/features/retirement/components/NumberStepper';
@@ -1161,8 +1161,8 @@ function LocationFamilyStep({
                     style={styles.stateOption}>
                     <ThemedText style={styles.stateOptionCode}>{s.code}</ThemedText>
                     <ThemedText type="small" themeColor="textSecondary">{s.name}</ThemedText>
-                    {(retired ? RETIREMENT_TAX_EXEMPT_STATES.has(s.code) : s.militaryExempt) && (
-                      <ThemedText type="small" style={{ color: Brand.primary, marginLeft: 'auto' as any }}>NO TAX</ThemedText>
+                    {stateTaxBadge(s.code, retired) && (
+                      <ThemedText type="small" style={{ color: Brand.primary, marginLeft: 'auto' as any }}>{stateTaxBadge(s.code, retired)}</ThemedText>
                     )}
                   </Pressable>
                 ))}

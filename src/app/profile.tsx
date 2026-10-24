@@ -20,7 +20,7 @@ import { TacticalCard } from '@/components/TacticalCard';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { BottomTabInset, Brand, Fonts, Spacing } from '@/constants/theme';
-import { RETIREMENT_TAX_EXEMPT_STATES, US_STATES } from '@/data/state-tax';
+import { stateTaxBadge, US_STATES } from '@/data/state-tax';
 import { TIPS } from '@/data/tips';
 import { GradePicker } from '@/features/pcs/components/GradePicker';
 import { NumberStepper } from '@/features/retirement/components/NumberStepper';
@@ -163,9 +163,9 @@ const StatePickerModal = React.memo(function StatePickerModal({ visible, selecte
                     <ThemedText style={[stateStyles.name, { color: tc.textHint }, isSelected && { color: tc.textPrimary }]}>{s.name}</ThemedText>
                   </View>
                   <View style={stateStyles.rowRight}>
-                    {(retired ? RETIREMENT_TAX_EXEMPT_STATES.has(s.code) : s.militaryExempt) ? (
+                    {stateTaxBadge(s.code, retired) ? (
                       <View style={stateStyles.exemptBadge}>
-                        <ThemedText type="label" style={[stateStyles.exemptText, { color: tc.tactical }]}>NO TAX</ThemedText>
+                        <ThemedText type="label" style={[stateStyles.exemptText, { color: tc.tactical }]}>{stateTaxBadge(s.code, retired)}</ThemedText>
                       </View>
                     ) : (
                       <ThemedText style={[stateStyles.rate, { color: tc.textMuted, fontFamily: Fonts.data }]}>
@@ -675,8 +675,8 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
             </Pressable>
             {stateInfo && (
               <ThemedText style={[editStyles.dateHint, { color: tc.tactical }]}>
-                {(isRetired ? RETIREMENT_TAX_EXEMPT_STATES.has(stateInfo.code) : stateInfo.militaryExempt)
-                  ? `✓ Military ${isRetired ? 'retirement ' : ''}pay exempt`
+                {stateTaxBadge(stateInfo.code, isRetired)
+                  ? `✓ ${isRetired ? 'Military retirement pay exempt' : stateInfo.note ?? 'Military pay exempt'}`
                   : `~${(stateInfo.effectiveRate * 100).toFixed(1)}% est. effective rate`}
               </ThemedText>
             )}

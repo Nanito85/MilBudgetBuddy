@@ -116,8 +116,12 @@ export function PaySummaryCard({ breakdown }: Props) {
   const hasSpouseIncome   = spouseMonthlyIncome > 0;
 
   const stateTaxExplanation = (() => {
+    const outsideInfo = getStateTaxInfo(stateResidence);
     if (breakdown.stateTax > 0) {
-      return `Estimated state income tax on your ${breakdown.isRetiredPay ? 'retired pay' : breakdown.isDrillPay ? 'drill pay' : 'base pay'}, based on your state of residence in Profile.`;
+      const base = `Estimated state income tax on your ${breakdown.isRetiredPay ? 'retired pay' : breakdown.isDrillPay ? 'drill pay' : 'base pay'}, based on your state of residence in Profile.`;
+      return !breakdown.isRetiredPay && outsideInfo?.exemptWhenStationedOutside
+        ? `${base} ${outsideInfo.name} only taxes active-duty pay while you're stationed in ${outsideInfo.name} (or your duty station isn't set). If you're stationed elsewhere, update your duty station in Profile.`
+        : base;
     }
     if (!stateResidence) {
       return 'No state of residence is set in Profile, so state tax can’t be estimated. Add it in Profile › Edit Personal to see an estimate here.';
@@ -128,6 +132,9 @@ export function PaySummaryCard({ breakdown }: Props) {
       return info?.effectiveRate === 0
         ? `${stateName} has no state income tax, so your retired pay isn’t taxed at the state level.`
         : `${stateName} fully exempts military retired pay from state income tax, even though it taxes other income.`;
+    }
+    if (!breakdown.isRetiredPay && info?.exemptWhenStationedOutside) {
+      return `${stateName} doesn’t tax active-duty pay while you’re stationed outside ${stateName}.${info.note ? ` (${info.note}.)` : ''}`;
     }
     if (info?.militaryExempt) {
       return info.effectiveRate === 0
