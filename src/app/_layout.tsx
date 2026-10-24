@@ -8,6 +8,7 @@ import { DisclaimerModal } from '@/components/DisclaimerModal';
 import { KidModeScreen } from '@/components/KidModeScreen';
 import { OfflineBanner } from '@/components/OfflineBanner';
 import { ProGateOverlay } from '@/components/ProGateOverlay';
+import { RemoteNotices } from '@/components/RemoteNotices';
 import { OnboardingFlow } from '@/features/profile/components/OnboardingFlow';
 import { useAppTheme } from '@/hooks/use-theme';
 import { useEntitlementRefresh } from '@/hooks/use-entitlement-refresh';
@@ -222,6 +223,7 @@ export default function RootLayout() {
         <Stack.Screen name="admin" />
       </Stack>
       </ProGateOverlay>
+      <RemoteNotices />
       <OfflineBanner />
       {kidModeActive && <KidModeScreen />}
     </ThemeProvider>

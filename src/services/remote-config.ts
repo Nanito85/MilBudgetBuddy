@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { create } from 'zustand';
 
 const API_BASE = process.env.EXPO_PUBLIC_API_BASE_URL ?? 'http://localhost:3000';
 const CACHE_KEY = 'mbb_remote_config_v1';
@@ -23,6 +24,10 @@ export interface RemoteConfig {
   }>;
   minAppVersion: string;
   forceUpdateVersion: string | null;
+  // Route prefixes (e.g. '/pcs-calculator') switched off remotely — the
+  // fallback when a tool is showing wrong numbers and an OTA fix isn't out
+  // yet. Set with the admin /set-flag endpoint, key "disabledRoutes".
+  disabledRoutes: string[];
 }
 
 // Hardcoded fallback — used when server is unreachable
@@ -36,12 +41,29 @@ const FALLBACK_CONFIG: RemoteConfig = {
   announcements: [],
   minAppVersion: '1.0.0',
   forceUpdateVersion: null,
+  disabledRoutes: [],
 };
 
-let _config: RemoteConfig = FALLBACK_CONFIG;
+// Reactive copy so components (RemoteNotices) update when a fetch lands.
+export const useRemoteConfig = create<{ config: RemoteConfig }>(() => ({ config: FALLBACK_CONFIG }));
+
+function setConfig(config: RemoteConfig) {
+  useRemoteConfig.setState({ config });
+}
 
 export function getRemoteConfig(): RemoteConfig {
-  return _config;
+  return useRemoteConfig.getState().config;
+}
+
+/** -1 / 0 / 1 comparing dotted numeric versions ("1.0.3" vs "1.1"). */
+export function compareVersions(a: string, b: string): number {
+  const pa = a.split('.').map((n) => parseInt(n, 10) || 0);
+  const pb = b.split('.').map((n) => parseInt(n, 10) || 0);
+  for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+    const d = (pa[i] ?? 0) - (pb[i] ?? 0);
+    if (d !== 0) return d < 0 ? -1 : 1;
+  }
+  return 0;
 }
 
 export async function initRemoteConfig(): Promise<void> {
@@ -50,7 +72,7 @@ export async function initRemoteConfig(): Promise<void> {
     const raw = await AsyncStorage.getItem(CACHE_KEY);
     if (raw) {
       const { config, fetchedAt } = JSON.parse(raw);
-      _config = { ...FALLBACK_CONFIG, ...config };
+      setConfig(sanitizeConfig(config));
       if (Date.now() - fetchedAt < CACHE_TTL_MS) return; // still fresh
     }
   } catch {
@@ -91,6 +113,10 @@ function sanitizeConfig(raw: unknown): RemoteConfig {
       : [],
     minAppVersion:     typeof r.minAppVersion === 'string'     ? r.minAppVersion     : FALLBACK_CONFIG.minAppVersion,
     forceUpdateVersion: typeof r.forceUpdateVersion === 'string' ? r.forceUpdateVersion : null,
+    // Server sends it inside featureFlags; the cached copy has it top-level.
+    disabledRoutes: ((Array.isArray(flags.disabledRoutes) ? flags.disabledRoutes : Array.isArray(r.disabledRoutes) ? r.disabledRoutes : []) as unknown[])
+      .filter((x): x is string => typeof x === 'string' && x.startsWith('/'))
+      .slice(0, 50),
   };
 }
 
@@ -109,7 +135,7 @@ export async function fetchRemoteConfig(): Promise<void> {
     if (!res.ok) return;
     const raw = await res.json();
     const data = sanitizeConfig(raw);
-    _config = data;
+    setConfig(data);
     await AsyncStorage.setItem(CACHE_KEY, JSON.stringify({ config: data, fetchedAt: Date.now() }));
   } catch {
     // Network unavailable — keep using cached or fallback config, silent fail
