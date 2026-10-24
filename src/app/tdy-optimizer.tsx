@@ -7,7 +7,7 @@ import { BranchRegNote } from '@/components/BranchRegNote';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Brand, Spacing } from '@/constants/theme';
-import { CONUS_DESTINATIONS, lookupPerDiemByZip, PerDiemDestination, PerDiemResult, STANDARD_LODGING, STANDARD_MEALS, STANDARD_TOTAL } from '@/data/gsa-per-diem';
+import { CONUS_DESTINATIONS, GSA_YEAR, lookupPerDiemByZip, PerDiemDestination, PerDiemResult, STANDARD_LODGING, STANDARD_MEALS, STANDARD_TOTAL } from '@/data/gsa-per-diem';
 import { OconusLocation, OCONUS_LOCATIONS } from '@/data/per-diem-rates';
 import { NON_FOREIGN_OCONUS_AREAS } from '@/data/nonforeign-oconus-rates';
 import { useThemeColors } from '@/hooks/use-theme';
@@ -306,7 +306,7 @@ export default function TdyOptimizerScreen() {
             </View>
           </View>
           <ThemedText style={[styles.rateNote, { color: tc.textMuted }]}>
-            GSA FY2026 rates. {selected.isOconus ? 'OCONUS — verify with DefenseTravel.' : 'CONUS rate.'}
+            GSA FY{GSA_YEAR} rates. {selected.isOconus ? 'OCONUS — verify with DefenseTravel.' : 'CONUS rate.'}
           </ThemedText>
         </ThemedView>
 
@@ -407,7 +407,7 @@ export default function TdyOptimizerScreen() {
 
         <ThemedView type="backgroundElement" style={styles.disclaimer}>
           <ThemedText style={[styles.disclaimerText, { color: tc.textMuted }]}>
-            CONUS rates: GSA FY2026. OCONUS rates: DoD DTMO JFTR FY2026. Always verify official rates before travel at gsa.gov or defensetravel.dod.mil.
+            CONUS rates: GSA FY{GSA_YEAR}. OCONUS rates: DoD DTMO JFTR FY2026. Always verify official rates before travel at gsa.gov or defensetravel.dod.mil.
           </ThemedText>
         </ThemedView>
 
