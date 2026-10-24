@@ -109,8 +109,10 @@ export default function LegalScreen() {
                   synced to your Firebase account if you sign in.
                 </ThemedText>
                 <ThemedText style={[styles.bodyText, { color: tc.textSecondary }]}>
-                  We do not sell your data. Anonymous usage analytics (screen views, feature usage counts) may be collected
-                  to improve the app. If you sign in, your pay profile and budget data (pay grade, ZIP code, TSP
+                  We do not sell your data. Usage analytics (screen views, feature use) are collected to improve the app;
+                  if you&apos;re signed in they&apos;re linked to your account ID, and they never include your pay or budget
+                  figures. Crash reports go to Sentry, and feedback you send is stored with Supabase and may be summarized
+                  by an AI service (Anthropic). If you sign in, your pay profile and budget data (pay grade, ZIP code, TSP
                   contributions, and similar entries) sync to your Firebase account so you can access them across devices.
                   We do not store payment card details.
                 </ThemedText>

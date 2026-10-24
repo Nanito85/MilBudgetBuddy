@@ -20,7 +20,7 @@
 
 <h1>Privacy Policy</h1>
 <div class="badge">🔐 Your data stays on your device</div>
-<p class="updated">Last updated: July 2026 · <a href="./terms.html">View Terms of Service →</a></p>
+<p class="updated">Last updated: October 2026 · <a href="./terms.html">View Terms of Service →</a></p>
 
 <p>MilBudgetBuddy ("the App") is a personal finance tool for US military service members, veterans, and military families. We are committed to protecting your privacy and being fully transparent about how your data is handled.</p>
 
@@ -29,7 +29,9 @@
   <li><strong>Local device storage:</strong> Your profile (branch, rank, years of service), budget categories, expenses, savings goals, net worth entries, and app preferences are stored locally on your device using AsyncStorage. This data never leaves your device unless you sign in to sync.</li>
   <li><strong>Cloud sync (optional):</strong> If you create an account and sign in, your data is synced to a private Cloud Firestore database (Google Firebase), secured by rules that only allow your own authenticated account to read or write it.</li>
   <li><strong>Account information:</strong> If you create an account, we store your email address only. This is used for authentication and account recovery.</li>
-  <li><strong>Anonymous usage analytics:</strong> We collect anonymous analytics about which features are used (e.g., "user opened Pay Chart"). No personally identifiable information, pay amounts, or financial data is included in analytics.</li>
+  <li><strong>Usage analytics:</strong> We record which features are used (e.g., "user opened Pay Chart"), plus your device platform (iOS or Android). If you are signed in, these events are linked to your account ID; if not, they are not linked to any account. Analytics never include your pay amounts, budget figures, or other financial data.</li>
+  <li><strong>Feedback you send:</strong> If you send feedback from the app, its text (and your email, if you're signed in) is stored so we can respond. Feedback text may be summarized by an AI service (Anthropic) to help us review it.</li>
+  <li><strong>Subscription records:</strong> If you subscribe to MilBudgetBuddy Pro, we store the purchase confirmation from Apple or Google and its expiry date, linked to your account ID, to unlock Pro. We never receive your payment card details.</li>
 </ul>
 
 <h2>2. What We Never Collect</h2>
@@ -54,7 +56,10 @@
 <ul>
   <li><strong>Firebase (Google):</strong> Used for authentication and optional cloud sync. Subject to Google's Privacy Policy.</li>
   <li><strong>Expo / EAS:</strong> Used for app distribution and over-the-air updates. Expo does not have access to your financial data.</li>
-  <li><strong>Sentry:</strong> Used for anonymous crash reporting. No financial data or PII is included in crash reports.</li>
+  <li><strong>Sentry:</strong> Used for crash and error reporting. Reports carry a one-way hashed account ID, not your name, email, or financial data.</li>
+  <li><strong>Fly.io:</strong> Hosts our server, which verifies purchases and receives analytics and feedback.</li>
+  <li><strong>Supabase:</strong> Stores feedback you send from the app.</li>
+  <li><strong>Anthropic:</strong> May summarize feedback text to help us review it. Not used for your profile, pay, or budget data.</li>
   <li><strong>Apple App Store / Google Play:</strong> MilBudgetBuddy Pro subscription purchases are processed entirely by Apple or Google. We never see, receive, or store your payment card details — standard app store analytics apply per their respective policies.</li>
 </ul>
 
@@ -66,12 +71,12 @@
   <li><strong>Access:</strong> All your data is visible within the app at any time — profile, budget, expenses, goals, and net worth.</li>
   <li><strong>Export:</strong> Use the Financial Readiness Worksheet (Tools → Financial Command) to generate and share a PDF of your financial data.</li>
   <li><strong>Delete local data:</strong> Settings → Reset All Data permanently wipes all data from this device.</li>
-  <li><strong>Delete account and cloud data:</strong> Settings → Delete Account permanently removes your account and all synced cloud data.</li>
-  <li><strong>Opt out of analytics:</strong> Analytics are anonymous and aggregated. Contact us if you have concerns.</li>
+  <li><strong>Delete account and cloud data:</strong> Settings → Delete Account permanently removes your account and all synced cloud data. Usage analytics, subscription records, and feedback are kept separately; email us to have those removed as well.</li>
+  <li><strong>Analytics:</strong> Contact us to have analytics linked to your account deleted.</li>
 </ul>
 
 <h2>7. Data Retention</h2>
-<p>Local data is retained on your device until you uninstall the app or use Reset All Data. Cloud data is retained until you delete your account. Anonymous analytics data may be retained for up to 24 months for product improvement purposes.</p>
+<p>Local data is retained on your device until you uninstall the app or use Reset All Data. Cloud data is retained until you delete your account. Analytics data may be retained for up to 24 months for product improvement purposes.</p>
 
 <h2>8. California / CCPA and GDPR</h2>
 <p>We do not sell personal data as defined under CCPA. EU/EEA users may exercise rights of access, correction, and deletion by contacting us. Our legal basis for processing is your consent (account creation) and legitimate interest (app functionality).</p>

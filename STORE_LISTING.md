@@ -13,7 +13,7 @@ Military pay, budget, and finance tools built for service members.
 
 ## Full Description
 
-**Built for the uniform. Free, private, and offline-first.**
+**Built for the uniform. Private and offline-first.**
 
 MilBudgetBuddy is the all-in-one financial companion for active duty, Guard, and Reserve service members. Every tool is purpose-built for military pay, benefits, and transitions — no account required, no data sold.
 
@@ -48,10 +48,9 @@ MilBudgetBuddy is the all-in-one financial companion for active duty, Guard, and
 ### SMART FEATURES
 - **Pay Day Countdown** — Always know how many days until the 1st or 15th (adjusted for weekends)
 - **Push Notifications** — Optional daily finance tips + evening-before pay day reminders
-- **AI Finance Chat** — Ask military pay, benefits, or budgeting questions in plain English
 - **Offline-first** — All data stays on your device. No account required.
 
-**Free to download.** Core tools are free. MilBudgetBuddy Pro ($4.99/mo or $49.99/yr, 7-day free trial) unlocks the full pay & entitlements suite, PCS/DITY/TLE/TLA calculators, retirement/TSP/VA projections, and budget/debt/net worth tracking.
+**Free to download, with a 7-day free trial.** After the trial, MilBudgetBuddy Pro ($4.99/mo or $49.99/yr) is required to use the app's tools: the full pay & entitlements suite, PCS/DITY/TLE/TLA calculators, retirement/TSP/VA projections, and budget/debt/net worth tracking.
 
 ---
 
@@ -79,10 +78,12 @@ Initial release. Includes pay chart, LES dashboard, budget tracker with expense 
 
 ## Privacy Policy Notes
 - No user account required
-- All financial data stored locally on device (AsyncStorage)
-- No analytics, no ad tracking, no data transmitted to servers
+- Financial data stored locally on device (AsyncStorage); synced to the user's own Firebase account only if they sign in
+- Usage analytics (screen/feature events, platform) go to our server; linked to the account ID when signed in — declare "Usage Data / Product Interaction — linked to user" in App Store privacy labels and the Play Data safety form
+- Crash reports go to Sentry with a hashed account ID
+- Feedback text (and email if signed in) stored in Supabase; may be summarized by Anthropic
+- No ad tracking; data is never sold
 - Push notifications are optional and can be disabled at any time
-- AI chat uses Anthropic API — only the message text is sent; no PII is transmitted
 
 ---
 
