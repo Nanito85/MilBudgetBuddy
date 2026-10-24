@@ -4,6 +4,11 @@ import * as Updates from 'expo-updates';
 
 const DSN = process.env.EXPO_PUBLIC_SENTRY_DSN;
 
+// Records each screen change as a breadcrumb (and navigation span), so an
+// error report shows the path the member took to reach it. Registered with
+// the router's navigation container in app/_layout.tsx.
+export const navigationIntegration = Sentry.reactNavigationIntegration();
+
 export function initSentry() {
   if (!DSN) return; // Sentry disabled until DSN is set in .env
 
@@ -14,6 +19,7 @@ export function initSentry() {
     tracesSampleRate: 0.1,   // 10% of transactions traced
     enableAutoSessionTracking: true,
     debug: false,
+    integrations: [navigationIntegration],
   });
   // Every OTA update shares one `release` (the native app version), so tag
   // which update is actually running — lets a regression be traced to the

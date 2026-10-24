@@ -1,5 +1,5 @@
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { Stack, usePathname } from 'expo-router';
+import { Stack, useNavigationContainerRef, usePathname } from 'expo-router';
 import React, { useEffect } from 'react';
 
 import { ErrorBoundary } from '@/components/ErrorBoundary';
@@ -28,7 +28,7 @@ import { useNwSnapshotsStore } from '@/store/networth-snapshots.store';
 import { useSavingsGoalsStore } from '@/store/savings-goals.store';
 import { initRemoteConfig } from '@/services/remote-config';
 import { schedulePayDayReminders } from '@/services/notifications';
-import { initSentry, setUserContext } from '@/services/sentry';
+import { initSentry, navigationIntegration, setUserContext } from '@/services/sentry';
 import { startAnalytics, stopAnalytics, trackEvent, trackScreen } from '@/services/analytics';
 
 // Init Sentry at module load time — before any component renders
@@ -42,6 +42,10 @@ initSentry();
 // whole app shell (Stack, overlays, banners) on every single navigation.
 function ScreenTracker() {
   const pathname = usePathname();
+  const navRef = useNavigationContainerRef();
+  useEffect(() => {
+    if (navRef) navigationIntegration.registerNavigationContainer(navRef);
+  }, [navRef]);
   useEffect(() => {
     if (pathname) trackScreen(pathname);
   }, [pathname]);
