@@ -120,9 +120,9 @@ export function FeedbackModal({ visible, onClose }: Props) {
               showsVerticalScrollIndicator={false}>
 
               {/* Eyebrow */}
-              <ThemedText style={[styles.eyebrow, { color: tc.tactical }]}>// MILBUDGETBUDDY</ThemedText>
+              <ThemedText style={[styles.eyebrow, { color: tc.tactical }]}>{'// MILBUDGETBUDDY'}</ThemedText>
               <ThemedText style={[styles.sub, { color: tc.textSecondary }]}>
-                What's on your mind? We read every submission.
+                What&apos;s on your mind? We read every submission.
               </ThemedText>
 
               {/* Category */}

@@ -109,7 +109,7 @@ function AddGoalModal({ visible, accentColor, onClose, onAdd }: {
             <ThemedText style={[addGoalStyles.selectedEmoji]}>{emoji}</ThemedText>
 
             {/* Goal name */}
-            <ThemedText style={[addGoalStyles.fieldLabel, { color: tc.textSecondary }]}>WHAT'S YOUR GOAL?</ThemedText>
+            <ThemedText style={[addGoalStyles.fieldLabel, { color: tc.textSecondary }]}>WHAT&apos;S YOUR GOAL?</ThemedText>
             <View style={[addGoalStyles.inputWrap, { backgroundColor: tc.inputBg, borderColor: tc.borderColor }]}>
               <TextInput
                 value={name}

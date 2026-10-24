@@ -562,7 +562,7 @@ export default function PaywallScreen() {
             </View>
           ) : (
             <>
-              <ThemedText style={[styles.eyebrow, { color: tc.tactical }]}>// UNLOCK EVERYTHING</ThemedText>
+              <ThemedText style={[styles.eyebrow, { color: tc.tactical }]}>{'// UNLOCK EVERYTHING'}</ThemedText>
               <ThemedText style={[styles.heading, { color: tc.textPrimary }]}>
                 {willGetTrial ? `7 days free, then ${headingPrice}` : headingPrice}
               </ThemedText>

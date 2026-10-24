@@ -141,7 +141,7 @@ const StatePickerModal = React.memo(function StatePickerModal({ visible, selecte
       <View style={[stateStyles.bg, { backgroundColor: tc.background }]}>
         <SafeAreaView style={stateStyles.safe}>
           <View style={stateStyles.header}>
-            <ThemedText style={[stateStyles.title, { color: tc.textPrimary }]}>// SELECT STATE</ThemedText>
+            <ThemedText style={[stateStyles.title, { color: tc.textPrimary }]}>{'// SELECT STATE'}</ThemedText>
             <Pressable onPress={onClose}>
               <ThemedText style={[stateStyles.cancel, { color: tc.tactical }]}>DONE</ThemedText>
             </Pressable>
@@ -233,7 +233,7 @@ function TimePickerModal({ visible, selectedHour, selectedMinute, onSelect, onCl
       <View style={[stateStyles.bg, { backgroundColor: tc.background }]}>
         <SafeAreaView style={stateStyles.safe}>
           <View style={stateStyles.header}>
-            <ThemedText style={[stateStyles.title, { color: tc.textPrimary }]}>// REMINDER TIME</ThemedText>
+            <ThemedText style={[stateStyles.title, { color: tc.textPrimary }]}>{'// REMINDER TIME'}</ThemedText>
             <Pressable onPress={onClose}>
               <ThemedText style={[stateStyles.cancel, { color: tc.tactical }]}>DONE</ThemedText>
             </Pressable>
@@ -875,7 +875,7 @@ export default function ProfileScreen() {
               <ThemedText style={[styles.backText, { color: tc.tactical }]}>‹ Back</ThemedText>
             </Pressable>
           )}
-          <ThemedText type="label" style={[styles.eyebrow, { color: tc.tactical }]}>// PERSONNEL FILE</ThemedText>
+          <ThemedText type="label" style={[styles.eyebrow, { color: tc.tactical }]}>{'// PERSONNEL FILE'}</ThemedText>
           <ThemedText style={[styles.heading, { color: tc.textPrimary }]}>PROFILE</ThemedText>
           <ThemedText type="small" themeColor="textSecondary" style={styles.headingSub}>
             Your service record, pay setup, and app preferences.

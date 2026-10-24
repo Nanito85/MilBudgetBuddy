@@ -146,7 +146,7 @@ export default function TLECalculatorScreen() {
               />
               <Pressable onPress={() => { setLocality(null); setUseCustomRate(true); }}>
                 <ThemedText style={styles.customRateLink}>
-                  My location isn't listed — enter a custom rate
+                  My location isn&apos;t listed — enter a custom rate
                 </ThemedText>
               </Pressable>
             </>
@@ -375,7 +375,7 @@ export default function TLECalculatorScreen() {
           effective 01 OCT 2025 for FY2026); lodging taxes and mandatory fees count toward this cap.
           TLA (OCONUS) has no flat-dollar cap. TLE/TLA entitlements are determined by your finance
           office using your official orders and current JTR rates. CONUS rates from GSA; OCONUS
-          rates from DoD JFTR. Always verify with your gaining unit's finance office before making
+          rates from DoD JFTR. Always verify with your gaining unit&apos;s finance office before making
           lodging decisions.
         </ThemedText>
         <BranchRegNote />

@@ -92,7 +92,7 @@ export default function LegalScreen() {
             <ThemedText style={[styles.backText, { color: tc.tactical }]}>‹ Back</ThemedText>
           </Pressable>
 
-          <ThemedText style={[styles.eyebrow, { color: tc.tactical }]}>// MILBUDGETBUDDY</ThemedText>
+          <ThemedText style={[styles.eyebrow, { color: tc.tactical }]}>{'// MILBUDGETBUDDY'}</ThemedText>
           <ThemedText style={[styles.pageTitle, { color: tc.textPrimary }]}>LEGAL & PRIVACY</ThemedText>
 
           {/* Privacy Policy */}
@@ -117,7 +117,7 @@ export default function LegalScreen() {
                   We do not store payment card details.
                 </ThemedText>
                 <ThemedText style={[styles.bodyText, { color: tc.textSecondary }]}>
-                  Firebase Authentication is used for optional account sign-in. Google's privacy policy applies to that
+                  Firebase Authentication is used for optional account sign-in. Google&apos;s privacy policy applies to that
                   service.
                 </ThemedText>
                 <Pressable onPress={() => Linking.openURL(PRIVACY_URL)} style={styles.linkBtn}>
@@ -151,7 +151,7 @@ export default function LegalScreen() {
                   cancelled at least 24 hours before the renewal date, and no refunds are provided for partial periods.
                 </ThemedText>
                 <ThemedText style={[styles.bodyText, { color: tc.textSecondary }]}>
-                  You can manage or cancel your subscription anytime through your device's App Store or Google Play
+                  You can manage or cancel your subscription anytime through your device&apos;s App Store or Google Play
                   account settings.
                 </ThemedText>
                 <Pressable onPress={() => Linking.openURL(TERMS_URL)} style={styles.linkBtn}>

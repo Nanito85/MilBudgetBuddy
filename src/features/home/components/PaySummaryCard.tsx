@@ -269,7 +269,7 @@ export function PaySummaryCard({ breakdown }: Props) {
         <View style={styles.detail}>
           <View style={[styles.divider, { backgroundColor: tc.borderColor }]} />
 
-          <ThemedText type="label" style={[styles.sectionHead, { color: tc.tactical }]}>// ENTITLEMENTS (MONTHLY)</ThemedText>
+          <ThemedText type="label" style={[styles.sectionHead, { color: tc.tactical }]}>{'// ENTITLEMENTS (MONTHLY)'}</ThemedText>
           <Row
             label={breakdown.isRetiredPay
               ? `RETIRED PAY (${breakdown.retiredPayPct}% OF HIGH-3)`
@@ -311,7 +311,7 @@ export function PaySummaryCard({ breakdown }: Props) {
 
           <View style={[styles.divider, { backgroundColor: tc.borderColor }]} />
 
-          <ThemedText type="label" style={[styles.sectionHead, { color: tc.tactical }]}>// DEDUCTIONS (MONTHLY)</ThemedText>
+          <ThemedText type="label" style={[styles.sectionHead, { color: tc.tactical }]}>{'// DEDUCTIONS (MONTHLY)'}</ThemedText>
           <Row label="FICA (SS + MED)"  value={`-${fmtPay(breakdown.fica)}`}     indent negative />
           <Row label="FED TAX (EST.)"   value={`-${fmtPay(breakdown.fedTax)}`}   indent negative />
           {breakdown.isCzte && breakdown.czteExcluded > 0 && (
@@ -377,7 +377,7 @@ export function PaySummaryCard({ breakdown }: Props) {
           {hasSpouseIncome && (
             <>
               <View style={[styles.divider, { backgroundColor: tc.borderColor }]} />
-              <ThemedText type="label" style={[styles.sectionHead, { color: tc.tactical }]}>// HOUSEHOLD COMBINED</ThemedText>
+              <ThemedText type="label" style={[styles.sectionHead, { color: tc.tactical }]}>{'// HOUSEHOLD COMBINED'}</ThemedText>
               <Row label="YOUR NET/MO"        value={fmtPay(breakdown.netPay)}   indent positive />
               <Row label="SPOUSE INCOME/MO"   value={fmtPay(spouseMonthlyIncome)} indent positive />
               <Row label="HOUSEHOLD MONTHLY"  value={fmtPay(householdMonthly)}   bold positive />

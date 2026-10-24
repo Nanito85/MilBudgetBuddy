@@ -100,7 +100,7 @@ export function StationPicker({ label, selected, onSelect, conusOnly = false }: 
           {!zipMode && (
             <Pressable onPress={() => setZipMode(true)} style={styles.zipToggle}>
               <ThemedText style={[styles.zipToggleText, { color: tc.tactical }]}>
-                Can't find your duty station? Enter your ZIP code
+                Can&apos;t find your duty station? Enter your ZIP code
               </ThemedText>
             </Pressable>
           )}
@@ -138,7 +138,7 @@ export function StationPicker({ label, selected, onSelect, conusOnly = false }: 
               )}
               {zipQuery.length === 5 && !zipMatch && (
                 <ThemedText themeColor="textSecondary" style={styles.empty}>
-                  Couldn't match that ZIP to a state — try searching by installation or city instead.
+                  Couldn&apos;t match that ZIP to a state — try searching by installation or city instead.
                 </ThemedText>
               )}
               <Pressable onPress={() => { setZipMode(false); setZipQuery(''); }} style={styles.zipBack}>

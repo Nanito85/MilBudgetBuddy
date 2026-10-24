@@ -55,7 +55,7 @@ function PayTypePickerModal({ visible, selected, onSelect, onClose }: {
       <View style={[ptStyles.bg, { backgroundColor: tc.background }]}>
         <SafeAreaView style={ptStyles.safe}>
           <View style={ptStyles.header}>
-            <ThemedText style={[ptStyles.title, { color: tc.textPrimary }]}>// SELECT PAY TYPE</ThemedText>
+            <ThemedText style={[ptStyles.title, { color: tc.textPrimary }]}>{'// SELECT PAY TYPE'}</ThemedText>
             <Pressable onPress={onClose}><ThemedText style={[ptStyles.done, { color: tc.tactical }]}>DONE</ThemedText></Pressable>
           </View>
           <ScrollView showsVerticalScrollIndicator={false}>
@@ -120,7 +120,7 @@ function DeploymentLocationPickerModal({ visible, selectedId, onSelect, onClose 
       <View style={[dlStyles.bg, { backgroundColor: tc.background }]}>
         <SafeAreaView style={dlStyles.safe}>
           <View style={dlStyles.header}>
-            <ThemedText style={[dlStyles.title, { color: tc.textPrimary }]}>// DEPLOYMENT LOCATION</ThemedText>
+            <ThemedText style={[dlStyles.title, { color: tc.textPrimary }]}>{'// DEPLOYMENT LOCATION'}</ThemedText>
             <Pressable onPress={() => { setQuery(''); onClose(); }}><ThemedText style={[dlStyles.done, { color: tc.tactical }]}>DONE</ThemedText></Pressable>
           </View>
           <ThemedText style={[dlStyles.hint, { color: tc.textMuted }]}>
@@ -448,7 +448,7 @@ export function EditPayModal({ visible, onClose }: { visible: boolean; onClose: 
             {/* LES Overrides */}
             <View style={[editStyles.sectionHead, { borderTopColor: tc.borderColor }]}>
               <ThemedText style={[editStyles.sectionHeadText, { color: tc.textPrimary }]}>📋 LES OVERRIDES</ThemedText>
-              <ThemedText style={[editStyles.sectionHeadSub, { color: tc.textHint }]}>Pre-filled with the app's calculated estimate — edit any that differ from your actual LES.</ThemedText>
+              <ThemedText style={[editStyles.sectionHeadSub, { color: tc.textHint }]}>Pre-filled with the app&apos;s calculated estimate — edit any that differ from your actual LES.</ThemedText>
             </View>
 
             <ThemedText style={[editStyles.fieldLabel, { color: tc.textHint }]}>BASE PAY ($/mo from LES)</ThemedText>
@@ -705,7 +705,7 @@ export function EditPayModal({ visible, onClose }: { visible: boolean; onClose: 
             {/* Additional Deductions */}
             <View style={[editStyles.sectionHead, { borderTopColor: tc.borderColor }]}>
               <ThemedText style={[editStyles.sectionHeadText, { color: tc.textPrimary }]}>➖ ADDITIONAL DEDUCTIONS</ThemedText>
-              <ThemedText style={[editStyles.sectionHeadSub, { color: tc.textHint }]}>Add deductions from your LES that aren't listed above: BOP, allotments, AAFES debt, vision plan, mid-month pay, etc.</ThemedText>
+              <ThemedText style={[editStyles.sectionHeadSub, { color: tc.textHint }]}>Add deductions from your LES that aren&apos;t listed above: BOP, allotments, AAFES debt, vision plan, mid-month pay, etc.</ThemedText>
             </View>
 
             {extraDeductions.map((item) => (

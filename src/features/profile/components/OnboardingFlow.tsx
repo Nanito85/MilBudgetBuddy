@@ -374,9 +374,9 @@ function BranchStep({
   return (
     <View style={styles.step}>
       <View style={styles.topArea}>
-        <ThemedText style={styles.stepTitle}>What's your branch?</ThemedText>
+        <ThemedText style={styles.stepTitle}>What&apos;s your branch?</ThemedText>
         <ThemedText type="small" themeColor="textSecondary" style={styles.stepSub}>
-          We'll tailor your pay breakdown and tips to your service.
+          We&apos;ll tailor your pay breakdown and tips to your service.
         </ThemedText>
         <View style={styles.selectorWrap}>
           <BranchSelector selected={selected} onSelect={setSelected} />
@@ -421,7 +421,7 @@ function ServiceStatusStep({
   return (
     <View style={styles.step}>
       <View style={styles.topArea}>
-        <ThemedText style={styles.stepTitle}>What's your status?</ThemedText>
+        <ThemedText style={styles.stepTitle}>What&apos;s your status?</ThemedText>
         <ThemedText type="small" themeColor="textSecondary" style={styles.stepSub}>
           This helps us show the right calculators and pay tools for your situation.
         </ThemedText>
@@ -755,7 +755,7 @@ function CivilianServiceInfoStep({
 
       <ThemedText style={styles.stepTitle}>Your GS info</ThemedText>
       <ThemedText type="small" themeColor="textSecondary" style={styles.stepSub}>
-        We'll pull your General Schedule pay for the home screen and GS Pay Calculator.
+        We&apos;ll pull your General Schedule pay for the home screen and GS Pay Calculator.
       </ThemedText>
 
       {/* GS Grade */}
@@ -1030,7 +1030,7 @@ function RetiredServiceInfoStep({
           VA DISABILITY RATING
         </ThemedText>
         <ThemedText type="small" themeColor="textSecondary" style={{ lineHeight: 18 }}>
-          We'll estimate your monthly VA disability compensation based on this rating and your dependents.
+          We&apos;ll estimate your monthly VA disability compensation based on this rating and your dependents.
         </ThemedText>
         <View style={styles.chipGrid}>
           {VA_PERCENT_OPTIONS.map((p) => (
@@ -1257,9 +1257,9 @@ function FinancialGoalStep({
   return (
     <View style={styles.step}>
       <View style={styles.topArea}>
-        <ThemedText style={styles.stepTitle}>What's your top financial goal?</ThemedText>
+        <ThemedText style={styles.stepTitle}>What&apos;s your top financial goal?</ThemedText>
         <ThemedText type="small" themeColor="textSecondary" style={styles.stepSub}>
-          We'll prioritize tips and tools around what matters most to you right now.
+          We&apos;ll prioritize tips and tools around what matters most to you right now.
         </ThemedText>
         <View style={styles.goalGrid}>
           {GOAL_ORDER.map((goal) => (
@@ -1320,7 +1320,7 @@ function NotificationsStep({ onFinish }: { onFinish: () => void }) {
     <View style={styles.step}>
       <View style={styles.heroArea}>
         <ThemedText style={styles.heroEmoji}>✅</ThemedText>
-        <ThemedText style={styles.stepTitle}>You're set!</ThemedText>
+        <ThemedText style={styles.stepTitle}>You&apos;re set!</ThemedText>
         <ThemedText type="small" themeColor="textSecondary" style={styles.stepSub}>
           Your financial dashboard is ready. Get daily tips delivered every morning.
         </ThemedText>

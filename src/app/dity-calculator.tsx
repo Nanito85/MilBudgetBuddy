@@ -271,7 +271,7 @@ export default function DITYCalculatorScreen() {
                 />
               )}
               <ThemedText type="small" themeColor="textSecondary" style={{ lineHeight: 18 }}>
-                Pro-gear doesn't count against your HHG allowance, but it must be declared and
+                Pro-gear doesn&apos;t count against your HHG allowance, but it must be declared and
                 weighed separately — or the carrier folds it into your HHG weight and you lose the
                 extra allowance. Total authorized: {fmtLbs(result.totalAuthorizedWeight)}.
               </ThemedText>
@@ -485,9 +485,9 @@ export default function DITYCalculatorScreen() {
 
         {/* Disclaimer */}
         <ThemedText type="small" themeColor="textSecondary" style={styles.disclaimer}>
-          The gov't rate per lb above is a rough planning estimate — DoD does not publish a public
+          The gov&apos;t rate per lb above is a rough planning estimate — DoD does not publish a public
           per-pound GCC table; your actual Government Constructed Cost is computed per-move in DPS
-          using the current move-management contractor's tariff. Get your authoritative GCC estimate
+          using the current move-management contractor&apos;s tariff. Get your authoritative GCC estimate
           from the official PPM estimator in DPS/move.mil, or your TMO/PPPO, before making financial
           decisions. Driving distance estimates use straight-line × 1.25 factor — verify your actual
           route. Weight allowances are from JTR Table 5-37 ({PPM_DATA_YEAR}); pro-gear (2,000 lb

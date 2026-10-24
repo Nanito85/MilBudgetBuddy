@@ -211,7 +211,7 @@ export default function TricareEstimatorScreen() {
           <Pressable onPress={() => router.back()} style={styles.backBtn}>
             <ThemedText style={[styles.backText, { color: tc.tactical }]}>‹ BACK</ThemedText>
           </Pressable>
-          <ThemedText type="label" style={[styles.eyebrow, { color: tc.tactical }]}>// MEDICAL BENEFITS</ThemedText>
+          <ThemedText type="label" style={[styles.eyebrow, { color: tc.tactical }]}>{'// MEDICAL BENEFITS'}</ThemedText>
           <ThemedText style={[styles.heading, { color: tc.textPrimary }]}>TRICARE ESTIMATOR</ThemedText>
           <ThemedText type="label" style={[styles.subhead, { color: tc.textMuted }]}>PRIME · SELECT · DENTAL · PHARMACY</ThemedText>
         </View>
@@ -263,7 +263,7 @@ export default function TricareEstimatorScreen() {
           <View style={[styles.inputCard, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
             <ThemedText style={[styles.inputLabel, { color: tc.textMuted }]}>BENEFICIARY GROUP</ThemedText>
             <ThemedText style={[styles.inputHint, { color: tc.textMuted }]}>
-              Based on sponsor's initial enlistment/appointment date — affects enrollment fees, deductibles &amp; catastrophic caps
+              Based on sponsor&apos;s initial enlistment/appointment date — affects enrollment fees, deductibles &amp; catastrophic caps
             </ThemedText>
             <ChipRow<BeneficiaryGroup>
               options={[
@@ -306,7 +306,7 @@ export default function TricareEstimatorScreen() {
           <View style={[styles.inputCard, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
             <ThemedText style={[styles.inputLabel, { color: tc.textMuted }]}>DENTAL COVERAGE (TDP)</ThemedText>
             <ThemedText style={[styles.inputHint, { color: tc.textMuted }]}>
-              TDP covers family members (sponsor's own dental is free at MTFs). Priced by sponsor pay grade.
+              TDP covers family members (sponsor&apos;s own dental is free at MTFs). Priced by sponsor pay grade.
             </ThemedText>
             <ChipRow<DentalPlan>
               options={[
@@ -324,7 +324,7 @@ export default function TricareEstimatorScreen() {
           <View style={[styles.inputCard, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
             <ThemedText style={[styles.inputLabel, { color: tc.textMuted }]}>DENTAL COVERAGE</ThemedText>
             <ThemedText style={[styles.inputHint, { color: tc.textMuted }]}>
-              Retirees aren't eligible for TDP — you'd use FEDVIP instead. See notes below for typical cost.
+              Retirees aren&apos;t eligible for TDP — you&apos;d use FEDVIP instead. See notes below for typical cost.
             </ThemedText>
           </View>
         )}

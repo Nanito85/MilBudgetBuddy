@@ -129,7 +129,7 @@ export default function TspCalculatorScreen() {
               {!atMaxMatch && (
                 <View style={[styles.warningBox, { backgroundColor: Brand.warning + '18', borderColor: Brand.warning + '60' }]}>
                   <ThemedText style={[styles.warningText, { color: tc.warning }]}>
-                    ⚠  Contributing less than 5% — you're leaving ${Math.round(result.matchLeftOnTable).toLocaleString()}/mo in free match on the table.
+                    ⚠  Contributing less than 5% — you&apos;re leaving ${Math.round(result.matchLeftOnTable).toLocaleString()}/mo in free match on the table.
                   </ThemedText>
                 </View>
               )}

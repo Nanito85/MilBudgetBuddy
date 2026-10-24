@@ -435,7 +435,7 @@ export default function LESDecoderScreen() {
           <ThemedView type="backgroundElement" style={styles.blufBox}>
             <ThemedText style={[styles.blufTitle, { color: tc.accent }]}>CHECK EVERY MONTH</ThemedText>
             <ThemedText type="small" style={{ lineHeight: 18 }}>
-              Most pay errors go unreported because members don't know what to look for.
+              Most pay errors go unreported because members don&apos;t know what to look for.
               Review your LES every pay period against this list. DFAS has correction
               windows — the sooner you catch an error, the easier it is to fix.
             </ThemedText>

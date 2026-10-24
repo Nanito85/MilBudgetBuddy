@@ -415,7 +415,7 @@ export default function PCSCalculatorScreen() {
               </View>
               {!isDriving && (
                 <ThemedText type="small" themeColor="textSecondary" style={styles.hint}>
-                  MALT (mileage reimbursement) doesn't apply if you're not driving — e.g. flying, shipping a POV, or already there.
+                  MALT (mileage reimbursement) doesn&apos;t apply if you&apos;re not driving — e.g. flying, shipping a POV, or already there.
                 </ThemedText>
               )}
             </View>
@@ -496,7 +496,7 @@ export default function PCSCalculatorScreen() {
               {!bothConus && (currentPD?.oconus || gainingPD?.oconus) && (
                 <ThemedText type="small" themeColor="textSecondary" style={styles.hint}>
                   An OCONUS leg uses TLA rules (up to {TLA_MAX_DAYS} days, no daily cap) instead of
-                  the {TLE_MAX_DAYS}-day CONUS TLE pool. If you're departing CONUS for an OCONUS
+                  the {TLE_MAX_DAYS}-day CONUS TLE pool. If you&apos;re departing CONUS for an OCONUS
                   station, your CONUS-side TLE is typically capped at 7 days — verify with finance.
                 </ThemedText>
               )}

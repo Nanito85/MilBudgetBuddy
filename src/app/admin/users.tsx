@@ -217,10 +217,10 @@ export default function AdminUsersScreen() {
         contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
         <View style={[s.noticeCard, { backgroundColor: tc.surface, borderColor: Brand.tactical + '40' }]}>
           <ThemedText style={[s.noticeText, { color: tc.textSecondary }]}>
-            This grants Pro directly to a member's account server-side — no code, no purchase, nothing they
+            This grants Pro directly to a member&apos;s account server-side — no code, no purchase, nothing they
             need to enter in the app. It writes straight to their profile the same way a real purchase does, so
             it works immediately. (Discount codes on the Codes screen are for record-keeping only right now —
-            there's no in-app way for a member to redeem one, so use this screen instead to actually comp someone.)
+            there&apos;s no in-app way for a member to redeem one, so use this screen instead to actually comp someone.)
           </ThemedText>
         </View>
 
@@ -241,7 +241,7 @@ export default function AdminUsersScreen() {
         )}
 
         <View style={[s.card, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
-          <ThemedText style={[s.cardTitle, { color: tc.tactical }]}>// MEMBER EMAIL</ThemedText>
+          <ThemedText style={[s.cardTitle, { color: tc.tactical }]}>{'// MEMBER EMAIL'}</ThemedText>
           <View style={[s.input, { backgroundColor: tc.inputBg, borderColor: tc.borderColor }]}>
             <TextInput
               value={email}
@@ -298,7 +298,7 @@ export default function AdminUsersScreen() {
 
         {lastResult && (
           <View style={[s.card, { backgroundColor: tc.surface, borderColor: Brand.tactical + '40' }]}>
-            <ThemedText style={[s.cardTitle, { color: tc.tactical }]}>// LAST ACTION</ThemedText>
+            <ThemedText style={[s.cardTitle, { color: tc.tactical }]}>{'// LAST ACTION'}</ThemedText>
             <ThemedText style={[s.resultText, { color: tc.textPrimary }]}>
               {lastResult.action === 'grant' ? 'Granted' : 'Revoked'} — {lastResult.email}
             </ThemedText>
@@ -314,7 +314,7 @@ export default function AdminUsersScreen() {
         )}
 
         <View style={s.listHeaderRow}>
-          <ThemedText style={[s.sectionTitle, { color: tc.tactical }]}>// GRANTED / PRO ACCESS ({rows.length})</ThemedText>
+          <ThemedText style={[s.sectionTitle, { color: tc.tactical }]}>{'// GRANTED / PRO ACCESS ('}{rows.length})</ThemedText>
           <Pressable onPress={fetchRows}>
             <ThemedText style={[s.refreshText, { color: tc.accent }]}>REFRESH</ThemedText>
           </Pressable>
@@ -351,7 +351,7 @@ export default function AdminUsersScreen() {
               {!!row.note && <ThemedText style={[s.rowMeta, { color: tc.textMuted }]}>note: {row.note}</ThemedText>}
               {row.accountDeleted && (
                 <ThemedText style={[s.rowMeta, { color: tc.textMuted, fontStyle: 'italic' }]}>
-                  This entitlement record is orphaned — the member's account no longer exists. Kept for history; nothing to revoke.
+                  This entitlement record is orphaned — the member&apos;s account no longer exists. Kept for history; nothing to revoke.
                 </ThemedText>
               )}
               {active && (

@@ -292,7 +292,7 @@ export default function EtsChecklistScreen() {
 
         {pct >= 1 && (
           <ThemedView type="backgroundElement" style={styles.completeBanner}>
-            <ThemedText style={[styles.completeText, { color: tc.tactical }]}>🎖 Checklist complete — you're ready to transition!</ThemedText>
+            <ThemedText style={[styles.completeText, { color: tc.tactical }]}>🎖 Checklist complete — you&apos;re ready to transition!</ThemedText>
           </ThemedView>
         )}
 

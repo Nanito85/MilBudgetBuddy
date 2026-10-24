@@ -545,7 +545,7 @@ function TipRotator() {
   return (
     <View style={[styles.tipCard, { backgroundColor: tc.surfaceInner }]}>
       <View style={styles.tipHeader}>
-        <ThemedText style={[styles.tipLabel, { color: tc.tactical }]}>// FIN-OPS INTEL</ThemedText>
+        <ThemedText style={[styles.tipLabel, { color: tc.tactical }]}>{'// FIN-OPS INTEL'}</ThemedText>
         <View style={styles.tipNav}>
           <Pressable onPress={prev} hitSlop={8} style={styles.tipNavBtn}>
             <ThemedText style={[styles.tipNavText, { color: tc.tactical }]}>‹</ThemedText>
@@ -975,7 +975,7 @@ export default function BudgetScreen() {
       <ThemedView style={{ flex: 1 }}>
         {/* Header */}
         <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
-          <ThemedText style={[styles.headerEyebrow, { color: tc.tactical }]}>// FINANCE OPS</ThemedText>
+          <ThemedText style={[styles.headerEyebrow, { color: tc.tactical }]}>{'// FINANCE OPS'}</ThemedText>
           <ThemedText style={[styles.title, { color: tc.textPrimary }]}>BUDGET HQ</ThemedText>
         </View>
 
@@ -1069,7 +1069,7 @@ export default function BudgetScreen() {
               {budgetHealthScore !== null && healthLabel && (
                 <View style={[styles.healthCard, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
                   <View style={styles.healthLeft}>
-                    <ThemedText style={[styles.healthEyebrow, { color: tc.textMuted }]}>// BUDGET HEALTH</ThemedText>
+                    <ThemedText style={[styles.healthEyebrow, { color: tc.textMuted }]}>{'// BUDGET HEALTH'}</ThemedText>
                     <View style={styles.healthScoreRow}>
                       <ThemedText style={[styles.healthScore, { color: healthLabel.color }]}>
                         {budgetHealthScore}

@@ -135,10 +135,10 @@ export default function AdminAccountsScreen() {
         contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
         <View style={[s.noticeCard, { backgroundColor: tc.surface, borderColor: Brand.tactical + '40' }]}>
           <ThemedText style={[s.noticeText, { color: tc.textSecondary }]}>
-            Every account that's ever signed up, Android or iOS — Firebase accounts aren't tied to which store they
+            Every account that&apos;s ever signed up, Android or iOS — Firebase accounts aren&apos;t tied to which store they
             were created through, so this is one combined list, not two separate ones. PLATFORM updates every time a
-            signed-in member opens the app (as of 2026-08-21) — a row still showing "Unknown" means that member
-            hasn't reopened the app since then, not that platform tracking is broken.
+            signed-in member opens the app (as of 2026-08-21) — a row still showing &quot;Unknown&quot; means that member
+            hasn&apos;t reopened the app since then, not that platform tracking is broken.
           </ThemedText>
         </View>
 

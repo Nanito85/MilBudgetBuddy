@@ -442,7 +442,7 @@ export function KidModeScreen() {
           <View style={screen.section}>
             <View style={screen.sectionHeader}>
               <ThemedText style={[screen.sectionTitle, { color: theme.accent }]}>
-                🎖️ TODAY'S MISSIONS
+                🎖️ TODAY&apos;S MISSIONS
               </ThemedText>
               <ThemedText style={[screen.sectionBadge, { backgroundColor: theme.primary + '20', color: theme.primary }]}>
                 {doneCount}/{kid.chores.length} DONE

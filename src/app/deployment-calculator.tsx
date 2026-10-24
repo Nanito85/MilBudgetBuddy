@@ -194,7 +194,7 @@ export default function DeploymentCalculatorScreen() {
           <ThemedText style={[styles.blufTitle, { color: tc.accent }]}>BLUF</ThemedText>
           <ThemedText type="small" style={{ lineHeight: 18 }}>
             Combat zones mean extra pay and zero federal tax on your basic pay. This tool estimates
-            your total deployment earnings, tax savings, and how much more you'll take home vs a
+            your total deployment earnings, tax savings, and how much more you&apos;ll take home vs a
             normal month.
           </ThemedText>
         </ThemedView>

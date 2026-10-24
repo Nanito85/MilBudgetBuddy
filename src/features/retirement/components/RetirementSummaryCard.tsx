@@ -134,7 +134,7 @@ export function BRSCard({ result, retirementAge, monthlyDiff }: BRSProps) {
       <View style={styles.detailRow}>
         <ThemedText type="small" themeColor="textSecondary">Monthly TSP contribution</ThemedText>
         <ThemedText style={styles.detailValue}>
-          {formatMoney(result.totalMonthlyContrib)}/mo (you + gov't {result.govtMatchRatePct.toFixed(1)}%)
+          {formatMoney(result.totalMonthlyContrib)}/mo (you + gov&apos;t {result.govtMatchRatePct.toFixed(1)}%)
         </ThemedText>
       </View>
       <View style={styles.detailRow}>

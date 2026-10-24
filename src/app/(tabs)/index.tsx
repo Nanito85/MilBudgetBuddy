@@ -543,7 +543,7 @@ export default function DashboardScreen() {
             {/* Score + bar */}
             <View style={styles.readinessTop}>
               <View style={styles.readinessLeft}>
-                <ThemedText style={[styles.readinessEyebrow, { color: tc.textMuted }]}>// FINANCIAL READINESS</ThemedText>
+                <ThemedText style={[styles.readinessEyebrow, { color: tc.textMuted }]}>{'// FINANCIAL READINESS'}</ThemedText>
                 <View style={styles.readinessScoreRow}>
                   <ThemedText style={[styles.readinessScore, { color: readinessLabel.color }]}>{readinessScore}</ThemedText>
                   <ThemedText style={[styles.readinessScoreMax, { color: tc.textMuted }]}>/100</ThemedText>

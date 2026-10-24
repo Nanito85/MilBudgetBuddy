@@ -45,6 +45,11 @@ jobs:
       - name: Calculation tests
         run: npm test
 
+      # Errors only (warnings don't fail the build). The backlog of 120
+      # cosmetic errors was cleared on 2026-10-24 so this can gate merges.
+      - name: Lint
+        run: npx eslint src
+
   build-android:
     name: EAS Build — Android Preview
     runs-on: ubuntu-latest

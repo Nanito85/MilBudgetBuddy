@@ -167,7 +167,7 @@ export default function LeaveCalculatorScreen() {
           <View style={styles.warnBox}>
             <ThemedText style={styles.warnTitle}>⚠ USE-OR-LOSE RISK</ThemedText>
             <ThemedText type="small" style={styles.warnBody}>
-              You're on track to lose {fmtDays(uyLossRisk)} at the Sep 30 fiscal year end.
+              You&apos;re on track to lose {fmtDays(uyLossRisk)} at the Sep 30 fiscal year end.
               Request leave soon or adjust your plan below.
             </ThemedText>
           </View>
@@ -273,7 +273,7 @@ export default function LeaveCalculatorScreen() {
               {useOrLoseExempt && (
                 <ThemedText type="small" themeColor="textSecondary" style={styles.hint}>
                   SLA requires 120+ days in a combat zone/hostile-fire-pay area, or command approval
-                  for operational necessity — it isn't automatic. Confirm your eligibility with S1.
+                  for operational necessity — it isn&apos;t automatic. Confirm your eligibility with S1.
                 </ThemedText>
               )}
             </View>

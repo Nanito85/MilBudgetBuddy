@@ -268,7 +268,7 @@ export default function TaxGuideScreen() {
         <ThemedView type="backgroundElement" style={styles.resourceBox}>
           <ThemedText style={[styles.resourceTitle, { color: tc.textPrimary }]}>📞 Free Tax Help</ThemedText>
           <ThemedText style={[styles.resourceItem, { color: tc.textHint }]}>• MilTax (H&R Block): militaryonesource.mil/miltax</ThemedText>
-          <ThemedText style={[styles.resourceItem, { color: tc.textHint }]}>• VITA on-base: search "VITA site" on IRS.gov</ThemedText>
+          <ThemedText style={[styles.resourceItem, { color: tc.textHint }]}>• VITA on-base: search &quot;VITA site&quot; on IRS.gov</ThemedText>
           <ThemedText style={[styles.resourceItem, { color: tc.textHint }]}>• JAG / Legal Assistance: installation legal office</ThemedText>
           <ThemedText style={[styles.resourceItem, { color: tc.textHint }]}>• IRS military page: irs.gov/military</ThemedText>
         </ThemedView>

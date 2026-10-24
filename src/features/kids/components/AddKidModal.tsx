@@ -35,7 +35,7 @@ export function AddKidModal({ visible, onClose, onAdd }: {
       <View style={[styles.bg, { backgroundColor: tc.background }]}>
         <SafeAreaView style={styles.safe}>
           <View style={styles.header}>
-            <ThemedText style={[styles.title, { color: tc.textPrimary }]}>// NEW CADET</ThemedText>
+            <ThemedText style={[styles.title, { color: tc.textPrimary }]}>{'// NEW CADET'}</ThemedText>
             <Pressable onPress={onClose}>
               <ThemedText style={[styles.cancel, { color: tc.textMuted }]}>CANCEL</ThemedText>
             </Pressable>

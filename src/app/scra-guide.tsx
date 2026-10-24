@@ -199,7 +199,7 @@ export default function ScraGuideScreen() {
         <ThemedView type="backgroundElement" style={styles.disclaimer}>
           <ThemedText style={[styles.disclaimerTitle, { color: tc.warning }]}>⚠ Important Notice</ThemedText>
           <ThemedText style={[styles.disclaimerText, { color: tc.textHint }]}>
-            This guide is for general information only and is not legal advice. Specific protections depend on individual circumstances, the type of debt, and state law. Always consult a JAG attorney or your installation's legal assistance office for your specific situation. JAG legal assistance is FREE for active duty service members and their families.
+            This guide is for general information only and is not legal advice. Specific protections depend on individual circumstances, the type of debt, and state law. Always consult a JAG attorney or your installation&apos;s legal assistance office for your specific situation. JAG legal assistance is FREE for active duty service members and their families.
           </ThemedText>
         </ThemedView>
 

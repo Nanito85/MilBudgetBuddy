@@ -338,7 +338,7 @@ export default function RetirementCalculatorScreen() {
                 {/* Government match */}
                 <View style={[styles.matchBanner, { backgroundColor: `${Brand.success}15` }]}>
                   <ThemedText type="small" style={{ color: tc.success, fontWeight: '600' }}>
-                    Gov't match: {gMatchPct.toFixed(1)}% → +{formatMoney(currentPay * govtMatchRate(tspContribRate))}/mo free money
+                    Gov&apos;t match: {gMatchPct.toFixed(1)}% → +{formatMoney(currentPay * govtMatchRate(tspContribRate))}/mo free money
                   </ThemedText>
                 </View>
 
@@ -603,7 +603,7 @@ export default function RetirementCalculatorScreen() {
           Pay data is from {BASIC_PAY_DATA_YEAR} DoD tables. Projections use your current pay grade
           as a proxy for the high-3 average (assumes same grade for last 3 years). TSP projections
           assume constant monthly contributions and a fixed annual return. Actual results depend
-          on promotions, grade changes, and market performance. Consult your installation's
+          on promotions, grade changes, and market performance. Consult your installation&apos;s
           financial readiness office for official guidance.
         </ThemedText>
       </ScrollView>

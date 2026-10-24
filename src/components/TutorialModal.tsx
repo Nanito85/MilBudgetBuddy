@@ -162,7 +162,7 @@ export function TutorialModal({ visible, onDismiss }: TutorialModalProps) {
           {/* Header */}
           <View style={styles.headerRow}>
             <ThemedText style={[styles.headerTag, { color: currentAccent }]}>
-              // ORIENTATION
+              {'// ORIENTATION'}
             </ThemedText>
             <Pressable onPress={skip} hitSlop={12}>
               <ThemedText style={[styles.skipText, { color: tc.textMuted }]}>SKIP ✕</ThemedText>

@@ -143,7 +143,7 @@ export default function VALoanCalculatorScreen() {
           <ThemedText style={[ss.backChevron, { color: tc.accent }]}>‹</ThemedText>
         </Pressable>
         <View style={ss.headerCenter}>
-          <ThemedText type="label" style={[ss.headerSub, { color: tc.tactical }]}>// BENEFIT CALCULATOR</ThemedText>
+          <ThemedText type="label" style={[ss.headerSub, { color: tc.tactical }]}>{'// BENEFIT CALCULATOR'}</ThemedText>
           <ThemedText style={[ss.headerTitle, { color: tc.textPrimary }]}>VA LOAN</ThemedText>
         </View>
         <View style={{ width: 40 }} />
@@ -159,7 +159,7 @@ export default function VALoanCalculatorScreen() {
         <TacticalCard accentColor={Brand.accent} cornerSize={10} style={ss.bluf}>
           <View style={ss.blufBar} />
           <View style={ss.blufText}>
-            <ThemedText type="label" style={[ss.blufLabel, { color: tc.accent }]}>COMMANDER'S BRIEF</ThemedText>
+            <ThemedText type="label" style={[ss.blufLabel, { color: tc.accent }]}>COMMANDER&apos;S BRIEF</ThemedText>
             <ThemedText style={[ss.blufBody, { color: tc.textSecondary }]}>
               VA loans require no down payment or PMI, saving most buyers hundreds per month. A funding fee applies unless you receive VA disability compensation.
             </ThemedText>
