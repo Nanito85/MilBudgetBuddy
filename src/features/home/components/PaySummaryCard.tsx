@@ -102,7 +102,9 @@ export function PaySummaryCard({ breakdown }: Props) {
   // a single monthly disbursement. Dividing a retiree's monthly net by 2
   // fabricated a second "paycheck" that DFAS never actually sends — this
   // drives every "per paycheck" figure below, including the quick bar.
-  const payPeriodsPerMonth = breakdown.isRetiredPay ? 1 : 2;
+  // Drill pay is likewise one deposit per drill weekend, not semi-monthly.
+  const singleMonthlyPay   = breakdown.isRetiredPay || breakdown.isDrillPay;
+  const payPeriodsPerMonth = singleMonthlyPay ? 1 : 2;
   const perPaycheck       = breakdown.netPay / payPeriodsPerMonth;
   // Spouse income's own pay cadence isn't tracked separately (there's no
   // spouse-pay-period field in the data model) — it's still shown on the
@@ -115,7 +117,7 @@ export function PaySummaryCard({ breakdown }: Props) {
 
   const stateTaxExplanation = (() => {
     if (breakdown.stateTax > 0) {
-      return `Estimated state income tax on your ${breakdown.isRetiredPay ? 'retired pay' : 'base pay'}, based on your state of residence in Profile.`;
+      return `Estimated state income tax on your ${breakdown.isRetiredPay ? 'retired pay' : breakdown.isDrillPay ? 'drill pay' : 'base pay'}, based on your state of residence in Profile.`;
     }
     if (!stateResidence) {
       return 'No state of residence is set in Profile, so state tax can’t be estimated. Add it in Profile › Edit Personal to see an estimate here.';
@@ -168,13 +170,13 @@ export function PaySummaryCard({ breakdown }: Props) {
       <View style={styles.hero}>
         <View>
           <ThemedText type="label" style={[styles.netLabel, { color: tc.textHint }]}>
-            {breakdown.isRetiredPay ? 'EST. NET (MONTHLY)' : 'EST. NET / PAYCHECK'}
+            {breakdown.isRetiredPay ? 'EST. NET (MONTHLY)' : breakdown.isDrillPay ? 'EST. NET DRILL PAY (MONTHLY)' : 'EST. NET / PAYCHECK'}
           </ThemedText>
           <ThemedText style={[styles.netAmount, { color: tc.accent }]}>{fmtPay(perPaycheck)}</ThemedText>
           {/* Retired pay is one deposit a month — repeating the same number
               as a second "/ month" line would just be confusing, not
               informative, so it's only shown for the semi-monthly schedule. */}
-          {!breakdown.isRetiredPay && (
+          {!singleMonthlyPay && (
             <ThemedText style={[styles.netMonthly, { color: tc.textHint }]}>
               {fmtPay(breakdown.netPay)}<ThemedText style={[styles.netMonthlyUnit, { color: tc.textMuted }]}> / month</ThemedText>
             </ThemedText>
@@ -242,17 +244,19 @@ export function PaySummaryCard({ breakdown }: Props) {
 
           <ThemedText type="label" style={[styles.sectionHead, { color: tc.tactical }]}>// ENTITLEMENTS (MONTHLY)</ThemedText>
           <Row
-            label={breakdown.isRetiredPay ? `RETIRED PAY (${breakdown.retiredPayPct}% OF HIGH-3)` : 'BASE PAY'}
+            label={breakdown.isRetiredPay
+              ? `RETIRED PAY (${breakdown.retiredPayPct}% OF HIGH-3)`
+              : breakdown.isDrillPay ? `DRILL PAY (${breakdown.drillsPerMonth} DRILLS)` : 'BASE PAY'}
             value={fmtPay(breakdown.basePay)} indent positive overridden={breakdown.basePayOverridden}
           />
           {/* A retiree draws no BAH/BAS (no active-duty housing/subsistence
               allowance) — hide these rows entirely unless manually overridden,
               rather than showing a confusing "$0" for something that
               structurally doesn't apply anymore. */}
-          {(!breakdown.isRetiredPay || breakdown.bahOverridden) && (
+          {(!singleMonthlyPay || breakdown.bahOverridden) && (
             <Row label={bahLabel} value={fmtPay(breakdown.bah)} indent positive overridden={breakdown.bahOverridden} />
           )}
-          {(!breakdown.isRetiredPay || breakdown.basOverridden) && (
+          {(!singleMonthlyPay || breakdown.basOverridden) && (
             <Row label="BAS" value={fmtPay(breakdown.bas)} indent positive overridden={breakdown.basOverridden} />
           )}
           {breakdown.colaTracked && (
@@ -331,7 +335,7 @@ export function PaySummaryCard({ breakdown }: Props) {
           {/* Retired pay is a single monthly deposit — there's no second
               "paycheck" to break out, so this row would just repeat
               MONTHLY NET above under a misleading "÷2" label. */}
-          {!breakdown.isRetiredPay && (
+          {!singleMonthlyPay && (
             <Row label="PER PAYCHECK (÷2)" value={fmtPay(perPaycheck)}        bold />
           )}
 
@@ -356,7 +360,9 @@ export function PaySummaryCard({ breakdown }: Props) {
             * ESTIMATE ONLY — VERIFY AT MYPAY.DFAS.MIL{'\n'}
             {breakdown.isRetiredPay
               ? 'RETIRED PAY EXCLUDES BAH/BAS (NOT PAID TO RETIREES). SEE VA DISABILITY BELOW FOR COMPENSATION.'
-              : hasOverrides ? '✎ SOME VALUES MANUALLY ADJUSTED FROM LES' : 'SET HOME STATE IN PROFILE FOR STATE TAX ESTIMATE'}
+              : breakdown.isDrillPay
+                ? 'DRILL PAY ONLY — NO BAH/BAS WHILE NOT ON ORDERS. ON ORDERS OR AGR? TURN IT ON IN PROFILE.'
+                : hasOverrides ? '✎ SOME VALUES MANUALLY ADJUSTED FROM LES' : 'SET HOME STATE IN PROFILE FOR STATE TAX ESTIMATE'}
           </ThemedText>
         </View>
       )}

@@ -110,6 +110,7 @@ export const ReserveSection = React.memo(function ReserveSection({
   hasGuardOption, reserveComponent, onReserveComponentChange: setReserveComponentLocal,
   guardDutyStatus, onGuardDutyStatusChange: setGuardDutyStatusLocal,
   storedGuardDutyStatusUpdatedAt,
+  onOrders, onOnOrdersChange: setOnOrders,
 }: {
   grade: PayGrade;
   y: number;
@@ -121,11 +122,25 @@ export const ReserveSection = React.memo(function ReserveSection({
   guardDutyStatus: GuardDutyStatus;
   onGuardDutyStatusChange: (s: GuardDutyStatus) => void;
   storedGuardDutyStatusUpdatedAt: string | undefined;
+  onOrders: boolean;
+  onOnOrdersChange: (v: boolean) => void;
 }) {
   const tc = useThemeColors();
   const inputBg = tc.surface;
   return (
     <>
+                {/* Decides whether the Pay Statement shows drill pay only or a
+                    full active-duty paycheck (BAH, BAS, etc.) — see lesCalc.ts. */}
+                <View style={editStyles.toggleRow}>
+                  <ThemedText style={[editStyles.toggleLabel, { color: tc.textPrimary }]}>On Active Orders (Mobilized / ADOS / AGR)</ThemedText>
+                  <Switch value={onOrders} onValueChange={setOnOrders} trackColor={{ true: Brand.accent }} thumbColor="#FFF" accessibilityLabel="On active orders" />
+                </View>
+                <ThemedText style={[editStyles.fieldHint, { color: tc.textHint, marginTop: -Spacing.two }]}>
+                  {onOrders
+                    ? 'Your Pay Statement shows full-time active-duty pay, including BAH and BAS.'
+                    : 'Your Pay Statement shows drill pay only. Turn this on while you’re on full-time orders.'}
+                </ThemedText>
+
                 <ThemedText style={[editStyles.fieldLabel, { color: tc.textHint }]}>DRILLS PER MONTH</ThemedText>
                 <ThemedText style={[editStyles.fieldHint, { color: tc.textHint, marginTop: -Spacing.two }]}>
                   One battle assembly weekend = 4 drills. Used to estimate your monthly drill pay.

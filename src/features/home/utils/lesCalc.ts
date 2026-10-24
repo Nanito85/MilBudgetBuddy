@@ -115,6 +115,11 @@ export interface LESBreakdown {
   isCzte: boolean;
   idp: number;
   czteExcluded: number;
+  // True for a traditional drilling reservist (not on orders): basePay is
+  // drill pay only and there's no BAH/BAS/COLA. drillsPerMonth is what that
+  // drill pay was computed from, for display.
+  isDrillPay: boolean;
+  drillsPerMonth: number;
 }
 
 export interface LESInputs {
@@ -173,6 +178,14 @@ export interface LESInputs {
   // when sbpEnabled is false/omitted.
   sbpEnabled?: boolean;
   sbpCoveragePct?: number;
+  // Reserve/Guard only. A drilling reservist who is NOT on full-time orders
+  // is paid per drill period (1/30 of monthly basic pay each) with no BAH,
+  // BAS or COLA — previously the reserve status fell through to the full
+  // active-duty paycheck, roughly 10x a typical drilling member's real pay.
+  // reserveOnOrders (mobilized, ADOS, AGR, Title 10) switches back to full
+  // active-duty pay, as does being deployed.
+  drillsPerMonth?: number;
+  reserveOnOrders?: boolean;
 }
 
 interface HousingResult {
@@ -229,6 +242,7 @@ export function calcLES(inputs: LESInputs): LESBreakdown {
     tspContribPct, rothTspPct = 0, hasDentalFamily, sglOptOut, stateResidence, overrides, serviceStatus,
     familySeparated, dependentsMhaZip, alsoGsCivilian, gsGrade, gsStep, gsLocalityKey,
     isDeployed, deploymentLocationId, sbpEnabled, sbpCoveragePct = 1,
+    drillsPerMonth = 4, reserveOnOrders,
   } = inputs;
 
   const isRetired = serviceStatus === 'retired';
@@ -243,6 +257,10 @@ export function calcLES(inputs: LESInputs): LESBreakdown {
   // this case fell through to the active-duty branch below and computed a
   // bogus military paycheck off whatever payGrade happened to be selected.
   const isCivilianOnly = serviceStatus === 'civilian';
+  // Drill-only reservist: paid per drill, no allowances (see LESInputs).
+  const isDrillOnly = serviceStatus === 'reserve' && !reserveOnOrders && !isDeployed;
+  // Pays that only exist for someone on full-time active duty.
+  const noActiveAllowances = isRetired || isCivilianOnly || isDrillOnly;
   const retiredPct = isRetired ? retiredPayMultiplier(yos) : 0;
 
   // Family separation: a member stationed unaccompanied (OCONUS tour, sea
@@ -252,7 +270,7 @@ export function calcLES(inputs: LESInputs): LESBreakdown {
   // member isn't housing a family there), plus flat FSA. Doesn't apply to a
   // retiree or pure civilian — neither draws BAH/OHA/FSA at all — and
   // requires an actual dependent to be separated from.
-  const familySepActive = !isRetired && !isCivilianOnly && !!familySeparated && hasDependents;
+  const familySepActive = !noActiveAllowances && !!familySeparated && hasDependents;
 
   // A retiree draws retired pay (a percentage of High-3 average basic pay),
   // not an active-duty paycheck — no BAH, no BAS, and retired pay isn't
@@ -263,15 +281,17 @@ export function calcLES(inputs: LESInputs): LESBreakdown {
     ? getHigh3Average(payGrade as PayGrade, yos) * retiredPct
     : isCivilianOnly
       ? 0
-      : getBasicPay(payGrade as any, yos);
-  const housing = (isRetired || isCivilianOnly)
+      : isDrillOnly
+        ? getDrillPay(payGrade, yos, drillsPerMonth)
+        : getBasicPay(payGrade as any, yos);
+  const housing = noActiveAllowances
     ? { amount: 0, isOha: false, approximate: false }
     // When separated, the member's OWN housing is at the without-dependents
     // rate — the with-dependents rate now belongs to the dependents' actual
     // location (familyBah below), not the member's empty household.
     : resolveHousing(mhaZip, dutyStationId, payGrade, familySepActive ? false : hasDependents, housingStatus);
   const calcBah = housing.amount;
-  const calcBas = (isRetired || isCivilianOnly) ? 0 : getBAS(payGrade);
+  const calcBas = noActiveAllowances ? 0 : getBAS(payGrade);
 
   const basePay = overrides?.basePayOverride ?? calcBasePay;
   const bah     = overrides?.bahOverride     ?? calcBah;
@@ -301,7 +321,7 @@ export function calcLES(inputs: LESInputs): LESBreakdown {
   // keyed off the same OHA locationLabel that resolveHousing() uses.
   let cola = 0;
   let colaTracked = false;
-  if (!isRetired && !isCivilianOnly) {
+  if (!noActiveAllowances) {
     const colaHasDep = familySepActive ? false : hasDependents;
     if (mhaZip) {
       const conus = getConusCola(mhaZip, payGrade as PayGrade, yos, colaHasDep);
@@ -439,6 +459,8 @@ export function calcLES(inputs: LESInputs): LESBreakdown {
     isCzte,
     idp,
     czteExcluded,
+    isDrillPay: isDrillOnly,
+    drillsPerMonth,
     retiredPayPct: Math.round(retiredPct * 100),
   };
 }

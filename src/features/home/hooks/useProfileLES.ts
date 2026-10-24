@@ -44,6 +44,10 @@ export function useProfileLESInputs(): ProfileLESInputs {
     deploymentLocationId: s.deploymentLocationId,
     sbpEnabled: s.sbpEnabled,
     sbpCoveragePct: s.sbpCoveragePct,
+    drillsPerMonth: s.drillsPerMonth,
+    // Not set yet → a Guard member who marked Title 10 status is on federal
+    // orders; everyone else defaults to drill-only.
+    reserveOnOrders: s.reserveOnOrders ?? s.guardDutyStatus === 'title10',
   })));
 
   return useMemo(() => {

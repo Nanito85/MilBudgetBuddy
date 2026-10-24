@@ -15,7 +15,7 @@ import { PayDayCountdown } from '@/features/home/components/PayDayCountdown';
 import { PaySummaryCard } from '@/features/home/components/PaySummaryCard';
 import { QuickActionsGrid } from '@/features/home/components/QuickActionsGrid';
 import { useProfileLES } from '@/features/home/hooks/useProfileLES';
-import { fmtPay, getDrillPay } from '@/features/home/utils/lesCalc';
+import { fmtPay } from '@/features/home/utils/lesCalc';
 import { monthlyCompensation } from '@/features/va/utils/vaDisabilityCalc';
 import { TipCard } from '@/features/daily-tip/components/TipCard';
 import { useWeeklyTip } from '@/features/daily-tip/hooks/useWeeklyTip';
@@ -234,11 +234,6 @@ export default function DashboardScreen() {
 
   const rankAbbrev = getRankAbbrev(branch, payGrade, rankVariant);
 
-  const drillPay = useMemo(() => {
-    if (serviceStatus !== 'reserve' || !payGrade) return null;
-    return getDrillPay(payGrade, yos, drillsPerMonth ?? 4);
-  }, [serviceStatus, payGrade, yos, drillsPerMonth]);
-
   // A member doesn't need to be retired to draw VA disability compensation
   // (medically separated before 20 years, still serving with a rating from a
   // prior injury, etc) — this used to gate on serviceStatus === 'retired',
@@ -324,7 +319,7 @@ export default function DashboardScreen() {
         {/* ── PAY STATEMENT ─────────────────────────────────────────── */}
         <View style={styles.section}>
           <SectionHeader
-            label={breakdown?.isRetiredPay ? 'RETIRED PAY' : 'PAY STATEMENT'}
+            label={breakdown?.isRetiredPay ? 'RETIRED PAY' : breakdown?.isDrillPay ? 'DRILL PAY STATEMENT' : 'PAY STATEMENT'}
             accentColor={Brand.accent}
             route="/pay-chart"
             routeLabel="PAY CHART"
@@ -332,7 +327,11 @@ export default function DashboardScreen() {
           {breakdown ? (
             <>
               <PaySummaryCard breakdown={breakdown} />
-              <PayDayCountdown netPay={breakdown.netPay} isRetired={breakdown.isRetiredPay} />
+              {/* Drill pay posts a few days after each drill weekend, not on
+                  the 1st/15th schedule, so the countdown doesn't apply. */}
+              {!breakdown.isDrillPay && (
+                <PayDayCountdown netPay={breakdown.netPay} isRetired={breakdown.isRetiredPay} />
+              )}
             </>
           ) : (
             <Pressable
@@ -354,22 +353,27 @@ export default function DashboardScreen() {
           )}
         </View>
 
-        {/* ── DRILL PAY (RESERVE/GUARD) ────────────────────────────── */}
-        {drillPay !== null && (
-          <View style={styles.section}>
-            <SectionHeader label="DRILL PAY" accentColor={Brand.tactical} />
-            <View style={[styles.statusPayCard, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
-              <View style={{ flex: 1 }}>
-                <ThemedText type="label" style={[styles.statusPayLabel, { color: tc.textMuted }]}>
-                  EST. MONTHLY DRILL PAY
-                </ThemedText>
-                <ThemedText style={[styles.statusPayValue, { color: tc.tactical }]}>{fmtPay(drillPay)}</ThemedText>
-                <ThemedText type="small" themeColor="textSecondary" style={styles.statusPayNote}>
-                  Based on {drillsPerMonth ?? 4} drills/mo at your pay grade & YOS. Set in Profile → Edit Personal.
-                </ThemedText>
-              </View>
+        {/* ── RESERVE/GUARD PAY MODE ─────────────────────────────────── */}
+        {/* The pay statement above already IS the drill pay (or the full
+            active-duty pay when on orders) — this only says which one, and
+            where to switch it. It used to be a second, separate drill-pay
+            card shown under a full-time paycheck. */}
+        {serviceStatus === 'reserve' && breakdown && (
+          <Pressable
+            onPress={() => router.push('/profile' as any)}
+            accessibilityRole="button"
+            style={({ pressed }) => [styles.statusPayCard, { backgroundColor: tc.surface, borderColor: tc.borderColor }, pressed && { opacity: 0.85 }]}>
+            <View style={{ flex: 1 }}>
+              <ThemedText type="label" style={[styles.statusPayLabel, { color: tc.textMuted }]}>
+                {breakdown.isDrillPay ? 'SHOWING DRILL PAY ONLY' : 'SHOWING FULL-TIME PAY (ON ORDERS)'}
+              </ThemedText>
+              <ThemedText type="small" themeColor="textSecondary" style={styles.statusPayNote}>
+                {breakdown.isDrillPay
+                  ? `${drillsPerMonth ?? 4} drills/mo at your grade & YOS. On orders, ADOS or AGR? Turn on "On active orders" in Profile to see full-time pay. ›`
+                  : 'Back to drilling only? Turn off "On active orders" in Profile. ›'}
+              </ThemedText>
             </View>
-          </View>
+          </Pressable>
         )}
 
         {/* ── VA DISABILITY (any service status with a rating set) ──── */}

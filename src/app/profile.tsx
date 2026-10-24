@@ -296,6 +296,7 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
   const storedReserveComponent = useUserStore((s) => s.reserveComponent);
   const storedGuardDutyStatus  = useUserStore((s) => s.guardDutyStatus);
   const storedGuardDutyStatusUpdatedAt = useUserStore((s) => s.guardDutyStatusUpdatedAt);
+  const storedReserveOnOrders = useUserStore((s) => s.reserveOnOrders);
   const storedRetDate  = useUserStore((s) => s.retirementDate);
   const storedVaPct    = useUserStore((s) => s.vaDisabilityPercent);
   const storedSbpEnabled = useUserStore((s) => s.sbpEnabled);
@@ -315,6 +316,8 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
   const [drillsPerMonth, setDrillsPerMonth] = useState(storedDrills ?? 4);
   const [reserveComponent, setReserveComponentLocal] = useState<ReserveComponent>(storedReserveComponent ?? 'reserve');
   const [guardDutyStatus, setGuardDutyStatusLocal] = useState<GuardDutyStatus>(storedGuardDutyStatus ?? 'title32');
+  // Same fallback as useProfileLESInputs: unset + Guard Title 10 = on orders.
+  const [onOrders, setOnOrders] = useState(storedReserveOnOrders ?? storedGuardDutyStatus === 'title10');
   const [retirementDate, setRetDate] = useState(storedRetDate ?? '');
   const [vaPercent, setVaPercent]    = useState(storedVaPct ?? 0);
   const [showRetDatePicker, setShowRetDatePicker] = useState(false);
@@ -380,6 +383,7 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
     setDrillsPerMonth(storedDrills ?? 4);
     setReserveComponentLocal(storedReserveComponent ?? 'reserve');
     setGuardDutyStatusLocal(storedGuardDutyStatus ?? 'title32');
+    setOnOrders(storedReserveOnOrders ?? storedGuardDutyStatus === 'title10');
     setRetDate(storedRetDate ?? '');
     setVaPercent(storedVaPct ?? 0);
     setSbpEnabledLocal(storedSbpEnabled ?? false);
@@ -426,6 +430,7 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
       ...(isCivilian ? { gsGrade, gsStep, gsLocalityKey: gsLocality } : {}),
       ...(isReserve ? {
         drillsPerMonth,
+        reserveOnOrders: onOrders,
         reserveComponent: reserveComp,
         guardDutyStatus: resolvedGuardStatus,
         guardDutyStatusUpdatedAt: resolvedGuardStatus ? new Date().toISOString() : undefined,
@@ -621,7 +626,7 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
             {/* Reserve/Guard — drills per month (drives drill pay) */}
             {isReserve && (
               <>
-              <ReserveSection grade={grade} y={y} drillsPerMonth={drillsPerMonth} onDrillsChange={setDrillsPerMonth} hasGuardOption={hasGuardOption} reserveComponent={reserveComponent} onReserveComponentChange={setReserveComponentLocal} guardDutyStatus={guardDutyStatus} onGuardDutyStatusChange={setGuardDutyStatusLocal} storedGuardDutyStatusUpdatedAt={storedGuardDutyStatusUpdatedAt} />
+              <ReserveSection grade={grade} y={y} drillsPerMonth={drillsPerMonth} onDrillsChange={setDrillsPerMonth} hasGuardOption={hasGuardOption} reserveComponent={reserveComponent} onReserveComponentChange={setReserveComponentLocal} guardDutyStatus={guardDutyStatus} onGuardDutyStatusChange={setGuardDutyStatusLocal} storedGuardDutyStatusUpdatedAt={storedGuardDutyStatusUpdatedAt} onOrders={onOrders} onOnOrdersChange={setOnOrders} />
               </>
             )}
 

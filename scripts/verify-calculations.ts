@@ -100,6 +100,32 @@ console.log('\n[SBP] Retiree-only opt-in deduction');
   assertEqual(activeWithSbpFlag.sbp, 0, 'SBP never applies to active duty even if the flag were somehow set');
 }
 
+// ── Reserve/Guard: drill pay only unless on orders ───────────────────────────
+console.log('\n[Reserve] Drill-only vs on orders');
+{
+  const base = {
+    payGrade: 'E5', yos: 6, mhaZip: '28310', hasSpouse: true, numChildren: 1,
+    specialPaysTotal: 0, tspContribPct: 5, hasDentalFamily: false, sglOptOut: false,
+  };
+  const active = calcLES({ ...base, serviceStatus: 'active' });
+  const drill = calcLES({ ...base, serviceStatus: 'reserve', drillsPerMonth: 4 });
+  const basic = getBasicPay('E5', 6);
+  assertEqual(drill.basePay, (basic / 30) * 4, 'Drilling reservist basePay = 4 drills × basic/30');
+  assertEqual(drill.bah, 0, 'Drilling reservist gets no BAH');
+  assertEqual(drill.bas, 0, 'Drilling reservist gets no BAS');
+  assertEqual(drill.cola, 0, 'Drilling reservist gets no COLA');
+  assertTrue(drill.isDrillPay, 'Drill-only breakdown is flagged isDrillPay');
+  assertTrue(drill.netPay < active.netPay / 5, 'Drill-only net is a small fraction of a full-time paycheck');
+  assertEqual(drill.tsp, drill.basePay * 0.05, 'TSP % applies to drill pay');
+
+  const onOrders = calcLES({ ...base, serviceStatus: 'reserve', reserveOnOrders: true });
+  assertEqual(onOrders.netPay, active.netPay, 'Reservist on orders gets the full active-duty paycheck');
+  assertTrue(!onOrders.isDrillPay, 'On-orders breakdown is not flagged as drill pay');
+
+  const deployed = calcLES({ ...base, serviceStatus: 'reserve', isDeployed: true });
+  assertTrue(!deployed.isDrillPay && deployed.bas > 0, 'A deployed reservist is on orders (full pay), not drill-only');
+}
+
 // ── 4. State tax always computed (never silently skipped) ────────────────────
 console.log('\n[4] State tax');
 {
