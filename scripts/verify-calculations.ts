@@ -214,6 +214,26 @@ console.log('[FERS] Contribution rate by hire date');
   assertEqual(civ.fers, civ.gsGrossMonthly * 0.044, 'Civilian take-home deducts FERS at 4.4% of GS pay');
 }
 
+// ── Civilian wages and pensions in states that exempt active-duty pay ────────
+console.log('[StateTax] Civilian wages / pensions in military-exempt states');
+{
+  const civ = (state: string) => calcLES({
+    payGrade: 'E5', yos: 0, mhaZip: undefined, hasSpouse: false, numChildren: 0,
+    specialPaysTotal: 0, tspContribPct: 0, hasDentalFamily: false, sglOptOut: true,
+    serviceStatus: 'civilian', gsGrade: 9, gsStep: 1, gsLocalityKey: 'RUS', stateResidence: state,
+  });
+  assertTrue(civ('IL').stateTax > 0, 'GS employee in Illinois pays IL tax (military exemption does not apply)');
+  assertTrue(civ('MI').stateTax > 0, 'GS employee in Michigan pays MI tax');
+  assertEqual(civ('TX').stateTax, 0, 'GS employee in Texas pays no state tax');
+  const ret = (state: string) => calcLES({
+    payGrade: 'E7', yos: 20, mhaZip: undefined, hasSpouse: false, numChildren: 0,
+    specialPaysTotal: 0, tspContribPct: 0, hasDentalFamily: false, sglOptOut: true,
+    serviceStatus: 'retired', stateResidence: state,
+  });
+  assertTrue(ret('KY').stateTax > 0, 'Kentucky (partial retiree exemption) is not shown as $0 for a retiree');
+  assertEqual(ret('IL').stateTax, 0, 'Illinois exempts military retired pay');
+}
+
 // ── 4. State tax always computed (never silently skipped) ────────────────────
 console.log('\n[4] State tax');
 {

@@ -1086,8 +1086,11 @@ function RetiredServiceInfoStep({
 function LocationFamilyStep({
   onNext,
   retired = false,
+  civilian = false,
 }: {
   onNext: (mhaZip: string, installName: string, hasSpouse: boolean, numChildren: number, stateCode: string, housingStatus: HousingStatus, dutyStationId: string) => void;
+  // A civilian's wages get no military exemption, so no exempt badge.
+  civilian?: boolean;
   // Military retirement pay exemptions are a different, generally more
   // generous list than active-duty exemptions (see state-tax.ts) — without
   // this, a retiring member picking their state saw the active-duty "NO
@@ -1161,8 +1164,8 @@ function LocationFamilyStep({
                     style={styles.stateOption}>
                     <ThemedText style={styles.stateOptionCode}>{s.code}</ThemedText>
                     <ThemedText type="small" themeColor="textSecondary">{s.name}</ThemedText>
-                    {stateTaxBadge(s.code, retired) && (
-                      <ThemedText type="small" style={{ color: Brand.primary, marginLeft: 'auto' as any }}>{stateTaxBadge(s.code, retired)}</ThemedText>
+                    {stateTaxBadge(s.code, retired, civilian) && (
+                      <ThemedText type="small" style={{ color: Brand.primary, marginLeft: 'auto' as any }}>{stateTaxBadge(s.code, retired, civilian)}</ThemedText>
                     )}
                   </Pressable>
                 ))}
@@ -1484,7 +1487,7 @@ export function OnboardingFlow() {
               ? <RetiredServiceInfoStep branch={pendingBranch} onNext={handleRetiredInfo} />
               : <ServiceInfoStep branch={pendingBranch} status={pendingStatus} onNext={handleServiceInfo} />
           )}
-          {step === 5 && <LocationFamilyStep onNext={handleLocationFamily} retired={pendingStatus === 'retired'} />}
+          {step === 5 && <LocationFamilyStep onNext={handleLocationFamily} retired={pendingStatus === 'retired'} civilian={isCivilian} />}
           {step === 6 && <FinancialGoalStep onNext={handleFinancialGoal} />}
           {step === 7 && <NotificationsStep onFinish={setOnboarded} />}
         </SafeAreaView>

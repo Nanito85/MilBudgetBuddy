@@ -120,7 +120,7 @@ export function PaySummaryCard({ breakdown }: Props) {
   const stateTaxExplanation = (() => {
     const outsideInfo = getStateTaxInfo(stateResidence);
     if (breakdown.stateTax > 0) {
-      const base = `Estimated state income tax on your ${breakdown.isRetiredPay ? 'retired pay' : breakdown.isDrillPay ? 'drill pay' : 'base pay'}, based on your state of residence in Profile.`;
+      const base = `Estimated state income tax on your ${breakdown.isRetiredPay ? 'retired pay' : breakdown.isDrillPay ? 'drill pay' : breakdown.alsoGsCivilian && breakdown.basePay === 0 ? 'GS pay' : 'base pay'}, based on your state of residence in Profile.`;
       return !breakdown.isRetiredPay && outsideInfo?.exemptWhenStationedOutside
         ? `${base} ${outsideInfo.name} only taxes active-duty pay while you're stationed in ${outsideInfo.name} (or your duty station isn't set). If you're stationed elsewhere, update your duty station in Profile.`
         : base;

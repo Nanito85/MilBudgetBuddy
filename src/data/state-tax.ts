@@ -15,14 +15,21 @@ export interface StateTaxInfo {
   // treats as a nonresident while stationed elsewhere). Taxed at
   // effectiveRate when the duty station is in the state.
   exemptWhenStationedOutside?: boolean;
+  // Effective rate on ordinary wages and pensions where it differs from
+  // effectiveRate — i.e. states that exempt active-duty pay (effectiveRate 0)
+  // but still tax civilian (GS) wages and, unless fully exempt, retired pay.
+  // Without it a GS employee in e.g. Illinois or Michigan was shown $0 state
+  // tax. Single filer at $60k wages, 2026 brackets/deductions (Tax Foundation,
+  // "State Individual Income Tax Rates and Brackets, 2026").
+  civilianRate?: number;
   note?: string;
 }
 
 export const US_STATES: StateTaxInfo[] = [
   { code: 'AK', name: 'Alaska',         effectiveRate: 0,      militaryExempt: true,  note: 'No state income tax' },
-  { code: 'AL', name: 'Alabama',        effectiveRate: 0,      militaryExempt: true,  note: 'Active duty pay exempt' },
-  { code: 'AR', name: 'Arkansas',       effectiveRate: 0,      militaryExempt: true,  note: 'Active duty pay exempt' },
-  { code: 'AZ', name: 'Arizona',        effectiveRate: 0,      militaryExempt: true,  note: 'Active duty pay exempt' },
+  { code: 'AL', name: 'Alabama',        effectiveRate: 0,      militaryExempt: true,  note: 'Active duty pay exempt', civilianRate: 0.046 },
+  { code: 'AR', name: 'Arkansas',       effectiveRate: 0,      militaryExempt: true,  note: 'Active duty pay exempt', civilianRate: 0.0355 },
+  { code: 'AZ', name: 'Arizona',        effectiveRate: 0,      militaryExempt: true,  note: 'Active duty pay exempt', civilianRate: 0.0215 },
   { code: 'CA', name: 'California',     effectiveRate: 0.062,  militaryExempt: false, exemptWhenStationedOutside: true, note: 'Exempt while stationed outside CA (FTB Pub 1032)' },
   { code: 'CO', name: 'Colorado',       effectiveRate: 0.044,  militaryExempt: false },
   { code: 'CT', name: 'Connecticut',    effectiveRate: 0.050,  militaryExempt: false, exemptWhenStationedOutside: true, note: 'Exempt while stationed outside CT with no CT home and 30 days or less in CT' },
@@ -31,31 +38,31 @@ export const US_STATES: StateTaxInfo[] = [
   { code: 'FL', name: 'Florida',        effectiveRate: 0,      militaryExempt: true,  note: 'No state income tax' },
   { code: 'GA', name: 'Georgia',        effectiveRate: 0.0549, militaryExempt: false },
   { code: 'HI', name: 'Hawaii',         effectiveRate: 0.075,  militaryExempt: false },
-  { code: 'IA', name: 'Iowa',           effectiveRate: 0,      militaryExempt: true,  note: 'Active duty pay exempt' },
+  { code: 'IA', name: 'Iowa',           effectiveRate: 0,      militaryExempt: true,  note: 'Active duty pay exempt', civilianRate: 0.0271 },
   { code: 'ID', name: 'Idaho',          effectiveRate: 0.058,  militaryExempt: false, exemptWhenStationedOutside: true, note: 'Exempt while stationed outside ID' },
-  { code: 'IL', name: 'Illinois',       effectiveRate: 0,      militaryExempt: true,  note: 'Active duty pay exempt' },
-  { code: 'IN', name: 'Indiana',        effectiveRate: 0,      militaryExempt: true,  note: 'Active duty pay exempt' },
+  { code: 'IL', name: 'Illinois',       effectiveRate: 0,      militaryExempt: true,  note: 'Active duty pay exempt', civilianRate: 0.0471 },
+  { code: 'IN', name: 'Indiana',        effectiveRate: 0,      militaryExempt: true,  note: 'Active duty pay exempt', civilianRate: 0.029 },
   { code: 'KS', name: 'Kansas',         effectiveRate: 0.055,  militaryExempt: false },
-  { code: 'KY', name: 'Kentucky',       effectiveRate: 0,      militaryExempt: true,  note: 'Active duty pay exempt' },
+  { code: 'KY', name: 'Kentucky',       effectiveRate: 0,      militaryExempt: true,  note: 'Active duty pay exempt', civilianRate: 0.033 },
   { code: 'LA', name: 'Louisiana',      effectiveRate: 0.035,  militaryExempt: false },
   { code: 'MA', name: 'Massachusetts',  effectiveRate: 0.050,  militaryExempt: false },
   { code: 'MD', name: 'Maryland',       effectiveRate: 0.058,  militaryExempt: false },
   { code: 'ME', name: 'Maine',          effectiveRate: 0.065,  militaryExempt: false },
-  { code: 'MI', name: 'Michigan',       effectiveRate: 0,      militaryExempt: true,  note: 'Military pay exempt' },
-  { code: 'MN', name: 'Minnesota',      effectiveRate: 0,      militaryExempt: true,  note: 'Active duty pay exempt' },
-  { code: 'MO', name: 'Missouri',       effectiveRate: 0,      militaryExempt: true,  note: 'Active duty pay exempt' },
-  { code: 'MS', name: 'Mississippi',    effectiveRate: 0,      militaryExempt: true,  note: 'Active duty pay exempt' },
-  { code: 'MT', name: 'Montana',        effectiveRate: 0,      militaryExempt: true,  note: 'Active duty pay exempt' },
+  { code: 'MI', name: 'Michigan',       effectiveRate: 0,      militaryExempt: true,  note: 'Military pay exempt', civilianRate: 0.0383 },
+  { code: 'MN', name: 'Minnesota',      effectiveRate: 0,      militaryExempt: true,  note: 'Active duty pay exempt', civilianRate: 0.0426 },
+  { code: 'MO', name: 'Missouri',       effectiveRate: 0,      militaryExempt: true,  note: 'Active duty pay exempt', civilianRate: 0.0314 },
+  { code: 'MS', name: 'Mississippi',    effectiveRate: 0,      militaryExempt: true,  note: 'Active duty pay exempt', civilianRate: 0.0278 },
+  { code: 'MT', name: 'Montana',        effectiveRate: 0,      militaryExempt: true,  note: 'Active duty pay exempt', civilianRate: 0.0344 },
   { code: 'NC', name: 'North Carolina', effectiveRate: 0.0475, militaryExempt: false },
-  { code: 'ND', name: 'North Dakota',   effectiveRate: 0,      militaryExempt: true,  note: 'Active duty pay exempt' },
+  { code: 'ND', name: 'North Dakota',   effectiveRate: 0,      militaryExempt: true,  note: 'Active duty pay exempt', civilianRate: 0.0 },
   { code: 'NE', name: 'Nebraska',       effectiveRate: 0.052,  militaryExempt: false },
   { code: 'NH', name: 'New Hampshire',  effectiveRate: 0,      militaryExempt: true,  note: 'No wage income tax' },
   { code: 'NJ', name: 'New Jersey',     effectiveRate: 0.058,  militaryExempt: false, exemptWhenStationedOutside: true, note: 'Exempt while stationed outside NJ with no NJ home and 30 days or less in NJ' },
-  { code: 'NM', name: 'New Mexico',     effectiveRate: 0,      militaryExempt: true,  note: 'Active duty pay exempt' },
+  { code: 'NM', name: 'New Mexico',     effectiveRate: 0,      militaryExempt: true,  note: 'Active duty pay exempt', civilianRate: 0.0276 },
   { code: 'NV', name: 'Nevada',         effectiveRate: 0,      militaryExempt: true,  note: 'No state income tax' },
   { code: 'NY', name: 'New York',       effectiveRate: 0.063,  militaryExempt: false, exemptWhenStationedOutside: true, note: 'Exempt while stationed outside NY with no NY home and 30 days or less in NY' },
-  { code: 'OH', name: 'Ohio',           effectiveRate: 0.0275, militaryExempt: false, exemptWhenStationedOutside: true, note: 'Exempt while stationed outside OH' },
-  { code: 'OK', name: 'Oklahoma',       effectiveRate: 0,      militaryExempt: true,  note: 'Active duty pay exempt' },
+  { code: 'OH', name: 'Ohio',           effectiveRate: 0.0145, militaryExempt: false, exemptWhenStationedOutside: true, note: 'Exempt while stationed outside OH' },
+  { code: 'OK', name: 'Oklahoma',       effectiveRate: 0,      militaryExempt: true,  note: 'Active duty pay exempt', civilianRate: 0.0359 },
   { code: 'OR', name: 'Oregon',         effectiveRate: 0.083,  militaryExempt: false, exemptWhenStationedOutside: true, note: 'Exempt while stationed outside OR; up to $6,000 subtractable in-state' },
   { code: 'PA', name: 'Pennsylvania',   effectiveRate: 0.0307, militaryExempt: false, exemptWhenStationedOutside: true, note: 'Exempt while stationed outside PA' },
   { code: 'RI', name: 'Rhode Island',   effectiveRate: 0.054,  militaryExempt: false },
@@ -102,8 +109,10 @@ export const NO_INCOME_TAX_STATES = new Set(['AK', 'FL', 'NV', 'NH', 'SD', 'TN',
  * same state never reads "NO TAX" in one place and "PENSION EXEMPT" in
  * another. Null when the pay is taxed.
  */
-export function stateTaxBadge(code: string, retired: boolean): string | null {
+export function stateTaxBadge(code: string, retired: boolean, civilian = false): string | null {
   if (NO_INCOME_TAX_STATES.has(code)) return 'NO INCOME TAX';
+  // Military exemptions don't apply to a civilian's wages.
+  if (civilian) return null;
   if (retired) return RETIREMENT_TAX_EXEMPT_STATES.has(code) ? 'PENSION EXEMPT' : null;
   const info = getStateTaxInfo(code);
   if (info?.militaryExempt) return 'MIL PAY EXEMPT';
@@ -144,5 +153,14 @@ export const RETIREMENT_TAX_EXEMPT_STATES = new Set([
 export function getRetirementStateTaxRate(code: string | undefined): number {
   if (!code) return 0;
   if (RETIREMENT_TAX_EXEMPT_STATES.has(code)) return 0;
-  return getStateTaxRate(code);
+  // A pension is ordinary income, so it's taxed like civilian wages — not at
+  // the active-duty rate, which is 0 in states that exempt active-duty pay
+  // but still (at least partly) tax retired pay (KY, MT, NM).
+  return getCivilianStateTaxRate(code);
+}
+
+/** State tax rate on ordinary (non-military) wages, e.g. a GS paycheck. */
+export function getCivilianStateTaxRate(code: string | undefined): number {
+  const info = getStateTaxInfo(code);
+  return info?.civilianRate ?? info?.effectiveRate ?? 0;
 }

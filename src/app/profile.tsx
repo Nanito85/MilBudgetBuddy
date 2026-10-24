@@ -20,7 +20,8 @@ import { TacticalCard } from '@/components/TacticalCard';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { BottomTabInset, Brand, Fonts, Spacing } from '@/constants/theme';
-import { stateTaxBadge, US_STATES } from '@/data/state-tax';
+import { getCivilianStateTaxRate, getRetirementStateTaxRate, NO_INCOME_TAX_STATES, stateTaxBadge, US_STATES } from '@/data/state-tax';
+
 import { TIPS } from '@/data/tips';
 import { GradePicker } from '@/features/pcs/components/GradePicker';
 import { NumberStepper } from '@/features/retirement/components/NumberStepper';
@@ -64,6 +65,8 @@ import { EditPayModal } from '@/features/home/components/EditPayModal';
 
 import { PayGrade } from '@/data/bah-rates';
 import { getDualVariants } from '@/data/rank-insignia';
+
+const NO_TAX_NOTE = (code: string) => (NO_INCOME_TAX_STATES.has(code) ? 'No state income tax' : undefined);
 
 const APP_VERSION = '1.0.0';
 
@@ -113,7 +116,7 @@ function SectionLabel({ text, accentColor }: { text: string; accentColor?: strin
 
 // ── State Picker Modal ─────────────────────────────────────────────────────────
 
-const StatePickerModal = React.memo(function StatePickerModal({ visible, selected, onSelect, onClose, retired = false }: {
+const StatePickerModal = React.memo(function StatePickerModal({ visible, selected, onSelect, onClose, retired = false, civilian = false }: {
   visible: boolean;
   selected: string | undefined;
   onSelect: (code: string) => void;
@@ -124,6 +127,8 @@ const StatePickerModal = React.memo(function StatePickerModal({ visible, selecte
   // pay. Without this, a retiree picking their state saw the active-duty
   // "NO TAX" badge / rate, which doesn't reflect what they'll actually pay.
   retired?: boolean;
+  // A GS civilian's wages get no military exemption — show the wage rate.
+  civilian?: boolean;
 }) {
   const tc = useThemeColors();
   const [query, setQuery] = useState('');
@@ -163,13 +168,13 @@ const StatePickerModal = React.memo(function StatePickerModal({ visible, selecte
                     <ThemedText style={[stateStyles.name, { color: tc.textHint }, isSelected && { color: tc.textPrimary }]}>{s.name}</ThemedText>
                   </View>
                   <View style={stateStyles.rowRight}>
-                    {stateTaxBadge(s.code, retired) ? (
+                    {stateTaxBadge(s.code, retired, civilian) ? (
                       <View style={stateStyles.exemptBadge}>
-                        <ThemedText type="label" style={[stateStyles.exemptText, { color: tc.tactical }]}>{stateTaxBadge(s.code, retired)}</ThemedText>
+                        <ThemedText type="label" style={[stateStyles.exemptText, { color: tc.tactical }]}>{stateTaxBadge(s.code, retired, civilian)}</ThemedText>
                       </View>
                     ) : (
                       <ThemedText style={[stateStyles.rate, { color: tc.textMuted, fontFamily: Fonts.data }]}>
-                        ~{(s.effectiveRate * 100).toFixed(1)}%
+                        ~{((civilian ? getCivilianStateTaxRate(s.code) : retired ? getRetirementStateTaxRate(s.code) : s.effectiveRate) * 100).toFixed(1)}%
                       </ThemedText>
                     )}
                     {isSelected && <ThemedText style={[stateStyles.check, { color: tc.accent }]}>✓</ThemedText>}
@@ -675,9 +680,9 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
             </Pressable>
             {stateInfo && (
               <ThemedText style={[editStyles.dateHint, { color: tc.tactical }]}>
-                {stateTaxBadge(stateInfo.code, isRetired)
-                  ? `✓ ${isRetired ? 'Military retirement pay exempt' : stateInfo.note ?? 'Military pay exempt'}`
-                  : `~${(stateInfo.effectiveRate * 100).toFixed(1)}% est. effective rate`}
+                {stateTaxBadge(stateInfo.code, isRetired, isCivilian)
+                  ? `✓ ${NO_TAX_NOTE(stateInfo.code) ?? (isRetired ? 'Military retirement pay exempt' : stateInfo.note ?? 'Military pay exempt')}`
+                  : `~${((isCivilian ? getCivilianStateTaxRate(stateInfo.code) : isRetired ? getRetirementStateTaxRate(stateInfo.code) : stateInfo.effectiveRate) * 100).toFixed(1)}% est. effective rate`}
               </ThemedText>
             )}
 
@@ -716,6 +721,7 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
         onSelect={setState}
         onClose={closeStatePicker}
         retired={isRetired}
+        civilian={isCivilian}
       />
       <DatePickerModal
         visible={showEnlistPicker}
