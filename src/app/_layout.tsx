@@ -19,6 +19,12 @@ import { useVaClaimsStore } from '@/store/va-claims.store';
 import { useUserStore } from '@/store/user.store';
 import { pullFromCloud, pushToCloud, startSync, stopSync } from '@/services/firestore-sync';
 import { useKidsStore } from '@/store/kids.store';
+import { useBudgetStore } from '@/store/budget.store';
+import { useDebtStore } from '@/store/debt.store';
+import { useExpensesStore } from '@/store/expenses.store';
+import { useNetWorthStore } from '@/store/networth.store';
+import { useNwSnapshotsStore } from '@/store/networth-snapshots.store';
+import { useSavingsGoalsStore } from '@/store/savings-goals.store';
 import { initRemoteConfig } from '@/services/remote-config';
 import { schedulePayDayReminders } from '@/services/notifications';
 import { initSentry, setUserContext } from '@/services/sentry';
@@ -68,6 +74,15 @@ export default function RootLayout() {
     useKidsStore.getState().hydrate();
     useLifeEventsStore.getState().hydrate();
     useVaClaimsStore.getState().hydrate();
+    // Every synced store loads from disk once, here, before cloud sync starts.
+    // These used to hydrate only when their screens opened, which re-read the
+    // older on-device copy after a newer cloud snapshot had already arrived.
+    useBudgetStore.getState().hydrate();
+    useDebtStore.getState().hydrate();
+    useExpensesStore.getState().hydrate();
+    useSavingsGoalsStore.getState().hydrate();
+    useNetWorthStore.getState().hydrate();
+    useNwSnapshotsStore.getState().hydrate();
     const unsubAuth = initAuth();
     return () => {
       unsubAuth();

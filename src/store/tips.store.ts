@@ -7,6 +7,7 @@ interface TipsState {
   savedTipIds: string[];
   hydrated: boolean;
   hydrate: () => Promise<void>;
+  applyRemote: (data: Pick<TipsState, 'savedTipIds'>) => void;
   toggleSave: (tipId: string) => void;
   resetAll: () => void;
 }
@@ -16,13 +17,25 @@ export const useTipsStore = create<TipsState>((set, get) => ({
   hydrated: false,
 
   hydrate: async () => {
+    if (get().hydrated) return;
     try {
       const raw = await AsyncStorage.getItem(STORAGE_KEY);
+      // Cloud data from another device landed while disk was being read —
+      // it's newer than this on-device copy, so don't overwrite it.
+      if (get().hydrated) return;
       const ids: string[] = raw ? JSON.parse(raw) : [];
       set({ savedTipIds: ids, hydrated: true });
     } catch {
       set({ hydrated: true });
     }
+  },
+
+  // A snapshot from the cloud (another device's edit). Saved to disk too:
+  // applying it in memory only let the next hydrate() reload the older
+  // on-device copy and auto-push that stale copy back over the cloud.
+  applyRemote: (data) => {
+    set({ ...data, hydrated: true });
+    AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(data.savedTipIds));
   },
 
   toggleSave: (tipId) => {

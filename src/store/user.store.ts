@@ -38,6 +38,7 @@ const DEFAULTS: UserPreferences = {
   reserveComponent: undefined,
   guardDutyStatus: undefined,
   guardDutyStatusUpdatedAt: undefined,
+  reserveOnOrders: undefined,
   retirementDate: undefined,
   vaDisabilityPercent: undefined,
   sbpEnabled: false,
@@ -65,6 +66,7 @@ const DEFAULTS: UserPreferences = {
 interface UserState extends UserPreferences {
   hydrated: boolean;
   hydrate: () => Promise<void>;
+  applyRemote: (data: Partial<UserPreferences>) => void;
   setBranch: (branch: MilitaryBranch) => void;
   setServiceStatus: (status: ServiceStatus) => void;
   setFinancialGoal: (goal: FinancialGoal) => void;
@@ -133,6 +135,7 @@ function snapshot(get: () => UserState): UserPreferences {
     reserveComponent: s.reserveComponent,
     guardDutyStatus: s.guardDutyStatus,
     guardDutyStatusUpdatedAt: s.guardDutyStatusUpdatedAt,
+    reserveOnOrders: s.reserveOnOrders,
     retirementDate: s.retirementDate,
     vaDisabilityPercent: s.vaDisabilityPercent,
     sbpEnabled: s.sbpEnabled,
@@ -188,6 +191,23 @@ export const useUserStore = create<UserState>((set, get) => ({
         }
       }
 
+      // The cloud profile landed while disk was being read (see applyRemote).
+      // It's newer, so keep it — but Pro/install fields are device-side or
+      // backend-written and may be missing from it, so fill only those gaps.
+      if (get().hydrated) {
+        const merged = { ...prefs, ...patch };
+        const cur = get();
+        const fill: Partial<UserPreferences> = {};
+        if (!cur.installedAt && merged.installedAt) fill.installedAt = merged.installedAt;
+        if (!cur.proExpiresAt && merged.proExpiresAt) {
+          fill.proExpiresAt = merged.proExpiresAt;
+          fill.proSource = merged.proSource;
+        }
+        set(fill);
+        await save(snapshot(get));
+        return;
+      }
+
       set({ ...DEFAULTS, ...prefs, ...patch, hydrated: true });
       if (Object.keys(patch).length > 0) {
         await save(snapshot(get));
@@ -195,6 +215,13 @@ export const useUserStore = create<UserState>((set, get) => ({
     } catch {
       set({ hydrated: true });
     }
+  },
+
+  // Profile snapshot from the cloud (another device's edit), saved to disk
+  // too so a later launch can't reload the older on-device profile.
+  applyRemote: (data) => {
+    set({ ...data, hydrated: true });
+    save(snapshot(get));
   },
 
   setBranch: (branch) => {

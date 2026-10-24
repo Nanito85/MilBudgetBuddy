@@ -9,6 +9,7 @@ interface KidsState {
   kids: KidProfile[];
   hydrated: boolean;
   hydrate: () => Promise<void>;
+  applyRemote: (data: Pick<KidsState, 'kids'>) => void;
   addKid: (nickname: string, gender: KidGender) => void;
   updateKid: (kidId: string, nickname: string, gender: KidGender) => void;
   removeKid: (kidId: string) => void;
@@ -74,8 +75,12 @@ export const useKidsStore = create<KidsState>((set, get) => ({
   hydrated: false,
 
   hydrate: async () => {
+    if (get().hydrated) return;
     try {
       const raw = await AsyncStorage.getItem(STORAGE_KEY);
+      // Cloud data from another device landed while disk was being read —
+      // it's newer than this on-device copy, so don't overwrite it.
+      if (get().hydrated) return;
       const parsed: KidProfile[] = raw ? JSON.parse(raw) : [];
       // Migrate: ensure pendingCompletions exists on all kids
       const kids = parsed.map((k) => ({ ...k, pendingCompletions: k.pendingCompletions ?? [] }));
@@ -83,6 +88,14 @@ export const useKidsStore = create<KidsState>((set, get) => ({
     } catch {
       set({ hydrated: true });
     }
+  },
+
+  // A snapshot from the cloud (another device's edit). Saved to disk too:
+  // applying it in memory only let the next hydrate() reload the older
+  // on-device copy and auto-push that stale copy back over the cloud.
+  applyRemote: (data) => {
+    set({ ...data, hydrated: true });
+    saveKids(data.kids);
   },
 
   addKid: (nickname, gender) => {

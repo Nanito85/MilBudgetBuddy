@@ -15,6 +15,7 @@ interface NwSnapshotsState {
   snapshots: NwSnapshot[];
   hydrated: boolean;
   hydrate: () => Promise<void>;
+  applyRemote: (data: Pick<NwSnapshotsState, 'snapshots'>) => void;
   saveSnapshot: (assets: number, liabilities: number) => void;
   clearHistory: () => void;
 }
@@ -28,13 +29,25 @@ export const useNwSnapshotsStore = create<NwSnapshotsState>((set, get) => ({
   hydrated: false,
 
   hydrate: async () => {
+    if (get().hydrated) return;
     try {
       const raw = await AsyncStorage.getItem(STORAGE_KEY);
+      // Cloud data from another device landed while disk was being read —
+      // it's newer than this on-device copy, so don't overwrite it.
+      if (get().hydrated) return;
       const snapshots: NwSnapshot[] = raw ? JSON.parse(raw) : [];
       set({ snapshots, hydrated: true });
     } catch {
       set({ hydrated: true });
     }
+  },
+
+  // A snapshot from the cloud (another device's edit). Saved to disk too:
+  // applying it in memory only let the next hydrate() reload the older
+  // on-device copy and auto-push that stale copy back over the cloud.
+  applyRemote: (data) => {
+    set({ ...data, hydrated: true });
+    save(data.snapshots);
   },
 
   saveSnapshot: (assets, liabilities) => {

@@ -8,6 +8,7 @@ import {
 } from 'firebase/firestore';
 
 import { db } from '@/services/firebase';
+import { captureError } from '@/services/sentry';
 import { useUserStore } from '@/store/user.store';
 import { useBudgetStore } from '@/store/budget.store';
 import { useDebtStore } from '@/store/debt.store';
@@ -62,10 +63,15 @@ function stripUndefined<T>(value: T): T {
 // Wraps a setDoc() call so its synchronous throw (see stripUndefined above)
 // can't crash the app even if some future field slips past sanitization --
 // a failed cloud sync should never take down the whole session.
+// Failures are still swallowed (never crash the session) but now reported to
+// Sentry — they used to vanish entirely, so a rules denial or a document that
+// outgrew Firestore's size limit could silently stop sync with no signal.
 function safeSetDoc(docRef: ReturnType<typeof userDoc>, data: Record<string, unknown>) {
+  const report = (err: unknown) => captureError(err, { where: 'firestore-sync', doc: docRef.id });
   try {
-    return setDoc(docRef, stripUndefined(data), { merge: true }).catch(() => {});
-  } catch {
+    return setDoc(docRef, stripUndefined(data), { merge: true }).catch(report);
+  } catch (err) {
+    report(err);
     return Promise.resolve();
   }
 }
@@ -122,16 +128,16 @@ export async function pullFromCloud(uid: string): Promise<boolean> {
   ]);
 
   if (profile.exists())     applyUser(profile.data());
-  if (budget.exists())      applyRemote('budget',     () => useBudgetStore.setState({ categories: budget.data()?.categories ?? [] }));
-  if (debt.exists())        applyRemote('debt',       () => useDebtStore.setState({ debts: debt.data()?.debts ?? [], extraMonthly: debt.data()?.extraMonthly ?? 0 }));
-  if (expenses.exists())    applyRemote('expenses',   () => useExpensesStore.setState({ expenses: expenses.data()?.expenses ?? [] }));
-  if (kids.exists())        applyRemote('kids',       () => useKidsStore.setState({ kids: kids.data()?.kids ?? [] }));
-  if (goals.exists())       applyRemote('goals',      () => useSavingsGoalsStore.setState({ goals: goals.data()?.goals ?? [] }));
-  if (networth.exists())    applyRemote('networth',   () => useNetWorthStore.setState({ entries: networth.data()?.entries ?? [] }));
-  if (nwSnapshots.exists()) applyRemote('nwSnapshots', () => useNwSnapshotsStore.setState({ snapshots: nwSnapshots.data()?.snapshots ?? [] }));
-  if (lifeEvents.exists())  applyRemote('lifeEvents', () => useLifeEventsStore.setState({ events: lifeEvents.data()?.events ?? [] }));
-  if (tips.exists())        applyRemote('tips',       () => useTipsStore.setState({ savedTipIds: tips.data()?.savedTipIds ?? [] }));
-  if (vaClaims.exists())    applyRemote('vaClaims',   () => useVaClaimsStore.setState({ claims: vaClaims.data()?.claims ?? [] }));
+  if (budget.exists())      applyRemote('budget',     () => useBudgetStore.getState().applyRemote({ categories: budget.data()?.categories ?? [] }));
+  if (debt.exists())        applyRemote('debt',       () => useDebtStore.getState().applyRemote({ debts: debt.data()?.debts ?? [], extraMonthly: debt.data()?.extraMonthly ?? 0 }));
+  if (expenses.exists())    applyRemote('expenses',   () => useExpensesStore.getState().applyRemote({ expenses: expenses.data()?.expenses ?? [] }));
+  if (kids.exists())        applyRemote('kids',       () => useKidsStore.getState().applyRemote({ kids: kids.data()?.kids ?? [] }));
+  if (goals.exists())       applyRemote('goals',      () => useSavingsGoalsStore.getState().applyRemote({ goals: goals.data()?.goals ?? [] }));
+  if (networth.exists())    applyRemote('networth',   () => useNetWorthStore.getState().applyRemote({ entries: networth.data()?.entries ?? [] }));
+  if (nwSnapshots.exists()) applyRemote('nwSnapshots', () => useNwSnapshotsStore.getState().applyRemote({ snapshots: nwSnapshots.data()?.snapshots ?? [] }));
+  if (lifeEvents.exists())  applyRemote('lifeEvents', () => useLifeEventsStore.getState().applyRemote({ events: lifeEvents.data()?.events ?? [] }));
+  if (tips.exists())        applyRemote('tips',       () => useTipsStore.getState().applyRemote({ savedTipIds: tips.data()?.savedTipIds ?? [] }));
+  if (vaClaims.exists())    applyRemote('vaClaims',   () => useVaClaimsStore.getState().applyRemote({ claims: vaClaims.data()?.claims ?? [] }));
 
   return true;
 }
@@ -143,16 +149,16 @@ export function startSync(uid: string) {
 
   const collections: Array<{ key: string; apply: (data: any) => void }> = [
     { key: 'profile',    apply: applyUser },
-    { key: 'budget',     apply: (d) => useBudgetStore.setState({ categories: d.categories ?? [] }) },
-    { key: 'debt',       apply: (d) => useDebtStore.setState({ debts: d.debts ?? [], extraMonthly: d.extraMonthly ?? 0 }) },
-    { key: 'expenses',   apply: (d) => useExpensesStore.setState({ expenses: d.expenses ?? [] }) },
-    { key: 'kids',       apply: (d) => useKidsStore.setState({ kids: d.kids ?? [] }) },
-    { key: 'goals',      apply: (d) => useSavingsGoalsStore.setState({ goals: d.goals ?? [] }) },
-    { key: 'networth',   apply: (d) => useNetWorthStore.setState({ entries: d.entries ?? [] }) },
-    { key: 'nwSnapshots', apply: (d) => useNwSnapshotsStore.setState({ snapshots: d.snapshots ?? [] }) },
-    { key: 'lifeEvents', apply: (d) => useLifeEventsStore.setState({ events: d.events ?? [] }) },
-    { key: 'tips',       apply: (d) => useTipsStore.setState({ savedTipIds: d.savedTipIds ?? [] }) },
-    { key: 'vaClaims',   apply: (d) => useVaClaimsStore.setState({ claims: d.claims ?? [] }) },
+    { key: 'budget',     apply: (d) => useBudgetStore.getState().applyRemote({ categories: d.categories ?? [] }) },
+    { key: 'debt',       apply: (d) => useDebtStore.getState().applyRemote({ debts: d.debts ?? [], extraMonthly: d.extraMonthly ?? 0 }) },
+    { key: 'expenses',   apply: (d) => useExpensesStore.getState().applyRemote({ expenses: d.expenses ?? [] }) },
+    { key: 'kids',       apply: (d) => useKidsStore.getState().applyRemote({ kids: d.kids ?? [] }) },
+    { key: 'goals',      apply: (d) => useSavingsGoalsStore.getState().applyRemote({ goals: d.goals ?? [] }) },
+    { key: 'networth',   apply: (d) => useNetWorthStore.getState().applyRemote({ entries: d.entries ?? [] }) },
+    { key: 'nwSnapshots', apply: (d) => useNwSnapshotsStore.getState().applyRemote({ snapshots: d.snapshots ?? [] }) },
+    { key: 'lifeEvents', apply: (d) => useLifeEventsStore.getState().applyRemote({ events: d.events ?? [] }) },
+    { key: 'tips',       apply: (d) => useTipsStore.getState().applyRemote({ savedTipIds: d.savedTipIds ?? [] }) },
+    { key: 'vaClaims',   apply: (d) => useVaClaimsStore.getState().applyRemote({ claims: d.claims ?? [] }) },
   ];
 
   for (const { key, apply } of collections) {
@@ -215,60 +221,63 @@ function schedulePush(uid: string, key: string) {
   }, PUSH_DEBOUNCE_MS));
 }
 
+// Each subscriber skips the hydrate() transition (hydrated false → true):
+// loading the on-device copy from disk is not a user edit, and pushing it
+// let an older disk copy overwrite newer cloud data from another device.
 function startAutoPush(uid: string) {
   const subs: Array<() => void> = [
     useBudgetStore.subscribe((state, prev) => {
-      if (state.categories !== prev.categories && !applyingRemote.has('budget')) {
+      if (state.hydrated === prev.hydrated && state.categories !== prev.categories && !applyingRemote.has('budget')) {
         schedulePush(uid, 'budget');
       }
     }),
     useDebtStore.subscribe((state, prev) => {
-      if ((state.debts !== prev.debts || state.extraMonthly !== prev.extraMonthly) && !applyingRemote.has('debt')) {
+      if (state.hydrated === prev.hydrated && (state.debts !== prev.debts || state.extraMonthly !== prev.extraMonthly) && !applyingRemote.has('debt')) {
         schedulePush(uid, 'debt');
       }
     }),
     useExpensesStore.subscribe((state, prev) => {
-      if (state.expenses !== prev.expenses && !applyingRemote.has('expenses')) {
+      if (state.hydrated === prev.hydrated && state.expenses !== prev.expenses && !applyingRemote.has('expenses')) {
         schedulePush(uid, 'expenses');
       }
     }),
     useKidsStore.subscribe((state, prev) => {
-      if (state.kids !== prev.kids && !applyingRemote.has('kids')) {
+      if (state.hydrated === prev.hydrated && state.kids !== prev.kids && !applyingRemote.has('kids')) {
         schedulePush(uid, 'kids');
       }
     }),
     useSavingsGoalsStore.subscribe((state, prev) => {
-      if (state.goals !== prev.goals && !applyingRemote.has('goals')) {
+      if (state.hydrated === prev.hydrated && state.goals !== prev.goals && !applyingRemote.has('goals')) {
         schedulePush(uid, 'goals');
       }
     }),
     useNetWorthStore.subscribe((state, prev) => {
-      if (state.entries !== prev.entries && !applyingRemote.has('networth')) {
+      if (state.hydrated === prev.hydrated && state.entries !== prev.entries && !applyingRemote.has('networth')) {
         schedulePush(uid, 'networth');
       }
     }),
     useNwSnapshotsStore.subscribe((state, prev) => {
-      if (state.snapshots !== prev.snapshots && !applyingRemote.has('nwSnapshots')) {
+      if (state.hydrated === prev.hydrated && state.snapshots !== prev.snapshots && !applyingRemote.has('nwSnapshots')) {
         schedulePush(uid, 'nwSnapshots');
       }
     }),
     useLifeEventsStore.subscribe((state, prev) => {
-      if (state.events !== prev.events && !applyingRemote.has('lifeEvents')) {
+      if (state.hydrated === prev.hydrated && state.events !== prev.events && !applyingRemote.has('lifeEvents')) {
         schedulePush(uid, 'lifeEvents');
       }
     }),
-    useUserStore.subscribe((_state, _prev) => {
-      if (!applyingRemote.has('profile')) {
+    useUserStore.subscribe((state, prev) => {
+      if (state.hydrated === prev.hydrated && !applyingRemote.has('profile')) {
         schedulePush(uid, 'profile');
       }
     }),
     useTipsStore.subscribe((state, prev) => {
-      if (state.savedTipIds !== prev.savedTipIds && !applyingRemote.has('tips')) {
+      if (state.hydrated === prev.hydrated && state.savedTipIds !== prev.savedTipIds && !applyingRemote.has('tips')) {
         schedulePush(uid, 'tips');
       }
     }),
     useVaClaimsStore.subscribe((state, prev) => {
-      if (state.claims !== prev.claims && !applyingRemote.has('vaClaims')) {
+      if (state.hydrated === prev.hydrated && state.claims !== prev.claims && !applyingRemote.has('vaClaims')) {
         schedulePush(uid, 'vaClaims');
       }
     }),
@@ -337,6 +346,7 @@ function snapshotUser() {
     reserveComponent: s.reserveComponent ?? null,
     guardDutyStatus: s.guardDutyStatus ?? null,
     guardDutyStatusUpdatedAt: s.guardDutyStatusUpdatedAt ?? null,
+    reserveOnOrders: s.reserveOnOrders ?? null,
     retirementDate: s.retirementDate ?? null,
     vaDisabilityPercent: s.vaDisabilityPercent ?? null,
     sbpEnabled: s.sbpEnabled ?? false,
@@ -368,7 +378,7 @@ function snapshotUser() {
 }
 
 function applyUser(data: any) {
-  useUserStore.setState({ ...data, hydrated: true });
+  useUserStore.getState().applyRemote(data);
 }
 
 // ── Single-collection write (call after any local mutation) ───────────────────
