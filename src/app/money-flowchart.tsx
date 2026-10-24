@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { ANNUAL_ADDITIONS_LIMIT, IRA_LIMIT, LIMITS_YEAR, TSP_ELECTIVE_LIMIT, usd } from '@/data/annual-limits';
 import { Brand, Spacing } from '@/constants/theme';
 import { useThemeColors } from '@/hooks/use-theme';
 
@@ -54,20 +55,20 @@ const STEPS: Step[] = [
     id: 'roth',
     order: 4,
     icon: '📈',
-    title: 'Max Roth IRA ($7,500/year)',
+    title: `Max Roth IRA (${usd(IRA_LIMIT)}/year)`,
     why: 'Your military income is likely low enough for Roth eligibility. Tax-free growth forever. $7.5K/yr over a full 20-year career (7% avg return) ≈ $300K+ tax-free by retirement.',
     how: 'Open a Roth IRA at Fidelity, Vanguard, or Schwab (all free). Buy a total market index fund (e.g. FSKAX, VTI). Set auto-invest for $625/month.',
-    target: '$7,500/year ($625/month)',
+    target: `${usd(IRA_LIMIT)}/year (${usd(Math.round(IRA_LIMIT / 12))}/month)`,
     color: '#6A1B9A',
   },
   {
     id: 'tsp_max',
     order: 5,
     icon: '🚀',
-    title: 'Max TSP ($24,500/year)',
+    title: `Max TSP (${usd(TSP_ELECTIVE_LIMIT)}/year)`,
     why: 'Once Roth IRA is maxed, TSP is the next best tax-advantaged account. Traditional TSP gives you a tax deduction now.',
-    how: 'In MyPay, increase TSP contribution to reach the IRS limit ($24,500 for FY2026). Combat zone contributions can go up to $72,000/year.',
-    target: '$24,500/year (or $72K if deployed to CZ)',
+    how: `In MyPay, increase TSP contribution to reach the IRS limit (${usd(TSP_ELECTIVE_LIMIT)} for ${LIMITS_YEAR}). Combat zone contributions can go up to ${usd(ANNUAL_ADDITIONS_LIMIT)}/year.`,
+    target: `${usd(TSP_ELECTIVE_LIMIT)}/year (or ${usd(ANNUAL_ADDITIONS_LIMIT)} if deployed to CZ)`,
     color: '#00695C',
   },
   {

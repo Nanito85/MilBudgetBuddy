@@ -43,7 +43,7 @@ const FIELDS = [
   { name: 'BAS_DATA_YEAR',        file: 'src/data/bas-rates.ts',        rollover: 'Jan 1', expected: calendarYear },
   { name: 'CONUS_COLA_DATA_YEAR', file: 'src/data/conus-cola.ts',       rollover: 'Jan 1', expected: calendarYear },
   { name: 'FEDERAL_TAX_DATA_YEAR',file: 'src/data/federal-tax.ts',      rollover: 'Jan 1 (IRS publishes ~Oct)', expected: calendarYear },
-  { name: 'TSP_LIMITS_YEAR',      file: 'src/features/tsp/utils/tspCalc.ts', rollover: 'Jan 1 (IRS publishes ~Nov)', expected: calendarYear },
+  { name: 'LIMITS_YEAR',          file: 'src/data/annual-limits.ts',  rollover: 'Jan 1 (IRS publishes ~Nov)', expected: calendarYear },
   { name: 'GS_PAY_DATA_YEAR',     file: 'src/data/gs-pay-rates.ts',     rollover: 'Jan (first full pay period)', expected: calendarYear },
   { name: 'VA_LOAN_DATA_YEAR',    file: 'src/data/va-loan-rates.ts',    rollover: 'Jan 1', expected: calendarYear },
   { name: 'PPM_DATA_YEAR',        file: 'src/data/weight-allowances.ts', rollover: 'Jan 1', expected: calendarYear },

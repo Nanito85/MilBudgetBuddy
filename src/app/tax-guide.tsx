@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { LIMITS_YEAR, TSP_CATCHUP_50, TSP_ELECTIVE_LIMIT, TSP_SUPER_CATCHUP_60_63, usd } from '@/data/annual-limits';
 import { Brand, Spacing } from '@/constants/theme';
 import { useThemeColors } from '@/hooks/use-theme';
 
@@ -179,11 +180,11 @@ const SECTIONS: TaxSection[] = [
       '• The contribution is never taxed (excluded from income).\n' +
       '• The growth and qualified withdrawals are also tax-free.\n' +
       '• Result: truly tax-free money from input to output.\n\n' +
-      'FY2026 CONTRIBUTION LIMITS:\n' +
-      '• Under 50: $24,500/year\n' +
-      '• Age 50–59 & 64+: $32,500/year (+$8,000 catch-up)\n' +
-      '• Age 60–63: $35,750/year (+$11,250 super catch-up, SECURE 2.0)',
-    tip: 'If deploying to a combat zone: maximize Roth TSP contributions. It\'s the most tax-advantaged investing opportunity available — potentially $24,500 in permanently tax-free growth per deployment.',
+      `${LIMITS_YEAR} CONTRIBUTION LIMITS:\n` +
+      `• Under 50: ${usd(TSP_ELECTIVE_LIMIT)}/year\n` +
+      `• Age 50–59 & 64+: ${usd(TSP_ELECTIVE_LIMIT + TSP_CATCHUP_50)}/year (+${usd(TSP_CATCHUP_50)} catch-up)\n` +
+      `• Age 60–63: ${usd(TSP_ELECTIVE_LIMIT + TSP_SUPER_CATCHUP_60_63)}/year (+${usd(TSP_SUPER_CATCHUP_60_63)} super catch-up, SECURE 2.0)`,
+    tip: `If deploying to a combat zone: maximize Roth TSP contributions. It's the most tax-advantaged investing opportunity available — potentially ${usd(TSP_ELECTIVE_LIMIT)} in permanently tax-free growth per deployment.`,
   },
 ];
 

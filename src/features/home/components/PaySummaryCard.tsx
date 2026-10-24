@@ -4,6 +4,7 @@ import { Alert, Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { TacticalCard } from '@/components/TacticalCard';
 import { ThemedText } from '@/components/themed-text';
 import { Brand, Fonts, Spacing } from '@/constants/theme';
+import { BASIC_PAY_DATA_YEAR } from '@/data/basic-pay-rates';
 import { getStateTaxInfo, RETIREMENT_TAX_EXEMPT_STATES } from '@/data/state-tax';
 import { EditPayModal } from '@/features/home/components/EditPayModal';
 import { LESBreakdown, fmtPay } from '@/features/home/utils/lesCalc';
@@ -78,6 +79,7 @@ export function PaySummaryCard({ breakdown }: Props) {
   const [spouseOpen, setSpouseOpen] = useState(false);
   const [showEdit,   setShowEdit]   = useState(false);
 
+  const ratesOutdated       = BASIC_PAY_DATA_YEAR < new Date().getFullYear();
   const lesOverrides        = useUserStore((s) => s.lesOverrides);
   const spouseMonthlyIncome = useUserStore((s) => s.spouseMonthlyIncome);
   const setSpouseMonthlyIncome = useUserStore((s) => s.setSpouseMonthlyIncome);
@@ -170,7 +172,16 @@ export function PaySummaryCard({ breakdown }: Props) {
             </View>
           )}
         </View>
-        <ThemedText type="label" style={[styles.headerLabel, { color: tc.textHint }]}>FY2026</ThemedText>
+        {/* Which year's pay tables this is. Turns amber once the calendar
+            year has moved past them (e.g. on Jan 1 before a rate update
+            ships) so last year's numbers never pass as current. */}
+        <Pressable
+          disabled={!ratesOutdated}
+          onPress={() => Alert.alert('Pay rates out of date', `This estimate uses ${BASIC_PAY_DATA_YEAR} pay tables. ${new Date().getFullYear()} rates (pay raise, BAH, BAS, tax brackets) will arrive in an app update — until then, check your LES for the new amounts.`)}>
+          <ThemedText type="label" style={[styles.headerLabel, { color: ratesOutdated ? tc.warning : tc.textHint }]}>
+            {ratesOutdated ? `⚠ ${BASIC_PAY_DATA_YEAR} RATES` : `${BASIC_PAY_DATA_YEAR} RATES`}
+          </ThemedText>
+        </Pressable>
       </View>
 
       {/* Net pay hero */}
