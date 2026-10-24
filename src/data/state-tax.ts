@@ -22,12 +22,16 @@ export interface StateTaxInfo {
   // tax. Single filer at $60k wages, 2026 brackets/deductions (Tax Foundation,
   // "State Individual Income Tax Rates and Brackets, 2026").
   civilianRate?: number;
+  // Annual amount of Guard/Reserve drill pay the state excludes (e.g. MS's
+  // first $15,000), applied only to drill-only reservists.
+  drillPayExemptAnnual?: number;
   note?: string;
 }
 
 export const US_STATES: StateTaxInfo[] = [
   { code: 'AK', name: 'Alaska',         effectiveRate: 0,      militaryExempt: true,  note: 'No state income tax' },
-  { code: 'AL', name: 'Alabama',        effectiveRate: 0,      militaryExempt: true,  note: 'Active duty pay exempt', civilianRate: 0.046 },
+  // AL DOR FAQ: residents owe AL tax on active-duty pay wherever assigned (only combat-zone pay is excluded).
+  { code: 'AL', name: 'Alabama',        effectiveRate: 0.046,  militaryExempt: false },
   { code: 'AR', name: 'Arkansas',       effectiveRate: 0,      militaryExempt: true,  note: 'Active duty pay exempt', civilianRate: 0.0355 },
   { code: 'AZ', name: 'Arizona',        effectiveRate: 0,      militaryExempt: true,  note: 'Active duty pay exempt', civilianRate: 0.0215 },
   { code: 'CA', name: 'California',     effectiveRate: 0.062,  militaryExempt: false, exemptWhenStationedOutside: true, note: 'Exempt while stationed outside CA (FTB Pub 1032)' },
@@ -47,11 +51,12 @@ export const US_STATES: StateTaxInfo[] = [
   { code: 'LA', name: 'Louisiana',      effectiveRate: 0.035,  militaryExempt: false },
   { code: 'MA', name: 'Massachusetts',  effectiveRate: 0.050,  militaryExempt: false },
   { code: 'MD', name: 'Maryland',       effectiveRate: 0.058,  militaryExempt: false },
-  { code: 'ME', name: 'Maine',          effectiveRate: 0.065,  militaryExempt: false },
+  { code: 'ME', name: 'Maine',          effectiveRate: 0.065,  militaryExempt: false, exemptWhenStationedOutside: true, note: 'Exempt while stationed outside ME under orders' },
   { code: 'MI', name: 'Michigan',       effectiveRate: 0,      militaryExempt: true,  note: 'Military pay exempt', civilianRate: 0.0383 },
   { code: 'MN', name: 'Minnesota',      effectiveRate: 0,      militaryExempt: true,  note: 'Active duty pay exempt', civilianRate: 0.0426 },
   { code: 'MO', name: 'Missouri',       effectiveRate: 0,      militaryExempt: true,  note: 'Active duty pay exempt', civilianRate: 0.0314 },
-  { code: 'MS', name: 'Mississippi',    effectiveRate: 0,      militaryExempt: true,  note: 'Active duty pay exempt', civilianRate: 0.0278 },
+  // Active-duty pay is taxed; only combat-zone pay and the first $15,000 of Guard/Reserve pay are excluded.
+  { code: 'MS', name: 'Mississippi',    effectiveRate: 0.0278, militaryExempt: false, drillPayExemptAnnual: 15000 },
   { code: 'MT', name: 'Montana',        effectiveRate: 0,      militaryExempt: true,  note: 'Active duty pay exempt', civilianRate: 0.0344 },
   { code: 'NC', name: 'North Carolina', effectiveRate: 0.0475, militaryExempt: false },
   { code: 'ND', name: 'North Dakota',   effectiveRate: 0,      militaryExempt: true,  note: 'Active duty pay exempt', civilianRate: 0.0 },

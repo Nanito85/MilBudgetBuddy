@@ -9,7 +9,7 @@ import { getGSMonthly } from '@/data/gs-pay-rates';
 import { getOconusCola } from '@/data/oconus-cola';
 import { getOhaAreaForInstallation, getOhaRate } from '@/data/oha-rates';
 import { getInstallationById, getInstallationByZip } from '@/data/installations';
-import { getActiveDutyStateTaxRate, getCivilianStateTaxRate, getRetirementStateTaxRate } from '@/data/state-tax';
+import { getActiveDutyStateTaxRate, getCivilianStateTaxRate, getRetirementStateTaxRate, getStateTaxInfo } from '@/data/state-tax';
 import { calcSbpPremium } from '@/features/retirement/utils/sbpCalc';
 import { HousingStatus, LESOverrides, ServiceStatus } from '@/types/user.types';
 
@@ -479,7 +479,9 @@ export function calcLES(inputs: LESInputs): LESBreakdown {
     ? getRetirementStateTaxRate(stateResidence)
     : isCivilianOnly ? 0 : getActiveDutyStateTaxRate(stateResidence, dutyStationState);
   const gsStateRate     = getCivilianStateTaxRate(stateResidence);
-  const stateTax       = (taxableBasePay + taxablePays) * stateRate + gsGrossMonthly * gsStateRate;
+  const drillExemptMonthly = isDrillOnly ? (getStateTaxInfo(stateResidence)?.drillPayExemptAnnual ?? 0) / 12 : 0;
+  const stateTaxableMil = Math.max(0, taxableBasePay + taxablePays - drillExemptMonthly);
+  const stateTax       = stateTaxableMil * stateRate + gsGrossMonthly * gsStateRate;
   // TDP (TRICARE Dental Program) is a uniformed-services-only benefit — it
   // has no equivalent for someone who has never served, so `hasDentalFamily`
   // is meaningless for a pure civilian. (A retiree who's alsoGsCivilian can
