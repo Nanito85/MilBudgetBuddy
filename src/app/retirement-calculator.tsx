@@ -506,7 +506,7 @@ export default function RetirementCalculatorScreen() {
                 ESTIMATED PENSION AFTER TAXES
               </ThemedText>
               <View style={styles.sliderRow}>
-                <ThemedText style={styles.sliderLabel}>Gross pension</ThemedText>
+                <ThemedText style={styles.sliderLabel}>Gross pension ({showHigh3 ? 'High-3' : 'BRS'}{system === 'both' ? ', pick BRS Only to see BRS' : ''})</ThemedText>
                 <ThemedText style={styles.sliderLabel}>{formatMoney(pensionMonthly)}/mo</ThemedText>
               </View>
               <View style={styles.sliderRow}>
