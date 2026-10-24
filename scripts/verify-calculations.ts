@@ -12,6 +12,7 @@
  */
 import { getPayDayInfo } from '@/features/home/utils/payScheduleCalc';
 import { calcLES, getDrillPay } from '@/features/home/utils/lesCalc';
+import { estimateAnnualFedTax } from '@/data/federal-tax';
 import { getBasicPay, getHigh3Average, getHigh3AverageDetailed } from '@/data/basic-pay-rates';
 import { combinedRating, monthlyCompensationDetailed, monthlyCompensation } from '@/features/va/utils/vaDisabilityCalc';
 import { getInstallationById } from '@/data/installations';
@@ -124,6 +125,46 @@ console.log('\n[Reserve] Drill-only vs on orders');
 
   const deployed = calcLES({ ...base, serviceStatus: 'reserve', isDeployed: true });
   assertTrue(!deployed.isDrillPay && deployed.bas > 0, 'A deployed reservist is on orders (full pay), not drill-only');
+}
+
+// ── Federal tax: credits, filing status, pre-tax deductions, special pays ────
+console.log('\n[FedTax] Credits, HOH, pre-tax TSP, special pays');
+{
+  // Hand-computed 2026 figures.
+  assertEqual(estimateAnnualFedTax(16100, false), 0, 'Single: income at the standard deduction owes $0');
+  assertEqual(estimateAnnualFedTax(50000, false), 12400 * 0.10 + (33900 - 12400) * 0.12, 'Single $50k: 10%/12% brackets after $16,100 deduction');
+  assertEqual(estimateAnnualFedTax(50000, false, 1), Math.max(0, 17700 * 0.10 + (25850 - 17700) * 0.12 - 2200), 'Single parent $50k: HOH brackets + $24,150 deduction - $2,200 CTC');
+  assertEqual(estimateAnnualFedTax(60000, true, 2), Math.max(0, 24800 * 0.10 + (27800 - 24800) * 0.12 - 4400), 'MFJ 2 kids $60k: credit wipes out the tax');
+  assertEqual(estimateAnnualFedTax(410000, true, 1), (() => {
+    const t = 410000 - 32200;
+    const tax = 24800 * 0.10 + (100800 - 24800) * 0.12 + (211400 - 100800) * 0.22 + (t - 211400) * 0.24;
+    return tax - Math.max(0, 2200 - 10 * 50);
+  })(), 'CTC phases out $50 per $1,000 over $400k (MFJ)');
+
+  const base = {
+    payGrade: 'E5', yos: 6, mhaZip: '28310', hasSpouse: true, numChildren: 2,
+    specialPaysTotal: 0, tspContribPct: 5, hasDentalFamily: false, sglOptOut: false, serviceStatus: 'active' as const,
+  };
+  const family = calcLES(base);
+  assertEqual(family.fedTax, 0, 'E-5 married with 2 kids, 5% TSP: estimated federal tax is $0 after the child credit');
+
+  const single = { ...base, hasSpouse: false, numChildren: 0 };
+  const noTsp = calcLES({ ...single, tspContribPct: 0 });
+  const withTsp = calcLES({ ...single, tspContribPct: 10 });
+  assertTrue(withTsp.fedTax < noTsp.fedTax, 'Traditional TSP lowers federal tax (pre-tax)');
+  const roth = calcLES({ ...single, tspContribPct: 0, rothTspPct: 10 });
+  assertEqual(roth.fedTax, noTsp.fedTax, 'Roth TSP does not lower federal tax (after-tax)');
+
+  const flight = calcLES({ ...single, specialPaysTotal: 400 });
+  assertEqual(flight.fica - noTsp.fica, 400 * 0.0765, 'Special pays are subject to FICA');
+  assertTrue(flight.fedTax > noTsp.fedTax, 'Special pays are subject to federal income tax');
+
+  const hfpDeployed = calcLES({ ...single, specialPaysTotal: 225, hostileFireTotal: 225, isDeployed: true, deploymentLocationId: 'iraq' });
+  if (hfpDeployed.isDeployed) {
+    assertEqual(hfpDeployed.specialPays, 0, 'Hostile Fire Pay is not counted again on top of deployment IDP');
+  } else {
+    assertTrue(false, 'deployment location id "iraq" should resolve for the HFP de-dup check');
+  }
 }
 
 // ── 4. State tax always computed (never silently skipped) ────────────────────

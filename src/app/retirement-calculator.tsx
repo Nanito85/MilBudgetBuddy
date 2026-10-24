@@ -128,7 +128,7 @@ export default function RetirementCalculatorScreen() {
     ? pensionMonthly
     : Math.max(0, pensionMonthly - vaMonthly);
   const annualTaxable = taxablePensionMonthly * 12;
-  const fedTaxMonthly = estimateAnnualFedTax(annualTaxable, married) / 12;
+  const fedTaxMonthly = estimateAnnualFedTax(annualTaxable, married, numChildren) / 12;
   const stateRate = getRetirementStateTaxRate(retireState);
   const stateTaxMonthly = taxablePensionMonthly * stateRate;
   const stateInfo = getStateTaxInfo(retireState);
@@ -490,7 +490,7 @@ export default function RetirementCalculatorScreen() {
                 <ThemedText style={styles.sliderLabel}>{formatMoney(pensionMonthly)}/mo</ThemedText>
               </View>
               <View style={styles.sliderRow}>
-                <ThemedText style={styles.sliderLabel}>Federal tax ({FEDERAL_TAX_DATA_YEAR}, {married ? 'married' : 'single'})</ThemedText>
+                <ThemedText style={styles.sliderLabel}>Federal tax ({FEDERAL_TAX_DATA_YEAR}, {married ? 'married' : numChildren > 0 ? 'head of household' : 'single'})</ThemedText>
                 <ThemedText style={styles.sliderLabel}>−{formatMoney(fedTaxMonthly)}/mo</ThemedText>
               </View>
               <View style={styles.sliderRow}>

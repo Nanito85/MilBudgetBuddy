@@ -38,12 +38,12 @@ export function dentalFamilyRate(grade: string): number {
   return DENTAL_LOWER_TIER_GRADES.has(grade) ? DENTAL_FAMILY_E4_BELOW : DENTAL_FAMILY_E5_ABOVE;
 }
 
-// Federal income tax estimate — base pay only (allowances not taxable).
+// Federal income tax estimate — taxable wages only (allowances not taxable).
 // Bracket table lives in data/federal-tax.ts (single source of truth —
 // see that file's header for why this used to be its own hand-maintained
 // copy of the brackets).
-function estimateFedTax(annualBasePay: number, married: boolean): number {
-  return estimateAnnualFedTax(annualBasePay, married) / 12;
+function estimateFedTax(annualTaxable: number, married: boolean, children: number): number {
+  return estimateAnnualFedTax(annualTaxable, married, children) / 12;
 }
 
 export interface LESBreakdown {
@@ -141,6 +141,9 @@ export interface LESInputs {
   numChildren?: number;
   housingStatus?: HousingStatus; // defaults to 'off_base' (full BAH) if omitted
   specialPaysTotal: number;
+  // The part of specialPaysTotal that is Hostile Fire Pay — dropped while
+  // deployed to an IDP area, where the flat IDP replaces it.
+  hostileFireTotal?: number;
   tspContribPct: number;   // Traditional TSP %
   rothTspPct?: number;     // Roth TSP % (optional, defaults to 0)
   hasDentalFamily: boolean;
@@ -247,7 +250,7 @@ export function retiredPayMultiplier(yos: number): number {
 
 export function calcLES(inputs: LESInputs): LESBreakdown {
   const {
-    payGrade, yos, mhaZip, dutyStationId, hasSpouse, numChildren = 0, housingStatus = 'off_base', specialPaysTotal,
+    payGrade, yos, mhaZip, dutyStationId, hasSpouse, numChildren = 0, housingStatus = 'off_base', specialPaysTotal, hostileFireTotal = 0,
     tspContribPct, rothTspPct = 0, hasDentalFamily, sglOptOut, stateResidence, overrides, serviceStatus,
     familySeparated, dependentsMhaZip, alsoGsCivilian, gsGrade, gsStep, gsLocalityKey,
     isDeployed, deploymentLocationId, sbpEnabled, sbpCoveragePct = 1,
@@ -372,27 +375,13 @@ export function calcLES(inputs: LESInputs): LESBreakdown {
   const extraIncome     = extraIncomeItems.reduce((s, i) => s + i.amount, 0);
   const extraDeductions = extraDeductionItems.reduce((s, i) => s + i.amount, 0);
 
-  const grossPay = basePay + bah + bas + cola + specialPaysTotal + extraIncome + familyBah + fsa + gsGrossMonthly + idp;
+  // Hostile Fire Pay and IDP are the same entitlement (only one is paid), so
+  // a member who also listed hostile_fire as a special pay would otherwise
+  // be credited twice once the deployment toggle adds IDP.
+  const specialPays = deploymentLoc ? Math.max(0, specialPaysTotal - hostileFireTotal) : specialPaysTotal;
 
-  // Combined federal tax on basePay + GS wages together (not two separate
-  // brackets) — stacking GS income on top of retired pay pushes the whole
-  // household into a higher marginal bracket, and computing each source's
-  // tax independently would understate that. czteExcluded (see above) comes
-  // off basePay first — FICA still applies to it (CZTE only excludes
-  // INCOME tax, federal and state; Social Security/Medicare are unaffected).
-  const fica    = (isRetired ? 0 : basePay * FICA_RATE) + gsGrossMonthly * FICA_RATE;
-  const taxableBasePay = basePay - czteExcluded;
-  const fedTax  = estimateFedTax((taxableBasePay + gsGrossMonthly) * 12, hasSpouse);
-  // Military retirement pay exemptions are a materially different (and
-  // generally more generous) list than active-duty exemptions — see
-  // getRetirementStateTaxRate's own comment in data/state-tax.ts. Using the
-  // active-duty table here would show retirees in e.g. Kansas or Utah a
-  // state tax deduction on their pension that doesn't actually apply. A
-  // stacked GS paycheck is ordinary civilian wage income, though — it always
-  // uses the regular rate even when basePay (the pension portion) doesn't.
-  const stateRate      = isRetired ? getRetirementStateTaxRate(stateResidence) : getStateTaxRate(stateResidence);
-  const gsStateRate     = getStateTaxRate(stateResidence);
-  const stateTax       = taxableBasePay * stateRate + gsGrossMonthly * gsStateRate;
+  const grossPay = basePay + bah + bas + cola + specialPays + extraIncome + familyBah + fsa + gsGrossMonthly + idp;
+
   // TSP is only ever deducted from actual PAYROLL wages, never from a
   // pension — so which paycheck it comes off of depends on which one the
   // person actually has: active-duty basePay for a serving member, or GS
@@ -430,6 +419,37 @@ export function calcLES(inputs: LESInputs): LESBreakdown {
   // SBP (Survivor Benefit Plan) is the retiree-side analog: an opt-in
   // premium against retired pay, never active-duty pay. See sbpCalc.ts.
   const sbp = (isRetired && sbpEnabled) ? calcSbpPremium(basePay, sbpCoveragePct) : 0;
+
+  // Combined federal tax on basePay + GS wages together (not two separate
+  // brackets) — stacking GS income on top of retired pay pushes the whole
+  // household into a higher marginal bracket, and computing each source's
+  // tax independently would understate that. czteExcluded (see above) comes
+  // off basePay first — FICA still applies to it (CZTE only excludes
+  // INCOME tax, federal and state; Social Security/Medicare are unaffected).
+  //
+  // Special pays and IDP are taxable wages (FICA and income tax) except in a
+  // combat-zone month, when CZTE excludes them from income tax too. Traditional
+  // TSP and the SBP premium are pre-tax, so they come off taxable income —
+  // leaving them in overstated tax for anyone contributing. Allowances (BAH,
+  // BAS, COLA, FSA) stay untaxed, as before.
+  const taxablePays = isCzte ? 0 : specialPays + idp;
+  const fica    = (isRetired ? 0 : (basePay + specialPays + idp) * FICA_RATE) + gsGrossMonthly * FICA_RATE;
+  const taxableBasePay = basePay - czteExcluded;
+  const fedTaxableMonthly = Math.max(0, taxableBasePay + taxablePays + gsGrossMonthly - traditionalTsp - sbp);
+  // Children feed the Child Tax Credit and, for an unmarried parent, head-
+  // of-household filing. Every child is counted; one 17 or older doesn't
+  // actually qualify for the credit, so this can understate tax for them.
+  const fedTax  = estimateFedTax(fedTaxableMonthly * 12, hasSpouse, numChildren);
+  // Military retirement pay exemptions are a materially different (and
+  // generally more generous) list than active-duty exemptions — see
+  // getRetirementStateTaxRate's own comment in data/state-tax.ts. Using the
+  // active-duty table here would show retirees in e.g. Kansas or Utah a
+  // state tax deduction on their pension that doesn't actually apply. A
+  // stacked GS paycheck is ordinary civilian wage income, though — it always
+  // uses the regular rate even when basePay (the pension portion) doesn't.
+  const stateRate      = isRetired ? getRetirementStateTaxRate(stateResidence) : getStateTaxRate(stateResidence);
+  const gsStateRate     = getStateTaxRate(stateResidence);
+  const stateTax       = (taxableBasePay + taxablePays) * stateRate + gsGrossMonthly * gsStateRate;
   // TDP (TRICARE Dental Program) is a uniformed-services-only benefit — it
   // has no equivalent for someone who has never served, so `hasDentalFamily`
   // is meaningless for a pure civilian. (A retiree who's alsoGsCivilian can
@@ -447,7 +467,7 @@ export function calcLES(inputs: LESInputs): LESBreakdown {
   return {
     basePay, bah, bas,
     cola, colaTracked,
-    specialPays: specialPaysTotal,
+    specialPays,
     extraIncome, grossPay,
     fica, fedTax, stateTax, tsp, traditionalTsp, rothTsp, sgli, sbp, dental,
     extraDeductions, totalDeductions, netPay,

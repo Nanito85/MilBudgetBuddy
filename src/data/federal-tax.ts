@@ -19,8 +19,10 @@ export const FEDERAL_TAX_DATA_YEAR = 2026;
 // literal 0.0765 with no shared source.
 export const FICA_RATE = 0.0765;
 
+// Tax year 2026, Rev. Proc. 2025-32 (as amended by the 2025 reconciliation act).
 const SINGLE_STD_DEDUCTION  = 16100;
 const MARRIED_STD_DEDUCTION = 32200;
+const HOH_STD_DEDUCTION     = 24150;
 
 const SINGLE_BRACKETS: [ceiling: number, rate: number][] = [
   [12400, 0.10],
@@ -42,16 +44,35 @@ const MARRIED_BRACKETS: [ceiling: number, rate: number][] = [
   [Infinity, 0.37],
 ];
 
-/**
- * Estimated ANNUAL federal income tax on `annualIncome`, after applying the
- * standard deduction. `married` selects the filing-status brackets — pass
- * `false` for single/head-of-household approximation.
- */
-export function estimateAnnualFedTax(annualIncome: number, married: boolean): number {
-  const stdDeduction = married ? MARRIED_STD_DEDUCTION : SINGLE_STD_DEDUCTION;
-  const taxable = Math.max(0, annualIncome - stdDeduction);
-  const brackets = married ? MARRIED_BRACKETS : SINGLE_BRACKETS;
+const HOH_BRACKETS: [ceiling: number, rate: number][] = [
+  [17700, 0.10],
+  [67450, 0.12],
+  [105700, 0.22],
+  [201750, 0.24],
+  [256200, 0.32],
+  [640600, 0.35],
+  [Infinity, 0.37],
+];
 
+// Child Tax Credit, 2026: $2,200 per qualifying child under 17, phased out by
+// $50 per $1,000 (or part) of income over $400k joint / $200k otherwise.
+export const CHILD_TAX_CREDIT = 2200;
+const CTC_PHASEOUT_MFJ = 400000;
+const CTC_PHASEOUT_OTHER = 200000;
+
+export type FilingStatus = 'single' | 'mfj' | 'hoh';
+
+/**
+ * Filing status from the profile: married → joint; unmarried with a child →
+ * head of household (the usual case for a single parent who pays most of
+ * the household's costs); otherwise single.
+ */
+export function filingStatusFor(married: boolean, numChildren = 0): FilingStatus {
+  if (married) return 'mfj';
+  return numChildren > 0 ? 'hoh' : 'single';
+}
+
+function bracketTax(taxable: number, brackets: [number, number][]): number {
   let tax = 0;
   let prev = 0;
   for (const [ceiling, rate] of brackets) {
@@ -61,4 +82,28 @@ export function estimateAnnualFedTax(annualIncome: number, married: boolean): nu
     prev = ceiling;
   }
   return tax;
+}
+
+/**
+ * Estimated ANNUAL federal income tax on `annualIncome` (already net of
+ * pre-tax deductions like traditional TSP), after the standard deduction.
+ * `married` selects joint brackets. Pass `children` to apply the Child Tax
+ * Credit and, for an unmarried filer, head-of-household brackets.
+ *
+ * The credit is applied only against tax owed (never below $0): the
+ * refundable part is paid as a refund at filing, not in a paycheck, so this
+ * is the year's liability, not a refund estimate.
+ */
+export function estimateAnnualFedTax(annualIncome: number, married: boolean, children = 0): number {
+  const status = filingStatusFor(married, children);
+  const stdDeduction = status === 'mfj' ? MARRIED_STD_DEDUCTION : status === 'hoh' ? HOH_STD_DEDUCTION : SINGLE_STD_DEDUCTION;
+  const brackets = status === 'mfj' ? MARRIED_BRACKETS : status === 'hoh' ? HOH_BRACKETS : SINGLE_BRACKETS;
+  const taxable = Math.max(0, annualIncome - stdDeduction);
+  const tax = bracketTax(taxable, brackets);
+
+  if (children <= 0) return tax;
+  const threshold = status === 'mfj' ? CTC_PHASEOUT_MFJ : CTC_PHASEOUT_OTHER;
+  const over = Math.max(0, annualIncome - threshold);
+  const credit = Math.max(0, children * CHILD_TAX_CREDIT - Math.ceil(over / 1000) * 50);
+  return Math.max(0, tax - credit);
 }

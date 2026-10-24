@@ -55,6 +55,7 @@ export function useProfileLESInputs(): ProfileLESInputs {
     return {
       ...rest,
       specialPaysTotal: specialPays.reduce((sum, sp) => sum + sp.monthlyAmount, 0),
+      hostileFireTotal: specialPays.filter((sp) => sp.type === 'hostile_fire').reduce((sum, sp) => sum + sp.monthlyAmount, 0),
       overrides: lesOverrides,
     };
   }, [p]);
