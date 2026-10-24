@@ -90,6 +90,7 @@ export default function RetirementCalculatorScreen() {
   const [married, setMarried] = useState(!!profileHasSpouse);
   const [numChildren, setNumChildren] = useState(profileNumChildren ?? 0);
   const [retireState, setRetireState] = useState<string | undefined>(profileState);
+  const [stateOpen, setStateOpen] = useState(false);
 
   const tspContribRate = CONTRIB_STEPS[tspContribIdx] / 100;
   const tspAnnualReturn = RETURN_STEPS[tspReturnIdx] / 100;
@@ -447,18 +448,31 @@ export default function RetirementCalculatorScreen() {
               <ThemedText type="small" themeColor="textSecondary" style={styles.fieldLabel}>
                 State you&apos;ll retire in
               </ThemedText>
-              <View style={styles.chipRow}>
-                {US_STATES.map((s) => (
-                  <Pressable
-                    key={s.code}
-                    onPress={() => setRetireState(s.code)}
-                    style={[styles.pctChip, retireState === s.code && styles.pctChipActive]}>
-                    <ThemedText style={[styles.pctChipText, retireState === s.code && styles.pctChipTextActive]}>
-                      {s.code}
-                    </ThemedText>
-                  </Pressable>
-                ))}
-              </View>
+              <Pressable
+                onPress={() => setStateOpen((o) => !o)}
+                style={[styles.dropdownBtn, stateOpen && { borderColor: Brand.primary }]}>
+                <ThemedText style={styles.dropdownText}>
+                  {stateInfo ? `${stateInfo.name} (${stateInfo.code})` : 'Select a state'}
+                </ThemedText>
+                <ThemedText style={styles.dropdownChevron}>{stateOpen ? '▲' : '▼'}</ThemedText>
+              </Pressable>
+              {stateOpen && (
+                <ScrollView style={styles.dropdownList} nestedScrollEnabled showsVerticalScrollIndicator>
+                  {US_STATES.map((s) => (
+                    <Pressable
+                      key={s.code}
+                      onPress={() => { setRetireState(s.code); setStateOpen(false); }}
+                      style={[styles.dropdownRow, retireState === s.code && { backgroundColor: `${Brand.primary}20` }]}>
+                      <ThemedText style={[styles.dropdownText, retireState === s.code && { fontWeight: '700' }]}>
+                        {s.name} ({s.code})
+                      </ThemedText>
+                      {RETIREMENT_TAX_EXEMPT_STATES.has(s.code) && (
+                        <ThemedText type="small" style={{ color: tc.success, fontWeight: '600' }}>NO TAX</ThemedText>
+                      )}
+                    </Pressable>
+                  ))}
+                </ScrollView>
+              )}
               {stateInfo && (
                 <ThemedText type="small" themeColor="textSecondary">
                   {stateInfo.name}: {stateExempt
@@ -637,6 +651,31 @@ const styles = StyleSheet.create({
   pctChipText: { fontSize: 13, lineHeight: 17, fontWeight: '500' },
   pctChipTextActive: { color: '#FFFFFF', fontWeight: '700' },
   matchBanner: { borderRadius: Spacing.two, padding: Spacing.two },
+  dropdownBtn: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: Spacing.three,
+    paddingVertical: Spacing.two + 2,
+    borderRadius: Spacing.two,
+    borderWidth: 1,
+    borderColor: 'rgba(128,128,128,0.25)',
+  },
+  dropdownChevron: { fontSize: 12, lineHeight: 16 },
+  dropdownList: {
+    maxHeight: 240,
+    borderRadius: Spacing.two,
+    borderWidth: 1,
+    borderColor: 'rgba(128,128,128,0.25)',
+  },
+  dropdownRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: Spacing.three,
+    paddingVertical: Spacing.two + 2,
+  },
+  dropdownText: { fontSize: 15, lineHeight: 20 },
   disclaimer: {
     textAlign: 'center',
     lineHeight: 18,
