@@ -14,7 +14,9 @@ import { create } from 'zustand';
 
 import { trackSignup } from '@/services/analytics';
 import { auth } from '@/services/firebase';
-import { deleteCloudData } from '@/services/firestore-sync';
+import { deleteCloudData, stopSync } from '@/services/firestore-sync';
+
+const API_BASE = process.env.EXPO_PUBLIC_API_BASE_URL ?? 'http://localhost:3000';
 
 interface AuthState {
   user: User | null;
@@ -109,8 +111,26 @@ export const useAuthStore = create<AuthState>((set) => ({
   deleteAccount: async () => {
     const current = auth.currentUser;
     if (!current) return;
-    // Delete synced Firestore data first — once the auth user is gone,
-    // security rules would no longer allow this client to touch it.
+    // Preferred: the server purges everything tied to this account (synced
+    // data, purchase/platform records, analytics, feedback) and deletes the
+    // Auth user itself, so there's no requires-recent-login failure halfway.
+    try {
+      stopSync();
+      const token = await current.getIdToken();
+      const res = await fetch(`${API_BASE}/api/account/delete`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        await signOut(auth).catch(() => {});
+        set({ user: null });
+        return;
+      }
+    } catch {
+      // Server unreachable — fall back to the client-side delete below.
+    }
+    // Fallback: delete synced Firestore data first — once the auth user is
+    // gone, security rules would no longer allow this client to touch it.
     await deleteCloudData(current.uid);
     await deleteUser(current);
     set({ user: null });
