@@ -33,25 +33,10 @@ service cloud.firestore {
     }
 
     // ── Feedback collection ───────────────────────────────────────────────────
-    // Authenticated users can create feedback. Only admins can read/update/delete.
-    match /feedback/{docId} {
-      allow create: if request.auth != null
-        && request.resource.data.keys().hasOnly(['uid', 'email', 'message', 'category', 'rating', 'appVersion', 'platform', 'createdAt', 'status'])
-        && request.resource.data.message is string
-        && request.resource.data.message.size() <= 2000
-        && request.resource.data.uid == request.auth.uid;
-
-      allow read, update, delete: if request.auth != null
-        && request.auth.token.admin == true;
-    }
-
-    // ── Analytics collection ──────────────────────────────────────────────────
-    // Write-only for authenticated users; admin-only reads.
-    match /analytics/{docId} {
-      allow create: if request.auth != null;
-      allow read, update, delete: if request.auth != null
-        && request.auth.token.admin == true;
-    }
+    // feedback and analytics: the app sends both through the backend
+    // (Supabase / Admin SDK), never straight to Firestore, so client access
+    // is closed by the deny-all below. These used to allow any signed-in
+    // client (anonymous included) to create documents with no rate limit.
 
     // ── Deny everything else ──────────────────────────────────────────────────
     match /{document=**} {
