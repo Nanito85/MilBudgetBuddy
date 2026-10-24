@@ -89,7 +89,7 @@ export function FeedbackModal({ visible, onClose }: Props) {
           {/* Header */}
           <View style={[styles.header, { borderBottomColor: tc.borderColor }]}>
             <ThemedText style={[styles.headerTitle, { color: tc.textPrimary }]}>SEND FEEDBACK</ThemedText>
-            <Pressable onPress={handleClose} style={styles.closeBtn} hitSlop={12}>
+            <Pressable accessibilityRole="button" accessibilityLabel="Close" onPress={handleClose} style={styles.closeBtn} hitSlop={12}>
               <ThemedText style={[styles.closeText, { color: tc.textHint }]}>✕</ThemedText>
             </Pressable>
           </View>

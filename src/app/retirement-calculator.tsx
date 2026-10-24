@@ -146,7 +146,7 @@ export default function RetirementCalculatorScreen() {
     <ThemedView style={styles.container}>
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
-        <Pressable
+        <Pressable accessibilityRole="button" accessibilityLabel="Go back"
           onPress={() => (router.back())}
           style={({ pressed }) => [styles.backBtn, pressed && styles.pressed]}>
           <ThemedText style={styles.backChevron}>‹</ThemedText>
@@ -282,6 +282,8 @@ export default function RetirementCalculatorScreen() {
               <Pressable
                 key={val}
                 onPress={() => setSystem(val)}
+                accessibilityRole="radio"
+                accessibilityState={{ selected: system === val }}
                 style={[styles.systemBtn, system === val && styles.systemBtnActive]}>
                 <ThemedText style={[styles.systemBtnText, system === val && styles.systemBtnTextActive]}>
                   {label}
@@ -323,6 +325,8 @@ export default function RetirementCalculatorScreen() {
                     <Pressable
                       key={pct}
                       onPress={() => setTspContribIdx(idx)}
+                      accessibilityRole="radio"
+                      accessibilityState={{ selected: tspContribIdx === idx }}
                       style={[styles.pctChip, tspContribIdx === idx && styles.pctChipActive]}>
                       <ThemedText style={[styles.pctChipText, tspContribIdx === idx && styles.pctChipTextActive]}>
                         {pct}%
@@ -357,6 +361,8 @@ export default function RetirementCalculatorScreen() {
                     <Pressable
                       key={pct}
                       onPress={() => setTspReturnIdx(idx)}
+                      accessibilityRole="radio"
+                      accessibilityState={{ selected: tspReturnIdx === idx }}
                       style={[styles.pctChip, tspReturnIdx === idx && styles.pctChipActive]}>
                       <ThemedText style={[styles.pctChipText, tspReturnIdx === idx && styles.pctChipTextActive]}>
                         {pct}%
@@ -411,6 +417,8 @@ export default function RetirementCalculatorScreen() {
                   <Pressable
                     key={r}
                     onPress={() => setVaRating(r)}
+                    accessibilityRole="radio"
+                    accessibilityState={{ selected: vaRating === r }}
                     style={[styles.pctChip, vaRating === r && styles.pctChipActive]}>
                     <ThemedText style={[styles.pctChipText, vaRating === r && styles.pctChipTextActive]}>
                       {r}%
@@ -428,6 +436,8 @@ export default function RetirementCalculatorScreen() {
                   <Pressable
                     key={label}
                     onPress={() => setMarried(val)}
+                    accessibilityRole="radio"
+                    accessibilityState={{ selected: married === val }}
                     style={[styles.systemBtn, married === val && styles.systemBtnActive]}>
                     <ThemedText style={[styles.systemBtnText, married === val && styles.systemBtnTextActive]}>
                       {label}
@@ -455,6 +465,9 @@ export default function RetirementCalculatorScreen() {
               </ThemedText>
               <Pressable
                 onPress={() => setStateOpen((o) => !o)}
+                accessibilityRole="button"
+                accessibilityLabel={`State you'll retire in: ${stateInfo ? stateInfo.name : 'none selected'}`}
+                accessibilityState={{ expanded: stateOpen }}
                 style={[styles.dropdownBtn, stateOpen && { borderColor: Brand.primary }]}>
                 <ThemedText style={styles.dropdownText}>
                   {stateInfo ? `${stateInfo.name} (${stateInfo.code})` : 'Select a state'}
@@ -467,6 +480,8 @@ export default function RetirementCalculatorScreen() {
                     <Pressable
                       key={s.code}
                       onPress={() => { setRetireState(s.code); setStateOpen(false); }}
+                      accessibilityRole="radio"
+                      accessibilityState={{ selected: retireState === s.code }}
                       style={[styles.dropdownRow, retireState === s.code && { backgroundColor: `${Brand.primary}20` }]}>
                       <ThemedText style={[styles.dropdownText, retireState === s.code && { fontWeight: '700' }]}>
                         {s.name} ({s.code})

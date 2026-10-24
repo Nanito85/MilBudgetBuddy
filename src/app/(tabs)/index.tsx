@@ -309,7 +309,7 @@ export default function DashboardScreen() {
                 style={({ pressed }) => [styles.editProfileChip, { backgroundColor: tc.surfaceInner, borderColor: tc.borderColor }, pressed && { opacity: 0.75 }]}>
                 <ThemedText style={[styles.editProfileText, { color: tc.textSecondary }]}>✏️  Set Up Profile</ThemedText>
               </Pressable>
-              <Pressable onPress={() => setEditProfileDismissed(true)} hitSlop={10} style={styles.editProfileClose}>
+              <Pressable accessibilityRole="button" accessibilityLabel="Dismiss" onPress={() => setEditProfileDismissed(true)} hitSlop={10} style={styles.editProfileClose}>
                 <ThemedText style={[styles.editProfileCloseText, { color: tc.textMuted }]}>✕</ThemedText>
               </Pressable>
             </View>

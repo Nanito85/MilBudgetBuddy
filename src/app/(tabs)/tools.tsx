@@ -202,7 +202,7 @@ export default function ToolsScreen() {
             returnKeyType="search"
           />
           {searchQuery.length > 0 && (
-            <Pressable onPress={() => setSearchQuery('')} hitSlop={8}>
+            <Pressable accessibilityRole="button" accessibilityLabel="Clear text" onPress={() => setSearchQuery('')} hitSlop={8}>
               <ThemedText style={[styles.searchClear, { color: tc.textMuted }]}>✕</ThemedText>
             </Pressable>
           )}

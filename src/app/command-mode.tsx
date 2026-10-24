@@ -432,7 +432,7 @@ export default function CommandModeScreen() {
               {breakdown.extraIncomeItems.map((item) => (
                 <View key={item.id} style={styles.extraItemRow}>
                   <Row label={item.label} value={fmt(item.amount)} indent dim />
-                  <Pressable onPress={() => removeExtraItem('income', item.id)} hitSlop={8}>
+                  <Pressable accessibilityRole="button" accessibilityLabel="Remove" onPress={() => removeExtraItem('income', item.id)} hitSlop={8}>
                     <ThemedText style={styles.removeX}>✕</ThemedText>
                   </Pressable>
                 </View>
@@ -503,7 +503,7 @@ export default function CommandModeScreen() {
               {breakdown.extraDeductionItems.map((item) => (
                 <View key={item.id} style={styles.extraItemRow}>
                   <Row label={item.label} value={fmt(item.amount)} dim />
-                  <Pressable onPress={() => removeExtraItem('deduction', item.id)} hitSlop={8}>
+                  <Pressable accessibilityRole="button" accessibilityLabel="Remove" onPress={() => removeExtraItem('deduction', item.id)} hitSlop={8}>
                     <ThemedText style={styles.removeX}>✕</ThemedText>
                   </Pressable>
                 </View>

@@ -100,7 +100,7 @@ export function FamilyComposer({ hasSpouse, childAges, onSpouseChange, onChildAg
                   <ThemedText style={styles.ageBtnTxt}>+</ThemedText>
                 </Pressable>
               </View>
-              <Pressable onPress={() => removeChild(idx)} style={styles.removeBtn}>
+              <Pressable accessibilityRole="button" accessibilityLabel="Remove" onPress={() => removeChild(idx)} style={styles.removeBtn}>
                 <ThemedText style={styles.removeBtnText}>✕</ThemedText>
               </Pressable>
             </View>

@@ -139,7 +139,7 @@ export default function VALoanCalculatorScreen() {
     <ThemedView style={ss.screen}>
       {/* Header */}
       <View style={[ss.header, { paddingTop: insets.top + Spacing.two, borderBottomColor: tc.borderColor }]}>
-        <Pressable onPress={() => router.back()} style={ss.back}>
+        <Pressable accessibilityRole="button" accessibilityLabel="Go back" onPress={() => router.back()} style={ss.back}>
           <ThemedText style={[ss.backChevron, { color: tc.accent }]}>‹</ThemedText>
         </Pressable>
         <View style={ss.headerCenter}>

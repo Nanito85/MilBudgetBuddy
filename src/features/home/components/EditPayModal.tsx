@@ -537,7 +537,7 @@ export function EditPayModal({ visible, onClose }: { visible: boolean; onClose: 
                   <ThemedText style={[editStyles.payLabel, { color: tc.textPrimary }]}>{pay.customLabel ?? SPECIAL_PAY_LABELS[pay.type]}</ThemedText>
                   <ThemedText style={[editStyles.payAmt, { color: tc.tactical }]}>${pay.monthlyAmount.toFixed(0)}/mo</ThemedText>
                 </View>
-                <Pressable onPress={() => handleRemoveSpecialPay(pay.id, pay.customLabel ?? SPECIAL_PAY_LABELS[pay.type])} style={editStyles.removeBtn}>
+                <Pressable accessibilityRole="button" accessibilityLabel="Remove" onPress={() => handleRemoveSpecialPay(pay.id, pay.customLabel ?? SPECIAL_PAY_LABELS[pay.type])} style={editStyles.removeBtn}>
                   <ThemedText style={editStyles.removeBtnText}>✕</ThemedText>
                 </Pressable>
               </View>
@@ -636,7 +636,7 @@ export function EditPayModal({ visible, onClose }: { visible: boolean; onClose: 
                   <ThemedText style={[editStyles.lineItemLabel, { color: tc.textPrimary }]}>{item.label}</ThemedText>
                   <ThemedText style={[editStyles.lineItemAmt, { color: tc.tactical }]}>${item.amount.toFixed(2)}/mo</ThemedText>
                 </View>
-                <Pressable onPress={() => removeIncome(item.id)} style={editStyles.removeBtn}>
+                <Pressable accessibilityRole="button" accessibilityLabel="Remove" onPress={() => removeIncome(item.id)} style={editStyles.removeBtn}>
                   <ThemedText style={editStyles.removeBtnText}>✕</ThemedText>
                 </Pressable>
               </View>
@@ -714,7 +714,7 @@ export function EditPayModal({ visible, onClose }: { visible: boolean; onClose: 
                   <ThemedText style={[editStyles.lineItemLabel, { color: tc.textPrimary }]}>{item.label}</ThemedText>
                   <ThemedText style={[editStyles.lineItemAmt, { color: Brand.danger }]}>-${item.amount.toFixed(2)}/mo</ThemedText>
                 </View>
-                <Pressable onPress={() => removeDeduction(item.id)} style={editStyles.removeBtn}>
+                <Pressable accessibilityRole="button" accessibilityLabel="Remove" onPress={() => removeDeduction(item.id)} style={editStyles.removeBtn}>
                   <ThemedText style={editStyles.removeBtnText}>✕</ThemedText>
                 </Pressable>
               </View>

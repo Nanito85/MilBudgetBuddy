@@ -115,7 +115,7 @@ export default function LifeEventsScreen() {
                         <Pressable onPress={() => dismissEvent(activeEvent.type)} style={styles.dismissBtn}>
                           <ThemedText style={[styles.dismissBtnText, { color: tc.textSecondary }]}>Dismiss</ThemedText>
                         </Pressable>
-                        <Pressable onPress={() => handleRemove(activeEvent.type)} style={styles.removeBtn}>
+                        <Pressable accessibilityRole="button" accessibilityLabel="Remove" onPress={() => handleRemove(activeEvent.type)} style={styles.removeBtn}>
                           <ThemedText style={[styles.removeBtnText, { color: tc.textSecondary }]}>✕</ThemedText>
                         </Pressable>
                       </View>

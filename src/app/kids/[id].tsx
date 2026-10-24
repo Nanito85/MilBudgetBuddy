@@ -68,7 +68,7 @@ function AddGoalModal({ visible, accentColor, onClose, onAdd }: {
         <SafeAreaView style={[addGoalStyles.container, { backgroundColor: tc.surface, borderTopColor: accentColor }]}>
           {/* Header */}
           <View style={[addGoalStyles.header, { borderBottomColor: tc.borderColor }]}>
-            <Pressable onPress={() => { Keyboard.dismiss(); onClose(); }} style={[addGoalStyles.cancelBtn, { backgroundColor: tc.surfaceInner }]}>
+            <Pressable accessibilityRole="button" accessibilityLabel="Close" onPress={() => { Keyboard.dismiss(); onClose(); }} style={[addGoalStyles.cancelBtn, { backgroundColor: tc.surfaceInner }]}>
               <ThemedText style={[addGoalStyles.cancelText, { color: tc.textSecondary }]}>✕</ThemedText>
             </Pressable>
             <ThemedText style={[addGoalStyles.title, { color: accentColor }]}>🎯 NEW GOAL</ThemedText>
@@ -276,7 +276,7 @@ function EditGoalModal({ visible, goal, accentColor, onClose, onSave, onDelete }
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <SafeAreaView style={[addGoalStyles.container, { backgroundColor: tc.surface, borderTopColor: accentColor }]}>
           <View style={[addGoalStyles.header, { borderBottomColor: tc.borderColor }]}>
-            <Pressable onPress={() => { Keyboard.dismiss(); onClose(); }} style={[addGoalStyles.cancelBtn, { backgroundColor: tc.surfaceInner }]}>
+            <Pressable accessibilityRole="button" accessibilityLabel="Close" onPress={() => { Keyboard.dismiss(); onClose(); }} style={[addGoalStyles.cancelBtn, { backgroundColor: tc.surfaceInner }]}>
               <ThemedText style={[addGoalStyles.cancelText, { color: tc.textSecondary }]}>✕</ThemedText>
             </Pressable>
             <ThemedText style={[addGoalStyles.title, { color: accentColor }]}>✏️ EDIT GOAL</ThemedText>
@@ -409,7 +409,7 @@ function AddChoreModal({ visible, defaultFrequency, accentColor, onClose, onAdd 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <SafeAreaView style={[addGoalStyles.container, { backgroundColor: tc.surface, borderTopColor: accentColor }]}>
           <View style={[addGoalStyles.header, { borderBottomColor: tc.borderColor }]}>
-            <Pressable onPress={() => { Keyboard.dismiss(); onClose(); }} style={[addGoalStyles.cancelBtn, { backgroundColor: tc.surfaceInner }]}>
+            <Pressable accessibilityRole="button" accessibilityLabel="Close" onPress={() => { Keyboard.dismiss(); onClose(); }} style={[addGoalStyles.cancelBtn, { backgroundColor: tc.surfaceInner }]}>
               <ThemedText style={[addGoalStyles.cancelText, { color: tc.textSecondary }]}>✕</ThemedText>
             </Pressable>
             <ThemedText style={[addGoalStyles.title, { color: accentColor }]}>⚡ NEW MISSION</ThemedText>
@@ -530,7 +530,7 @@ function EditKidModal({ visible, nickname, gender, onClose, onSave }: {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <SafeAreaView style={[addGoalStyles.container, { backgroundColor: tc.surface, borderTopColor: theme.accent }]}>
           <View style={[addGoalStyles.header, { borderBottomColor: tc.borderColor }]}>
-            <Pressable onPress={() => { Keyboard.dismiss(); onClose(); }} style={[addGoalStyles.cancelBtn, { backgroundColor: tc.surfaceInner }]}>
+            <Pressable accessibilityRole="button" accessibilityLabel="Close" onPress={() => { Keyboard.dismiss(); onClose(); }} style={[addGoalStyles.cancelBtn, { backgroundColor: tc.surfaceInner }]}>
               <ThemedText style={[addGoalStyles.cancelText, { color: tc.textSecondary }]}>✕</ThemedText>
             </Pressable>
             <ThemedText style={[addGoalStyles.title, { color: theme.accent }]}>✏️ EDIT CADET</ThemedText>

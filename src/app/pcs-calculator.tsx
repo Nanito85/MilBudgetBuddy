@@ -264,7 +264,7 @@ export default function PCSCalculatorScreen() {
     <ThemedView style={styles.container}>
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
-        <Pressable
+        <Pressable accessibilityRole="button" accessibilityLabel="Go back"
           onPress={() => (router.back())}
           style={({ pressed }) => [styles.backBtn, pressed && styles.pressed]}>
           <ThemedText style={styles.backChevron}>‹</ThemedText>

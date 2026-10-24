@@ -136,7 +136,7 @@ export default function CarLoanScreen() {
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
     <ThemedView style={{ flex: 1 }}>
       <View style={[s.header, { paddingTop: insets.top + Spacing.two }]}>
-        <Pressable onPress={() => router.back()} style={s.back}>
+        <Pressable accessibilityRole="button" accessibilityLabel="Go back" onPress={() => router.back()} style={s.back}>
           <ThemedText style={s.chevron}>‹</ThemedText>
         </Pressable>
         <ThemedText style={s.title}>Car Loan Check</ThemedText>

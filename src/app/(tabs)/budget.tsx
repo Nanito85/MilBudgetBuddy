@@ -503,7 +503,7 @@ function AddExpensePanel({
         <ThemedText style={styles.panelTitle}>
           {catEmoji} Log Expense — {catName}
         </ThemedText>
-        <Pressable onPress={onClose}>
+        <Pressable accessibilityRole="button" accessibilityLabel="Close" onPress={onClose}>
           <ThemedText style={[styles.panelClose, { color: tc.textHint }]}>✕</ThemedText>
         </Pressable>
       </View>

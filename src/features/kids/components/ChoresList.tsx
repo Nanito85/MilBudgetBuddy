@@ -75,7 +75,7 @@ export function ChoresList({ chores, goals, accentColor, onComplete, onUncomplet
                 </ThemedText>
               </View>
             </Pressable>
-            <Pressable onPress={() => onDelete(chore.id)} hitSlop={8} style={styles.deleteBtn}>
+            <Pressable accessibilityRole="button" accessibilityLabel="Remove" onPress={() => onDelete(chore.id)} hitSlop={8} style={styles.deleteBtn}>
               <ThemedText style={styles.deleteBtnText}>✕</ThemedText>
             </Pressable>
           </View>

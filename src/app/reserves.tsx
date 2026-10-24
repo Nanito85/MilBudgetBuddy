@@ -225,7 +225,7 @@ export default function ReservesScreen() {
     <ThemedView style={{ flex: 1 }}>
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
-        <Pressable onPress={() => router.back()} style={styles.back}>
+        <Pressable accessibilityRole="button" accessibilityLabel="Go back" onPress={() => router.back()} style={styles.back}>
           <ThemedText style={styles.backChevron}>‹</ThemedText>
         </Pressable>
         <View style={{ flex: 1 }}>

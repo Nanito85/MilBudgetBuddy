@@ -1000,7 +1000,7 @@ export default function ProfileScreen() {
                       style={[styles.pendingBtn, styles.pendingBtnApprove]}>
                       <ThemedText style={styles.pendingBtnApproveText}>✓ APPROVE</ThemedText>
                     </Pressable>
-                    <Pressable
+                    <Pressable accessibilityRole="button" accessibilityLabel="Reject mission"
                       onPress={() => {
                         Alert.alert('Reject Mission', `Reject "${completion.choreName}" for ${kid.nickname}?`, [
                           { text: 'Cancel', style: 'cancel' },
@@ -1046,7 +1046,7 @@ export default function ProfileScreen() {
                       {pendingCount > 0 ? ` · ${pendingCount} awaiting approval` : ''}
                     </ThemedText>
                   </View>
-                  <Pressable
+                  <Pressable accessibilityRole="button" accessibilityLabel="Remove cadet"
                     onPress={() => Alert.alert('Remove Cadet', `Remove ${kid.nickname}'s profile?`, [
                       { text: 'Cancel', style: 'cancel' },
                       { text: 'Remove', style: 'destructive', onPress: () => removeKid(kid.id) },

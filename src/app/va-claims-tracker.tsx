@@ -361,7 +361,7 @@ export default function VaClaimsTrackerScreen() {
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <ThemedView style={{ flex: 1 }}>
         <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
-          <Pressable onPress={() => router.back()} style={styles.back}>
+          <Pressable accessibilityRole="button" accessibilityLabel="Go back" onPress={() => router.back()} style={styles.back}>
             <ThemedText style={styles.backChevron}>‹</ThemedText>
           </Pressable>
           <ThemedText style={styles.title}>VA Claims & Appeals</ThemedText>

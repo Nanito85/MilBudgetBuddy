@@ -126,7 +126,7 @@ export default function VaDisabilityScreen() {
   return (
     <ThemedView style={{ flex: 1 }}>
       <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
-        <Pressable
+        <Pressable accessibilityRole="button" accessibilityLabel="Go back"
           onPress={() => (router.back())}
           style={styles.back}>
           <ThemedText style={styles.backChevron}>‹</ThemedText>
@@ -170,7 +170,7 @@ export default function VaDisabilityScreen() {
                       <RatingPicker value={r.pct} onChange={(v) => updateRating(r.id, v)} />
                     </View>
                     {ratings.length > 1 && (
-                      <Pressable
+                      <Pressable accessibilityRole="button" accessibilityLabel="Remove rating"
                         onPress={() => Alert.alert('Remove', `Remove rating #${i + 1}?`, [
                           { text: 'Cancel', style: 'cancel' },
                           { text: 'Remove', style: 'destructive', onPress: () => removeRating(r.id) },

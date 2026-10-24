@@ -185,7 +185,7 @@ export default function GSPayCalculatorScreen() {
   return (
     <ThemedView style={{ flex: 1 }}>
       <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
-        <Pressable onPress={() => router.back()} style={styles.back}>
+        <Pressable accessibilityRole="button" accessibilityLabel="Go back" onPress={() => router.back()} style={styles.back}>
           <ThemedText style={styles.backChevron}>‹</ThemedText>
         </Pressable>
         <ThemedText style={[styles.title, { color: tc.tactical }]}>GS Pay Calculator</ThemedText>
