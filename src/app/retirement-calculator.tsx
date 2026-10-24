@@ -467,7 +467,7 @@ export default function RetirementCalculatorScreen() {
                         {s.name} ({s.code})
                       </ThemedText>
                       {RETIREMENT_TAX_EXEMPT_STATES.has(s.code) && (
-                        <ThemedText type="small" style={{ color: tc.success, fontWeight: '600' }}>NO TAX</ThemedText>
+                        <ThemedText type="small" style={{ color: tc.success, fontWeight: '600' }}>PENSION EXEMPT</ThemedText>
                       )}
                     </Pressable>
                   ))}
