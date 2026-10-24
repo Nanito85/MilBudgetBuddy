@@ -3,6 +3,7 @@ import { getBasicPay } from '@/data/basic-pay-rates';
 import { govtMatchRate } from '@/features/retirement/utils/retirementCalc';
 
 // 2026 annual contribution limits (SECURE 2.0 / IRS Notice 2025-67)
+export const TSP_LIMITS_YEAR = 2026;
 export const TSP_LIMIT_UNDER50 = 24_500;
 export const TSP_LIMIT_50_59   = 32_500;   // +$8,000 catch-up
 export const TSP_LIMIT_60_63   = 35_750;   // +$11,250 super catch-up (SECURE 2.0)

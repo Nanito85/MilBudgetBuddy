@@ -5,6 +5,10 @@
  * Verify at va.gov/disability/compensation-rates.
  */
 
+// When the tables below took effect. VA compensation changes every Dec 1 (the
+// Social Security COLA); scripts/rate-check flags this once it's a year old.
+export const VA_COMP_EFFECTIVE_DATE = '2025-12-01';
+
 // FY2026 monthly compensation — veteran alone (no dependents)
 export const VA_RATES_ALONE: Record<number, number> = {
   10:  180.42,

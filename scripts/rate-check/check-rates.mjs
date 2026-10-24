@@ -24,46 +24,58 @@ function extractConst(file, name) {
 }
 
 const today = new Date();
-const currentYear = today.getUTCFullYear();
-const isJanuary = today.getUTCMonth() === 0; // most annual tables turn over Jan 1
+const year = today.getUTCFullYear();
+const month = today.getUTCMonth() + 1; // 1-12
+const day = today.getUTCDate();
+const onOrAfter = (m, d) => month > m || (month === m && day >= d);
+
+// Every dataset with the date it rolls over each year. `expected` is the data
+// year the app should be on today; anything older is flagged. (The old check
+// compared to the calendar year only, so it could never notice GSA's Oct 1
+// fiscal-year flip, and it didn't watch VA, tax, COLA, GS, GI Bill or TSP.)
+const calendarYear = () => year;                          // Jan 1 tables
+const fiscalYear = () => (onOrAfter(10, 1) ? year + 1 : year); // Oct 1 (GSA FY)
+const academicStart = () => (onOrAfter(8, 1) ? year : year - 1); // Aug 1 (GI Bill)
 
 const FIELDS = [
-  { name: 'BAH_DATA_YEAR',       file: 'src/data/bah-rates.ts',       kind: 'year' },
-  { name: 'BAH_EFFECTIVE_DATE',  file: 'src/data/bah-rates.ts',       kind: 'date' },
-  { name: 'BAS_DATA_YEAR',       file: 'src/data/bas-rates.ts',       kind: 'year' },
-  { name: 'BASIC_PAY_DATA_YEAR', file: 'src/data/basic-pay-rates.ts', kind: 'year' },
-  { name: 'PER_DIEM_DATA_YEAR',  file: 'src/data/per-diem-rates.ts',  kind: 'year' },
-  { name: 'VA_LOAN_DATA_YEAR',   file: 'src/data/va-loan-rates.ts',   kind: 'year' },
-  { name: 'PPM_DATA_YEAR',       file: 'src/data/weight-allowances.ts', kind: 'year' },
-  { name: 'OHA_EFFECTIVE_DATE',  file: 'src/data/oha-rates.ts',       kind: 'date' },
+  { name: 'BASIC_PAY_DATA_YEAR',  file: 'src/data/basic-pay-rates.ts',  rollover: 'Jan 1', expected: calendarYear },
+  { name: 'BAH_DATA_YEAR',        file: 'src/data/bah-rates.ts',        rollover: 'Jan 1 (published mid-Dec)', expected: calendarYear },
+  { name: 'BAS_DATA_YEAR',        file: 'src/data/bas-rates.ts',        rollover: 'Jan 1', expected: calendarYear },
+  { name: 'CONUS_COLA_DATA_YEAR', file: 'src/data/conus-cola.ts',       rollover: 'Jan 1', expected: calendarYear },
+  { name: 'FEDERAL_TAX_DATA_YEAR',file: 'src/data/federal-tax.ts',      rollover: 'Jan 1 (IRS publishes ~Oct)', expected: calendarYear },
+  { name: 'TSP_LIMITS_YEAR',      file: 'src/features/tsp/utils/tspCalc.ts', rollover: 'Jan 1 (IRS publishes ~Nov)', expected: calendarYear },
+  { name: 'GS_PAY_DATA_YEAR',     file: 'src/data/gs-pay-rates.ts',     rollover: 'Jan (first full pay period)', expected: calendarYear },
+  { name: 'VA_LOAN_DATA_YEAR',    file: 'src/data/va-loan-rates.ts',    rollover: 'Jan 1', expected: calendarYear },
+  { name: 'PPM_DATA_YEAR',        file: 'src/data/weight-allowances.ts', rollover: 'Jan 1', expected: calendarYear },
+  { name: 'GSA_YEAR',             file: 'src/data/gsa-per-diem.ts',     rollover: 'Oct 1 (GSA fiscal year)', expected: fiscalYear },
+  { name: 'GI_BILL_DATA_YEAR',    file: 'src/features/gi-bill/utils/giBillCalc.ts', rollover: 'Aug 1', expected: academicStart, parse: (v) => Number(String(v).slice(0, 4)) },
+];
+// Dated datasets: flagged once older than `maxDays`.
+const DATED = [
+  { name: 'VA_COMP_EFFECTIVE_DATE',    file: 'src/features/va/utils/vaDisabilityCalc.ts', rollover: 'Dec 1 (SSA COLA)', maxDays: 365 },
+  { name: 'OHA_EFFECTIVE_DATE',        file: 'src/data/oha-rates.ts',   rollover: 'about twice a month', maxDays: 45 },
+  { name: 'OCONUS_COLA_EFFECTIVE_DATE',file: 'src/data/oconus-cola.ts', rollover: 'about twice a month', maxDays: 45 },
 ];
 
-const results = FIELDS.map((f) => {
-  const value = extractConst(f.file, f.name);
-  let stale = false;
-  let note = '';
+const results = [
+  ...FIELDS.map((f) => {
+    const raw = extractConst(f.file, f.name);
+    if (raw == null) return { ...f, value: null, stale: true, note: 'Could not read value — constant or file may have moved' };
+    const have = f.parse ? f.parse(raw) : Number(raw);
+    const want = f.expected();
+    const stale = have < want;
+    return { ...f, value: raw, stale, note: stale ? `On ${have}, should be ${want} (rolls over ${f.rollover})` : `OK (rolls over ${f.rollover})` };
+  }),
+  ...DATED.map((f) => {
+    const raw = extractConst(f.file, f.name);
+    if (raw == null) return { ...f, value: null, stale: true, note: 'Could not read value — constant or file may have moved' };
+    const days = Math.floor((today - new Date(raw)) / 86400000);
+    const stale = days > f.maxDays;
+    return { ...f, value: raw, stale, note: `${days} days since effective (updates ${f.rollover}; flag after ${f.maxDays})` };
+  }),
+];
 
-  if (value == null) {
-    stale = true;
-    note = 'Could not read value — constant or file may have moved';
-  } else if (f.kind === 'year') {
-    stale = Number(value) < currentYear;
-    note = stale ? `Data year ${value} is behind current year ${currentYear}` : 'OK';
-  } else {
-    const effective = new Date(value);
-    const days = Math.floor((today - effective) / 86400000);
-    if (f.name === 'OHA_EFFECTIVE_DATE') {
-      // Matches isOhaDataStale()'s own 45-day threshold in src/data/oha-rates.ts
-      stale = days > 45;
-      note = `${days} days since effective (OHA updates ~twice monthly; flag threshold 45 days)`;
-    } else {
-      stale = days > 400; // most other effective dates are annual
-      note = `${days} days since effective`;
-    }
-  }
-  return { ...f, value, stale, note };
-});
-
+const isJanuary = month === 1; // most annual tables turn over Jan 1
 const anyStale = results.some((r) => r.stale) || isJanuary;
 
 // Best-effort reachability probe only — never trusted as a data source, just
@@ -100,7 +112,7 @@ lines.push('');
 if (isJanuary) {
   lines.push('## ⚠️ January reminder');
   lines.push(
-    "Most annual tables (BAH, BAS, basic pay, DLA, MALT, per diem) update effective " +
+    "Most annual tables (BAH, BAS, basic pay, tax brackets, TSP limits, DLA, MALT) update effective " +
     "January 1 each year. Verify all of these against current-year DoD/GSA sources " +
     'even if the table above shows "OK" — last year\'s rollover may not be caught yet.'
   );
