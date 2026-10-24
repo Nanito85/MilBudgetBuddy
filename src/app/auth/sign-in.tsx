@@ -78,7 +78,7 @@ export default function SignInScreen() {
           showsVerticalScrollIndicator={false}>
 
           <View style={styles.hero}>
-            <ThemedText style={[styles.eyebrow, { color: tc.tactical }]}>// MILBUDGETBUDDY</ThemedText>
+            <ThemedText style={[styles.eyebrow, { color: tc.tactical }]}>{'// MILBUDGETBUDDY'}</ThemedText>
             <ThemedText style={[styles.title, { color: tc.textPrimary }]}>SIGN IN</ThemedText>
             <ThemedText style={[styles.slogan, { color: tc.tactical }]}>Your Money. Your Mission.</ThemedText>
             <ThemedText style={[styles.sub, { color: tc.textSecondary }]}>
@@ -144,7 +144,7 @@ export default function SignInScreen() {
           </View>
 
           <View style={styles.footer}>
-            <ThemedText style={[styles.footerText, { color: tc.textSecondary }]}>Don't have an account?</ThemedText>
+            <ThemedText style={[styles.footerText, { color: tc.textSecondary }]}>Don&apos;t have an account?</ThemedText>
             <Pressable onPress={() => router.push('/auth/sign-up' as any)}>
               <ThemedText style={[styles.footerLink, { color: tc.tactical }]}>Create account →</ThemedText>
             </Pressable>

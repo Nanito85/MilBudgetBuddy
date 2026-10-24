@@ -4,6 +4,7 @@ import { Alert, Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { TacticalCard } from '@/components/TacticalCard';
 import { ThemedText } from '@/components/themed-text';
 import { Brand, Fonts, Spacing } from '@/constants/theme';
+import { BASIC_PAY_DATA_YEAR } from '@/data/basic-pay-rates';
 import { getStateTaxInfo, RETIREMENT_TAX_EXEMPT_STATES } from '@/data/state-tax';
 import { EditPayModal } from '@/features/home/components/EditPayModal';
 import { LESBreakdown, fmtPay } from '@/features/home/utils/lesCalc';
@@ -78,6 +79,7 @@ export function PaySummaryCard({ breakdown }: Props) {
   const [spouseOpen, setSpouseOpen] = useState(false);
   const [showEdit,   setShowEdit]   = useState(false);
 
+  const ratesOutdated       = BASIC_PAY_DATA_YEAR < new Date().getFullYear();
   const lesOverrides        = useUserStore((s) => s.lesOverrides);
   const spouseMonthlyIncome = useUserStore((s) => s.spouseMonthlyIncome);
   const setSpouseMonthlyIncome = useUserStore((s) => s.setSpouseMonthlyIncome);
@@ -102,7 +104,9 @@ export function PaySummaryCard({ breakdown }: Props) {
   // a single monthly disbursement. Dividing a retiree's monthly net by 2
   // fabricated a second "paycheck" that DFAS never actually sends — this
   // drives every "per paycheck" figure below, including the quick bar.
-  const payPeriodsPerMonth = breakdown.isRetiredPay ? 1 : 2;
+  // Drill pay is likewise one deposit per drill weekend, not semi-monthly.
+  const singleMonthlyPay   = breakdown.isRetiredPay || breakdown.isDrillPay;
+  const payPeriodsPerMonth = singleMonthlyPay ? 1 : 2;
   const perPaycheck       = breakdown.netPay / payPeriodsPerMonth;
   // Spouse income's own pay cadence isn't tracked separately (there's no
   // spouse-pay-period field in the data model) — it's still shown on the
@@ -114,8 +118,12 @@ export function PaySummaryCard({ breakdown }: Props) {
   const hasSpouseIncome   = spouseMonthlyIncome > 0;
 
   const stateTaxExplanation = (() => {
+    const outsideInfo = getStateTaxInfo(stateResidence);
     if (breakdown.stateTax > 0) {
-      return `Estimated state income tax on your ${breakdown.isRetiredPay ? 'retired pay' : 'base pay'}, based on your state of residence in Profile.`;
+      const base = `Estimated state income tax on your ${breakdown.isRetiredPay ? 'retired pay' : breakdown.isDrillPay ? 'drill pay' : breakdown.alsoGsCivilian && breakdown.basePay === 0 ? 'GS pay' : 'base pay'}, based on your state of residence in Profile.`;
+      return !breakdown.isRetiredPay && outsideInfo?.exemptWhenStationedOutside
+        ? `${base} ${outsideInfo.name} only taxes active-duty pay while you're stationed in ${outsideInfo.name} (or your duty station isn't set). If you're stationed elsewhere, update your duty station in Profile.`
+        : base;
     }
     if (!stateResidence) {
       return 'No state of residence is set in Profile, so state tax can’t be estimated. Add it in Profile › Edit Personal to see an estimate here.';
@@ -126,6 +134,9 @@ export function PaySummaryCard({ breakdown }: Props) {
       return info?.effectiveRate === 0
         ? `${stateName} has no state income tax, so your retired pay isn’t taxed at the state level.`
         : `${stateName} fully exempts military retired pay from state income tax, even though it taxes other income.`;
+    }
+    if (!breakdown.isRetiredPay && info?.exemptWhenStationedOutside) {
+      return `${stateName} doesn’t tax active-duty pay while you’re stationed outside ${stateName}.${info.note ? ` (${info.note}.)` : ''}`;
     }
     if (info?.militaryExempt) {
       return info.effectiveRate === 0
@@ -161,20 +172,29 @@ export function PaySummaryCard({ breakdown }: Props) {
             </View>
           )}
         </View>
-        <ThemedText type="label" style={[styles.headerLabel, { color: tc.textHint }]}>FY2026</ThemedText>
+        {/* Which year's pay tables this is. Turns amber once the calendar
+            year has moved past them (e.g. on Jan 1 before a rate update
+            ships) so last year's numbers never pass as current. */}
+        <Pressable
+          disabled={!ratesOutdated}
+          onPress={() => Alert.alert('Pay rates out of date', `This estimate uses ${BASIC_PAY_DATA_YEAR} pay tables. ${new Date().getFullYear()} rates (pay raise, BAH, BAS, tax brackets) will arrive in an app update — until then, check your LES for the new amounts.`)}>
+          <ThemedText type="label" style={[styles.headerLabel, { color: ratesOutdated ? tc.warning : tc.textHint }]}>
+            {ratesOutdated ? `⚠ ${BASIC_PAY_DATA_YEAR} RATES` : `${BASIC_PAY_DATA_YEAR} RATES`}
+          </ThemedText>
+        </Pressable>
       </View>
 
       {/* Net pay hero */}
       <View style={styles.hero}>
         <View>
           <ThemedText type="label" style={[styles.netLabel, { color: tc.textHint }]}>
-            {breakdown.isRetiredPay ? 'EST. NET (MONTHLY)' : 'EST. NET / PAYCHECK'}
+            {breakdown.isRetiredPay ? 'EST. NET (MONTHLY)' : breakdown.isDrillPay ? 'EST. NET DRILL PAY (MONTHLY)' : 'EST. NET / PAYCHECK'}
           </ThemedText>
           <ThemedText style={[styles.netAmount, { color: tc.accent }]}>{fmtPay(perPaycheck)}</ThemedText>
           {/* Retired pay is one deposit a month — repeating the same number
               as a second "/ month" line would just be confusing, not
               informative, so it's only shown for the semi-monthly schedule. */}
-          {!breakdown.isRetiredPay && (
+          {!singleMonthlyPay && (
             <ThemedText style={[styles.netMonthly, { color: tc.textHint }]}>
               {fmtPay(breakdown.netPay)}<ThemedText style={[styles.netMonthlyUnit, { color: tc.textMuted }]}> / month</ThemedText>
             </ThemedText>
@@ -194,6 +214,15 @@ export function PaySummaryCard({ breakdown }: Props) {
           </Pressable>
         </View>
       </View>
+
+      {!breakdown.housingResolved && (
+        <Pressable onPress={() => setShowEdit(true)} style={styles.housingWarn} accessibilityRole="button">
+          <ThemedText style={[styles.housingWarnText, { color: tc.warning }]}>
+            ⚠ {breakdown.isOha ? 'OHA' : 'BAH'} isn&apos;t available for your duty station, so it&apos;s shown as $0 and your take-home is too low.
+            Check your duty station in Profile, or tap here to enter your {breakdown.isOha ? 'OHA' : 'BAH'} from your LES.
+          </ThemedText>
+        </Pressable>
+      )}
 
       {/* Household combined bar */}
       {hasSpouseIncome && !expanded && (
@@ -240,19 +269,21 @@ export function PaySummaryCard({ breakdown }: Props) {
         <View style={styles.detail}>
           <View style={[styles.divider, { backgroundColor: tc.borderColor }]} />
 
-          <ThemedText type="label" style={[styles.sectionHead, { color: tc.tactical }]}>// ENTITLEMENTS (MONTHLY)</ThemedText>
+          <ThemedText type="label" style={[styles.sectionHead, { color: tc.tactical }]}>{'// ENTITLEMENTS (MONTHLY)'}</ThemedText>
           <Row
-            label={breakdown.isRetiredPay ? `RETIRED PAY (${breakdown.retiredPayPct}% OF HIGH-3)` : 'BASE PAY'}
+            label={breakdown.isRetiredPay
+              ? `RETIRED PAY (${breakdown.retiredPayPct}% OF HIGH-3)`
+              : breakdown.isDrillPay ? `DRILL PAY (${breakdown.drillsPerMonth} DRILLS)` : 'BASE PAY'}
             value={fmtPay(breakdown.basePay)} indent positive overridden={breakdown.basePayOverridden}
           />
           {/* A retiree draws no BAH/BAS (no active-duty housing/subsistence
               allowance) — hide these rows entirely unless manually overridden,
               rather than showing a confusing "$0" for something that
               structurally doesn't apply anymore. */}
-          {(!breakdown.isRetiredPay || breakdown.bahOverridden) && (
+          {(!singleMonthlyPay || breakdown.bahOverridden) && (
             <Row label={bahLabel} value={fmtPay(breakdown.bah)} indent positive overridden={breakdown.bahOverridden} />
           )}
-          {(!breakdown.isRetiredPay || breakdown.basOverridden) && (
+          {(!singleMonthlyPay || breakdown.basOverridden) && (
             <Row label="BAS" value={fmtPay(breakdown.bas)} indent positive overridden={breakdown.basOverridden} />
           )}
           {breakdown.colaTracked && (
@@ -280,7 +311,7 @@ export function PaySummaryCard({ breakdown }: Props) {
 
           <View style={[styles.divider, { backgroundColor: tc.borderColor }]} />
 
-          <ThemedText type="label" style={[styles.sectionHead, { color: tc.tactical }]}>// DEDUCTIONS (MONTHLY)</ThemedText>
+          <ThemedText type="label" style={[styles.sectionHead, { color: tc.tactical }]}>{'// DEDUCTIONS (MONTHLY)'}</ThemedText>
           <Row label="FICA (SS + MED)"  value={`-${fmtPay(breakdown.fica)}`}     indent negative />
           <Row label="FED TAX (EST.)"   value={`-${fmtPay(breakdown.fedTax)}`}   indent negative />
           {breakdown.isCzte && breakdown.czteExcluded > 0 && (
@@ -320,6 +351,14 @@ export function PaySummaryCard({ breakdown }: Props) {
             />
           )}
           {breakdown.dental > 0 && <Row label="DENTAL (TDP)" value={`-${fmtPay(breakdown.dental)}`} indent negative />}
+          {breakdown.fers > 0 && (
+            <Row
+              label={`FERS RETIREMENT (${breakdown.fersRatePct}%)`}
+              value={`-${fmtPay(breakdown.fers)}`}
+              indent negative
+              onInfoPress={() => Alert.alert('FERS Contribution', 'Your required FERS pension contribution, taken out of every GS paycheck: 0.8% if you were hired before 2013, 3.1% if hired in 2013, 4.4% if hired in 2014 or later. Health insurance (FEHB) isn’t included — add your premium with ✎ EDIT → deductions.')}
+            />
+          )}
           {breakdown.extraDeductionItems.map(item => (
             <Row key={item.id} label={item.label.toUpperCase()} value={`-${fmtPay(item.amount)}`} indent negative />
           ))}
@@ -331,14 +370,14 @@ export function PaySummaryCard({ breakdown }: Props) {
           {/* Retired pay is a single monthly deposit — there's no second
               "paycheck" to break out, so this row would just repeat
               MONTHLY NET above under a misleading "÷2" label. */}
-          {!breakdown.isRetiredPay && (
+          {!singleMonthlyPay && (
             <Row label="PER PAYCHECK (÷2)" value={fmtPay(perPaycheck)}        bold />
           )}
 
           {hasSpouseIncome && (
             <>
               <View style={[styles.divider, { backgroundColor: tc.borderColor }]} />
-              <ThemedText type="label" style={[styles.sectionHead, { color: tc.tactical }]}>// HOUSEHOLD COMBINED</ThemedText>
+              <ThemedText type="label" style={[styles.sectionHead, { color: tc.tactical }]}>{'// HOUSEHOLD COMBINED'}</ThemedText>
               <Row label="YOUR NET/MO"        value={fmtPay(breakdown.netPay)}   indent positive />
               <Row label="SPOUSE INCOME/MO"   value={fmtPay(spouseMonthlyIncome)} indent positive />
               <Row label="HOUSEHOLD MONTHLY"  value={fmtPay(householdMonthly)}   bold positive />
@@ -356,7 +395,9 @@ export function PaySummaryCard({ breakdown }: Props) {
             * ESTIMATE ONLY — VERIFY AT MYPAY.DFAS.MIL{'\n'}
             {breakdown.isRetiredPay
               ? 'RETIRED PAY EXCLUDES BAH/BAS (NOT PAID TO RETIREES). SEE VA DISABILITY BELOW FOR COMPENSATION.'
-              : hasOverrides ? '✎ SOME VALUES MANUALLY ADJUSTED FROM LES' : 'SET HOME STATE IN PROFILE FOR STATE TAX ESTIMATE'}
+              : breakdown.isDrillPay
+                ? 'DRILL PAY ONLY — NO BAH/BAS WHILE NOT ON ORDERS. ON ORDERS OR AGR? TURN IT ON IN PROFILE.'
+                : hasOverrides ? '✎ SOME VALUES MANUALLY ADJUSTED FROM LES' : 'SET HOME STATE IN PROFILE FOR STATE TAX ESTIMATE'}
           </ThemedText>
         </View>
       )}
@@ -441,6 +482,9 @@ const styles = StyleSheet.create({
   },
   editLesBtnActive: { borderColor: Brand.accent + '60' },
   editLesTxt: { fontSize: 9, fontWeight: '800', letterSpacing: 0.5 },
+
+  housingWarn: { paddingHorizontal: Spacing.three, paddingBottom: Spacing.two },
+  housingWarnText: { fontSize: 12, lineHeight: 17, fontWeight: '600' },
 
   householdBar: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',

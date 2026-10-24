@@ -16,6 +16,7 @@ interface DebtState {
   extraMonthly: number;
   hydrated: boolean;
   hydrate: () => Promise<void>;
+  applyRemote: (data: Pick<DebtState, 'debts' | 'extraMonthly'>) => void;
   addDebt: (name: string, balance: number, apr: number, minPayment: number) => void;
   updateDebt: (id: string, partial: Partial<Omit<Debt, 'id'>>) => void;
   removeDebt: (id: string) => void;
@@ -42,8 +43,12 @@ export const useDebtStore = create<DebtState>((set, get) => ({
   hydrated: false,
 
   hydrate: async () => {
+    if (get().hydrated) return;
     try {
       const raw = await AsyncStorage.getItem(STORAGE_KEY);
+      // Cloud data from another device landed while disk was being read —
+      // it's newer than this on-device copy, so don't overwrite it.
+      if (get().hydrated) return;
       if (raw) {
         const { debts, extraMonthly }: Persisted = JSON.parse(raw);
         set({ debts, extraMonthly, hydrated: true });
@@ -53,6 +58,14 @@ export const useDebtStore = create<DebtState>((set, get) => ({
     } catch {
       set({ hydrated: true });
     }
+  },
+
+  // A snapshot from the cloud (another device's edit). Saved to disk too:
+  // applying it in memory only let the next hydrate() reload the older
+  // on-device copy and auto-push that stale copy back over the cloud.
+  applyRemote: (data) => {
+    set({ ...data, hydrated: true });
+    save({ debts: data.debts, extraMonthly: data.extraMonthly });
   },
 
   addDebt: (name, balance, apr, minPayment) => {

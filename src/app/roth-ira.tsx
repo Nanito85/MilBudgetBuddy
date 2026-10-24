@@ -5,10 +5,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { IRA_CATCHUP_50, IRA_LIMIT, LIMITS_YEAR, usd } from '@/data/annual-limits';
 import { Brand, Spacing } from '@/constants/theme';
 import { useThemeColors } from '@/hooks/use-theme';
 
-const ROTH_ANNUAL_LIMIT = 7500;
+const ROTH_ANNUAL_LIMIT = IRA_LIMIT;
 const ROTH_MONTHLY_LIMIT = Math.round(ROTH_ANNUAL_LIMIT / 12); // 625
 
 const GROWTH_RATE = 0.07; // 7% annual
@@ -96,7 +97,7 @@ export default function RothIraScreen() {
   return (
     <ThemedView style={{ flex: 1 }}>
       <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
-        <Pressable
+        <Pressable accessibilityRole="button" accessibilityLabel="Go back"
           onPress={() => (router.back())}
           style={styles.back}>
           <ThemedText style={styles.backChevron}>‹</ThemedText>
@@ -195,7 +196,7 @@ export default function RothIraScreen() {
         <ThemedView type="backgroundElement" style={styles.card}>
           <ThemedText style={[styles.cardLabel, { color: tc.tactical }]}>ROTH IRA RULES & TIPS</ThemedText>
           {[
-            '2026 limit: $7,500/yr ($625/mo). Age 50+ can contribute $8,600 (includes a $1,100 catch-up).',
+            `${LIMITS_YEAR} limit: ${usd(IRA_LIMIT)}/yr (${usd(Math.round(IRA_LIMIT / 12))}/mo). Age 50+ can contribute ${usd(IRA_LIMIT + IRA_CATCHUP_50)} (includes a ${usd(IRA_CATCHUP_50)} catch-up).`,
             'Phase-out range for 2026: $153K–$168K MAGI (single). Most junior enlisted are well under.',
             'Combat Zone pay is excluded from MAGI — you can max a Roth even on large CZ bonuses.',
             'Contributions (not earnings) can be withdrawn penalty-free at any time.',

@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Alert, Linking, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { getActiveSubscriptions, getAvailablePurchases, isEligibleForIntroOfferIOS, useIAP } from 'expo-iap';
 import type { Purchase } from 'expo-iap';
@@ -22,6 +22,9 @@ import {
 } from '@/services/iap';
 import { useAuthStore } from '@/store/auth.store';
 import { useUserStore } from '@/store/user.store';
+
+const PRIVACY_URL = 'https://nanito85.github.io/MilBudgetBuddy/privacy-policy.html';
+const TERMS_URL = 'https://nanito85.github.io/MilBudgetBuddy/terms.html';
 
 type Plan = 'monthly' | 'annual';
 
@@ -559,7 +562,7 @@ export default function PaywallScreen() {
             </View>
           ) : (
             <>
-              <ThemedText style={[styles.eyebrow, { color: tc.tactical }]}>// UNLOCK EVERYTHING</ThemedText>
+              <ThemedText style={[styles.eyebrow, { color: tc.tactical }]}>{'// UNLOCK EVERYTHING'}</ThemedText>
               <ThemedText style={[styles.heading, { color: tc.textPrimary }]}>
                 {willGetTrial ? `7 days free, then ${headingPrice}` : headingPrice}
               </ThemedText>
@@ -637,10 +640,25 @@ export default function PaywallScreen() {
                 {willGetTrial
                   ? "7-day free trial, then billed at the price shown above."
                   : "Billed immediately at the price shown above — no free trial is available on this account (an introductory offer is normally limited to once per Apple ID / subscription group)."}
-                {' '}Cancel anytime in your
+                {' '}The subscription renews automatically at the same price each period unless you cancel
+                at least 24 hours before the current period ends; your
+                {' '}{Platform.OS === 'ios' ? 'Apple ID' : 'Google Play'} account is charged within 24 hours
+                before renewal. Cancel anytime in your
                 {' '}{Platform.OS === 'ios' ? 'App Store' : 'Google Play'} account settings —
                 you keep access through the end of the period you&apos;ve already paid for.
               </ThemedText>
+
+              {/* Apple Guideline 3.1.2 asks for working Terms of Use and
+                  Privacy Policy links on the purchase screen itself. */}
+              <View style={styles.legalLinks}>
+                <Pressable onPress={() => Linking.openURL(TERMS_URL)} accessibilityRole="link" hitSlop={8}>
+                  <ThemedText style={[styles.legalLinkText, { color: tc.tactical }]}>Terms of Use</ThemedText>
+                </Pressable>
+                <ThemedText style={[styles.legalLinkText, { color: tc.textMuted }]}>·</ThemedText>
+                <Pressable onPress={() => Linking.openURL(PRIVACY_URL)} accessibilityRole="link" hitSlop={8}>
+                  <ThemedText style={[styles.legalLinkText, { color: tc.tactical }]}>Privacy Policy</ThemedText>
+                </Pressable>
+              </View>
 
               <Pressable onPress={handleRestore} disabled={verifying} style={styles.restoreBtn}>
                 <ThemedText style={[styles.restoreText, { color: tc.tactical }]}>Restore Purchases</ThemedText>
@@ -703,6 +721,8 @@ const styles = StyleSheet.create({
   loadErrorRetryText: { fontSize: 12, fontWeight: '900', letterSpacing: 1 },
 
   legalNote: { textAlign: 'center', lineHeight: 17, marginTop: Spacing.one },
+  legalLinks: { flexDirection: 'row', justifyContent: 'center', gap: Spacing.two },
+  legalLinkText: { fontSize: 13, lineHeight: 18, fontWeight: '600' },
   signInNotice: { textAlign: 'center', lineHeight: 17, fontWeight: '600' },
   restoreBtn: { alignItems: 'center', paddingVertical: Spacing.two },
   restoreText: { fontSize: 13, fontWeight: '700' },

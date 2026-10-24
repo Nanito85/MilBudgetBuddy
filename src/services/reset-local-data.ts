@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import { withAutoPushSuppressed } from '@/services/firestore-sync';
+import { deleteCloudData, startSync, withAutoPushSuppressed } from '@/services/firestore-sync';
+import { auth } from '@/services/firebase';
 import { useBudgetStore } from '@/store/budget.store';
 import { useDebtStore } from '@/store/debt.store';
 import { useExpensesStore } from '@/store/expenses.store';
@@ -57,4 +58,30 @@ export async function resetAllLocalData(): Promise<void> {
   // sync (per-device by design), so it doesn't need the suppression above.
   await useKidModeStore.getState().resetAll();
   await AsyncStorage.clear();
+}
+
+/**
+ * Full "start over" for Settings / Profile's Reset All Data. resetAllLocalData()
+ * alone only clears the device, so for a signed-in account the next launch's
+ * pullFromCloud() (see app/_layout.tsx) just restored everything from
+ * Firestore — the reset looked like it did nothing. This deletes the cloud
+ * copy FIRST and only wipes the device if that succeeded, so a failed/offline
+ * attempt can't leave the device empty while the cloud data later comes back
+ * (or the reverse). The account itself stays signed in; sync is restarted
+ * against the now-empty cloud so the new profile is saved normally.
+ *
+ * Throws if the cloud delete fails (local data is left untouched).
+ */
+export async function resetAllData(): Promise<void> {
+  const uid = auth.currentUser?.uid;
+  if (uid) {
+    try {
+      await deleteCloudData(uid); // also stops sync listeners
+    } catch (err) {
+      startSync(uid);
+      throw err;
+    }
+  }
+  await resetAllLocalData();
+  if (uid) startSync(uid);
 }

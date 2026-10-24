@@ -167,7 +167,7 @@ export default function CreditScoreScreen() {
           </View>
         </View>
 
-        <ThemedText type="label" style={[ss.eyebrow, { color: tc.tactical }]}>// FINANCIAL INTEL</ThemedText>
+        <ThemedText type="label" style={[ss.eyebrow, { color: tc.tactical }]}>{'// FINANCIAL INTEL'}</ThemedText>
         <ThemedText style={[ss.title, { color: tc.textPrimary }]}>CREDIT SCORE</ThemedText>
         <ThemedText type="small" themeColor="textSecondary" style={ss.subtitle}>
           A simple guide to what your credit score means, what moves it, and how to protect it — no finance background needed.

@@ -69,7 +69,9 @@ export default function PrivacyCenterScreen() {
           <Row icon="📱" label="Local Device Storage" value="Profile, budget, expenses, savings goals — stored on your device via AsyncStorage, and also in your own private cloud account if you're signed in" />
           <Row icon="☁️" label="Cloud Sync (if signed in)" value="Your data is synced to your personal Firebase account. Only you can access it." />
           <Row icon="🪪" label="Account Info" value="Email address only, if you create an account. Used for sync and account recovery." />
-          <Row icon="📊" label="Anonymous Analytics" value="App opens and feature usage — no names, no pay data, no PII. Used to improve the app." />
+          <Row icon="📊" label="Usage Analytics" value="App opens and feature usage, linked to your account ID if you're signed in. Never includes your pay or budget figures. Used to improve the app." />
+          <Row icon="🐞" label="Crash Reports" value="Errors are reported to Sentry with a hashed account ID — no names, emails, or financial data." />
+          <Row icon="💬" label="Feedback" value="Feedback you send (plus your email, if signed in) is stored with Supabase so we can reply, and may be summarized by an AI service (Anthropic)." />
           <Row icon="💵" label="Optional LES Overrides" value="If you enter your actual base pay, BAH, or BAS to correct an estimate, that figure is stored the same way as everything else — locally, and in your own private cloud account if signed in. It is never shared, sold, or used for anything but showing your numbers back to you." />
           <Row icon="❌" label="What We Never Collect" value="Your SSN, bank account or routing numbers, or any government ID. We also never see your real LES document — only whatever numbers you choose to type in." />
         </Section>
@@ -83,7 +85,7 @@ export default function PrivacyCenterScreen() {
 
         <Section title="YOUR RIGHTS">
           <Row icon="📤" label="Export Your Data" value="Your data lives on your device (and your own cloud account if signed in) — access it directly in the app or use the Financial Readiness Worksheet to export." />
-          <Row icon="🗑️" label="Delete Your Data" value="Delete Account (Settings → Account) permanently removes all cloud data. Local data can be cleared via Settings → Reset All Data." />
+          <Row icon="🗑️" label="Delete Your Data" value="Delete Account (Settings → Account) permanently removes your synced cloud data. Analytics, purchase records and feedback are kept separately — email milbudgetbuddy@proton.me to remove those too. Local data can be cleared via Settings → Reset All Data." />
           <Row icon="👁️" label="Data Transparency" value="You can view all stored data at any time in the app — profile, budget, expenses, goals." />
         </Section>
 

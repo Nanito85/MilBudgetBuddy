@@ -1,4 +1,5 @@
 import { Tip } from '@/types/tip.types';
+import { IRA_LIMIT, LIMITS_YEAR, TSP_ELECTIVE_LIMIT, usd } from '@/data/annual-limits';
 
 export const TIPS: Tip[] = [
   // ─── TSP ───────────────────────────────────────────────────────────────────
@@ -26,7 +27,7 @@ export const TIPS: Tip[] = [
   {
     id: 'tsp-004',
     title: 'Max Out TSP When Deployed',
-    body: 'The 2026 TSP limit is $24,500 per year. When deployed to a combat zone, your tax-free pay still counts toward that limit — and you can go even higher with additional contributions. Use deployments to accelerate your retirement savings.',
+    body: 'The ' + LIMITS_YEAR + ' TSP limit is ' + usd(TSP_ELECTIVE_LIMIT) + ' per year. When deployed to a combat zone, your tax-free pay still counts toward that limit — and you can go even higher with additional contributions. Use deployments to accelerate your retirement savings.',
     category: 'tsp',
     tags: ['contribution limit', 'combat zone', 'max'],
   },
@@ -149,7 +150,7 @@ export const TIPS: Tip[] = [
   {
     id: 'invest-001',
     title: 'Open a Roth IRA — Even a Small One',
-    body: 'A Roth IRA lets your money grow completely tax-free. In 2026 you can contribute up to $7,500 a year. Open one with as little as $1 at Fidelity, Vanguard, or Schwab and set up automatic contributions.',
+    body: 'A Roth IRA lets your money grow completely tax-free. In ' + LIMITS_YEAR + ' you can contribute up to ' + usd(IRA_LIMIT) + ' a year. Open one with as little as $1 at Fidelity, Vanguard, or Schwab and set up automatic contributions.',
     category: 'investing',
     tags: ['Roth IRA', 'tax-free', 'retirement'],
   },

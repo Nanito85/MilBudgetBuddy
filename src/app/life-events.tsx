@@ -53,7 +53,7 @@ export default function LifeEventsScreen() {
           <Pressable onPress={() => router.back()} style={styles.backBtn}>
             <ThemedText style={[styles.backText, { color: tc.tactical }]}>‹ Back</ThemedText>
           </Pressable>
-          <ThemedText style={[styles.eyebrow, { color: tc.tactical }]}>// MILBUDGETBUDDY</ThemedText>
+          <ThemedText style={[styles.eyebrow, { color: tc.tactical }]}>{'// MILBUDGETBUDDY'}</ThemedText>
           <ThemedText style={[styles.pageTitle, { color: tc.textPrimary }]}>LIFE EVENTS</ThemedText>
           <ThemedText style={[styles.pageSub, { color: tc.textSecondary }]}>
             Track military life milestones and never miss a critical financial or admin task.
@@ -115,7 +115,7 @@ export default function LifeEventsScreen() {
                         <Pressable onPress={() => dismissEvent(activeEvent.type)} style={styles.dismissBtn}>
                           <ThemedText style={[styles.dismissBtnText, { color: tc.textSecondary }]}>Dismiss</ThemedText>
                         </Pressable>
-                        <Pressable onPress={() => handleRemove(activeEvent.type)} style={styles.removeBtn}>
+                        <Pressable accessibilityRole="button" accessibilityLabel="Remove" onPress={() => handleRemove(activeEvent.type)} style={styles.removeBtn}>
                           <ThemedText style={[styles.removeBtnText, { color: tc.textSecondary }]}>✕</ThemedText>
                         </Pressable>
                       </View>

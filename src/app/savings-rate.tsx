@@ -8,8 +8,7 @@ import { ThemedView } from '@/components/themed-view';
 import { Brand, Spacing } from '@/constants/theme';
 import { useThemeColors } from '@/hooks/use-theme';
 import { useBudgetStore } from '@/store/budget.store';
-import { useUserStore } from '@/store/user.store';
-import { calcLES } from '@/features/home/utils/lesCalc';
+import { useProfileLES } from '@/features/home/hooks/useProfileLES';
 
 const GROWTH_RATE = 0.07;
 
@@ -85,48 +84,11 @@ export default function SavingsRateScreen() {
   const insets = useSafeAreaInsets();
   const tc = useThemeColors();
 
-  const payGrade  = useUserStore((s) => s.payGrade);
-  const yos       = useUserStore((s) => s.yos);
-  const mhaZip    = useUserStore((s) => s.mhaZip);
-  const dutyStationId = useUserStore((s) => s.dutyStationId);
-  const hasSpouse = useUserStore((s) => s.hasSpouse);
-  const numChildren = useUserStore((s) => s.numChildren);
-  const housingStatus = useUserStore((s) => s.housingStatus);
-  const tspContribPct = useUserStore((s) => s.tspContribPct);
-  const rothTspPct    = useUserStore((s) => s.rothTspPct);
-  const hasDentalFamily = useUserStore((s) => s.hasDentalFamily);
-  const sglOptOut = useUserStore((s) => s.sglOptOut);
-  const stateResidence = useUserStore((s) => s.stateResidence);
-  const lesOverrides = useUserStore((s) => s.lesOverrides);
-  const specialPays = useUserStore((s) => s.specialPays);
-  const serviceStatus = useUserStore((s) => s.serviceStatus);
-  const familySeparated  = useUserStore((s) => s.familySeparated);
-  const dependentsMhaZip = useUserStore((s) => s.dependentsMhaZip);
-  const isDeployed = useUserStore((s) => s.isDeployed);
-  const deploymentLocationId = useUserStore((s) => s.deploymentLocationId);
-  const alsoGsCivilian   = useUserStore((s) => s.alsoGsCivilian);
-  const gsGrade          = useUserStore((s) => s.gsGrade);
-  const gsStep           = useUserStore((s) => s.gsStep);
-  const gsLocalityKey    = useUserStore((s) => s.gsLocalityKey);
   const budgetCategories = useBudgetStore((s) => s.categories);
 
-  const specialPaysTotal = useMemo(
-    () => specialPays.reduce((sum, p) => sum + p.monthlyAmount, 0),
-    [specialPays],
-  );
-
-  // Was missing `overrides` — the identical calcLES call on Home (index.tsx)
-  // includes it, so this screen's pre-filled "monthly income" silently
-  // ignored any manual LES correction the member entered in Profile > Pay,
-  // diverging from what Home shows for the same person.
-  const breakdown = useMemo(() => {
-    if (!payGrade) return null;
-    return calcLES({
-      payGrade, yos, mhaZip, dutyStationId, hasSpouse, numChildren, housingStatus, specialPaysTotal, tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence, overrides: lesOverrides, serviceStatus,
-      familySeparated, dependentsMhaZip, alsoGsCivilian, gsGrade, gsStep, gsLocalityKey,
-      isDeployed, deploymentLocationId,
-    });
-  }, [payGrade, yos, mhaZip, dutyStationId, hasSpouse, numChildren, housingStatus, specialPaysTotal, tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence, lesOverrides, serviceStatus, familySeparated, dependentsMhaZip, alsoGsCivilian, gsGrade, gsStep, gsLocalityKey, isDeployed, deploymentLocationId]);
+  // Same shared engine + inputs as Home (see useProfileLES), so the
+  // pre-filled "monthly income" here always matches Home's take-home.
+  const breakdown = useProfileLES();
 
   const netPayFromStore = breakdown?.netPay ?? 0;
   const budgetTotal = useMemo(
@@ -163,7 +125,7 @@ export default function SavingsRateScreen() {
   return (
     <ThemedView style={{ flex: 1 }}>
       <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
-        <Pressable
+        <Pressable accessibilityRole="button" accessibilityLabel="Go back"
           onPress={() => (router.back())}
           style={styles.back}>
           <ThemedText style={styles.backChevron}>‹</ThemedText>

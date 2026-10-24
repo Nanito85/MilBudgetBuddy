@@ -247,7 +247,7 @@ export default function EtsChecklistScreen() {
   return (
     <ThemedView style={{ flex: 1 }}>
       <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
-        <Pressable
+        <Pressable accessibilityRole="button" accessibilityLabel="Go back"
           onPress={() => (router.back())}
           style={styles.back}>
           <ThemedText style={styles.backChevron}>‹</ThemedText>
@@ -292,7 +292,7 @@ export default function EtsChecklistScreen() {
 
         {pct >= 1 && (
           <ThemedView type="backgroundElement" style={styles.completeBanner}>
-            <ThemedText style={[styles.completeText, { color: tc.tactical }]}>🎖 Checklist complete — you're ready to transition!</ThemedText>
+            <ThemedText style={[styles.completeText, { color: tc.tactical }]}>🎖 Checklist complete — you&apos;re ready to transition!</ThemedText>
           </ThemedView>
         )}
 

@@ -25,6 +25,19 @@ export function trackEvent(name: string, properties?: AnalyticsEvent['properties
   if (queue.length >= FLUSH_BATCH_SIZE) flush();
 }
 
+// Set once, right after a successful sign-up, and sent with the next flush so
+// the backend can record which platform the account was CREATED on (the
+// "platform" field below is just whatever platform flushed last, so it moves
+// if the member later switches phones).
+let pendingSignupPlatform: 'ios' | 'android' | null = null;
+
+export function trackSignup() {
+  if (Platform.OS !== 'ios' && Platform.OS !== 'android') return;
+  pendingSignupPlatform = Platform.OS;
+  trackEvent('sign_up', { platform: Platform.OS });
+  flush();
+}
+
 export function trackScreen(screenName: string) {
   trackEvent('screen_view', { screen: screenName });
 }
@@ -56,12 +69,17 @@ async function flush() {
     // fills in the Admin > All Accounts screen's Platform column for a free
     // member who's never purchased or been granted Pro (previously the only
     // source, entitlements, only ever existed for paying/granted accounts).
-    await fetch(`${API_BASE}/api/analytics/events`, {
+    const signupPlatform = pendingSignupPlatform;
+    const res = await fetch(`${API_BASE}/api/analytics/events`, {
       method: 'POST',
       headers,
-      body: JSON.stringify({ events: batch, platform: Platform.OS }),
+      body: JSON.stringify({ events: batch, platform: Platform.OS, ...(signupPlatform ? { signupPlatform } : {}) }),
       signal: controller.signal,
     }).finally(() => clearTimeout(timeoutId));
+    // Only clear once the backend accepted it (and the request was
+    // authenticated -- the backend ignores signupPlatform without a uid), so
+    // a failed/offline flush retries it on the next one.
+    if (res.ok && token && pendingSignupPlatform === signupPlatform) pendingSignupPlatform = null;
   } catch {
     // Silent — don't push back to queue; analytics loss is acceptable
   }

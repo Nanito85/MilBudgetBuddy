@@ -10,8 +10,9 @@
  * Run: npx tsx scripts/verify-calculations.ts
  * Exits non-zero (and prints which assertion failed) if anything regresses.
  */
-import { getPayDayInfo } from '@/features/home/utils/payScheduleCalc';
-import { calcLES, getDrillPay } from '@/features/home/utils/lesCalc';
+import { adjustedPayDay, getPayDayInfo } from '@/features/home/utils/payScheduleCalc';
+import { calcLES, fersContributionRate, getDrillPay } from '@/features/home/utils/lesCalc';
+import { estimateAnnualFedTax } from '@/data/federal-tax';
 import { getBasicPay, getHigh3Average, getHigh3AverageDetailed } from '@/data/basic-pay-rates';
 import { combinedRating, monthlyCompensationDetailed, monthlyCompensation } from '@/features/va/utils/vaDisabilityCalc';
 import { getInstallationById } from '@/data/installations';
@@ -62,6 +63,17 @@ console.log('\n[1/2] Pay day schedule');
   assertEqual(retiredInfo.label, '1st', 'Retiree next payday label is always 1st (never 15th)');
 }
 
+// ── Payday moves to the prior business day for weekends and holidays ─────────
+console.log('[Payday] Weekend and federal holiday shifts');
+{
+  const iso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  assertEqual(iso(adjustedPayDay(new Date(2027, 0, 1))), '2026-12-31', 'Jan 1, 2027 (Fri, New Year) pays Thu Dec 31');
+  assertEqual(iso(adjustedPayDay(new Date(2025, 8, 1))), '2025-08-29', 'Sep 1, 2025 (Labor Day Mon) pays Fri Aug 29');
+  assertEqual(iso(adjustedPayDay(new Date(2029, 0, 15))), '2029-01-12', 'Jan 15, 2029 (MLK Day Mon) pays Fri Jan 12');
+  assertEqual(iso(adjustedPayDay(new Date(2026, 10, 15))), '2026-11-13', 'Nov 15, 2026 (Sun) pays Fri Nov 13');
+  assertEqual(iso(adjustedPayDay(new Date(2026, 9, 15))), '2026-10-15', 'Oct 15, 2026 (Thu) is unchanged');
+}
+
 // ── 3/11. SGLI: retiree never charged, active duty still charged ─────────────
 console.log('\n[3/11] SGLI deduction by status');
 {
@@ -98,6 +110,128 @@ console.log('\n[SBP] Retiree-only opt-in deduction');
 
   const activeWithSbpFlag = calcLES({ ...base, serviceStatus: 'active', sbpEnabled: true });
   assertEqual(activeWithSbpFlag.sbp, 0, 'SBP never applies to active duty even if the flag were somehow set');
+}
+
+// ── Reserve/Guard: drill pay only unless on orders ───────────────────────────
+console.log('\n[Reserve] Drill-only vs on orders');
+{
+  const base = {
+    payGrade: 'E5', yos: 6, mhaZip: '28310', hasSpouse: true, numChildren: 1,
+    specialPaysTotal: 0, tspContribPct: 5, hasDentalFamily: false, sglOptOut: false,
+  };
+  const active = calcLES({ ...base, serviceStatus: 'active' });
+  const drill = calcLES({ ...base, serviceStatus: 'reserve', drillsPerMonth: 4 });
+  const basic = getBasicPay('E5', 6);
+  assertEqual(drill.basePay, (basic / 30) * 4, 'Drilling reservist basePay = 4 drills × basic/30');
+  assertEqual(drill.bah, 0, 'Drilling reservist gets no BAH');
+  assertEqual(drill.bas, 0, 'Drilling reservist gets no BAS');
+  assertEqual(drill.cola, 0, 'Drilling reservist gets no COLA');
+  assertTrue(drill.isDrillPay, 'Drill-only breakdown is flagged isDrillPay');
+  assertTrue(drill.netPay < active.netPay / 5, 'Drill-only net is a small fraction of a full-time paycheck');
+  assertEqual(drill.tsp, drill.basePay * 0.05, 'TSP % applies to drill pay');
+
+  const onOrders = calcLES({ ...base, serviceStatus: 'reserve', reserveOnOrders: true });
+  assertEqual(onOrders.netPay, active.netPay, 'Reservist on orders gets the full active-duty paycheck');
+  assertTrue(!onOrders.isDrillPay, 'On-orders breakdown is not flagged as drill pay');
+
+  const deployed = calcLES({ ...base, serviceStatus: 'reserve', isDeployed: true });
+  assertTrue(!deployed.isDrillPay && deployed.bas > 0, 'A deployed reservist is on orders (full pay), not drill-only');
+}
+
+// ── Federal tax: credits, filing status, pre-tax deductions, special pays ────
+console.log('\n[FedTax] Credits, HOH, pre-tax TSP, special pays');
+{
+  // Hand-computed 2026 figures.
+  assertEqual(estimateAnnualFedTax(16100, false), 0, 'Single: income at the standard deduction owes $0');
+  assertEqual(estimateAnnualFedTax(50000, false), 12400 * 0.10 + (33900 - 12400) * 0.12, 'Single $50k: 10%/12% brackets after $16,100 deduction');
+  assertEqual(estimateAnnualFedTax(50000, false, 1), Math.max(0, 17700 * 0.10 + (25850 - 17700) * 0.12 - 2200), 'Single parent $50k: HOH brackets + $24,150 deduction - $2,200 CTC');
+  assertEqual(estimateAnnualFedTax(60000, true, 2), Math.max(0, 24800 * 0.10 + (27800 - 24800) * 0.12 - 4400), 'MFJ 2 kids $60k: credit wipes out the tax');
+  assertEqual(estimateAnnualFedTax(410000, true, 1), (() => {
+    const t = 410000 - 32200;
+    const tax = 24800 * 0.10 + (100800 - 24800) * 0.12 + (211400 - 100800) * 0.22 + (t - 211400) * 0.24;
+    return tax - Math.max(0, 2200 - 10 * 50);
+  })(), 'CTC phases out $50 per $1,000 over $400k (MFJ)');
+
+  const base = {
+    payGrade: 'E5', yos: 6, mhaZip: '28310', hasSpouse: true, numChildren: 2,
+    specialPaysTotal: 0, tspContribPct: 5, hasDentalFamily: false, sglOptOut: false, serviceStatus: 'active' as const,
+  };
+  const family = calcLES(base);
+  assertEqual(family.fedTax, 0, 'E-5 married with 2 kids, 5% TSP: estimated federal tax is $0 after the child credit');
+
+  const single = { ...base, hasSpouse: false, numChildren: 0 };
+  const noTsp = calcLES({ ...single, tspContribPct: 0 });
+  const withTsp = calcLES({ ...single, tspContribPct: 10 });
+  assertTrue(withTsp.fedTax < noTsp.fedTax, 'Traditional TSP lowers federal tax (pre-tax)');
+  const roth = calcLES({ ...single, tspContribPct: 0, rothTspPct: 10 });
+  assertEqual(roth.fedTax, noTsp.fedTax, 'Roth TSP does not lower federal tax (after-tax)');
+
+  const flight = calcLES({ ...single, specialPaysTotal: 400 });
+  assertEqual(flight.fica - noTsp.fica, 400 * 0.0765, 'Special pays are subject to FICA');
+  assertTrue(flight.fedTax > noTsp.fedTax, 'Special pays are subject to federal income tax');
+
+  const hfpDeployed = calcLES({ ...single, specialPaysTotal: 225, hostileFireTotal: 225, isDeployed: true, deploymentLocationId: 'iraq' });
+  if (hfpDeployed.isDeployed) {
+    assertEqual(hfpDeployed.specialPays, 0, 'Hostile Fire Pay is not counted again on top of deployment IDP');
+  } else {
+    assertTrue(false, 'deployment location id "iraq" should resolve for the HFP de-dup check');
+  }
+}
+
+// ── State tax: exempt-while-stationed-outside states ─────────────────────────
+console.log('\n[StateTax] Stationed in vs outside the home state');
+{
+  const base = {
+    payGrade: 'E5', yos: 6, hasSpouse: false, numChildren: 0,
+    specialPaysTotal: 0, tspContribPct: 0, hasDentalFamily: false, sglOptOut: true, serviceStatus: 'active' as const,
+  };
+  const caAtBragg = calcLES({ ...base, stateResidence: 'CA', dutyStationId: 'fort_liberty', mhaZip: '28301' });
+  assertEqual(caAtBragg.stateTax, 0, 'CA resident stationed at Fort Bragg (NC) owes no CA tax');
+  const caAtPendleton = calcLES({ ...base, stateResidence: 'CA', dutyStationId: 'camp_pendleton', mhaZip: '92058' });
+  assertTrue(caAtPendleton.stateTax > 0, 'CA resident stationed at Camp Pendleton (CA) is taxed by CA');
+  const paAtCarlisle = calcLES({ ...base, stateResidence: 'PA', dutyStationId: 'carlisle_barracks', mhaZip: '17013' });
+  assertTrue(paAtCarlisle.stateTax > 0, 'PA resident stationed in PA is taxed by PA');
+  const paAtBragg = calcLES({ ...base, stateResidence: 'PA', dutyStationId: 'fort_liberty', mhaZip: '28301' });
+  assertEqual(paAtBragg.stateTax, 0, 'PA resident stationed outside PA is not taxed by PA');
+  const mi = calcLES({ ...base, stateResidence: 'MI', dutyStationId: 'fort_liberty', mhaZip: '28301' });
+  assertEqual(mi.stateTax, 0, 'Michigan exempts military pay');
+  const caUnknown = calcLES({ ...base, stateResidence: 'CA', mhaZip: undefined });
+  assertTrue(caUnknown.stateTax > 0, 'Unknown duty station is treated as in-state (taxed), not assumed exempt');
+}
+
+// ── FERS contribution on GS pay ──────────────────────────────────────────────
+console.log('[FERS] Contribution rate by hire date');
+{
+  assertEqual(fersContributionRate('2010-06-01'), 0.008, 'Hired before 2013: 0.8%');
+  assertEqual(fersContributionRate('2013-05-01'), 0.031, 'Hired in 2013: 3.1% (FERS-RAE)');
+  assertEqual(fersContributionRate('2020-01-15'), 0.044, 'Hired 2014 or later: 4.4% (FERS-FRAE)');
+  assertEqual(fersContributionRate(undefined), 0.044, 'Unknown hire date: 4.4%');
+  const civ = calcLES({
+    payGrade: 'E5', yos: 0, mhaZip: undefined, hasSpouse: false, numChildren: 0,
+    specialPaysTotal: 0, tspContribPct: 0, hasDentalFamily: false, sglOptOut: true,
+    serviceStatus: 'civilian', gsGrade: 9, gsStep: 1, gsLocalityKey: 'RUS', civilianStartDate: '2018-03-01',
+  });
+  assertEqual(civ.fers, civ.gsGrossMonthly * 0.044, 'Civilian take-home deducts FERS at 4.4% of GS pay');
+}
+
+// ── Civilian wages and pensions in states that exempt active-duty pay ────────
+console.log('[StateTax] Civilian wages / pensions in military-exempt states');
+{
+  const civ = (state: string) => calcLES({
+    payGrade: 'E5', yos: 0, mhaZip: undefined, hasSpouse: false, numChildren: 0,
+    specialPaysTotal: 0, tspContribPct: 0, hasDentalFamily: false, sglOptOut: true,
+    serviceStatus: 'civilian', gsGrade: 9, gsStep: 1, gsLocalityKey: 'RUS', stateResidence: state,
+  });
+  assertTrue(civ('IL').stateTax > 0, 'GS employee in Illinois pays IL tax (military exemption does not apply)');
+  assertTrue(civ('MI').stateTax > 0, 'GS employee in Michigan pays MI tax');
+  assertEqual(civ('TX').stateTax, 0, 'GS employee in Texas pays no state tax');
+  const ret = (state: string) => calcLES({
+    payGrade: 'E7', yos: 20, mhaZip: undefined, hasSpouse: false, numChildren: 0,
+    specialPaysTotal: 0, tspContribPct: 0, hasDentalFamily: false, sglOptOut: true,
+    serviceStatus: 'retired', stateResidence: state,
+  });
+  assertTrue(ret('KY').stateTax > 0, 'Kentucky (partial retiree exemption) is not shown as $0 for a retiree');
+  assertEqual(ret('IL').stateTax, 0, 'Illinois exempts military retired pay');
 }
 
 // ── 4. State tax always computed (never silently skipped) ────────────────────

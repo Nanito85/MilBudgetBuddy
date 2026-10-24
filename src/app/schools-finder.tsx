@@ -99,7 +99,7 @@ export default function SchoolsFinderScreen() {
     <ThemedView style={styles.container}>
       {/* ── Header ─────────────────────────────────────────────────────────── */}
       <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
-        <Pressable
+        <Pressable accessibilityRole="button" accessibilityLabel="Go back"
           onPress={() => (router.back())}
           style={({ pressed }) => [styles.backBtn, pressed && styles.pressed]}>
           <ThemedText style={styles.backChevron}>‹</ThemedText>
@@ -266,7 +266,7 @@ export default function SchoolsFinderScreen() {
               <ThemedText style={[styles.blufTitle, { color: tc.accent }]}>PCS WITH KIDS</ThemedText>
               <ThemedText type="small" style={{ lineHeight: 18 }}>
                 School transitions are one of the hardest parts of PCS for military families.
-                Follow this checklist to protect your kids' academic progress and keep
+                Follow this checklist to protect your kids&apos; academic progress and keep
                 transitions smooth.
               </ThemedText>
             </ThemedView>
@@ -296,8 +296,8 @@ export default function SchoolsFinderScreen() {
                 <ThemedText type="small" style={styles.sloBody}>
                   Every major installation has a free SLO service. They know the local
                   districts inside-out, have relationships with school principals, and can
-                  fast-track your child's enrollment. Always contact them first — it's a
-                  free resource most families don't use.
+                  fast-track your child&apos;s enrollment. Always contact them first — it&apos;s a
+                  free resource most families don&apos;t use.
                 </ThemedText>
               </View>
             </View>

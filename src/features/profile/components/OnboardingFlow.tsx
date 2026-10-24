@@ -19,7 +19,7 @@ import { ThemedView } from '@/components/themed-view';
 import { Brand, Spacing } from '@/constants/theme';
 import { useThemeColors } from '@/hooks/use-theme';
 import { PayGrade } from '@/data/bah-rates';
-import { RETIREMENT_TAX_EXEMPT_STATES, US_STATES } from '@/data/state-tax';
+import { stateTaxBadge, US_STATES } from '@/data/state-tax';
 import { GradePicker } from '@/features/pcs/components/GradePicker';
 import { StationPicker } from '@/features/pcs/components/StationPicker';
 import { NumberStepper } from '@/features/retirement/components/NumberStepper';
@@ -374,9 +374,9 @@ function BranchStep({
   return (
     <View style={styles.step}>
       <View style={styles.topArea}>
-        <ThemedText style={styles.stepTitle}>What's your branch?</ThemedText>
+        <ThemedText style={styles.stepTitle}>What&apos;s your branch?</ThemedText>
         <ThemedText type="small" themeColor="textSecondary" style={styles.stepSub}>
-          We'll tailor your pay breakdown and tips to your service.
+          We&apos;ll tailor your pay breakdown and tips to your service.
         </ThemedText>
         <View style={styles.selectorWrap}>
           <BranchSelector selected={selected} onSelect={setSelected} />
@@ -421,7 +421,7 @@ function ServiceStatusStep({
   return (
     <View style={styles.step}>
       <View style={styles.topArea}>
-        <ThemedText style={styles.stepTitle}>What's your status?</ThemedText>
+        <ThemedText style={styles.stepTitle}>What&apos;s your status?</ThemedText>
         <ThemedText type="small" themeColor="textSecondary" style={styles.stepSub}>
           This helps us show the right calculators and pay tools for your situation.
         </ThemedText>
@@ -755,7 +755,7 @@ function CivilianServiceInfoStep({
 
       <ThemedText style={styles.stepTitle}>Your GS info</ThemedText>
       <ThemedText type="small" themeColor="textSecondary" style={styles.stepSub}>
-        We'll pull your General Schedule pay for the home screen and GS Pay Calculator.
+        We&apos;ll pull your General Schedule pay for the home screen and GS Pay Calculator.
       </ThemedText>
 
       {/* GS Grade */}
@@ -1030,7 +1030,7 @@ function RetiredServiceInfoStep({
           VA DISABILITY RATING
         </ThemedText>
         <ThemedText type="small" themeColor="textSecondary" style={{ lineHeight: 18 }}>
-          We'll estimate your monthly VA disability compensation based on this rating and your dependents.
+          We&apos;ll estimate your monthly VA disability compensation based on this rating and your dependents.
         </ThemedText>
         <View style={styles.chipGrid}>
           {VA_PERCENT_OPTIONS.map((p) => (
@@ -1086,8 +1086,11 @@ function RetiredServiceInfoStep({
 function LocationFamilyStep({
   onNext,
   retired = false,
+  civilian = false,
 }: {
   onNext: (mhaZip: string, installName: string, hasSpouse: boolean, numChildren: number, stateCode: string, housingStatus: HousingStatus, dutyStationId: string) => void;
+  // A civilian's wages get no military exemption, so no exempt badge.
+  civilian?: boolean;
   // Military retirement pay exemptions are a different, generally more
   // generous list than active-duty exemptions (see state-tax.ts) — without
   // this, a retiring member picking their state saw the active-duty "NO
@@ -1161,8 +1164,8 @@ function LocationFamilyStep({
                     style={styles.stateOption}>
                     <ThemedText style={styles.stateOptionCode}>{s.code}</ThemedText>
                     <ThemedText type="small" themeColor="textSecondary">{s.name}</ThemedText>
-                    {(retired ? RETIREMENT_TAX_EXEMPT_STATES.has(s.code) : s.militaryExempt) && (
-                      <ThemedText type="small" style={{ color: Brand.primary, marginLeft: 'auto' as any }}>NO TAX</ThemedText>
+                    {stateTaxBadge(s.code, retired, civilian) && (
+                      <ThemedText type="small" style={{ color: Brand.primary, marginLeft: 'auto' as any }}>{stateTaxBadge(s.code, retired, civilian)}</ThemedText>
                     )}
                   </Pressable>
                 ))}
@@ -1254,9 +1257,9 @@ function FinancialGoalStep({
   return (
     <View style={styles.step}>
       <View style={styles.topArea}>
-        <ThemedText style={styles.stepTitle}>What's your top financial goal?</ThemedText>
+        <ThemedText style={styles.stepTitle}>What&apos;s your top financial goal?</ThemedText>
         <ThemedText type="small" themeColor="textSecondary" style={styles.stepSub}>
-          We'll prioritize tips and tools around what matters most to you right now.
+          We&apos;ll prioritize tips and tools around what matters most to you right now.
         </ThemedText>
         <View style={styles.goalGrid}>
           {GOAL_ORDER.map((goal) => (
@@ -1317,7 +1320,7 @@ function NotificationsStep({ onFinish }: { onFinish: () => void }) {
     <View style={styles.step}>
       <View style={styles.heroArea}>
         <ThemedText style={styles.heroEmoji}>✅</ThemedText>
-        <ThemedText style={styles.stepTitle}>You're set!</ThemedText>
+        <ThemedText style={styles.stepTitle}>You&apos;re set!</ThemedText>
         <ThemedText type="small" themeColor="textSecondary" style={styles.stepSub}>
           Your financial dashboard is ready. Get daily tips delivered every morning.
         </ThemedText>
@@ -1484,7 +1487,7 @@ export function OnboardingFlow() {
               ? <RetiredServiceInfoStep branch={pendingBranch} onNext={handleRetiredInfo} />
               : <ServiceInfoStep branch={pendingBranch} status={pendingStatus} onNext={handleServiceInfo} />
           )}
-          {step === 5 && <LocationFamilyStep onNext={handleLocationFamily} retired={pendingStatus === 'retired'} />}
+          {step === 5 && <LocationFamilyStep onNext={handleLocationFamily} retired={pendingStatus === 'retired'} civilian={isCivilian} />}
           {step === 6 && <FinancialGoalStep onNext={handleFinancialGoal} />}
           {step === 7 && <NotificationsStep onFinish={setOnboarded} />}
         </SafeAreaView>

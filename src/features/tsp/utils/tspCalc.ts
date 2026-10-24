@@ -1,12 +1,13 @@
+import { TSP_CATCHUP_50, TSP_ELECTIVE_LIMIT, TSP_SUPER_CATCHUP_60_63 } from '@/data/annual-limits';
 import { PayGrade } from '@/data/bah-rates';
 import { getBasicPay } from '@/data/basic-pay-rates';
 import { govtMatchRate } from '@/features/retirement/utils/retirementCalc';
 
-// 2026 annual contribution limits (SECURE 2.0 / IRS Notice 2025-67)
-export const TSP_LIMIT_UNDER50 = 24_500;
-export const TSP_LIMIT_50_59   = 32_500;   // +$8,000 catch-up
-export const TSP_LIMIT_60_63   = 35_750;   // +$11,250 super catch-up (SECURE 2.0)
-export const TSP_LIMIT_64PLUS  = 32_500;   // same as 50–59
+// Annual contribution limits — values live in data/annual-limits.ts.
+export const TSP_LIMIT_UNDER50 = TSP_ELECTIVE_LIMIT;
+export const TSP_LIMIT_50_59   = TSP_ELECTIVE_LIMIT + TSP_CATCHUP_50;
+export const TSP_LIMIT_60_63   = TSP_ELECTIVE_LIMIT + TSP_SUPER_CATCHUP_60_63;
+export const TSP_LIMIT_64PLUS  = TSP_LIMIT_50_59;
 
 export function annualLimit(age: number): number {
   if (age >= 60 && age <= 63) return TSP_LIMIT_60_63;

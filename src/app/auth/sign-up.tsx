@@ -75,7 +75,7 @@ export default function SignUpScreen() {
           </Pressable>
 
           <View style={styles.hero}>
-            <ThemedText style={[styles.eyebrow, { color: tc.tactical }]}>// MILBUDGETBUDDY</ThemedText>
+            <ThemedText style={[styles.eyebrow, { color: tc.tactical }]}>{'// MILBUDGETBUDDY'}</ThemedText>
             <ThemedText style={[styles.title, { color: tc.textPrimary }]}>CREATE ACCOUNT</ThemedText>
             <ThemedText style={[styles.slogan, { color: tc.tactical }]}>Your Money. Your Mission.</ThemedText>
             <ThemedText style={[styles.sub, { color: tc.textSecondary }]}>

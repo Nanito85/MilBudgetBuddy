@@ -14,7 +14,8 @@ import { DashboardHeader } from '@/features/home/components/DashboardHeader';
 import { PayDayCountdown } from '@/features/home/components/PayDayCountdown';
 import { PaySummaryCard } from '@/features/home/components/PaySummaryCard';
 import { QuickActionsGrid } from '@/features/home/components/QuickActionsGrid';
-import { calcLES, fmtPay, getDrillPay } from '@/features/home/utils/lesCalc';
+import { useProfileLES } from '@/features/home/hooks/useProfileLES';
+import { fmtPay } from '@/features/home/utils/lesCalc';
 import { monthlyCompensation } from '@/features/va/utils/vaDisabilityCalc';
 import { TipCard } from '@/features/daily-tip/components/TipCard';
 import { useWeeklyTip } from '@/features/daily-tip/hooks/useWeeklyTip';
@@ -122,35 +123,20 @@ export default function DashboardScreen() {
   const lastName = useUserStore((s) => s.lastName);
   const nickname = useUserStore((s) => s.nickname);
   const greetingStyle = useUserStore((s) => s.greetingStyle);
-  const specialPays = useUserStore((s) => s.specialPays);
   const yos = useUserStore((s) => s.yos);
   const mhaZip = useUserStore((s) => s.mhaZip);
   const dutyStationId = useUserStore((s) => s.dutyStationId);
   const hasSpouse = useUserStore((s) => s.hasSpouse);
-  const housingStatus = useUserStore((s) => s.housingStatus);
   const tspContribPct = useUserStore((s) => s.tspContribPct);
-  const rothTspPct    = useUserStore((s) => s.rothTspPct);
-  const hasDentalFamily = useUserStore((s) => s.hasDentalFamily);
-  const sglOptOut = useUserStore((s) => s.sglOptOut);
   const stateResidence = useUserStore((s) => s.stateResidence);
-  const sbpEnabled = useUserStore((s) => s.sbpEnabled);
-  const sbpCoveragePct = useUserStore((s) => s.sbpCoveragePct);
-  const lesOverrides = useUserStore((s) => s.lesOverrides);
   const installationName = useUserStore((s) => s.installationName);
   const serviceStatus    = useUserStore((s) => s.serviceStatus);
   const numChildren      = useUserStore((s) => s.numChildren);
   const drillsPerMonth   = useUserStore((s) => s.drillsPerMonth);
   const vaDisabilityPercent = useUserStore((s) => s.vaDisabilityPercent);
   const financialGoal = useUserStore((s) => s.financialGoal);
-  const familySeparated  = useUserStore((s) => s.familySeparated);
-  const dependentsMhaZip = useUserStore((s) => s.dependentsMhaZip);
-  const isDeployed = useUserStore((s) => s.isDeployed);
-  const deploymentLocationId = useUserStore((s) => s.deploymentLocationId);
-  const alsoGsCivilian   = useUserStore((s) => s.alsoGsCivilian);
-  const gsGrade          = useUserStore((s) => s.gsGrade);
-  const gsStep           = useUserStore((s) => s.gsStep);
-  const gsLocalityKey    = useUserStore((s) => s.gsLocalityKey);
   const tip = useWeeklyTip(financialGoal);
+  const breakdown = useProfileLES();
 
   const debtEntries   = useDebtStore((s) => s.debts);
   const debtExtraMonthly = useDebtStore((s) => s.extraMonthly);
@@ -192,11 +178,6 @@ export default function DashboardScreen() {
     }
   }, [disclaimerAcknowledged, hasSeenTutorial]);
 
-  const specialPaysTotal = useMemo(
-    () => specialPays.reduce((sum, p) => sum + p.monthlyAmount, 0),
-    [specialPays],
-  );
-
   const budgetCategories = useBudgetStore((s) => s.categories);
   const budgetTop3 = useMemo(
     () =>
@@ -210,17 +191,6 @@ export default function DashboardScreen() {
     () => budgetCategories.reduce((sum, c) => sum + c.monthlyBudget, 0),
     [budgetCategories],
   );
-
-  const breakdown = useMemo(() => {
-    if (!payGrade) return null;
-    return calcLES({
-      payGrade, yos, mhaZip, dutyStationId, hasSpouse, numChildren, housingStatus, specialPaysTotal,
-      tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence,
-      overrides: lesOverrides, serviceStatus,
-      familySeparated, dependentsMhaZip, alsoGsCivilian, gsGrade, gsStep, gsLocalityKey,
-      isDeployed, deploymentLocationId, sbpEnabled, sbpCoveragePct,
-    });
-  }, [payGrade, yos, mhaZip, dutyStationId, hasSpouse, numChildren, housingStatus, specialPaysTotal, tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence, lesOverrides, serviceStatus, familySeparated, dependentsMhaZip, alsoGsCivilian, gsGrade, gsStep, gsLocalityKey, isDeployed, deploymentLocationId, sbpEnabled, sbpCoveragePct]);
 
   // ── Mission Readiness Score (0-100) ─────────────────────────────────────────
   // Retired pay isn't TSP-eligible (see lesCalc.ts) — the TSP checks below
@@ -263,11 +233,6 @@ export default function DashboardScreen() {
     :                        { text: 'NOT READY',         color: Brand.danger };
 
   const rankAbbrev = getRankAbbrev(branch, payGrade, rankVariant);
-
-  const drillPay = useMemo(() => {
-    if (serviceStatus !== 'reserve' || !payGrade) return null;
-    return getDrillPay(payGrade, yos, drillsPerMonth ?? 4);
-  }, [serviceStatus, payGrade, yos, drillsPerMonth]);
 
   // A member doesn't need to be retired to draw VA disability compensation
   // (medically separated before 20 years, still serving with a rating from a
@@ -344,7 +309,7 @@ export default function DashboardScreen() {
                 style={({ pressed }) => [styles.editProfileChip, { backgroundColor: tc.surfaceInner, borderColor: tc.borderColor }, pressed && { opacity: 0.75 }]}>
                 <ThemedText style={[styles.editProfileText, { color: tc.textSecondary }]}>✏️  Set Up Profile</ThemedText>
               </Pressable>
-              <Pressable onPress={() => setEditProfileDismissed(true)} hitSlop={10} style={styles.editProfileClose}>
+              <Pressable accessibilityRole="button" accessibilityLabel="Dismiss" onPress={() => setEditProfileDismissed(true)} hitSlop={10} style={styles.editProfileClose}>
                 <ThemedText style={[styles.editProfileCloseText, { color: tc.textMuted }]}>✕</ThemedText>
               </Pressable>
             </View>
@@ -354,7 +319,7 @@ export default function DashboardScreen() {
         {/* ── PAY STATEMENT ─────────────────────────────────────────── */}
         <View style={styles.section}>
           <SectionHeader
-            label={breakdown?.isRetiredPay ? 'RETIRED PAY' : 'PAY STATEMENT'}
+            label={breakdown?.isRetiredPay ? 'RETIRED PAY' : breakdown?.isDrillPay ? 'DRILL PAY STATEMENT' : 'PAY STATEMENT'}
             accentColor={Brand.accent}
             route="/pay-chart"
             routeLabel="PAY CHART"
@@ -362,7 +327,11 @@ export default function DashboardScreen() {
           {breakdown ? (
             <>
               <PaySummaryCard breakdown={breakdown} />
-              <PayDayCountdown netPay={breakdown.netPay} isRetired={breakdown.isRetiredPay} />
+              {/* Drill pay posts a few days after each drill weekend, not on
+                  the 1st/15th schedule, so the countdown doesn't apply. */}
+              {!breakdown.isDrillPay && (
+                <PayDayCountdown netPay={breakdown.netPay} isRetired={breakdown.isRetiredPay} />
+              )}
             </>
           ) : (
             <Pressable
@@ -384,22 +353,27 @@ export default function DashboardScreen() {
           )}
         </View>
 
-        {/* ── DRILL PAY (RESERVE/GUARD) ────────────────────────────── */}
-        {drillPay !== null && (
-          <View style={styles.section}>
-            <SectionHeader label="DRILL PAY" accentColor={Brand.tactical} />
-            <View style={[styles.statusPayCard, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
-              <View style={{ flex: 1 }}>
-                <ThemedText type="label" style={[styles.statusPayLabel, { color: tc.textMuted }]}>
-                  EST. MONTHLY DRILL PAY
-                </ThemedText>
-                <ThemedText style={[styles.statusPayValue, { color: tc.tactical }]}>{fmtPay(drillPay)}</ThemedText>
-                <ThemedText type="small" themeColor="textSecondary" style={styles.statusPayNote}>
-                  Based on {drillsPerMonth ?? 4} drills/mo at your pay grade & YOS. Set in Profile → Edit Personal.
-                </ThemedText>
-              </View>
+        {/* ── RESERVE/GUARD PAY MODE ─────────────────────────────────── */}
+        {/* The pay statement above already IS the drill pay (or the full
+            active-duty pay when on orders) — this only says which one, and
+            where to switch it. It used to be a second, separate drill-pay
+            card shown under a full-time paycheck. */}
+        {serviceStatus === 'reserve' && breakdown && (
+          <Pressable
+            onPress={() => router.push('/profile' as any)}
+            accessibilityRole="button"
+            style={({ pressed }) => [styles.statusPayCard, { backgroundColor: tc.surface, borderColor: tc.borderColor }, pressed && { opacity: 0.85 }]}>
+            <View style={{ flex: 1 }}>
+              <ThemedText type="label" style={[styles.statusPayLabel, { color: tc.textMuted }]}>
+                {breakdown.isDrillPay ? 'SHOWING DRILL PAY ONLY' : 'SHOWING FULL-TIME PAY (ON ORDERS)'}
+              </ThemedText>
+              <ThemedText type="small" themeColor="textSecondary" style={styles.statusPayNote}>
+                {breakdown.isDrillPay
+                  ? `${drillsPerMonth ?? 4} drills/mo at your grade & YOS. On orders, ADOS or AGR? Turn on "On active orders" in Profile to see full-time pay. ›`
+                  : 'Back to drilling only? Turn off "On active orders" in Profile. ›'}
+              </ThemedText>
             </View>
-          </View>
+          </Pressable>
         )}
 
         {/* ── VA DISABILITY (any service status with a rating set) ──── */}
@@ -569,7 +543,7 @@ export default function DashboardScreen() {
             {/* Score + bar */}
             <View style={styles.readinessTop}>
               <View style={styles.readinessLeft}>
-                <ThemedText style={[styles.readinessEyebrow, { color: tc.textMuted }]}>// FINANCIAL READINESS</ThemedText>
+                <ThemedText style={[styles.readinessEyebrow, { color: tc.textMuted }]}>{'// FINANCIAL READINESS'}</ThemedText>
                 <View style={styles.readinessScoreRow}>
                   <ThemedText style={[styles.readinessScore, { color: readinessLabel.color }]}>{readinessScore}</ThemedText>
                   <ThemedText style={[styles.readinessScoreMax, { color: tc.textMuted }]}>/100</ThemedText>

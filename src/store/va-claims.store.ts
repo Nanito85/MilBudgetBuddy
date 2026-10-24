@@ -51,6 +51,7 @@ interface VaClaimsState {
   claims: VaClaim[];
   hydrated: boolean;
   hydrate: () => Promise<void>;
+  applyRemote: (data: Pick<VaClaimsState, 'claims'>) => void;
   addClaim: (claim: Omit<VaClaim, 'id' | 'createdAt'>) => void;
   updateClaim: (id: string, partial: Partial<Omit<VaClaim, 'id' | 'createdAt'>>) => void;
   removeClaim: (id: string) => void;
@@ -70,13 +71,25 @@ export const useVaClaimsStore = create<VaClaimsState>((set, get) => ({
   hydrated: false,
 
   hydrate: async () => {
+    if (get().hydrated) return;
     try {
       const raw = await AsyncStorage.getItem(STORAGE_KEY);
+      // Cloud data from another device landed while disk was being read —
+      // it's newer than this on-device copy, so don't overwrite it.
+      if (get().hydrated) return;
       const claims: VaClaim[] = raw ? JSON.parse(raw) : [];
       set({ claims, hydrated: true });
     } catch {
       set({ hydrated: true });
     }
+  },
+
+  // A snapshot from the cloud (another device's edit). Saved to disk too:
+  // applying it in memory only let the next hydrate() reload the older
+  // on-device copy and auto-push that stale copy back over the cloud.
+  applyRemote: (data) => {
+    set({ ...data, hydrated: true });
+    persist(data.claims);
   },
 
   addClaim: (claim) => {

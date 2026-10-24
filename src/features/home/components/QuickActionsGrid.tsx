@@ -21,7 +21,7 @@ export function QuickActionsGrid() {
     <View style={styles.container}>
       <View style={styles.labelRow}>
         <View style={[styles.labelLine, { backgroundColor: tc.borderColor }]} />
-        <ThemedText type="label" style={[styles.sectionLabel, { color: tc.textMuted }]}>// QUICK ACCESS</ThemedText>
+        <ThemedText type="label" style={[styles.sectionLabel, { color: tc.textMuted }]}>{'// QUICK ACCESS'}</ThemedText>
         <View style={[styles.labelLine, { backgroundColor: tc.borderColor }]} />
       </View>
       <View style={styles.grid}>

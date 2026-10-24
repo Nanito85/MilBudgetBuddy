@@ -95,7 +95,7 @@ function CreateCodeForm({ onCreated }: { onCreated: () => void }) {
 
   return (
     <View style={[s.card, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
-      <ThemedText style={[s.cardTitle, { color: tc.tactical }]}>// CREATE NEW CODE</ThemedText>
+      <ThemedText style={[s.cardTitle, { color: tc.tactical }]}>{'// CREATE NEW CODE'}</ThemedText>
 
       <ThemedText style={[s.label, { color: tc.textMuted }]}>CODE</ThemedText>
       <View style={s.codeRow}>
@@ -295,7 +295,7 @@ export default function CodesScreen() {
         style={{ flex: 1 }}
         contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
         <View style={[s.card, { backgroundColor: tc.surface, borderColor: Brand.classified + '40' }]}>
-          <ThemedText style={[s.cardTitle, { color: Brand.classified }]}>// NO IN-APP REDEMPTION</ThemedText>
+          <ThemedText style={[s.cardTitle, { color: Brand.classified }]}>{'// NO IN-APP REDEMPTION'}</ThemedText>
           <ThemedText style={{ color: tc.textSecondary, fontSize: 12, lineHeight: 18 }}>
             Codes created here have nowhere to be entered — the client-side redeem screen was removed per Apple
             Guideline 3.1.1. This screen is for record-keeping / a manually-applied backend redeem only. To
@@ -309,7 +309,7 @@ export default function CodesScreen() {
 
         <CreateCodeForm onCreated={fetchCodes} />
 
-        <ThemedText style={[s.sectionTitle, { color: tc.tactical }]}>// EXISTING CODES ({codes.length})</ThemedText>
+        <ThemedText style={[s.sectionTitle, { color: tc.tactical }]}>{'// EXISTING CODES ('}{codes.length})</ThemedText>
 
         {loading && <ActivityIndicator color={Brand.accent} style={{ marginTop: Spacing.three }} />}
         {!!error  && <ThemedText style={s.errorText}>{error}</ThemedText>}

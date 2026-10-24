@@ -8,7 +8,8 @@ import { calcCzteExcludedBasicPay } from '@/features/deployment/utils/deployment
 import { getGSMonthly } from '@/data/gs-pay-rates';
 import { getOconusCola } from '@/data/oconus-cola';
 import { getOhaAreaForInstallation, getOhaRate } from '@/data/oha-rates';
-import { getRetirementStateTaxRate, getStateTaxRate } from '@/data/state-tax';
+import { getInstallationById, getInstallationByZip } from '@/data/installations';
+import { getActiveDutyStateTaxRate, getCivilianStateTaxRate, getRetirementStateTaxRate, getStateTaxInfo } from '@/data/state-tax';
 import { calcSbpPremium } from '@/features/retirement/utils/sbpCalc';
 import { HousingStatus, LESOverrides, ServiceStatus } from '@/types/user.types';
 
@@ -38,12 +39,12 @@ export function dentalFamilyRate(grade: string): number {
   return DENTAL_LOWER_TIER_GRADES.has(grade) ? DENTAL_FAMILY_E4_BELOW : DENTAL_FAMILY_E5_ABOVE;
 }
 
-// Federal income tax estimate — base pay only (allowances not taxable).
+// Federal income tax estimate — taxable wages only (allowances not taxable).
 // Bracket table lives in data/federal-tax.ts (single source of truth —
 // see that file's header for why this used to be its own hand-maintained
 // copy of the brackets).
-function estimateFedTax(annualBasePay: number, married: boolean): number {
-  return estimateAnnualFedTax(annualBasePay, married) / 12;
+function estimateFedTax(annualTaxable: number, married: boolean, children: number): number {
+  return estimateAnnualFedTax(annualTaxable, married, children) / 12;
 }
 
 export interface LESBreakdown {
@@ -78,6 +79,10 @@ export interface LESBreakdown {
   // BAH-eligible mhaZip). Lets the UI relabel the line item accordingly.
   isOha: boolean;
   ohaApproximate: boolean;
+  // False when BAH/OHA should apply but no rate was found for the location
+  // (and none was entered by hand) — the UI must say so rather than let a
+  // silent $0 read as "no housing allowance".
+  housingResolved: boolean;
   // COLA (Cost-of-Living Allowance) at the member's own duty station — CONUS
   // COLA (ZIP-based, only ~18 high-cost metro areas nationwide qualify) or
   // OCONUS COLA (installation-based), whichever applies. colaTracked is
@@ -104,6 +109,9 @@ export interface LESBreakdown {
   alsoGsCivilian: boolean;
   gsGrossMonthly: number;
   gsFica: number;
+  // FERS employee retirement contribution on GS pay (after-tax), 0 if none.
+  fers: number;
+  fersRatePct: number;
   // Deployment / hazard pay — see data/deployment-locations.ts. isDeployed
   // reflects whether it actually applied (false for a retiree/civilian or
   // an unrecognized location, even if the member toggled the switch on).
@@ -115,6 +123,11 @@ export interface LESBreakdown {
   isCzte: boolean;
   idp: number;
   czteExcluded: number;
+  // True for a traditional drilling reservist (not on orders): basePay is
+  // drill pay only and there's no BAH/BAS/COLA. drillsPerMonth is what that
+  // drill pay was computed from, for display.
+  isDrillPay: boolean;
+  drillsPerMonth: number;
 }
 
 export interface LESInputs {
@@ -132,6 +145,9 @@ export interface LESInputs {
   numChildren?: number;
   housingStatus?: HousingStatus; // defaults to 'off_base' (full BAH) if omitted
   specialPaysTotal: number;
+  // The part of specialPaysTotal that is Hostile Fire Pay — dropped while
+  // deployed to an IDP area, where the flat IDP replaces it.
+  hostileFireTotal?: number;
   tspContribPct: number;   // Traditional TSP %
   rothTspPct?: number;     // Roth TSP % (optional, defaults to 0)
   hasDentalFamily: boolean;
@@ -157,6 +173,9 @@ export interface LESInputs {
   gsGrade?: number;
   gsStep?: number;
   gsLocalityKey?: string;
+  // First day of federal civilian service (the profile stores it in
+  // dateOfEnlistment for civilians). Sets the FERS contribution rate.
+  civilianStartDate?: string;
   // Deployment / hazard pay — independent of familySeparated above (a
   // single deployed member has no one to be "separated" from but still
   // draws IDP/CZTE; a member on an unaccompanied OCONUS tour draws FSA but
@@ -173,12 +192,24 @@ export interface LESInputs {
   // when sbpEnabled is false/omitted.
   sbpEnabled?: boolean;
   sbpCoveragePct?: number;
+  // Reserve/Guard only. A drilling reservist who is NOT on full-time orders
+  // is paid per drill period (1/30 of monthly basic pay each) with no BAH,
+  // BAS or COLA — previously the reserve status fell through to the full
+  // active-duty paycheck, roughly 10x a typical drilling member's real pay.
+  // reserveOnOrders (mobilized, ADOS, AGR, Title 10) switches back to full
+  // active-duty pay, as does being deployed.
+  drillsPerMonth?: number;
+  reserveOnOrders?: boolean;
 }
 
 interface HousingResult {
   amount: number;
   isOha: boolean;
   approximate: boolean;
+  // False when the member should draw BAH/OHA here but no rate could be
+  // found (ZIP not in the BAH table, unknown OCONUS station, or no duty
+  // station set) — so the $0 is "unknown", not "not entitled".
+  resolved: boolean;
 }
 
 // Full BAH only applies off base. Barracks residents (no dependents, government
@@ -197,20 +228,35 @@ function resolveHousing(
   hasDependents: boolean,
   housingStatus: HousingStatus,
 ): HousingResult {
-  if (housingStatus === 'on_base_family_housing') return { amount: 0, isOha: false, approximate: false };
+  if (housingStatus === 'on_base_family_housing') return { amount: 0, isOha: false, approximate: false, resolved: true };
 
   if (mhaZip) {
-    const amount = housingStatus === 'barracks' ? BAH_PARTIAL : (getBahRate(mhaZip, payGrade as any, hasDependents) ?? 0);
-    return { amount, isOha: false, approximate: false };
+    if (housingStatus === 'barracks') return { amount: BAH_PARTIAL, isOha: false, approximate: false, resolved: true };
+    const rate = getBahRate(mhaZip, payGrade as PayGrade, hasDependents);
+    return { amount: rate ?? 0, isOha: false, approximate: false, resolved: rate != null };
   }
 
-  if (housingStatus === 'barracks') return { amount: 0, isOha: false, approximate: false };
+  if (housingStatus === 'barracks') return { amount: 0, isOha: false, approximate: false, resolved: true };
 
   const area = dutyStationId ? getOhaAreaForInstallation(dutyStationId) : undefined;
-  if (!area) return { amount: 0, isOha: false, approximate: false };
+  if (!area) return { amount: 0, isOha: false, approximate: false, resolved: false };
   const rate = getOhaRate(area.locationLabel, payGrade as PayGrade, hasDependents);
-  if (!rate) return { amount: 0, isOha: true, approximate: area.approximate };
-  return { amount: rate.rentCeilingUSD + rate.utilityAllowanceUSD, isOha: true, approximate: area.approximate };
+  if (!rate) return { amount: 0, isOha: true, approximate: area.approximate, resolved: false };
+  return { amount: rate.rentCeilingUSD + rate.utilityAllowanceUSD, isOha: true, approximate: area.approximate, resolved: true };
+}
+
+/**
+ * FERS employee contribution rate by date first hired into federal service:
+ * 0.8% before 2013, 3.1% (FERS-RAE) for 2013 hires, 4.4% (FERS-FRAE) from
+ * 2014 on. With no start date, 4.4% — the rate for anyone hired in the last
+ * decade, and it errs toward a lower (safer) take-home. Deducted after tax:
+ * unlike traditional TSP, FERS contributions aren't pre-tax.
+ */
+export function fersContributionRate(startDate: string | undefined): number {
+  if (!startDate || !/^\d{4}-\d{2}-\d{2}$/.test(startDate)) return 0.044;
+  if (startDate < '2013-01-01') return 0.008;
+  if (startDate < '2014-01-01') return 0.031;
+  return 0.044;
 }
 
 /**
@@ -225,10 +271,11 @@ export function retiredPayMultiplier(yos: number): number {
 
 export function calcLES(inputs: LESInputs): LESBreakdown {
   const {
-    payGrade, yos, mhaZip, dutyStationId, hasSpouse, numChildren = 0, housingStatus = 'off_base', specialPaysTotal,
+    payGrade, yos, mhaZip, dutyStationId, hasSpouse, numChildren = 0, housingStatus = 'off_base', specialPaysTotal, hostileFireTotal = 0,
     tspContribPct, rothTspPct = 0, hasDentalFamily, sglOptOut, stateResidence, overrides, serviceStatus,
     familySeparated, dependentsMhaZip, alsoGsCivilian, gsGrade, gsStep, gsLocalityKey,
     isDeployed, deploymentLocationId, sbpEnabled, sbpCoveragePct = 1,
+    drillsPerMonth = 4, reserveOnOrders, civilianStartDate,
   } = inputs;
 
   const isRetired = serviceStatus === 'retired';
@@ -243,6 +290,10 @@ export function calcLES(inputs: LESInputs): LESBreakdown {
   // this case fell through to the active-duty branch below and computed a
   // bogus military paycheck off whatever payGrade happened to be selected.
   const isCivilianOnly = serviceStatus === 'civilian';
+  // Drill-only reservist: paid per drill, no allowances (see LESInputs).
+  const isDrillOnly = serviceStatus === 'reserve' && !reserveOnOrders && !isDeployed;
+  // Pays that only exist for someone on full-time active duty.
+  const noActiveAllowances = isRetired || isCivilianOnly || isDrillOnly;
   const retiredPct = isRetired ? retiredPayMultiplier(yos) : 0;
 
   // Family separation: a member stationed unaccompanied (OCONUS tour, sea
@@ -252,7 +303,7 @@ export function calcLES(inputs: LESInputs): LESBreakdown {
   // member isn't housing a family there), plus flat FSA. Doesn't apply to a
   // retiree or pure civilian — neither draws BAH/OHA/FSA at all — and
   // requires an actual dependent to be separated from.
-  const familySepActive = !isRetired && !isCivilianOnly && !!familySeparated && hasDependents;
+  const familySepActive = !noActiveAllowances && !!familySeparated && hasDependents;
 
   // A retiree draws retired pay (a percentage of High-3 average basic pay),
   // not an active-duty paycheck — no BAH, no BAS, and retired pay isn't
@@ -263,15 +314,17 @@ export function calcLES(inputs: LESInputs): LESBreakdown {
     ? getHigh3Average(payGrade as PayGrade, yos) * retiredPct
     : isCivilianOnly
       ? 0
-      : getBasicPay(payGrade as any, yos);
-  const housing = (isRetired || isCivilianOnly)
-    ? { amount: 0, isOha: false, approximate: false }
+      : isDrillOnly
+        ? getDrillPay(payGrade, yos, drillsPerMonth)
+        : getBasicPay(payGrade as any, yos);
+  const housing = noActiveAllowances
+    ? { amount: 0, isOha: false, approximate: false, resolved: true }
     // When separated, the member's OWN housing is at the without-dependents
     // rate — the with-dependents rate now belongs to the dependents' actual
     // location (familyBah below), not the member's empty household.
     : resolveHousing(mhaZip, dutyStationId, payGrade, familySepActive ? false : hasDependents, housingStatus);
   const calcBah = housing.amount;
-  const calcBas = (isRetired || isCivilianOnly) ? 0 : getBAS(payGrade);
+  const calcBas = noActiveAllowances ? 0 : getBAS(payGrade);
 
   const basePay = overrides?.basePayOverride ?? calcBasePay;
   const bah     = overrides?.bahOverride     ?? calcBah;
@@ -301,7 +354,7 @@ export function calcLES(inputs: LESInputs): LESBreakdown {
   // keyed off the same OHA locationLabel that resolveHousing() uses.
   let cola = 0;
   let colaTracked = false;
-  if (!isRetired && !isCivilianOnly) {
+  if (!noActiveAllowances) {
     const colaHasDep = familySepActive ? false : hasDependents;
     if (mhaZip) {
       const conus = getConusCola(mhaZip, payGrade as PayGrade, yos, colaHasDep);
@@ -343,27 +396,13 @@ export function calcLES(inputs: LESInputs): LESBreakdown {
   const extraIncome     = extraIncomeItems.reduce((s, i) => s + i.amount, 0);
   const extraDeductions = extraDeductionItems.reduce((s, i) => s + i.amount, 0);
 
-  const grossPay = basePay + bah + bas + cola + specialPaysTotal + extraIncome + familyBah + fsa + gsGrossMonthly + idp;
+  // Hostile Fire Pay and IDP are the same entitlement (only one is paid), so
+  // a member who also listed hostile_fire as a special pay would otherwise
+  // be credited twice once the deployment toggle adds IDP.
+  const specialPays = deploymentLoc ? Math.max(0, specialPaysTotal - hostileFireTotal) : specialPaysTotal;
 
-  // Combined federal tax on basePay + GS wages together (not two separate
-  // brackets) — stacking GS income on top of retired pay pushes the whole
-  // household into a higher marginal bracket, and computing each source's
-  // tax independently would understate that. czteExcluded (see above) comes
-  // off basePay first — FICA still applies to it (CZTE only excludes
-  // INCOME tax, federal and state; Social Security/Medicare are unaffected).
-  const fica    = (isRetired ? 0 : basePay * FICA_RATE) + gsGrossMonthly * FICA_RATE;
-  const taxableBasePay = basePay - czteExcluded;
-  const fedTax  = estimateFedTax((taxableBasePay + gsGrossMonthly) * 12, hasSpouse);
-  // Military retirement pay exemptions are a materially different (and
-  // generally more generous) list than active-duty exemptions — see
-  // getRetirementStateTaxRate's own comment in data/state-tax.ts. Using the
-  // active-duty table here would show retirees in e.g. Kansas or Utah a
-  // state tax deduction on their pension that doesn't actually apply. A
-  // stacked GS paycheck is ordinary civilian wage income, though — it always
-  // uses the regular rate even when basePay (the pension portion) doesn't.
-  const stateRate      = isRetired ? getRetirementStateTaxRate(stateResidence) : getStateTaxRate(stateResidence);
-  const gsStateRate     = getStateTaxRate(stateResidence);
-  const stateTax       = taxableBasePay * stateRate + gsGrossMonthly * gsStateRate;
+  const grossPay = basePay + bah + bas + cola + specialPays + extraIncome + familyBah + fsa + gsGrossMonthly + idp;
+
   // TSP is only ever deducted from actual PAYROLL wages, never from a
   // pension — so which paycheck it comes off of depends on which one the
   // person actually has: active-duty basePay for a serving member, or GS
@@ -401,6 +440,48 @@ export function calcLES(inputs: LESInputs): LESBreakdown {
   // SBP (Survivor Benefit Plan) is the retiree-side analog: an opt-in
   // premium against retired pay, never active-duty pay. See sbpCalc.ts.
   const sbp = (isRetired && sbpEnabled) ? calcSbpPremium(basePay, sbpCoveragePct) : 0;
+
+  // Combined federal tax on basePay + GS wages together (not two separate
+  // brackets) — stacking GS income on top of retired pay pushes the whole
+  // household into a higher marginal bracket, and computing each source's
+  // tax independently would understate that. czteExcluded (see above) comes
+  // off basePay first — FICA still applies to it (CZTE only excludes
+  // INCOME tax, federal and state; Social Security/Medicare are unaffected).
+  //
+  // Special pays and IDP are taxable wages (FICA and income tax) except in a
+  // combat-zone month, when CZTE excludes them from income tax too. Traditional
+  // TSP and the SBP premium are pre-tax, so they come off taxable income —
+  // leaving them in overstated tax for anyone contributing. Allowances (BAH,
+  // BAS, COLA, FSA) stay untaxed, as before.
+  const taxablePays = isCzte ? 0 : specialPays + idp;
+  const fica    = (isRetired ? 0 : (basePay + specialPays + idp) * FICA_RATE) + gsGrossMonthly * FICA_RATE;
+  const taxableBasePay = basePay - czteExcluded;
+  const fedTaxableMonthly = Math.max(0, taxableBasePay + taxablePays + gsGrossMonthly - traditionalTsp - sbp);
+  // Children feed the Child Tax Credit and, for an unmarried parent, head-
+  // of-household filing. Every child is counted; one 17 or older doesn't
+  // actually qualify for the credit, so this can understate tax for them.
+  const fedTax  = estimateFedTax(fedTaxableMonthly * 12, hasSpouse, numChildren);
+  // Military retirement pay exemptions are a materially different (and
+  // generally more generous) list than active-duty exemptions — see
+  // getRetirementStateTaxRate's own comment in data/state-tax.ts. Using the
+  // active-duty table here would show retirees in e.g. Kansas or Utah a
+  // state tax deduction on their pension that doesn't actually apply. A
+  // stacked GS paycheck is ordinary civilian wage income, though — it always
+  // uses the regular rate even when basePay (the pension portion) doesn't.
+  //
+  // Several states (CA, NY, NJ, PA, OH, ...) exempt active-duty pay only
+  // while the member is stationed outside the state, so the duty station's
+  // state matters too. A deployed member is outside every state.
+  const dutyStationState = deploymentLoc
+    ? 'DEPLOYED'
+    : (getInstallationById(dutyStationId) ?? getInstallationByZip(mhaZip))?.state;
+  const stateRate      = isRetired
+    ? getRetirementStateTaxRate(stateResidence)
+    : isCivilianOnly ? 0 : getActiveDutyStateTaxRate(stateResidence, dutyStationState);
+  const gsStateRate     = getCivilianStateTaxRate(stateResidence);
+  const drillExemptMonthly = isDrillOnly ? (getStateTaxInfo(stateResidence)?.drillPayExemptAnnual ?? 0) / 12 : 0;
+  const stateTaxableMil = Math.max(0, taxableBasePay + taxablePays - drillExemptMonthly);
+  const stateTax       = stateTaxableMil * stateRate + gsGrossMonthly * gsStateRate;
   // TDP (TRICARE Dental Program) is a uniformed-services-only benefit — it
   // has no equivalent for someone who has never served, so `hasDentalFamily`
   // is meaningless for a pure civilian. (A retiree who's alsoGsCivilian can
@@ -411,14 +492,16 @@ export function calcLES(inputs: LESInputs): LESBreakdown {
   // "Family Dental Plan" toggle itself in EditPayModal for the matching fix.
   const dental   = (hasDentalFamily && !isCivilianOnly) ? dentalFamilyRate(payGrade) : 0;
   const gsFica = gsGrossMonthly * FICA_RATE;
+  const fersRate = gsGrossMonthly > 0 ? fersContributionRate(civilianStartDate) : 0;
+  const fers = gsGrossMonthly * fersRate;
 
-  const totalDeductions = fica + fedTax + stateTax + tsp + sgli + sbp + dental + extraDeductions;
+  const totalDeductions = fica + fedTax + stateTax + tsp + sgli + sbp + dental + fers + extraDeductions;
   const netPay = grossPay - totalDeductions;
 
   return {
     basePay, bah, bas,
     cola, colaTracked,
-    specialPays: specialPaysTotal,
+    specialPays,
     extraIncome, grossPay,
     fica, fedTax, stateTax, tsp, traditionalTsp, rothTsp, sgli, sbp, dental,
     extraDeductions, totalDeductions, netPay,
@@ -429,16 +512,20 @@ export function calcLES(inputs: LESInputs): LESBreakdown {
     extraDeductionItems,
     isOha: housing.isOha,
     ohaApproximate: housing.approximate,
+    housingResolved: housing.resolved || overrides?.bahOverride != null,
     isRetiredPay: isRetired,
     familySeparated: familySepActive,
     familyBah, familyBahResolved, fsa,
     alsoGsCivilian: gsActive,
     gsGrossMonthly, gsFica,
+    fers, fersRatePct: Math.round(fersRate * 1000) / 10,
     isDeployed: !!deploymentLoc,
     deploymentLocationLabel: deploymentLoc?.label,
     isCzte,
     idp,
     czteExcluded,
+    isDrillPay: isDrillOnly,
+    drillsPerMonth,
     retiredPayPct: Math.round(retiredPct * 100),
   };
 }

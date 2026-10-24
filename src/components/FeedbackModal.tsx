@@ -89,7 +89,7 @@ export function FeedbackModal({ visible, onClose }: Props) {
           {/* Header */}
           <View style={[styles.header, { borderBottomColor: tc.borderColor }]}>
             <ThemedText style={[styles.headerTitle, { color: tc.textPrimary }]}>SEND FEEDBACK</ThemedText>
-            <Pressable onPress={handleClose} style={styles.closeBtn} hitSlop={12}>
+            <Pressable accessibilityRole="button" accessibilityLabel="Close" onPress={handleClose} style={styles.closeBtn} hitSlop={12}>
               <ThemedText style={[styles.closeText, { color: tc.textHint }]}>✕</ThemedText>
             </Pressable>
           </View>
@@ -120,9 +120,9 @@ export function FeedbackModal({ visible, onClose }: Props) {
               showsVerticalScrollIndicator={false}>
 
               {/* Eyebrow */}
-              <ThemedText style={[styles.eyebrow, { color: tc.tactical }]}>// MILBUDGETBUDDY</ThemedText>
+              <ThemedText style={[styles.eyebrow, { color: tc.tactical }]}>{'// MILBUDGETBUDDY'}</ThemedText>
               <ThemedText style={[styles.sub, { color: tc.textSecondary }]}>
-                What's on your mind? We read every submission.
+                What&apos;s on your mind? We read every submission.
               </ThemedText>
 
               {/* Category */}

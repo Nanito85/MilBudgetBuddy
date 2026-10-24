@@ -103,6 +103,7 @@ interface BudgetState {
   deletedDefaultIds: string[];
   hydrated: boolean;
   hydrate: () => Promise<void>;
+  applyRemote: (data: Pick<BudgetState, 'categories'>) => void;
   updateCategory: (id: string, monthlyBudget: number, name?: string) => void;
   addCategory: (name: string, emoji: string, idPrefix?: string, group?: BudgetGroup) => void;
   removeCategory: (id: string) => void;
@@ -129,18 +130,31 @@ export const useBudgetStore = create<BudgetState>((set, get) => ({
   hydrated: false,
 
   hydrate: async () => {
+    if (get().hydrated) return;
     try {
       const [raw, rawDeleted] = await Promise.all([
         AsyncStorage.getItem(STORAGE_KEY),
         AsyncStorage.getItem(DELETED_DEFAULTS_KEY),
       ]);
+      // Cloud data from another device landed while disk was being read —
+      // it's newer than this on-device copy, so don't overwrite it. The
+      // deleted-defaults list is device-only (never synced), so still load it.
       const deletedDefaultIds: string[] = rawDeleted ? JSON.parse(rawDeleted) : [];
+      if (get().hydrated) { set({ deletedDefaultIds }); return; }
       const categories = raw ? migrateCategories(JSON.parse(raw), deletedDefaultIds) : DEFAULT_CATEGORIES;
       set({ categories, deletedDefaultIds, hydrated: true });
       if (raw) saveCategories(categories); // persist the backfilled/migrated shape
     } catch {
       set({ hydrated: true });
     }
+  },
+
+  // A snapshot from the cloud (another device's edit). Saved to disk too:
+  // applying it in memory only let the next hydrate() reload the older
+  // on-device copy and auto-push that stale copy back over the cloud.
+  applyRemote: (data) => {
+    set({ ...data, hydrated: true });
+    saveCategories(data.categories);
   },
 
   updateCategory: (id, monthlyBudget, name) => {

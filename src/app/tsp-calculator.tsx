@@ -80,7 +80,7 @@ export default function TspCalculatorScreen() {
   return (
     <ThemedView style={{ flex: 1 }}>
       <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
-        <Pressable
+        <Pressable accessibilityRole="button" accessibilityLabel="Go back"
           onPress={() => (router.back())}
           style={styles.back}>
           <ThemedText style={styles.backChevron}>‹</ThemedText>
@@ -129,7 +129,7 @@ export default function TspCalculatorScreen() {
               {!atMaxMatch && (
                 <View style={[styles.warningBox, { backgroundColor: Brand.warning + '18', borderColor: Brand.warning + '60' }]}>
                   <ThemedText style={[styles.warningText, { color: tc.warning }]}>
-                    ⚠  Contributing less than 5% — you're leaving ${Math.round(result.matchLeftOnTable).toLocaleString()}/mo in free match on the table.
+                    ⚠  Contributing less than 5% — you&apos;re leaving ${Math.round(result.matchLeftOnTable).toLocaleString()}/mo in free match on the table.
                   </ThemedText>
                 </View>
               )}

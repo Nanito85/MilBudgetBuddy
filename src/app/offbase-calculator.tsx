@@ -111,7 +111,7 @@ export default function OffbaseCalculatorScreen() {
   return (
     <ThemedView style={{ flex: 1 }}>
       <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
-        <Pressable
+        <Pressable accessibilityRole="button" accessibilityLabel="Go back"
           onPress={() => (router.back())}
           style={styles.back}>
           <ThemedText style={styles.backChevron}>‹</ThemedText>
@@ -166,14 +166,14 @@ export default function OffbaseCalculatorScreen() {
             <TextInput
               value={locSearch}
               onChangeText={setLocSearch}
-              placeholder="Fort Liberty · Norfolk · San Diego · 28301"
+              placeholder="Fort Bragg · Norfolk · San Diego · 28301"
               placeholderTextColor={tc.textMuted}
               style={[styles.searchInput, { color: tc.textPrimary }]}
               returnKeyType="search"
               autoCorrect={false}
             />
             {locSearch.length > 0 && (
-              <Pressable onPress={() => setLocSearch('')} style={{ padding: 4 }}>
+              <Pressable accessibilityRole="button" accessibilityLabel="Clear text" onPress={() => setLocSearch('')} style={{ padding: 4 }}>
                 <ThemedText style={{ fontSize: 12, color: tc.textHint, fontWeight: '700' }}>✕</ThemedText>
               </Pressable>
             )}

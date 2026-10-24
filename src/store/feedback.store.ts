@@ -3,8 +3,27 @@ import { auth } from '@/services/firebase';
 
 const API_BASE = process.env.EXPO_PUBLIC_API_BASE_URL ?? 'http://localhost:3000';
 
-async function getIdToken(): Promise<string | null> {
-  try { return await auth.currentUser?.getIdToken() ?? null; } catch { return null; }
+async function getIdToken(forceRefresh = false): Promise<string | null> {
+  try { return await auth.currentUser?.getIdToken(forceRefresh) ?? null; } catch { return null; }
+}
+
+// Admin endpoints require the `admin: true` custom claim on the ID token. A
+// cached token minted before the claim was granted lacks it and gets a 403, so
+// on 401/403 retry once with a force-refreshed token. Returns null when there
+// is no signed-in user.
+async function adminFetch(path: string, init: RequestInit = {}): Promise<Response | null> {
+  const token = await getIdToken();
+  if (!token) return null;
+  const send = (t: string) => fetch(`${API_BASE}${path}`, {
+    ...init,
+    headers: { ...(init.headers as Record<string, string> | undefined), Authorization: `Bearer ${t}` },
+  });
+  let res = await send(token);
+  if (res.status === 401 || res.status === 403) {
+    const fresh = await getIdToken(true);
+    if (fresh && fresh !== token) res = await send(fresh);
+  }
+  return res;
 }
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -59,6 +78,10 @@ interface FeedbackState {
   // Admin — feedback list
   adminFeedback: FeedbackRow[];
   adminTotal: number;
+  // False once a page came back empty/failed or everything is loaded — the
+  // screen's onEndReached checks this so a short list (always "at the end")
+  // can't keep re-triggering fetches in a loop.
+  adminHasMore: boolean;
   adminLoading: boolean;
   adminError: string | null;
 
@@ -76,8 +99,13 @@ interface FeedbackState {
   fetchReports: () => Promise<void>;
   generateReport: (type: 'daily' | 'weekly') => Promise<ReportRow | null>;
   fetchReportDetail: (id: string) => Promise<ReportRow | null>;
-  exportFeedbackCsv: (filters?: { category?: string; status?: string }) => Promise<string | null>;
+  exportFeedbackCsv: (filters?: { category?: string; status?: string; search?: string }) => Promise<string | null>;
 }
+
+// Monotonic id of the latest fetchFeedback call — a response from an older
+// call (e.g. a load-more still in flight when a filter changed) is dropped
+// instead of being appended onto the new filter's list.
+let feedbackFetchSeq = 0;
 
 export const useFeedbackStore = create<FeedbackState>((set, get) => ({
   submitting: false,
@@ -85,6 +113,7 @@ export const useFeedbackStore = create<FeedbackState>((set, get) => ({
   submitSuccess: false,
   adminFeedback: [],
   adminTotal: 0,
+  adminHasMore: false,
   adminLoading: false,
   adminError: null,
   reports: [],
@@ -131,50 +160,68 @@ export const useFeedbackStore = create<FeedbackState>((set, get) => ({
 
   // ── Fetch feedback list (admin) ──────────────────────────────────
   fetchFeedback: async (filters = {}) => {
+    const seq = ++feedbackFetchSeq;
     set({ adminLoading: true, adminError: null });
     try {
-      const token = await getIdToken();
-      if (!token) { set({ adminError: 'Not authorized', adminLoading: false }); return; }
-
       const params = new URLSearchParams({ limit: '50', offset: String(filters.offset ?? 0) });
       if (filters.category) params.set('category', filters.category);
       if (filters.status)   params.set('status', filters.status);
       if (filters.search)   params.set('search', filters.search);
 
-      const res = await fetch(`${API_BASE}/api/feedback?${params}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await adminFetch(`/api/feedback?${params}`);
+      if (seq !== feedbackFetchSeq) return;
+      if (!res) { set({ adminError: 'Not authorized', adminLoading: false }); return; }
 
-      if (!res.ok) { set({ adminError: 'Failed to load feedback', adminLoading: false }); return; }
+      if (!res.ok) {
+        // A failed load-more shouldn't wipe the already-loaded list behind an
+        // error screen — only surface the error when there's nothing to show.
+        set((s) => ({
+          adminError: filters.append && s.adminFeedback.length > 0 ? null : (res.status === 403 ? 'Admin access required' : 'Failed to load feedback'),
+          adminLoading: false,
+          adminHasMore: false,
+        }));
+        return;
+      }
       const { count, rows } = await res.json();
+      if (seq !== feedbackFetchSeq) return;
       // "Load more" (onEndReached, admin/feedback.tsx) calls this with
       // append:true and offset:adminFeedback.length to fetch the next page —
       // this used to always overwrite adminFeedback with just that page, so
       // scrolling to the bottom made the list visibly jump to show only the
       // newly-fetched batch instead of growing to include it.
-      set((s) => ({
-        adminFeedback: filters.append ? [...s.adminFeedback, ...(rows ?? [])] : (rows ?? []),
-        adminTotal: count ?? 0,
-        adminLoading: false,
-      }));
+      set((s) => {
+        const incoming = (rows ?? []) as FeedbackRow[];
+        const added = filters.append
+          ? incoming.filter((r) => !s.adminFeedback.some((e) => e.id === r.id))
+          : incoming;
+        const next = filters.append ? [...s.adminFeedback, ...added] : added;
+        return {
+          adminFeedback: next,
+          adminTotal: count ?? 0,
+          adminLoading: false,
+          adminHasMore: added.length > 0 && next.length < (count ?? 0),
+        };
+      });
     } catch {
-      set({ adminError: 'Network error', adminLoading: false });
+      if (seq !== feedbackFetchSeq) return;
+      set((s) => ({
+        adminError: filters.append && s.adminFeedback.length > 0 ? null : 'Network error',
+        adminLoading: false,
+        adminHasMore: false,
+      }));
     }
   },
 
   // ── Update feedback (admin) ──────────────────────────────────────
   updateFeedback: async (id, updates) => {
     try {
-      const token = await getIdToken();
-      if (!token) return false;
-
-      const res = await fetch(`${API_BASE}/api/feedback/${id}`, {
+      const res = await adminFetch(`/api/feedback/${id}`, {
         method: 'PATCH',
-        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updates),
       });
 
-      if (!res.ok) return false;
+      if (!res?.ok) return false;
 
       // Update local state
       set((s) => ({
@@ -190,14 +237,8 @@ export const useFeedbackStore = create<FeedbackState>((set, get) => ({
   fetchReports: async () => {
     set({ reportsLoading: true });
     try {
-      const token = await getIdToken();
-      if (!token) { set({ reportsLoading: false }); return; }
-
-      const res = await fetch(`${API_BASE}/api/feedback/reports`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      if (!res.ok) { set({ reportsLoading: false }); return; }
+      const res = await adminFetch('/api/feedback/reports');
+      if (!res?.ok) { set({ reportsLoading: false }); return; }
       const { rows } = await res.json();
       set({ reports: rows ?? [], reportsLoading: false });
     } catch {
@@ -209,16 +250,13 @@ export const useFeedbackStore = create<FeedbackState>((set, get) => ({
   generateReport: async (type) => {
     set({ reportGenerating: true });
     try {
-      const token = await getIdToken();
-      if (!token) { set({ reportGenerating: false }); return null; }
-
-      const res = await fetch(`${API_BASE}/api/feedback/reports/generate`, {
+      const res = await adminFetch('/api/feedback/reports/generate', {
         method: 'POST',
-        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ report_type: type }),
       });
 
-      if (!res.ok) { set({ reportGenerating: false }); return null; }
+      if (!res?.ok) { set({ reportGenerating: false }); return null; }
       const data = await res.json();
 
       const newReport: ReportRow = {
@@ -248,12 +286,8 @@ export const useFeedbackStore = create<FeedbackState>((set, get) => ({
   // ── Fetch full report detail ─────────────────────────────────────
   fetchReportDetail: async (id) => {
     try {
-      const token = await getIdToken();
-      if (!token) return null;
-      const res = await fetch(`${API_BASE}/api/feedback/reports/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) return null;
+      const res = await adminFetch(`/api/feedback/reports/${id}`);
+      if (!res?.ok) return null;
       return await res.json();
     } catch { return null; }
   },
@@ -267,15 +301,12 @@ export const useFeedbackStore = create<FeedbackState>((set, get) => ({
   // all, so a message containing a comma would misalign every column after it.
   exportFeedbackCsv: async (filters = {}) => {
     try {
-      const token = await getIdToken();
-      if (!token) return null;
       const params = new URLSearchParams();
       if (filters.category) params.set('category', filters.category);
       if (filters.status)   params.set('status', filters.status);
-      const res = await fetch(`${API_BASE}/api/feedback/export?${params}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) return null;
+      if (filters.search)   params.set('search', filters.search);
+      const res = await adminFetch(`/api/feedback/export?${params}`);
+      if (!res?.ok) return null;
       return await res.text();
     } catch { return null; }
   },

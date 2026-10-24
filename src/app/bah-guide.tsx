@@ -215,14 +215,14 @@ function LocationSearch({
         <TextInput
           value={value}
           onChangeText={onChange}
-          placeholder="e.g. Fort Liberty · Norfolk · San Diego · Kaneohe"
+          placeholder="e.g. Fort Bragg · Norfolk · San Diego · Kaneohe"
           placeholderTextColor={tc.textMuted}
           style={[styles.searchInput, { color: inputText }]}
           returnKeyType="search"
           autoCorrect={false}
         />
         {value.length > 0 && (
-          <Pressable onPress={() => onChange('')} style={styles.searchClear}>
+          <Pressable accessibilityRole="button" accessibilityLabel="Clear text" onPress={() => onChange('')} style={styles.searchClear}>
             <ThemedText style={[styles.searchClearText, { color: tc.textHint }]}>✕</ThemedText>
           </Pressable>
         )}
@@ -331,7 +331,7 @@ function OhaSearch({
           autoCorrect={false}
         />
         {value.length > 0 && (
-          <Pressable onPress={() => onChange('')} style={styles.searchClear}>
+          <Pressable accessibilityRole="button" accessibilityLabel="Clear text" onPress={() => onChange('')} style={styles.searchClear}>
             <ThemedText style={[styles.searchClearText, { color: tc.textHint }]}>✕</ThemedText>
           </Pressable>
         )}
@@ -450,7 +450,7 @@ export default function BahGuideScreen() {
       <ThemedView style={{ flex: 1 }}>
         {/* Header */}
         <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
-          <Pressable
+          <Pressable accessibilityRole="button" accessibilityLabel="Go back"
             onPress={() => (router.back())}
             style={styles.back}>
             <ThemedText style={styles.backChevron}>‹</ThemedText>

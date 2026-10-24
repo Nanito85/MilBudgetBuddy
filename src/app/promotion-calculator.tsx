@@ -85,7 +85,7 @@ export default function PromotionCalculatorScreen() {
 
         {/* Current Grade */}
         <View style={[s.card, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
-          <ThemedText style={[s.sectionEyebrow, { color: tc.tactical }]}>// CURRENT RANK</ThemedText>
+          <ThemedText style={[s.sectionEyebrow, { color: tc.tactical }]}>{'// CURRENT RANK'}</ThemedText>
           <GradePicker selected={currentGrade} onSelect={setCurrentGrade} />
           <NumberStepper label="Current Years of Service" value={yos} min={0} max={40} onChange={setYos} unit="yrs" />
           <View style={s.payRow}>
@@ -96,7 +96,7 @@ export default function PromotionCalculatorScreen() {
 
         {/* Target Grade */}
         <View style={[s.card, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
-          <ThemedText style={[s.sectionEyebrow, { color: tc.tactical }]}>// PROMOTION TARGET</ThemedText>
+          <ThemedText style={[s.sectionEyebrow, { color: tc.tactical }]}>{'// PROMOTION TARGET'}</ThemedText>
           <GradePicker selected={targetGrade} onSelect={setTargetGrade} />
           {TYPICAL_YOS[targetGrade] && (
             <ThemedText style={[s.hint, { color: tc.textHint }]}>Typical promotion to {targetGrade}: ~{TYPICAL_YOS[targetGrade]}</ThemedText>
@@ -150,13 +150,13 @@ export default function PromotionCalculatorScreen() {
             ))}
           </View>
           <ThemedText style={[s.hint, { color: tc.textHint }]}>
-            BRS applies if you joined on/after Jan 1, 2018 — the default for most currently serving members. High-3 applies if you joined on/before Dec 31, 2017 and didn't opt into BRS.
+            BRS applies if you joined on/after Jan 1, 2018 — the default for most currently serving members. High-3 applies if you joined on/before Dec 31, 2017 and didn&apos;t opt into BRS.
           </ThemedText>
         </View>
 
         {/* Hero number */}
         <View style={[s.heroCard, { backgroundColor: tc.surface }]}>
-          <ThemedText style={[s.heroEyebrow, { color: tc.textMuted }]}>// TOTAL VALUE OF THIS PROMOTION</ThemedText>
+          <ThemedText style={[s.heroEyebrow, { color: tc.textMuted }]}>{'// TOTAL VALUE OF THIS PROMOTION'}</ThemedText>
           <ThemedText style={[s.heroValue, { color: accent }]}>{fmtSign(fiveYearTotal)}</ThemedText>
           <ThemedText style={[s.heroSub, { color: tc.textHint }]}>Over 5 years in base pay alone — before allowances, special pays, or retirement impact</ThemedText>
         </View>

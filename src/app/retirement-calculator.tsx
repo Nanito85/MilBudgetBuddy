@@ -7,6 +7,8 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { PAY_GRADES, PayGrade } from '@/data/bah-rates';
 import { BASIC_PAY_DATA_YEAR, getBasicPay } from '@/data/basic-pay-rates';
+import { estimateAnnualFedTax, FEDERAL_TAX_DATA_YEAR } from '@/data/federal-tax';
+import { getRetirementStateTaxRate, getStateTaxInfo, RETIREMENT_TAX_EXEMPT_STATES, stateTaxBadge, US_STATES } from '@/data/state-tax';
 import { BreakEvenChart } from '@/features/retirement/components/BreakEvenChart';
 import { NumberStepper } from '@/features/retirement/components/NumberStepper';
 import { BRSCard, High3Card } from '@/features/retirement/components/RetirementSummaryCard';
@@ -47,7 +49,7 @@ export default function RetirementCalculatorScreen() {
   const serviceStatus = useUserStore((s) => s.serviceStatus);
   const isCivilianOnly = serviceStatus === 'civilian';
 
-  const [grade, setGrade] = useState<PayGrade>('E7');
+  const [grade, setGrade] = useState<PayGrade>(profilePayGrade ?? 'E7');
   // Grade the member holds today — distinct from "grade" (grade at retirement)
   // above. Without this, "Current Basic Pay" and the TSP contribution preview
   // were silently computed from the RETIREMENT grade instead of today's grade,
@@ -76,10 +78,24 @@ export default function RetirementCalculatorScreen() {
     setPreviousGrade(PAY_GRADES[Math.max(0, idx - 1)]);
   }, [grade]);
   const [retirementYOS, setRetirementYOS] = useState(20);
-  const [system, setSystem] = useState<RetirementSystem>('both');
+  // Anyone who entered service on/after 2018-01-01 is automatically BRS, so
+  // start them there; everyone else may be either (2018 opt-in), so compare.
+  const profileEnlisted = useUserStore((s) => s.dateOfEnlistment);
+  const [system, setSystem] = useState<RetirementSystem>(
+    profileEnlisted && profileEnlisted >= '2018-01-01' ? 'brs' : 'both',
+  );
   const [tspContribIdx, setTspContribIdx] = useState(4);  // 5%
   const [tspReturnIdx, setTspReturnIdx] = useState(3);    // 7%
   const [vaRating, setVaRating] = useState(0);
+  // Family + state pre-fill from the profile but stay editable here — the
+  // state a member retires TO is often not the one they're stationed in.
+  const profileHasSpouse = useUserStore((s) => s.hasSpouse);
+  const profileNumChildren = useUserStore((s) => s.numChildren);
+  const profileState = useUserStore((s) => s.stateResidence);
+  const [married, setMarried] = useState(!!profileHasSpouse);
+  const [numChildren, setNumChildren] = useState(profileNumChildren ?? 0);
+  const [retireState, setRetireState] = useState<string | undefined>(profileState);
+  const [stateOpen, setStateOpen] = useState(false);
 
   const tspContribRate = CONTRIB_STEPS[tspContribIdx] / 100;
   const tspAnnualReturn = RETURN_STEPS[tspReturnIdx] / 100;
@@ -102,18 +118,35 @@ export default function RetirementCalculatorScreen() {
   const currentPay = getBasicPay(currentGrade, currentYOS);
 
   // VA disability — same canonical rate table as the dedicated VA Disability calculator
-  const vaMonthly = monthlyCompensation(vaRating, false, 0);
+  const vaMonthly = monthlyCompensation(vaRating, married, numChildren);
   const pensionMonthly = showHigh3 ? result.high3.monthlyPension : result.brs.monthlyPension;
   // CRDP: ≥50% rating = full pension + full VA (concurrent receipt, no offset)
   // <50% rating = retirement pay offset by VA amount; net income same as pension (VA portion is tax-free)
   const crdpEligible = vaRating >= 50;
   const combinedMonthly = crdpEligible ? pensionMonthly + vaMonthly : pensionMonthly;
 
+  // Taxes on the pension. Under the <50% offset the waived portion of
+  // retirement pay is replaced by tax-free VA comp, so only the remainder
+  // is taxable. Assumes the pension is the household's only taxable income
+  // (no spouse wages, no second career) — a floor, not a ceiling, on tax.
+  const taxablePensionMonthly = crdpEligible || vaRating === 0
+    ? pensionMonthly
+    : Math.max(0, pensionMonthly - vaMonthly);
+  const annualTaxable = taxablePensionMonthly * 12;
+  const fedTaxMonthly = estimateAnnualFedTax(annualTaxable, married, numChildren) / 12;
+  const stateRate = getRetirementStateTaxRate(retireState);
+  const stateTaxMonthly = taxablePensionMonthly * stateRate;
+  const stateInfo = getStateTaxInfo(retireState);
+  const stateExempt = !!retireState && RETIREMENT_TAX_EXEMPT_STATES.has(retireState);
+  const afterTaxPensionMonthly = pensionMonthly - fedTaxMonthly - stateTaxMonthly;
+  // VA comp is tax-free; under the offset it's already inside pensionMonthly.
+  const afterTaxTotalMonthly = afterTaxPensionMonthly + (crdpEligible ? vaMonthly : 0);
+
   return (
     <ThemedView style={styles.container}>
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
-        <Pressable
+        <Pressable accessibilityRole="button" accessibilityLabel="Go back"
           onPress={() => (router.back())}
           style={({ pressed }) => [styles.backBtn, pressed && styles.pressed]}>
           <ThemedText style={styles.backChevron}>‹</ThemedText>
@@ -249,6 +282,8 @@ export default function RetirementCalculatorScreen() {
               <Pressable
                 key={val}
                 onPress={() => setSystem(val)}
+                accessibilityRole="radio"
+                accessibilityState={{ selected: system === val }}
                 style={[styles.systemBtn, system === val && styles.systemBtnActive]}>
                 <ThemedText style={[styles.systemBtnText, system === val && styles.systemBtnTextActive]}>
                   {label}
@@ -290,6 +325,8 @@ export default function RetirementCalculatorScreen() {
                     <Pressable
                       key={pct}
                       onPress={() => setTspContribIdx(idx)}
+                      accessibilityRole="radio"
+                      accessibilityState={{ selected: tspContribIdx === idx }}
                       style={[styles.pctChip, tspContribIdx === idx && styles.pctChipActive]}>
                       <ThemedText style={[styles.pctChipText, tspContribIdx === idx && styles.pctChipTextActive]}>
                         {pct}%
@@ -301,7 +338,7 @@ export default function RetirementCalculatorScreen() {
                 {/* Government match */}
                 <View style={[styles.matchBanner, { backgroundColor: `${Brand.success}15` }]}>
                   <ThemedText type="small" style={{ color: tc.success, fontWeight: '600' }}>
-                    Gov't match: {gMatchPct.toFixed(1)}% → +{formatMoney(currentPay * govtMatchRate(tspContribRate))}/mo free money
+                    Gov&apos;t match: {gMatchPct.toFixed(1)}% → +{formatMoney(currentPay * govtMatchRate(tspContribRate))}/mo free money
                   </ThemedText>
                 </View>
 
@@ -324,6 +361,8 @@ export default function RetirementCalculatorScreen() {
                     <Pressable
                       key={pct}
                       onPress={() => setTspReturnIdx(idx)}
+                      accessibilityRole="radio"
+                      accessibilityState={{ selected: tspReturnIdx === idx }}
                       style={[styles.pctChip, tspReturnIdx === idx && styles.pctChipActive]}>
                       <ThemedText style={[styles.pctChipText, tspReturnIdx === idx && styles.pctChipTextActive]}>
                         {pct}%
@@ -366,18 +405,20 @@ export default function RetirementCalculatorScreen() {
         {/* VA DISABILITY */}
         <View style={styles.section}>
           <ThemedText type="smallBold" themeColor="textSecondary" style={styles.sectionLabel}>
-            VA DISABILITY (OPTIONAL)
+            VA DISABILITY &amp; TAXES (OPTIONAL)
           </ThemedText>
           <ThemedView type="backgroundElement" style={styles.card}>
             <View style={styles.cardPadded}>
               <ThemedText type="small" themeColor="textSecondary" style={styles.fieldLabel}>
-                Combined VA Rating (FY2026 rates, no dependents)
+                Combined VA Rating (FY2026 rates)
               </ThemedText>
               <View style={styles.chipRow}>
                 {VA_RATINGS.map((r) => (
                   <Pressable
                     key={r}
                     onPress={() => setVaRating(r)}
+                    accessibilityRole="radio"
+                    accessibilityState={{ selected: vaRating === r }}
                     style={[styles.pctChip, vaRating === r && styles.pctChipActive]}>
                     <ThemedText style={[styles.pctChipText, vaRating === r && styles.pctChipTextActive]}>
                       {r}%
@@ -385,6 +426,114 @@ export default function RetirementCalculatorScreen() {
                   </Pressable>
                 ))}
               </View>
+
+              <View style={styles.divider} />
+              <ThemedText type="small" themeColor="textSecondary" style={styles.fieldLabel}>
+                Marital status
+              </ThemedText>
+              <View style={styles.systemToggle}>
+                {([[false, 'Single'], [true, 'Married']] as [boolean, string][]).map(([val, label]) => (
+                  <Pressable
+                    key={label}
+                    onPress={() => setMarried(val)}
+                    accessibilityRole="radio"
+                    accessibilityState={{ selected: married === val }}
+                    style={[styles.systemBtn, married === val && styles.systemBtnActive]}>
+                    <ThemedText style={[styles.systemBtnText, married === val && styles.systemBtnTextActive]}>
+                      {label}
+                    </ThemedText>
+                  </Pressable>
+                ))}
+              </View>
+              <NumberStepper
+                label="Dependent children"
+                value={numChildren}
+                min={0}
+                max={10}
+                onChange={setNumChildren}
+                unit="kids"
+              />
+              <ThemedText type="small" themeColor="textSecondary">
+                {vaRating > 0 && vaRating < 30
+                  ? 'VA pays no dependent add-on below a 30% rating. Marital status still sets your tax filing status.'
+                  : 'Spouse and children raise VA pay at 30% and above, and married filing sets the tax brackets.'}
+              </ThemedText>
+
+              <View style={styles.divider} />
+              <ThemedText type="small" themeColor="textSecondary" style={styles.fieldLabel}>
+                State you&apos;ll retire in
+              </ThemedText>
+              <Pressable
+                onPress={() => setStateOpen((o) => !o)}
+                accessibilityRole="button"
+                accessibilityLabel={`State you'll retire in: ${stateInfo ? stateInfo.name : 'none selected'}`}
+                accessibilityState={{ expanded: stateOpen }}
+                style={[styles.dropdownBtn, stateOpen && { borderColor: Brand.primary }]}>
+                <ThemedText style={styles.dropdownText}>
+                  {stateInfo ? `${stateInfo.name} (${stateInfo.code})` : 'Select a state'}
+                </ThemedText>
+                <ThemedText style={styles.dropdownChevron}>{stateOpen ? '▲' : '▼'}</ThemedText>
+              </Pressable>
+              {stateOpen && (
+                <ScrollView style={styles.dropdownList} nestedScrollEnabled showsVerticalScrollIndicator>
+                  {US_STATES.map((s) => (
+                    <Pressable
+                      key={s.code}
+                      onPress={() => { setRetireState(s.code); setStateOpen(false); }}
+                      accessibilityRole="radio"
+                      accessibilityState={{ selected: retireState === s.code }}
+                      style={[styles.dropdownRow, retireState === s.code && { backgroundColor: `${Brand.primary}20` }]}>
+                      <ThemedText style={[styles.dropdownText, retireState === s.code && { fontWeight: '700' }]}>
+                        {s.name} ({s.code})
+                      </ThemedText>
+                      {stateTaxBadge(s.code, true) && (
+                        <ThemedText type="small" style={{ color: tc.success, fontWeight: '600' }}>{stateTaxBadge(s.code, true)}</ThemedText>
+                      )}
+                    </Pressable>
+                  ))}
+                </ScrollView>
+              )}
+              {stateInfo && (
+                <ThemedText type="small" themeColor="textSecondary">
+                  {stateInfo.name}: {stateExempt
+                    ? 'military retirement pay is not taxed by the state.'
+                    : `about ${(stateRate * 100).toFixed(2)}% effective state tax on your pension (partial exemptions or age/income breaks may lower it).`}
+                </ThemedText>
+              )}
+
+              <View style={styles.divider} />
+              <ThemedText type="small" themeColor="textSecondary" style={styles.fieldLabel}>
+                ESTIMATED PENSION AFTER TAXES
+              </ThemedText>
+              <View style={styles.sliderRow}>
+                <ThemedText style={styles.sliderLabel}>Gross pension ({showHigh3 ? 'High-3' : 'BRS'}{system === 'both' ? ', pick BRS Only to see BRS' : ''})</ThemedText>
+                <ThemedText style={styles.sliderLabel}>{formatMoney(pensionMonthly)}/mo</ThemedText>
+              </View>
+              <View style={styles.sliderRow}>
+                <ThemedText style={styles.sliderLabel}>Federal tax ({FEDERAL_TAX_DATA_YEAR}, {married ? 'married' : numChildren > 0 ? 'head of household' : 'single'})</ThemedText>
+                <ThemedText style={styles.sliderLabel}>−{formatMoney(fedTaxMonthly)}/mo</ThemedText>
+              </View>
+              <View style={styles.sliderRow}>
+                <ThemedText style={styles.sliderLabel}>State tax{retireState ? ` (${retireState})` : ' (pick a state)'}</ThemedText>
+                <ThemedText style={styles.sliderLabel}>−{formatMoney(stateTaxMonthly)}/mo</ThemedText>
+              </View>
+              <View style={styles.sliderRow}>
+                <ThemedText style={styles.sliderLabel}>Pension after tax</ThemedText>
+                <ThemedText style={[styles.sliderValue, { color: tc.accent }]}>
+                  {formatMoney(afterTaxPensionMonthly)}/mo
+                </ThemedText>
+              </View>
+              {crdpEligible && (
+                <View style={styles.sliderRow}>
+                  <ThemedText style={styles.sliderLabel}>Pension after tax + tax-free VA</ThemedText>
+                  <ThemedText style={[styles.sliderValue, { color: tc.accent }]}>
+                    {formatMoney(afterTaxTotalMonthly)}/mo
+                  </ThemedText>
+                </View>
+              )}
+              <ThemedText type="small" themeColor="textSecondary">
+                Assumes the pension is your only taxable income and uses the standard deduction. SBP premiums, Medicare/TRICARE fees and other income are not included.
+              </ThemedText>
 
               {vaRating > 0 && (
                 <>
@@ -454,7 +603,7 @@ export default function RetirementCalculatorScreen() {
           Pay data is from {BASIC_PAY_DATA_YEAR} DoD tables. Projections use your current pay grade
           as a proxy for the high-3 average (assumes same grade for last 3 years). TSP projections
           assume constant monthly contributions and a fixed annual return. Actual results depend
-          on promotions, grade changes, and market performance. Consult your installation's
+          on promotions, grade changes, and market performance. Consult your installation&apos;s
           financial readiness office for official guidance.
         </ThemedText>
       </ScrollView>
@@ -522,6 +671,31 @@ const styles = StyleSheet.create({
   pctChipText: { fontSize: 13, lineHeight: 17, fontWeight: '500' },
   pctChipTextActive: { color: '#FFFFFF', fontWeight: '700' },
   matchBanner: { borderRadius: Spacing.two, padding: Spacing.two },
+  dropdownBtn: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: Spacing.three,
+    paddingVertical: Spacing.two + 2,
+    borderRadius: Spacing.two,
+    borderWidth: 1,
+    borderColor: 'rgba(128,128,128,0.25)',
+  },
+  dropdownChevron: { fontSize: 12, lineHeight: 16 },
+  dropdownList: {
+    maxHeight: 240,
+    borderRadius: Spacing.two,
+    borderWidth: 1,
+    borderColor: 'rgba(128,128,128,0.25)',
+  },
+  dropdownRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: Spacing.three,
+    paddingVertical: Spacing.two + 2,
+  },
+  dropdownText: { fontSize: 15, lineHeight: 20 },
   disclaimer: {
     textAlign: 'center',
     lineHeight: 18,

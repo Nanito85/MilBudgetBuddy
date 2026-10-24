@@ -234,6 +234,10 @@ export interface UserPreferences {
   // whenever guardDutyStatus is set (onboarding or profile.tsx); cleared
   // alongside it if the member switches from Guard back to Reserve.
   guardDutyStatusUpdatedAt?: string;   // ISO 8601 timestamp
+  // Reservist currently on full-time orders (mobilization, ADOS, AGR, or
+  // Title 10 activation). Off by default: a traditional drilling reservist's
+  // pay statement is drill pay only (no BAH/BAS). See lesCalc.ts.
+  reserveOnOrders?: boolean;
   // Retired info
   retirementDate?: string;      // YYYY-MM-DD (date of retirement)
   vaDisabilityPercent?: number; // 0-100, in 10% increments

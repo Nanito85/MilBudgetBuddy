@@ -144,7 +144,14 @@ export default function PCSCalculatorScreen() {
   const insets = useSafeAreaInsets();
   const tc = useThemeColors();
 
-  const { payGrade: profileGrade, hasSpouse: profileHasSpouse, numChildren: profileNumChildren, mhaZip: profileZip, yos: profileYos, hydrated } = useUserStore();
+  // Individual selectors, not a bare useUserStore() — that re-rendered this
+  // whole screen on ANY profile change, not just these six fields.
+  const profileGrade       = useUserStore((s) => s.payGrade);
+  const profileHasSpouse   = useUserStore((s) => s.hasSpouse);
+  const profileNumChildren = useUserStore((s) => s.numChildren);
+  const profileZip         = useUserStore((s) => s.mhaZip);
+  const profileYos         = useUserStore((s) => s.yos);
+  const hydrated           = useUserStore((s) => s.hydrated);
   // DLA/BAH "with dependents" applies to any dependent, not just a spouse —
   // a single parent's default here used to come from profileHasSpouse alone,
   // defaulting them (wrongly) to the no-dependents rate even though the
@@ -157,6 +164,11 @@ export default function PCSCalculatorScreen() {
   const [withDep, setWithDep] = useState(profileGrade ? profileHasDependents : true);
   const [profileApplied, setProfileApplied] = useState(false);
 
+  // Declared before the effect below that sets them — declaring them after
+  // worked at runtime but made React Compiler skip this whole screen.
+  const [currentStation, setCurrentStation] = useState<Installation | null>(null);
+  const [gainingStation, setGainingStation] = useState<Installation | null>(null);
+
   useEffect(() => {
     if (hydrated && !profileApplied) {
       if (profileGrade) setGrade(profileGrade);
@@ -166,9 +178,6 @@ export default function PCSCalculatorScreen() {
       setProfileApplied(true);
     }
   }, [hydrated]);
-
-  const [currentStation, setCurrentStation] = useState<Installation | null>(null);
-  const [gainingStation, setGainingStation] = useState<Installation | null>(null);
 
   // PCS details
   const [isDriving,       setIsDriving]        = useState(true);
@@ -255,7 +264,7 @@ export default function PCSCalculatorScreen() {
     <ThemedView style={styles.container}>
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
-        <Pressable
+        <Pressable accessibilityRole="button" accessibilityLabel="Go back"
           onPress={() => (router.back())}
           style={({ pressed }) => [styles.backBtn, pressed && styles.pressed]}>
           <ThemedText style={styles.backChevron}>‹</ThemedText>
@@ -406,7 +415,7 @@ export default function PCSCalculatorScreen() {
               </View>
               {!isDriving && (
                 <ThemedText type="small" themeColor="textSecondary" style={styles.hint}>
-                  MALT (mileage reimbursement) doesn't apply if you're not driving — e.g. flying, shipping a POV, or already there.
+                  MALT (mileage reimbursement) doesn&apos;t apply if you&apos;re not driving — e.g. flying, shipping a POV, or already there.
                 </ThemedText>
               )}
             </View>
@@ -487,7 +496,7 @@ export default function PCSCalculatorScreen() {
               {!bothConus && (currentPD?.oconus || gainingPD?.oconus) && (
                 <ThemedText type="small" themeColor="textSecondary" style={styles.hint}>
                   An OCONUS leg uses TLA rules (up to {TLA_MAX_DAYS} days, no daily cap) instead of
-                  the {TLE_MAX_DAYS}-day CONUS TLE pool. If you're departing CONUS for an OCONUS
+                  the {TLE_MAX_DAYS}-day CONUS TLE pool. If you&apos;re departing CONUS for an OCONUS
                   station, your CONUS-side TLE is typically capped at 7 days — verify with finance.
                 </ThemedText>
               )}

@@ -15,7 +15,7 @@ import { ALL_QUICK_ACTIONS } from '@/data/quick-actions';
 import { useThemeColors } from '@/hooks/use-theme';
 import { useIsAdmin } from '@/hooks/use-admin';
 import { useIsPro } from '@/hooks/use-is-pro';
-import { resetAllLocalData } from '@/services/reset-local-data';
+import { resetAllData } from '@/services/reset-local-data';
 import { ANDROID_PRODUCT_ID } from '@/services/iap';
 import { useAuthStore } from '@/store/auth.store';
 import { useKidModeStore } from '@/store/kid-mode.store';
@@ -81,7 +81,7 @@ function PINManageModal({ visible, onClose }: { visible: boolean; onClose: () =>
         <SafeAreaView style={pinModalStyles.safe}>
           <View style={pinModalStyles.header}>
             <Pressable onPress={handleClose}><ThemedText style={pinModalStyles.cancel}>CANCEL</ThemedText></Pressable>
-            <ThemedText style={pinModalStyles.title}>// KIDS MODE PIN</ThemedText>
+            <ThemedText style={pinModalStyles.title}>{'// KIDS MODE PIN'}</ThemedText>
             <View style={{ width: 60 }} />
           </View>
 
@@ -314,7 +314,7 @@ export default function SettingsScreen() {
 
         {/* ── APPEARANCE ─────────────────────────────────────────────── */}
         <View style={styles.section}>
-          <ThemedText type="label" style={[styles.eyebrow, { color: tc.tactical }]}>// APPEARANCE</ThemedText>
+          <ThemedText type="label" style={[styles.eyebrow, { color: tc.tactical }]}>{'// APPEARANCE'}</ThemedText>
           <ThemedText style={[styles.sectionTitle, { color: text }]}>THEME</ThemedText>
           <ThemedText type="small" style={[styles.sectionDesc, { color: textDim }]}>
             Choose how the app looks.
@@ -352,7 +352,7 @@ export default function SettingsScreen() {
 
         {/* ── FONT SIZE ──────────────────────────────────────────────── */}
         <View style={styles.section}>
-          <ThemedText type="label" style={[styles.eyebrow, { color: tc.tactical }]}>// ACCESSIBILITY</ThemedText>
+          <ThemedText type="label" style={[styles.eyebrow, { color: tc.tactical }]}>{'// ACCESSIBILITY'}</ThemedText>
           <ThemedText style={[styles.sectionTitle, { color: text }]}>TEXT SIZE</ThemedText>
           <ThemedText type="small" style={[styles.sectionDesc, { color: textDim }]}>
             Increase text size for easier reading. Layouts adjust automatically.
@@ -390,7 +390,7 @@ export default function SettingsScreen() {
 
         {/* ── HOME SCREEN TILES ──────────────────────────────────────── */}
         <View style={styles.section}>
-          <ThemedText type="label" style={[styles.eyebrow, { color: tc.tactical }]}>// HOME SCREEN</ThemedText>
+          <ThemedText type="label" style={[styles.eyebrow, { color: tc.tactical }]}>{'// HOME SCREEN'}</ThemedText>
           <ThemedText style={[styles.sectionTitle, { color: text }]}>QUICK ACCESS TILES</ThemedText>
           <ThemedText type="small" style={[styles.sectionDesc, { color: textDim }]}>
             Select up to {MAX_TILES} tools to show on your home screen.
@@ -460,7 +460,7 @@ export default function SettingsScreen() {
 
         {/* ── ACCOUNT ────────────────────────────────────────────────── */}
         <View style={styles.section}>
-          <ThemedText type="label" style={[styles.eyebrow, { color: tc.tactical }]}>// SYNC & BACKUP</ThemedText>
+          <ThemedText type="label" style={[styles.eyebrow, { color: tc.tactical }]}>{'// SYNC & BACKUP'}</ThemedText>
           <ThemedText style={[styles.sectionTitle, { color: text }]}>ACCOUNT</ThemedText>
         </View>
 
@@ -509,7 +509,7 @@ export default function SettingsScreen() {
 
         {/* ── PRO ────────────────────────────────────────────────────── */}
         <View style={styles.section}>
-          <ThemedText type="label" style={[styles.eyebrow, { color: tc.tactical }]}>// SUBSCRIPTION</ThemedText>
+          <ThemedText type="label" style={[styles.eyebrow, { color: tc.tactical }]}>{'// SUBSCRIPTION'}</ThemedText>
           <ThemedText style={[styles.sectionTitle, { color: text }]}>PRO</ThemedText>
         </View>
 
@@ -556,7 +556,7 @@ export default function SettingsScreen() {
 
         {/* ── TUTORIAL ───────────────────────────────────────────────── */}
         <View style={styles.section}>
-          <ThemedText type="label" style={[styles.eyebrow, { color: tc.tactical }]}>// ORIENTATION</ThemedText>
+          <ThemedText type="label" style={[styles.eyebrow, { color: tc.tactical }]}>{'// ORIENTATION'}</ThemedText>
           <ThemedText style={[styles.sectionTitle, { color: text }]}>TUTORIAL</ThemedText>
         </View>
 
@@ -573,7 +573,7 @@ export default function SettingsScreen() {
 
         {/* ── FEEDBACK ───────────────────────────────────────────────── */}
         <View style={styles.section}>
-          <ThemedText type="label" style={[styles.eyebrow, { color: tc.tactical }]}>// HELP US IMPROVE</ThemedText>
+          <ThemedText type="label" style={[styles.eyebrow, { color: tc.tactical }]}>{'// HELP US IMPROVE'}</ThemedText>
           <ThemedText style={[styles.sectionTitle, { color: text }]}>FEEDBACK</ThemedText>
         </View>
 
@@ -590,7 +590,7 @@ export default function SettingsScreen() {
 
         {/* ── SUPPORT THE APP ───────────────────────────────────────── */}
         <View style={styles.section}>
-          <ThemedText type="label" style={[styles.eyebrow, { color: tc.tactical }]}>// SPREAD THE WORD</ThemedText>
+          <ThemedText type="label" style={[styles.eyebrow, { color: tc.tactical }]}>{'// SPREAD THE WORD'}</ThemedText>
           <ThemedText style={[styles.sectionTitle, { color: text }]}>SUPPORT MILBUDGETBUDDY</ThemedText>
         </View>
 
@@ -618,7 +618,7 @@ export default function SettingsScreen() {
 
         {/* ── KIDS MODE ──────────────────────────────────────────────── */}
         <View style={styles.section}>
-          <ThemedText type="label" style={[styles.eyebrow, { color: tc.tactical }]}>// PARENTAL CONTROLS</ThemedText>
+          <ThemedText type="label" style={[styles.eyebrow, { color: tc.tactical }]}>{'// PARENTAL CONTROLS'}</ThemedText>
           <ThemedText style={[styles.sectionTitle, { color: text }]}>KIDS MODE PIN</ThemedText>
         </View>
 
@@ -639,7 +639,7 @@ export default function SettingsScreen() {
 
         {/* ── DATA ───────────────────────────────────────────────────── */}
         <View style={styles.section}>
-          <ThemedText type="label" style={[styles.eyebrow, { color: tc.tactical }]}>// DATA MANAGEMENT</ThemedText>
+          <ThemedText type="label" style={[styles.eyebrow, { color: tc.tactical }]}>{'// DATA MANAGEMENT'}</ThemedText>
           <ThemedText style={[styles.sectionTitle, { color: text }]}>RESET OPTIONS</ThemedText>
         </View>
 
@@ -647,14 +647,19 @@ export default function SettingsScreen() {
           onPress={() =>
             Alert.alert(
               'Reset All Data',
-              'This will wipe your profile, budget, debts, goals, kids, and all other saved data. This cannot be undone.',
+              'This will wipe your profile, budget, debts, goals, kids, and all other saved data — on this device and in your cloud backup. This cannot be undone.',
               [
                 { text: 'Cancel', style: 'cancel' },
                 {
                   text: 'Reset Everything',
                   style: 'destructive',
                   onPress: async () => {
-                    await resetAllLocalData();
+                    try {
+                      await resetAllData();
+                    } catch {
+                      Alert.alert('Reset Failed', 'Could not clear your cloud backup. Check your connection and try again — nothing was changed.');
+                      return;
+                    }
                     router.replace('/' as any);
                   },
                 },
@@ -671,7 +676,7 @@ export default function SettingsScreen() {
 
         {/* ── PRIVACY & LEGAL ────────────────────────────────────────── */}
         <View style={styles.section}>
-          <ThemedText type="label" style={[styles.eyebrow, { color: tc.tactical }]}>// COMPLIANCE</ThemedText>
+          <ThemedText type="label" style={[styles.eyebrow, { color: tc.tactical }]}>{'// COMPLIANCE'}</ThemedText>
           <ThemedText style={[styles.sectionTitle, { color: text }]}>PRIVACY & LEGAL</ThemedText>
         </View>
 
@@ -681,7 +686,7 @@ export default function SettingsScreen() {
           <ThemedText style={settingsProStyles.proIcon}>🔐</ThemedText>
           <View style={{ flex: 1 }}>
             <ThemedText style={[settingsProStyles.proTitle, { color: tc.tactical }]}>PRIVACY CENTER</ThemedText>
-            <ThemedText style={[settingsProStyles.proSub, { color: textDim }]}>What data we collect, how it's protected, your rights.</ThemedText>
+            <ThemedText style={[settingsProStyles.proSub, { color: textDim }]}>What data we collect, how it&apos;s protected, your rights.</ThemedText>
           </View>
           <ThemedText style={[settingsProStyles.chevron, { color: tc.tactical }]}>›</ThemedText>
         </Pressable>
@@ -735,7 +740,7 @@ export default function SettingsScreen() {
               <ThemedText style={settingsProStyles.proIcon}>👤</ThemedText>
               <View style={{ flex: 1 }}>
                 <ThemedText style={[settingsProStyles.proTitle, { color: '#8B5CF6' }]}>ADMIN — GRANT / REVOKE PRO</ThemedText>
-                <ThemedText style={[settingsProStyles.proSub, { color: textDim }]}>Comp a member's account directly by email — actually works.</ThemedText>
+                <ThemedText style={[settingsProStyles.proSub, { color: textDim }]}>Comp a member&apos;s account directly by email — actually works.</ThemedText>
               </View>
               <ThemedText style={[settingsProStyles.chevron, { color: '#8B5CF6' }]}>›</ThemedText>
             </Pressable>
@@ -775,7 +780,7 @@ export default function SettingsScreen() {
         {user && !user.isAnonymous && (
           <>
             <View style={styles.section}>
-              <ThemedText type="label" style={[styles.eyebrow, { color: tc.tactical }]}>// DANGER ZONE</ThemedText>
+              <ThemedText type="label" style={[styles.eyebrow, { color: tc.tactical }]}>{'// DANGER ZONE'}</ThemedText>
             </View>
             <Pressable
               onPress={() =>

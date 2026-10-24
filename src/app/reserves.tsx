@@ -225,11 +225,11 @@ export default function ReservesScreen() {
     <ThemedView style={{ flex: 1 }}>
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
-        <Pressable onPress={() => router.back()} style={styles.back}>
+        <Pressable accessibilityRole="button" accessibilityLabel="Go back" onPress={() => router.back()} style={styles.back}>
           <ThemedText style={styles.backChevron}>‹</ThemedText>
         </Pressable>
         <View style={{ flex: 1 }}>
-          <ThemedText style={[styles.eyebrow, { color: tc.tactical }]}>// RESERVE & GUARD</ThemedText>
+          <ThemedText style={[styles.eyebrow, { color: tc.tactical }]}>{'// RESERVE & GUARD'}</ThemedText>
           <ThemedText style={[styles.title, { color: tc.textPrimary }]}>Reserve Hub</ThemedText>
         </View>
       </View>
@@ -367,7 +367,7 @@ export default function ReservesScreen() {
             <ThemedView type="backgroundElement" style={styles.card}>
               <ThemedText style={[styles.cardLabel, { color: tc.textSecondary }]}>RETIREMENT POINTS CALCULATOR</ThemedText>
               <ThemedText style={[styles.cardHint, { color: tc.textMuted }]}>
-                Reserve retirement pay = (total points ÷ 360) × {(retirementMultiplier * 100).toFixed(1)}% × active-duty base pay. You need at least 20 "good years" (≥50 points/year).
+                Reserve retirement pay = (total points ÷ 360) × {(retirementMultiplier * 100).toFixed(1)}% × active-duty base pay. You need at least 20 &quot;good years&quot; (≥50 points/year).
               </ThemedText>
 
               <View style={styles.rowItem}>
@@ -390,7 +390,7 @@ export default function ReservesScreen() {
                 </View>
               </View>
               <ThemedText style={[styles.cardHint, { color: tc.textMuted }]}>
-                BRS applies if your DIEMS is on/after Jan 1, 2018 — the default for most currently serving reservists. High-3 applies if your DIEMS is before that date and you didn't opt into BRS.
+                BRS applies if your DIEMS is on/after Jan 1, 2018 — the default for most currently serving reservists. High-3 applies if your DIEMS is before that date and you didn&apos;t opt into BRS.
               </ThemedText>
               <View style={[styles.divider, { backgroundColor: tc.borderColor }]} />
 

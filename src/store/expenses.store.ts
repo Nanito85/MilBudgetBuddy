@@ -15,6 +15,7 @@ interface ExpensesState {
   expenses: Expense[];
   hydrated: boolean;
   hydrate: () => Promise<void>;
+  applyRemote: (data: Pick<ExpensesState, 'expenses'>) => void;
   addExpense: (categoryId: string, amount: number, note: string, date?: string) => void;
   removeExpense: (id: string) => void;
   spentByCategory: (monthKey: string) => Record<string, number>; // monthKey = "YYYY-MM"
@@ -47,13 +48,25 @@ export const useExpensesStore = create<ExpensesState>((set, get) => ({
   hydrated: false,
 
   hydrate: async () => {
+    if (get().hydrated) return;
     try {
       const raw = await AsyncStorage.getItem(STORAGE_KEY);
+      // Cloud data from another device landed while disk was being read —
+      // it's newer than this on-device copy, so don't overwrite it.
+      if (get().hydrated) return;
       const expenses: Expense[] = raw ? JSON.parse(raw) : [];
       set({ expenses, hydrated: true });
     } catch {
       set({ hydrated: true });
     }
+  },
+
+  // A snapshot from the cloud (another device's edit). Saved to disk too:
+  // applying it in memory only let the next hydrate() reload the older
+  // on-device copy and auto-push that stale copy back over the cloud.
+  applyRemote: (data) => {
+    set({ ...data, hydrated: true });
+    save(data.expenses);
   },
 
   addExpense: (categoryId, amount, note, date) => {

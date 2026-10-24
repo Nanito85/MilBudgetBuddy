@@ -185,7 +185,7 @@ export default function ToolsScreen() {
         keyboardShouldPersistTaps="handled">
 
         <SafeAreaView>
-          <ThemedText type="label" style={[styles.eyebrow, { color: tc.tactical }]}>// FINANCE OPERATIONS CENTER</ThemedText>
+          <ThemedText type="label" style={[styles.eyebrow, { color: tc.tactical }]}>{'// FINANCE OPERATIONS CENTER'}</ThemedText>
           <ThemedText style={[styles.heading, { color: tc.textPrimary }]}>OPS TOOLKIT</ThemedText>
           <ThemedText type="label" style={[styles.subhead, { color: tc.textSecondary }]}>{ALL_TOOLS.length} TOOLS · CALCULATORS · INTEL</ThemedText>
         </SafeAreaView>
@@ -202,7 +202,7 @@ export default function ToolsScreen() {
             returnKeyType="search"
           />
           {searchQuery.length > 0 && (
-            <Pressable onPress={() => setSearchQuery('')} hitSlop={8}>
+            <Pressable accessibilityRole="button" accessibilityLabel="Clear text" onPress={() => setSearchQuery('')} hitSlop={8}>
               <ThemedText style={[styles.searchClear, { color: tc.textMuted }]}>✕</ThemedText>
             </Pressable>
           )}
@@ -212,7 +212,7 @@ export default function ToolsScreen() {
         {isSearching ? (
           <View style={styles.list}>
             {searchResults.length === 0 ? (
-              <ThemedText style={[styles.searchEmpty, { color: tc.textMuted }]}>No tools match "{searchQuery}"</ThemedText>
+              <ThemedText style={[styles.searchEmpty, { color: tc.textMuted }]}>No tools match &quot;{searchQuery}&quot;</ThemedText>
             ) : (
               searchResults.map((item) => (
                 <MenuCard key={item.id} item={item} onPress={() => handlePress(item)} />

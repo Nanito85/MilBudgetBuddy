@@ -41,6 +41,8 @@ export function GradePicker({ selected, onSelect }: Props) {
                 <Pressable
                   key={grade}
                   onPress={() => onSelect(grade)}
+                  accessibilityRole="radio"
+                  accessibilityState={{ selected: active }}
                   style={[
                     styles.chip,
                     { borderColor: tc.borderColor },

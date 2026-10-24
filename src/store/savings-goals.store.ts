@@ -37,6 +37,7 @@ interface GoalsState {
   goals: SavingsGoal[];
   hydrated: boolean;
   hydrate: () => Promise<void>;
+  applyRemote: (data: Pick<GoalsState, 'goals'>) => void;
   addGoal: (name: string, emoji: string, category: GoalCategory, targetAmount: number) => void;
   deposit: (goalId: string, amount: number) => void;
   withdraw: (goalId: string, amount: number) => void;
@@ -62,9 +63,20 @@ export const useSavingsGoalsStore = create<GoalsState>((set, get) => ({
     if (get().hydrated) return;
     try {
       const raw = await AsyncStorage.getItem(STORAGE_KEY);
+      // Cloud data from another device landed while disk was being read —
+      // it's newer than this on-device copy, so don't overwrite it.
+      if (get().hydrated) return;
       if (raw) set({ goals: JSON.parse(raw) });
     } catch {}
     set({ hydrated: true });
+  },
+
+  // A snapshot from the cloud (another device's edit). Saved to disk too:
+  // applying it in memory only let the next hydrate() reload the older
+  // on-device copy and auto-push that stale copy back over the cloud.
+  applyRemote: (data) => {
+    set({ ...data, hydrated: true });
+    save(data.goals);
   },
 
   addGoal: (name, emoji, category, targetAmount) => {

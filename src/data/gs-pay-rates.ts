@@ -4,6 +4,8 @@
 // levels for 2026 (no locality update was issued) — see GS_LOCALITIES below.
 // Verify at opm.gov/policy-data-oversight/pay-leave/salaries-wages/salary-tables/26tables/html/gs.
 
+export const GS_PAY_DATA_YEAR = 2026;
+
 // [grade][step] — annual salary in dollars, steps 1-10
 export const GS_BASE_RATES: Record<number, number[]> = {
   1:  [22584, 23341, 24092, 24840, 25589, 26028, 26771, 27519, 27550, 28248],

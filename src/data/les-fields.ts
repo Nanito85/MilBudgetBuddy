@@ -4,6 +4,7 @@
  *
  * Source: DFAS LES Guide (dfas.mil), DoD FMR Vol 7A, DoD Instruction 1340.22.
  */
+import { ANNUAL_ADDITIONS_LIMIT, LIMITS_YEAR, TSP_CATCHUP_50, TSP_ELECTIVE_LIMIT, usd } from '@/data/annual-limits';
 
 export type LESSection = 'entitlements' | 'deductions' | 'leave' | 'admin';
 
@@ -190,7 +191,7 @@ export const LES_FIELDS: LESField[] = [
     plainName: 'Thrift Savings Plan Contribution',
     section: 'deductions',
     summary: 'Your elected TSP contribution — taken from basic pay before or after tax.',
-    detail: 'TSP is the military\'s retirement investment account, similar to a 401(k). You can contribute traditional (pre-tax) or Roth (post-tax). The 2026 IRS limit is $24,500/year ($32,500 if 50+). Under BRS, the government contributes up to 5% of basic pay after year 2 — a 1% automatic contribution plus up to 4% in matching (dollar-for-dollar on your first 3%, 50 cents on the dollar on the next 2%). The match does not appear as a deduction — it shows as a separate entitlement on your LES.',
+    detail: 'TSP is the military\'s retirement investment account, similar to a 401(k). You can contribute traditional (pre-tax) or Roth (post-tax). The ' + LIMITS_YEAR + ' IRS limit is ' + usd(TSP_ELECTIVE_LIMIT) + '/year (' + usd(TSP_ELECTIVE_LIMIT + TSP_CATCHUP_50) + ' if 50+). Under BRS, the government contributes up to 5% of basic pay after year 2 — a 1% automatic contribution plus up to 4% in matching (dollar-for-dollar on your first 3%, 50 cents on the dollar on the next 2%). The match does not appear as a deduction — it shows as a separate entitlement on your LES.',
     formula: 'Basic Pay × your elected contribution %',
     tip: 'Under BRS, if you are not contributing at least 5% you are leaving government match money on the table. The first 3% is matched dollar-for-dollar; the next 2% is matched 50 cents on the dollar.',
   },
@@ -200,7 +201,7 @@ export const LES_FIELDS: LESField[] = [
     plainName: 'TSP Year-to-Date Tax-Deferred Amount',
     section: 'deductions',
     summary: 'Running total of pre-tax TSP contributions — informational only, not a new deduction.',
-    detail: 'This field shows the cumulative total of your traditional (pre-tax) TSP contributions for the year. It is informational — it tracks how close you are to the annual IRS contribution limit. When this number approaches $24,500, additional pre-tax contributions will stop.',
+    detail: 'This field shows the cumulative total of your traditional (pre-tax) TSP contributions for the year. It is informational — it tracks how close you are to the annual IRS contribution limit. When this number approaches ' + usd(TSP_ELECTIVE_LIMIT) + ', additional pre-tax contributions will stop.',
   },
   {
     id: 'sgli',
@@ -473,6 +474,6 @@ export const RED_FLAGS = [
     title: 'No Roth TSP Despite Combat Zone',
     severity: 'INFO' as const,
     body: 'In a combat zone (CZTE), your basic pay is not taxed. TSP contributions made during this period can be Roth (post-tax) and since the money was never taxed, you get tax-free growth AND tax-free withdrawal — essentially triple tax advantage.',
-    action: 'Switch to Roth TSP contributions on myPay while in a CZTE combat zone. You can contribute up to $72,000/year (limit increases in combat zones).',
+    action: 'Switch to Roth TSP contributions on myPay while in a CZTE combat zone. You can contribute up to ' + usd(ANNUAL_ADDITIONS_LIMIT) + '/year (limit increases in combat zones).',
   },
 ];

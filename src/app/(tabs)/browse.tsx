@@ -171,7 +171,7 @@ function KidCard({ kid, onPress, onRemove, onHandOff }: { kid: KidProfile; onPre
           pressed && { opacity: 0.7 },
         ]}>
         <ThemedText style={[kidCardStyles.handOffText, { color: theme.primary }]}>
-          👾 SWITCH TO {kid.nickname.toUpperCase()}'S VIEW ›
+          👾 SWITCH TO {kid.nickname.toUpperCase()}&apos;S VIEW ›
         </ThemedText>
       </Pressable>
     </View>
@@ -267,7 +267,7 @@ export default function KidsScreen() {
               <ThemedText style={styles.logoEmoji}>🐷💰</ThemedText>
             </View>
             <View style={{ flex: 1 }}>
-              <ThemedText type="label" style={[styles.eyebrow, { color: tc.tactical }]}>// FAMILY COMMAND</ThemedText>
+              <ThemedText type="label" style={[styles.eyebrow, { color: tc.tactical }]}>{'// FAMILY COMMAND'}</ThemedText>
               <ThemedText style={[styles.heading, { color: tc.textPrimary }]}>CADET HQ</ThemedText>
               <ThemedText type="label" style={[styles.subhead, { color: tc.textMuted }]}>GOALS · CHORES · SAVINGS</ThemedText>
             </View>

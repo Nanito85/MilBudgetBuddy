@@ -8,7 +8,7 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Brand, Spacing } from '@/constants/theme';
-import { calcLES } from '@/features/home/utils/lesCalc';
+import { useProfileLES } from '@/features/home/hooks/useProfileLES';
 import { calcPayoff, fmtDate as fmtPayoffDate, fmtMonths } from '@/features/debt/utils/debtCalc';
 import { monthlyCompensation } from '@/features/va/utils/vaDisabilityCalc';
 import { useThemeColors } from '@/hooks/use-theme';
@@ -99,28 +99,14 @@ export default function CommandModeScreen() {
   const lastName     = useUserStore((s) => s.lastName);
   const nickname     = useUserStore((s) => s.nickname);
   const yos          = useUserStore((s) => s.yos);
-  const mhaZip       = useUserStore((s) => s.mhaZip);
-  const dutyStationId = useUserStore((s) => s.dutyStationId);
   const hasSpouse    = useUserStore((s) => s.hasSpouse);
-  const housingStatus = useUserStore((s) => s.housingStatus);
   const numChildren  = useUserStore((s) => s.numChildren);
   const tspContribPct   = useUserStore((s) => s.tspContribPct);
   const rothTspPct      = useUserStore((s) => s.rothTspPct);
-  const hasDentalFamily = useUserStore((s) => s.hasDentalFamily);
-  const sglOptOut    = useUserStore((s) => s.sglOptOut);
-  const stateResidence  = useUserStore((s) => s.stateResidence);
   const specialPays  = useUserStore((s) => s.specialPays);
   const lesOverrides    = useUserStore((s) => s.lesOverrides);
   const setLesOverrides = useUserStore((s) => s.setLesOverrides);
   const serviceStatus   = useUserStore((s) => s.serviceStatus);
-  const familySeparated  = useUserStore((s) => s.familySeparated);
-  const dependentsMhaZip = useUserStore((s) => s.dependentsMhaZip);
-  const isDeployed = useUserStore((s) => s.isDeployed);
-  const deploymentLocationId = useUserStore((s) => s.deploymentLocationId);
-  const alsoGsCivilian   = useUserStore((s) => s.alsoGsCivilian);
-  const gsGrade          = useUserStore((s) => s.gsGrade);
-  const gsStep           = useUserStore((s) => s.gsStep);
-  const gsLocalityKey    = useUserStore((s) => s.gsLocalityKey);
   const vaDisabilityPercent = useUserStore((s) => s.vaDisabilityPercent);
   const spouseIncome = useUserStore((s) => s.spouseMonthlyIncome);
 
@@ -176,21 +162,8 @@ export default function CommandModeScreen() {
   const branchLabel = branch ? BRANCH_LABELS[branch] : 'Unknown';
   const today = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
 
-  const specialPaysTotal = useMemo(
-    () => specialPays.reduce((s, p) => s + p.monthlyAmount, 0),
-    [specialPays],
-  );
-
-  const breakdown = useMemo(() => {
-    if (!payGrade) return null;
-    return calcLES({
-      payGrade, yos, mhaZip, dutyStationId, hasSpouse, numChildren, housingStatus, specialPaysTotal,
-      tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence,
-      overrides: lesOverrides, serviceStatus,
-      familySeparated, dependentsMhaZip, alsoGsCivilian, gsGrade, gsStep, gsLocalityKey,
-      isDeployed, deploymentLocationId,
-    });
-  }, [payGrade, yos, mhaZip, dutyStationId, hasSpouse, numChildren, housingStatus, specialPaysTotal, tspContribPct, rothTspPct, hasDentalFamily, sglOptOut, stateResidence, lesOverrides, serviceStatus, familySeparated, dependentsMhaZip, alsoGsCivilian, gsGrade, gsStep, gsLocalityKey, isDeployed, deploymentLocationId]);
+  // Same shared engine + inputs as Home (see useProfileLES).
+  const breakdown = useProfileLES();
 
   // VA disability compensation — available regardless of service status (a
   // member doesn't need to be retired to have a service-connected rating).
@@ -459,7 +432,7 @@ export default function CommandModeScreen() {
               {breakdown.extraIncomeItems.map((item) => (
                 <View key={item.id} style={styles.extraItemRow}>
                   <Row label={item.label} value={fmt(item.amount)} indent dim />
-                  <Pressable onPress={() => removeExtraItem('income', item.id)} hitSlop={8}>
+                  <Pressable accessibilityRole="button" accessibilityLabel="Remove" onPress={() => removeExtraItem('income', item.id)} hitSlop={8}>
                     <ThemedText style={styles.removeX}>✕</ThemedText>
                   </Pressable>
                 </View>
@@ -530,7 +503,7 @@ export default function CommandModeScreen() {
               {breakdown.extraDeductionItems.map((item) => (
                 <View key={item.id} style={styles.extraItemRow}>
                   <Row label={item.label} value={fmt(item.amount)} dim />
-                  <Pressable onPress={() => removeExtraItem('deduction', item.id)} hitSlop={8}>
+                  <Pressable accessibilityRole="button" accessibilityLabel="Remove" onPress={() => removeExtraItem('deduction', item.id)} hitSlop={8}>
                     <ThemedText style={styles.removeX}>✕</ThemedText>
                   </Pressable>
                 </View>

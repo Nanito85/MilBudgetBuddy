@@ -198,7 +198,7 @@ export default function LESDecoderScreen() {
     <ThemedView style={styles.container}>
       {/* ── Header ─────────────────────────────────────────────────────────── */}
       <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
-        <Pressable
+        <Pressable accessibilityRole="button" accessibilityLabel="Go back"
           onPress={() => (router.back())}
           style={({ pressed }) => [styles.backBtn, pressed && styles.pressed]}>
           <ThemedText style={styles.backChevron}>‹</ThemedText>
@@ -435,7 +435,7 @@ export default function LESDecoderScreen() {
           <ThemedView type="backgroundElement" style={styles.blufBox}>
             <ThemedText style={[styles.blufTitle, { color: tc.accent }]}>CHECK EVERY MONTH</ThemedText>
             <ThemedText type="small" style={{ lineHeight: 18 }}>
-              Most pay errors go unreported because members don't know what to look for.
+              Most pay errors go unreported because members don&apos;t know what to look for.
               Review your LES every pay period against this list. DFAS has correction
               windows — the sooner you catch an error, the easier it is to fix.
             </ThemedText>

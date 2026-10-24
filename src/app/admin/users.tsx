@@ -29,6 +29,14 @@ interface LastResult {
   proExpiresAt?: string;
 }
 
+interface SubscriberSummary {
+  paying: { android: number; ios: number; total: number };
+  comped: number;
+  expiredStillMarkedPro: number;
+  markedPro: number;
+  truncated: boolean;
+}
+
 interface EntitlementRow {
   uid: string;
   email: string | null;
@@ -115,7 +123,14 @@ export default function AdminUsersScreen() {
     }
   };
 
-  useEffect(() => { fetchRows(); }, []);
+  // Paying vs. comped counts (see the backend route for exactly what each
+  // number means). Failure just hides the card — the list below still works.
+  const [summary, setSummary] = useState<SubscriberSummary | null>(null);
+  const fetchSummary = async () => {
+    try { setSummary(await request('/api/admin/subscriber-summary')); } catch { setSummary(null); }
+  };
+
+  useEffect(() => { fetchRows(); fetchSummary(); }, []);
 
   const handleGrant = async () => {
     const trimmed = email.trim();
@@ -202,15 +217,31 @@ export default function AdminUsersScreen() {
         contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
         <View style={[s.noticeCard, { backgroundColor: tc.surface, borderColor: Brand.tactical + '40' }]}>
           <ThemedText style={[s.noticeText, { color: tc.textSecondary }]}>
-            This grants Pro directly to a member's account server-side — no code, no purchase, nothing they
+            This grants Pro directly to a member&apos;s account server-side — no code, no purchase, nothing they
             need to enter in the app. It writes straight to their profile the same way a real purchase does, so
             it works immediately. (Discount codes on the Codes screen are for record-keeping only right now —
-            there's no in-app way for a member to redeem one, so use this screen instead to actually comp someone.)
+            there&apos;s no in-app way for a member to redeem one, so use this screen instead to actually comp someone.)
           </ThemedText>
         </View>
 
+        {summary && (
+          <View style={[s.card, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
+            <ThemedText style={[s.cardTitle, { color: tc.tactical }]}>{'// SUBSCRIBERS RIGHT NOW'}</ThemedText>
+            <ThemedText style={[s.noticeText, { color: tc.textPrimary }]}>
+              {summary.paying.total} paying ({summary.paying.android} Android · {summary.paying.ios} iOS)
+            </ThemedText>
+            <ThemedText style={[s.noticeText, { color: tc.textSecondary }]}>
+              {summary.comped} comped by an admin · {summary.expiredStillMarkedPro} ended or expired
+            </ThemedText>
+            <ThemedText style={[s.hint, { color: tc.textMuted }]}>
+              Counts active store purchases only. Free trials count as paying until they lapse. Members who
+              redeemed a promo code aren&apos;t included.{summary.truncated ? ' List was capped at 5,000.' : ''}
+            </ThemedText>
+          </View>
+        )}
+
         <View style={[s.card, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
-          <ThemedText style={[s.cardTitle, { color: tc.tactical }]}>// MEMBER EMAIL</ThemedText>
+          <ThemedText style={[s.cardTitle, { color: tc.tactical }]}>{'// MEMBER EMAIL'}</ThemedText>
           <View style={[s.input, { backgroundColor: tc.inputBg, borderColor: tc.borderColor }]}>
             <TextInput
               value={email}
@@ -267,7 +298,7 @@ export default function AdminUsersScreen() {
 
         {lastResult && (
           <View style={[s.card, { backgroundColor: tc.surface, borderColor: Brand.tactical + '40' }]}>
-            <ThemedText style={[s.cardTitle, { color: tc.tactical }]}>// LAST ACTION</ThemedText>
+            <ThemedText style={[s.cardTitle, { color: tc.tactical }]}>{'// LAST ACTION'}</ThemedText>
             <ThemedText style={[s.resultText, { color: tc.textPrimary }]}>
               {lastResult.action === 'grant' ? 'Granted' : 'Revoked'} — {lastResult.email}
             </ThemedText>
@@ -283,7 +314,7 @@ export default function AdminUsersScreen() {
         )}
 
         <View style={s.listHeaderRow}>
-          <ThemedText style={[s.sectionTitle, { color: tc.tactical }]}>// GRANTED / PRO ACCESS ({rows.length})</ThemedText>
+          <ThemedText style={[s.sectionTitle, { color: tc.tactical }]}>{'// GRANTED / PRO ACCESS ('}{rows.length})</ThemedText>
           <Pressable onPress={fetchRows}>
             <ThemedText style={[s.refreshText, { color: tc.accent }]}>REFRESH</ThemedText>
           </Pressable>
@@ -320,7 +351,7 @@ export default function AdminUsersScreen() {
               {!!row.note && <ThemedText style={[s.rowMeta, { color: tc.textMuted }]}>note: {row.note}</ThemedText>}
               {row.accountDeleted && (
                 <ThemedText style={[s.rowMeta, { color: tc.textMuted, fontStyle: 'italic' }]}>
-                  This entitlement record is orphaned — the member's account no longer exists. Kept for history; nothing to revoke.
+                  This entitlement record is orphaned — the member&apos;s account no longer exists. Kept for history; nothing to revoke.
                 </ThemedText>
               )}
               {active && (

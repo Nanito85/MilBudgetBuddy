@@ -151,7 +151,7 @@ export function ComparisonTable({ result, current, gaining, payGrade, yos, hasSp
         <View style={styles.oconusNotice}>
           <ThemedText type="small" style={[styles.oconusText, { color: tc.warning }]}>
             OCONUS stations use Overseas Housing Allowance (OHA) instead of BAH.
-            Contact your gaining unit's finance office for OHA rates.
+            Contact your gaining unit&apos;s finance office for OHA rates.
           </ThemedText>
         </View>
       )}

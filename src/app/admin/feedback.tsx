@@ -50,6 +50,14 @@ function StatusPill({ status }: { status: string }) {
   );
 }
 
+// Module-level so FlatList gets a stable component identity — an inline
+// arrow here is a new component type every render and remounts every
+// separator on each store update.
+function Separator() {
+  const tc = useThemeColors();
+  return <View style={{ height: StyleSheet.hairlineWidth, backgroundColor: tc.borderColor }} />;
+}
+
 const pillStyles = StyleSheet.create({
   pill: { paddingHorizontal: 6, paddingVertical: 2, borderRadius: 3, borderWidth: 1 },
   text: { fontSize: 9, fontWeight: '800', letterSpacing: 0.3 },
@@ -189,24 +197,30 @@ export default function AdminFeedbackScreen() {
   // only for an actual manual pull.
   const [manualRefreshing, setManualRefreshing] = useState(false);
 
-  // adminFeedback.length must be in the dependency array — without it, this
-  // closure freezes on whatever the length was when catFilter/statusFilter/
-  // search last changed (typically 0, since that's before the reset fetch
-  // even resolves). Every subsequent "load more" (onEndReached) would then
-  // keep computing the SAME stale offset, re-fetching and re-appending the
-  // same first page over and over instead of advancing — duplicate rows
-  // piling up on every scroll rather than genuinely new ones loading.
+  // Reads the live store state (not a render-time closure) so a "load more"
+  // always computes its offset from the rows actually loaded right now, and
+  // never fires while another fetch is in flight or once every row is loaded
+  // — onEndReached also fires on mount and on short lists, which used to
+  // trigger redundant/overlapping page fetches and duplicate rows.
   const load = useCallback((reset = false) => {
+    const { adminFeedback: rows, adminHasMore: hasMore, adminLoading: loading } = useFeedbackStore.getState();
+    if (!reset && (loading || !hasMore)) return;
     fetchFeedback({
       category: catFilter !== 'All' ? catFilter : undefined,
       status:   statusFilter !== 'All' ? statusFilter : undefined,
       search:   search.trim() || undefined,
-      offset:   reset ? 0 : adminFeedback.length,
+      offset:   reset ? 0 : rows.length,
       append:   !reset,
     });
-  }, [catFilter, statusFilter, search, adminFeedback.length]);
+  }, [catFilter, statusFilter, search, fetchFeedback]);
 
-  useEffect(() => { load(true); }, [catFilter, statusFilter]);
+  // Filters reload immediately; search is debounced so typing/clearing the
+  // box refreshes results too (it used to only run on the keyboard's submit
+  // key, so clearing the box left stale filtered results on screen).
+  useEffect(() => {
+    const t = setTimeout(() => load(true), search ? 400 : 0);
+    return () => clearTimeout(t);
+  }, [catFilter, statusFilter, search]);
 
   // Clears the manual pull-to-refresh spinner once whatever fetch is in
   // flight (the pull-triggered one, in practice — see manualRefreshing's
@@ -225,6 +239,7 @@ export default function AdminFeedbackScreen() {
       const csv = await exportFeedbackCsv({
         category: catFilter !== 'All' ? catFilter : undefined,
         status:   statusFilter !== 'All' ? statusFilter : undefined,
+        search:   search.trim() || undefined,
       });
       if (!csv) { Alert.alert('Export Failed', 'Could not export feedback. Try again.'); return; }
       await Share.share({ title: 'feedback-export.csv', message: csv });
@@ -312,9 +327,7 @@ export default function AdminFeedbackScreen() {
       </View>
 
       {/* List */}
-      {adminLoading && adminFeedback.length === 0 ? (
-        <ActivityIndicator color={Brand.tactical} style={{ marginTop: 40 }} />
-      ) : adminError ? (
+      {adminError ? (
         <View style={styles.emptyBox}>
           <ThemedText style={[styles.emptyText, { color: tc.textHint }]}>{adminError}</ThemedText>
           <Pressable onPress={() => load(true)} style={styles.retryBtn}>
@@ -333,11 +346,15 @@ export default function AdminFeedbackScreen() {
           onRefresh={() => { setManualRefreshing(true); load(true); }}
           refreshing={manualRefreshing}
           ListEmptyComponent={
-            <View style={styles.emptyBox}>
-              <ThemedText style={[styles.emptyText, { color: tc.textHint }]}>No feedback found.</ThemedText>
-            </View>
+            adminLoading
+              ? <ActivityIndicator color={Brand.tactical} style={{ marginTop: 40 }} />
+              : (
+                <View style={styles.emptyBox}>
+                  <ThemedText style={[styles.emptyText, { color: tc.textHint }]}>No feedback found.</ThemedText>
+                </View>
+              )
           }
-          ItemSeparatorComponent={() => <View style={{ height: StyleSheet.hairlineWidth, backgroundColor: tc.borderColor }} />}
+          ItemSeparatorComponent={Separator}
         />
       )}
 

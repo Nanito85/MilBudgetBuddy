@@ -90,7 +90,7 @@ export const SCHOOL_DATA: InstallationSchoolInfo[] = [
     dodea: [],
     localDistrict: 'Muscogee County School District (GA)',
     districtUrl: 'www.muscogee.k12.ga.us',
-    sloNotes: 'Muscogee County has a strong military family support program. SLO office at Fort Moore coordinates enrollment.',
+    sloNotes: 'Muscogee County has a strong military family support program. SLO office at Fort Benning coordinates enrollment.',
   },
   {
     installationId: 'fort_stewart',
@@ -631,7 +631,7 @@ export const SCHOOL_DATA: InstallationSchoolInfo[] = [
     hasDoDEA: false,
     dodea: [],
     localDistrict: 'Vernon Parish School Board (LA)',
-    sloNotes: 'Leesville HS, Pickering HS, and South Beauregard HS serve the Fort Johnson area. Contact SLO for school zone by address.',
+    sloNotes: 'Leesville HS, Pickering HS, and South Beauregard HS serve the Fort Polk area. Contact SLO for school zone by address.',
   },
   {
     installationId: 'fort_richardson',
