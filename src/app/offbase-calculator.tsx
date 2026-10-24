@@ -166,7 +166,7 @@ export default function OffbaseCalculatorScreen() {
             <TextInput
               value={locSearch}
               onChangeText={setLocSearch}
-              placeholder="Fort Liberty · Norfolk · San Diego · 28301"
+              placeholder="Fort Bragg · Norfolk · San Diego · 28301"
               placeholderTextColor={tc.textMuted}
               style={[styles.searchInput, { color: tc.textPrimary }]}
               returnKeyType="search"

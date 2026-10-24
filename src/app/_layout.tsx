@@ -142,12 +142,17 @@ export default function RootLayout() {
   // Not signed in — show sign-in screen (optional; user can skip and use locally)
   // We route to sign-in but the sign-in screen itself has a "Use without account" skip option
   // So we only gate if they haven't onboarded yet AND aren't signed in
-  if (!onboarded && !user) {
-    // Let onboarding handle it — OnboardingFlow will offer sign-up at the end
-    return <OnboardingFlow />;
+  // Onboarding gets the same crash-recovery screen as the rest of the app —
+  // it used to render outside the ErrorBoundary, so a throw there (where
+  // earlier data-loss bugs lived) left a blank screen with no way out.
+  // OnboardingFlow offers sign-up at the end for anyone not signed in.
+  if (!onboarded) {
+    return (
+      <ErrorBoundary>
+        <OnboardingFlow />
+      </ErrorBoundary>
+    );
   }
-
-  if (!onboarded) return <OnboardingFlow />;
 
   return (
     <ErrorBoundary>

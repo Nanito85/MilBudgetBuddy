@@ -215,7 +215,7 @@ function LocationSearch({
         <TextInput
           value={value}
           onChangeText={onChange}
-          placeholder="e.g. Fort Liberty · Norfolk · San Diego · Kaneohe"
+          placeholder="e.g. Fort Bragg · Norfolk · San Diego · Kaneohe"
           placeholderTextColor={tc.textMuted}
           style={[styles.searchInput, { color: inputText }]}
           returnKeyType="search"

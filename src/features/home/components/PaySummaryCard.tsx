@@ -197,6 +197,15 @@ export function PaySummaryCard({ breakdown }: Props) {
         </View>
       </View>
 
+      {!breakdown.housingResolved && (
+        <Pressable onPress={() => setShowEdit(true)} style={styles.housingWarn} accessibilityRole="button">
+          <ThemedText style={[styles.housingWarnText, { color: tc.warning }]}>
+            ⚠ {breakdown.isOha ? 'OHA' : 'BAH'} isn&apos;t available for your duty station, so it&apos;s shown as $0 and your take-home is too low.
+            Check your duty station in Profile, or tap here to enter your {breakdown.isOha ? 'OHA' : 'BAH'} from your LES.
+          </ThemedText>
+        </Pressable>
+      )}
+
       {/* Household combined bar */}
       {hasSpouseIncome && !expanded && (
         <View style={styles.householdBar}>
@@ -447,6 +456,9 @@ const styles = StyleSheet.create({
   },
   editLesBtnActive: { borderColor: Brand.accent + '60' },
   editLesTxt: { fontSize: 9, fontWeight: '800', letterSpacing: 0.5 },
+
+  housingWarn: { paddingHorizontal: Spacing.three, paddingBottom: Spacing.two },
+  housingWarnText: { fontSize: 12, lineHeight: 17, fontWeight: '600' },
 
   householdBar: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',

@@ -78,6 +78,10 @@ export interface LESBreakdown {
   // BAH-eligible mhaZip). Lets the UI relabel the line item accordingly.
   isOha: boolean;
   ohaApproximate: boolean;
+  // False when BAH/OHA should apply but no rate was found for the location
+  // (and none was entered by hand) — the UI must say so rather than let a
+  // silent $0 read as "no housing allowance".
+  housingResolved: boolean;
   // COLA (Cost-of-Living Allowance) at the member's own duty station — CONUS
   // COLA (ZIP-based, only ~18 high-cost metro areas nationwide qualify) or
   // OCONUS COLA (installation-based), whichever applies. colaTracked is
@@ -192,6 +196,10 @@ interface HousingResult {
   amount: number;
   isOha: boolean;
   approximate: boolean;
+  // False when the member should draw BAH/OHA here but no rate could be
+  // found (ZIP not in the BAH table, unknown OCONUS station, or no duty
+  // station set) — so the $0 is "unknown", not "not entitled".
+  resolved: boolean;
 }
 
 // Full BAH only applies off base. Barracks residents (no dependents, government
@@ -210,20 +218,21 @@ function resolveHousing(
   hasDependents: boolean,
   housingStatus: HousingStatus,
 ): HousingResult {
-  if (housingStatus === 'on_base_family_housing') return { amount: 0, isOha: false, approximate: false };
+  if (housingStatus === 'on_base_family_housing') return { amount: 0, isOha: false, approximate: false, resolved: true };
 
   if (mhaZip) {
-    const amount = housingStatus === 'barracks' ? BAH_PARTIAL : (getBahRate(mhaZip, payGrade as any, hasDependents) ?? 0);
-    return { amount, isOha: false, approximate: false };
+    if (housingStatus === 'barracks') return { amount: BAH_PARTIAL, isOha: false, approximate: false, resolved: true };
+    const rate = getBahRate(mhaZip, payGrade as PayGrade, hasDependents);
+    return { amount: rate ?? 0, isOha: false, approximate: false, resolved: rate != null };
   }
 
-  if (housingStatus === 'barracks') return { amount: 0, isOha: false, approximate: false };
+  if (housingStatus === 'barracks') return { amount: 0, isOha: false, approximate: false, resolved: true };
 
   const area = dutyStationId ? getOhaAreaForInstallation(dutyStationId) : undefined;
-  if (!area) return { amount: 0, isOha: false, approximate: false };
+  if (!area) return { amount: 0, isOha: false, approximate: false, resolved: false };
   const rate = getOhaRate(area.locationLabel, payGrade as PayGrade, hasDependents);
-  if (!rate) return { amount: 0, isOha: true, approximate: area.approximate };
-  return { amount: rate.rentCeilingUSD + rate.utilityAllowanceUSD, isOha: true, approximate: area.approximate };
+  if (!rate) return { amount: 0, isOha: true, approximate: area.approximate, resolved: false };
+  return { amount: rate.rentCeilingUSD + rate.utilityAllowanceUSD, isOha: true, approximate: area.approximate, resolved: true };
 }
 
 /**
@@ -285,7 +294,7 @@ export function calcLES(inputs: LESInputs): LESBreakdown {
         ? getDrillPay(payGrade, yos, drillsPerMonth)
         : getBasicPay(payGrade as any, yos);
   const housing = noActiveAllowances
-    ? { amount: 0, isOha: false, approximate: false }
+    ? { amount: 0, isOha: false, approximate: false, resolved: true }
     // When separated, the member's OWN housing is at the without-dependents
     // rate — the with-dependents rate now belongs to the dependents' actual
     // location (familyBah below), not the member's empty household.
@@ -449,6 +458,7 @@ export function calcLES(inputs: LESInputs): LESBreakdown {
     extraDeductionItems,
     isOha: housing.isOha,
     ohaApproximate: housing.approximate,
+    housingResolved: housing.resolved || overrides?.bahOverride != null,
     isRetiredPay: isRetired,
     familySeparated: familySepActive,
     familyBah, familyBahResolved, fsa,

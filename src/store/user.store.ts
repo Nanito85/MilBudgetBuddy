@@ -6,6 +6,24 @@ import { FinancialGoal, GuardDutyStatus, HousingStatus, LESOverrides, MilitaryBr
 
 const STORAGE_KEY = 'mbb_user_prefs';
 
+// Army posts whose original names were restored in 2025 (see
+// data/installations.ts). Profiles saved before then still hold the 2023
+// name as installationName; hydrate() swaps it for the current one.
+const RENAMED_POSTS: Record<string, string> = {
+  'Fort Liberty': 'Fort Bragg',
+  'Fort Cavazos': 'Fort Hood',
+  'Fort Eisenhower': 'Fort Gordon',
+  'Fort Moore': 'Fort Benning',
+  'Fort Novosel': 'Fort Rucker',
+  'Fort Johnson': 'Fort Polk',
+  'Fort Gregg-Adams': 'Fort Lee',
+  'US Army Reserve Command (Fort Liberty)': 'US Army Reserve Command (Fort Bragg)',
+};
+
+function currentPostName(name: string | undefined | null): string | undefined {
+  return name ? RENAMED_POSTS[name] : undefined;
+}
+
 const DEFAULTS: UserPreferences = {
   branch: undefined,
   serviceStatus: undefined,
@@ -190,6 +208,8 @@ export const useUserStore = create<UserState>((set, get) => ({
           patch.proSource = 'grandfather';
         }
       }
+      const renamed = currentPostName(prefs.installationName);
+      if (renamed) patch.installationName = renamed;
 
       // The cloud profile landed while disk was being read (see applyRemote).
       // It's newer, so keep it — but Pro/install fields are device-side or
@@ -220,7 +240,8 @@ export const useUserStore = create<UserState>((set, get) => ({
   // Profile snapshot from the cloud (another device's edit), saved to disk
   // too so a later launch can't reload the older on-device profile.
   applyRemote: (data) => {
-    set({ ...data, hydrated: true });
+    const renamed = currentPostName(data.installationName);
+    set({ ...data, ...(renamed ? { installationName: renamed } : {}), hydrated: true });
     save(snapshot(get));
   },
 

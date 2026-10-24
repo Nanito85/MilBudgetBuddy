@@ -21,22 +21,22 @@ export interface Installation {
 
 export const INSTALLATIONS: Installation[] = [
   // ── ARMY ─────────────────────────────────────────────────────────────────────
-  { id: 'fort_liberty',        name: 'Fort Liberty',              city: 'Fayetteville',       state: 'NC', mhaZip: '28301', oconus: false, branch: 'Army' },
+  { id: 'fort_liberty',        name: 'Fort Bragg',                city: 'Fayetteville',       state: 'NC', mhaZip: '28301', oconus: false, branch: 'Army' },
   { id: 'fort_campbell',       name: 'Fort Campbell',             city: 'Clarksville',        state: 'TN', mhaZip: '37040', oconus: false, branch: 'Army' },
-  { id: 'fort_cavazos',        name: 'Fort Cavazos',              city: 'Killeen',            state: 'TX', mhaZip: '76544', oconus: false, branch: 'Army' },
+  { id: 'fort_cavazos',        name: 'Fort Hood',                 city: 'Killeen',            state: 'TX', mhaZip: '76544', oconus: false, branch: 'Army' },
   { id: 'fort_bliss',          name: 'Fort Bliss',                city: 'El Paso',            state: 'TX', mhaZip: '79916', oconus: false, branch: 'Army' },
   { id: 'fort_sam_houston',    name: 'Fort Sam Houston (JBSA)',   city: 'San Antonio',        state: 'TX', mhaZip: '78234', oconus: false, branch: 'Army' },
   { id: 'fort_carson',         name: 'Fort Carson',               city: 'Colorado Springs',   state: 'CO', mhaZip: '80913', oconus: false, branch: 'Army' },
   { id: 'jblm',                name: 'Joint Base Lewis-McChord',  city: 'Tacoma',             state: 'WA', mhaZip: '98433', oconus: false, branch: 'Joint' },
   { id: 'fort_drum',           name: 'Fort Drum',                 city: 'Watertown',          state: 'NY', mhaZip: '13602', oconus: false, branch: 'Army' },
-  { id: 'fort_eisenhower',     name: 'Fort Eisenhower',           city: 'Augusta',            state: 'GA', mhaZip: '30905', oconus: false, branch: 'Army' },
-  { id: 'fort_moore',          name: 'Fort Moore',                city: 'Columbus',           state: 'GA', mhaZip: '31905', oconus: false, branch: 'Army' },
+  { id: 'fort_eisenhower',     name: 'Fort Gordon',               city: 'Augusta',            state: 'GA', mhaZip: '30905', oconus: false, branch: 'Army' },
+  { id: 'fort_moore',          name: 'Fort Benning',              city: 'Columbus',           state: 'GA', mhaZip: '31905', oconus: false, branch: 'Army' },
   { id: 'fort_stewart',        name: 'Fort Stewart',              city: 'Hinesville',         state: 'GA', mhaZip: '31314', oconus: false, branch: 'Army' },
   { id: 'fort_leavenworth',    name: 'Fort Leavenworth',          city: 'Leavenworth',        state: 'KS', mhaZip: '66027', oconus: false, branch: 'Army' },
   { id: 'fort_knox',           name: 'Fort Knox',                 city: 'Radcliff',           state: 'KY', mhaZip: '40121', oconus: false, branch: 'Army' },
   { id: 'fort_sill',           name: 'Fort Sill',                 city: 'Lawton',             state: 'OK', mhaZip: '73503', oconus: false, branch: 'Army' },
-  { id: 'fort_novosel',        name: 'Fort Novosel',              city: 'Daleville',          state: 'AL', mhaZip: '36322', oconus: false, branch: 'Army' },
-  { id: 'fort_johnson',        name: 'Fort Johnson',              city: 'Leesville',          state: 'LA', mhaZip: '71446', oconus: false, branch: 'Army' },
+  { id: 'fort_novosel',        name: 'Fort Rucker',               city: 'Daleville',          state: 'AL', mhaZip: '36322', oconus: false, branch: 'Army' },
+  { id: 'fort_johnson',        name: 'Fort Polk',                 city: 'Leesville',          state: 'LA', mhaZip: '71446', oconus: false, branch: 'Army' },
   { id: 'schofield',           name: 'Schofield Barracks',        city: 'Wahiawa',            state: 'HI', mhaZip: '96818', oconus: false, nonForeignOconus: true, branch: 'Army' },
   { id: 'fort_wainwright',     name: 'Fort Wainwright',           city: 'Fairbanks',          state: 'AK', mhaZip: '99703', oconus: false, nonForeignOconus: true, branch: 'Army' },
   { id: 'fort_richardson',     name: 'Fort Richardson (JBER)',    city: 'Anchorage',          state: 'AK', mhaZip: '99501', oconus: false, nonForeignOconus: true, branch: 'Army' },
@@ -58,7 +58,7 @@ export const INSTALLATIONS: Installation[] = [
   { id: 'white_sands',         name: 'White Sands Missile Range', city: 'White Sands',        state: 'NM', mhaZip: '88002', oconus: false, branch: 'Army' },
   { id: 'yuma_pg',             name: 'Yuma Proving Ground',       city: 'Yuma',               state: 'AZ', mhaZip: '85365', oconus: false, branch: 'Army' },
   { id: 'fort_riley',          name: 'Fort Riley',                city: 'Junction City',      state: 'KS', mhaZip: '66442', oconus: false, branch: 'Army' },
-  { id: 'fort_gregg_adams',    name: 'Fort Gregg-Adams',          city: 'Petersburg',         state: 'VA', mhaZip: '23230', oconus: false, branch: 'Army' },
+  { id: 'fort_gregg_adams',    name: 'Fort Lee',                  city: 'Petersburg',         state: 'VA', mhaZip: '23230', oconus: false, branch: 'Army' },
 
   // ── NAVY ─────────────────────────────────────────────────────────────────────
   { id: 'ns_norfolk',          name: 'Naval Station Norfolk',     city: 'Norfolk',            state: 'VA', mhaZip: '23511', oconus: false, branch: 'Navy' },
@@ -229,7 +229,7 @@ export const INSTALLATIONS: Installation[] = [
   { id: 'afrs_jbsa',          name: 'Air Force Recruiting Service (JBSA-Randolph)',  city: 'San Antonio',       state: 'TX', mhaZip: '78234', oconus: false, branch: 'Air Force' },
   { id: 'ssr_peterson',       name: 'Space Force Recruiting Service (Peterson SFB)', city: 'Colorado Springs',  state: 'CO', mhaZip: '80913', oconus: false, branch: 'Space Force' },
   { id: 'cg_recruit_cmd',     name: 'Coast Guard Recruiting Command (Arlington)',    city: 'Arlington',         state: 'VA', mhaZip: '22211', oconus: false, branch: 'Coast Guard' },
-  { id: 'usarc_liberty',      name: 'US Army Reserve Command (Fort Liberty)',        city: 'Fayetteville',      state: 'NC', mhaZip: '28301', oconus: false, branch: 'Army' },
+  { id: 'usarc_liberty',      name: 'US Army Reserve Command (Fort Bragg)',          city: 'Fayetteville',      state: 'NC', mhaZip: '28301', oconus: false, branch: 'Army' },
   { id: 'marforres_no',       name: 'Marine Forces Reserve (New Orleans)',           city: 'New Orleans',       state: 'LA', mhaZip: '70129', oconus: false, branch: 'Marines' },
   { id: 'afrc_robins',        name: 'Air Force Reserve Command (Robins AFB)',        city: 'Warner Robins',     state: 'GA', mhaZip: '31098', oconus: false, branch: 'Air Force' },
   { id: 'navres_norfolk',     name: 'Navy Reserve Forces Command (Norfolk)',         city: 'Norfolk',           state: 'VA', mhaZip: '23511', oconus: false, branch: 'Navy' },
@@ -335,6 +335,20 @@ const STATE_SEARCH_ALIASES: Record<string, string> = {
   diego: 'british indian ocean territory',
 };
 
+// The Army restored these posts' original names in 2025. Members (and older
+// orders/paperwork) still use the 2023 names, so searching either finds them.
+// Installation ids stay on the 2023 names — they're stored in profiles.
+const FORMER_NAME_ALIASES: Record<string, string[]> = {
+  fort_liberty: ['fort liberty'],
+  usarc_liberty: ['fort liberty'],
+  fort_cavazos: ['fort cavazos'],
+  fort_eisenhower: ['fort eisenhower'],
+  fort_moore: ['fort moore'],
+  fort_novosel: ['fort novosel'],
+  fort_johnson: ['fort johnson'],
+  fort_gregg_adams: ['fort gregg-adams', 'fort gregg adams'],
+};
+
 export function searchInstallations(query: string): Installation[] {
   if (!query.trim()) return INSTALLATIONS;
   const q = query.toLowerCase();
@@ -345,6 +359,7 @@ export function searchInstallations(query: string): Installation[] {
       i.city.toLowerCase().includes(q) ||
       i.state.toLowerCase().includes(q) ||
       i.branch.toLowerCase().includes(q) ||
+      (FORMER_NAME_ALIASES[i.id]?.some((a) => a.includes(q)) ?? false) ||
       (aliasedState != null && i.state.toLowerCase().includes(aliasedState)),
   );
 }
