@@ -50,3 +50,6 @@ scripts/cola-data/sources/
 *.CC.zip
 26-*_COLA_Indices.xls
 Spendable-Income-Table*.pdf
+
+# Claude Code per-user settings
+.claude/settings.local.json
