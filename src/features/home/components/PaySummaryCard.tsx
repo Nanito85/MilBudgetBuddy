@@ -340,6 +340,14 @@ export function PaySummaryCard({ breakdown }: Props) {
             />
           )}
           {breakdown.dental > 0 && <Row label="DENTAL (TDP)" value={`-${fmtPay(breakdown.dental)}`} indent negative />}
+          {breakdown.fers > 0 && (
+            <Row
+              label={`FERS RETIREMENT (${breakdown.fersRatePct}%)`}
+              value={`-${fmtPay(breakdown.fers)}`}
+              indent negative
+              onInfoPress={() => Alert.alert('FERS Contribution', 'Your required FERS pension contribution, taken out of every GS paycheck: 0.8% if you were hired before 2013, 3.1% if hired in 2013, 4.4% if hired in 2014 or later. Health insurance (FEHB) isn’t included — add your premium with ✎ EDIT → deductions.')}
+            />
+          )}
           {breakdown.extraDeductionItems.map(item => (
             <Row key={item.id} label={item.label.toUpperCase()} value={`-${fmtPay(item.amount)}`} indent negative />
           ))}

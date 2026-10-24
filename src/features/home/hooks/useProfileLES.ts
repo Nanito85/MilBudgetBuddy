@@ -45,6 +45,10 @@ export function useProfileLESInputs(): ProfileLESInputs {
     sbpEnabled: s.sbpEnabled,
     sbpCoveragePct: s.sbpCoveragePct,
     drillsPerMonth: s.drillsPerMonth,
+    // For a civilian, onboarding saves the federal start date here. A
+    // retiree's dateOfEnlistment is their MILITARY entry date, not a GS hire
+    // date, so it's not used for them (FERS falls back to the newest rate).
+    civilianStartDate: s.serviceStatus === 'civilian' ? s.dateOfEnlistment : undefined,
     // Not set yet → a Guard member who marked Title 10 status is on federal
     // orders; everyone else defaults to drill-only.
     reserveOnOrders: s.reserveOnOrders ?? s.guardDutyStatus === 'title10',

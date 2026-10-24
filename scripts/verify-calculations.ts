@@ -11,7 +11,7 @@
  * Exits non-zero (and prints which assertion failed) if anything regresses.
  */
 import { adjustedPayDay, getPayDayInfo } from '@/features/home/utils/payScheduleCalc';
-import { calcLES, getDrillPay } from '@/features/home/utils/lesCalc';
+import { calcLES, fersContributionRate, getDrillPay } from '@/features/home/utils/lesCalc';
 import { estimateAnnualFedTax } from '@/data/federal-tax';
 import { getBasicPay, getHigh3Average, getHigh3AverageDetailed } from '@/data/basic-pay-rates';
 import { combinedRating, monthlyCompensationDetailed, monthlyCompensation } from '@/features/va/utils/vaDisabilityCalc';
@@ -197,6 +197,21 @@ console.log('\n[StateTax] Stationed in vs outside the home state');
   assertEqual(mi.stateTax, 0, 'Michigan exempts military pay');
   const caUnknown = calcLES({ ...base, stateResidence: 'CA', mhaZip: undefined });
   assertTrue(caUnknown.stateTax > 0, 'Unknown duty station is treated as in-state (taxed), not assumed exempt');
+}
+
+// ── FERS contribution on GS pay ──────────────────────────────────────────────
+console.log('[FERS] Contribution rate by hire date');
+{
+  assertEqual(fersContributionRate('2010-06-01'), 0.008, 'Hired before 2013: 0.8%');
+  assertEqual(fersContributionRate('2013-05-01'), 0.031, 'Hired in 2013: 3.1% (FERS-RAE)');
+  assertEqual(fersContributionRate('2020-01-15'), 0.044, 'Hired 2014 or later: 4.4% (FERS-FRAE)');
+  assertEqual(fersContributionRate(undefined), 0.044, 'Unknown hire date: 4.4%');
+  const civ = calcLES({
+    payGrade: 'E5', yos: 0, mhaZip: undefined, hasSpouse: false, numChildren: 0,
+    specialPaysTotal: 0, tspContribPct: 0, hasDentalFamily: false, sglOptOut: true,
+    serviceStatus: 'civilian', gsGrade: 9, gsStep: 1, gsLocalityKey: 'RUS', civilianStartDate: '2018-03-01',
+  });
+  assertEqual(civ.fers, civ.gsGrossMonthly * 0.044, 'Civilian take-home deducts FERS at 4.4% of GS pay');
 }
 
 // ── 4. State tax always computed (never silently skipped) ────────────────────

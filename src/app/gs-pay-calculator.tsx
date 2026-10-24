@@ -14,6 +14,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Brand, Spacing } from '@/constants/theme';
 import { estimateAnnualFedTax, FICA_RATE } from '@/data/federal-tax';
+import { fersContributionRate } from '@/features/home/utils/lesCalc';
 import {
   GS_LOCALITIES,
   GS_MILITARY_EQUIV,
@@ -30,11 +31,14 @@ const fmt  = (n: number) => '$' + Math.round(n).toLocaleString();
 
 // Rough federal tax estimate for display only. Bracket table lives in
 // data/federal-tax.ts (single source of truth, shared with lesCalc.ts) —
-// single-filer only, matching this screen's own disclaimer below.
+// single-filer only, matching this screen's own disclaimer below. Also takes
+// out the FERS contribution at the current new-hire rate (4.4%), which every
+// GS paycheck has; it used to be left out, overstating take-home.
 function estimateAnnualNet(annual: number): number {
   const tax = estimateAnnualFedTax(annual, false);
   const fica = annual * FICA_RATE;
-  return Math.round(annual - tax - fica);
+  const fers = annual * fersContributionRate(undefined);
+  return Math.round(annual - tax - fica - fers);
 }
 
 function GradePicker({ value, onChange }: { value: number; onChange: (v: number) => void }) {
@@ -355,7 +359,7 @@ export default function GSPayCalculatorScreen() {
 
         <ThemedView type="backgroundElement" style={styles.disclaimer}>
           <ThemedText style={[styles.disclaimerText, { color: tc.textMuted }]}>
-            GS pay shown is the official 2026 OPM Salary Table (1.0% base raise from 2025; locality rates are frozen at 2025 levels for 2026 — no locality update was issued). Net pay estimate uses single-filer federal brackets only — state taxes and benefit deductions are not included. Verify exact pay at OPM.gov.
+            GS pay shown is the official 2026 OPM Salary Table (1.0% base raise from 2025; locality rates are frozen at 2025 levels for 2026 — no locality update was issued). Net pay estimate uses single-filer federal brackets, FICA and the 4.4% FERS contribution (new-hire rate) — state taxes and FEHB health premiums are not included. Verify exact pay at OPM.gov.
           </ThemedText>
         </ThemedView>
 

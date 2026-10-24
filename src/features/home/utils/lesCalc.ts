@@ -109,6 +109,9 @@ export interface LESBreakdown {
   alsoGsCivilian: boolean;
   gsGrossMonthly: number;
   gsFica: number;
+  // FERS employee retirement contribution on GS pay (after-tax), 0 if none.
+  fers: number;
+  fersRatePct: number;
   // Deployment / hazard pay — see data/deployment-locations.ts. isDeployed
   // reflects whether it actually applied (false for a retiree/civilian or
   // an unrecognized location, even if the member toggled the switch on).
@@ -170,6 +173,9 @@ export interface LESInputs {
   gsGrade?: number;
   gsStep?: number;
   gsLocalityKey?: string;
+  // First day of federal civilian service (the profile stores it in
+  // dateOfEnlistment for civilians). Sets the FERS contribution rate.
+  civilianStartDate?: string;
   // Deployment / hazard pay — independent of familySeparated above (a
   // single deployed member has no one to be "separated" from but still
   // draws IDP/CZTE; a member on an unaccompanied OCONUS tour draws FSA but
@@ -240,6 +246,20 @@ function resolveHousing(
 }
 
 /**
+ * FERS employee contribution rate by date first hired into federal service:
+ * 0.8% before 2013, 3.1% (FERS-RAE) for 2013 hires, 4.4% (FERS-FRAE) from
+ * 2014 on. With no start date, 4.4% — the rate for anyone hired in the last
+ * decade, and it errs toward a lower (safer) take-home. Deducted after tax:
+ * unlike traditional TSP, FERS contributions aren't pre-tax.
+ */
+export function fersContributionRate(startDate: string | undefined): number {
+  if (!startDate || !/^\d{4}-\d{2}-\d{2}$/.test(startDate)) return 0.044;
+  if (startDate < '2013-01-01') return 0.008;
+  if (startDate < '2014-01-01') return 0.031;
+  return 0.044;
+}
+
+/**
  * Legacy High-3 retired-pay multiplier: 2.5% of the High-3 average basic pay
  * per year of service — exactly 50% at the 20-year minimum-retirement point,
  * +2.5% for every year served beyond that (e.g. 30 YOS = 75%). Clamped to
@@ -255,7 +275,7 @@ export function calcLES(inputs: LESInputs): LESBreakdown {
     tspContribPct, rothTspPct = 0, hasDentalFamily, sglOptOut, stateResidence, overrides, serviceStatus,
     familySeparated, dependentsMhaZip, alsoGsCivilian, gsGrade, gsStep, gsLocalityKey,
     isDeployed, deploymentLocationId, sbpEnabled, sbpCoveragePct = 1,
-    drillsPerMonth = 4, reserveOnOrders,
+    drillsPerMonth = 4, reserveOnOrders, civilianStartDate,
   } = inputs;
 
   const isRetired = serviceStatus === 'retired';
@@ -470,8 +490,10 @@ export function calcLES(inputs: LESInputs): LESBreakdown {
   // "Family Dental Plan" toggle itself in EditPayModal for the matching fix.
   const dental   = (hasDentalFamily && !isCivilianOnly) ? dentalFamilyRate(payGrade) : 0;
   const gsFica = gsGrossMonthly * FICA_RATE;
+  const fersRate = gsGrossMonthly > 0 ? fersContributionRate(civilianStartDate) : 0;
+  const fers = gsGrossMonthly * fersRate;
 
-  const totalDeductions = fica + fedTax + stateTax + tsp + sgli + sbp + dental + extraDeductions;
+  const totalDeductions = fica + fedTax + stateTax + tsp + sgli + sbp + dental + fers + extraDeductions;
   const netPay = grossPay - totalDeductions;
 
   return {
@@ -494,6 +516,7 @@ export function calcLES(inputs: LESInputs): LESBreakdown {
     familyBah, familyBahResolved, fsa,
     alsoGsCivilian: gsActive,
     gsGrossMonthly, gsFica,
+    fers, fersRatePct: Math.round(fersRate * 1000) / 10,
     isDeployed: !!deploymentLoc,
     deploymentLocationLabel: deploymentLoc?.label,
     isCzte,
