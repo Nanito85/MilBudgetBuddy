@@ -9,6 +9,7 @@ import { Brand, Spacing } from '@/constants/theme';
 import { useThemeColors } from '@/hooks/use-theme';
 import {
   combinedRating,
+  combineVaRatings,
   monthlyCompensation,
   monthlyCompensationDetailed,
   RatingInput,
@@ -221,7 +222,7 @@ export default function VaDisabilityScreen() {
               <View style={styles.resultRow}>
                 <View>
                   <ThemedText style={[styles.resultExact, { color: tc.textHint }]}>
-                    {combined.exact.toFixed(1)}% exact
+                    {combined.exact}% combined
                   </ThemedText>
                   <ThemedText style={[styles.resultRounded, { color: ratingColor }]}>
                     {combined.rounded}% rounded
@@ -248,7 +249,7 @@ export default function VaDisabilityScreen() {
                     ✓ Bilateral factor applied
                   </ThemedText>
                   <ThemedText type="small" style={{ color: tc.textSecondary, marginTop: 2 }}>
-                    You have ratings on both a left and a right limb. The VA combines those first, then adds a 10% bonus (+{combined.bilateralBonus.toFixed(1)}% here) before combining with your other ratings — it&apos;s required by regulation, not optional, and gives you a slightly higher combined rating than simply combining every rating in one pass.
+                    You have ratings on both a left and a right limb. The VA combines those first, then adds a 10% bonus (+{combined.bilateralBonus}% here) before combining with your other ratings — it&apos;s required by regulation, not optional, and gives you a slightly higher combined rating than simply combining every rating in one pass.
                   </ThemedText>
                 </View>
               )}
@@ -259,14 +260,15 @@ export default function VaDisabilityScreen() {
                 {(() => {
                   function walkThrough(items: RatingInput[], startLabel: string) {
                     const sorted = [...items].sort((a, b) => b.pct - a.pct);
-                    let remaining = 100;
+                    // Same rule as combinedRating(): combine two at a time, round to a whole number each step.
+                    let total = 0;
                     return sorted.map((r, i) => {
-                      const disabled = remaining * (r.pct / 100);
-                      remaining = remaining - disabled;
+                      const before = total;
+                      total = i === 0 ? r.pct : Math.round(before + (100 - before) * (r.pct / 100));
                       return (
                         <ThemedText key={r.id} style={[styles.breakdownStep, { color: tc.textHint }]}>
-                          {i === 0 ? `${r.pct}% of ${startLabel} = ${disabled.toFixed(1)}% disabled` : `${r.pct}% of ${(remaining + disabled).toFixed(1)}% = ${disabled.toFixed(1)}% more disabled`}
-                          {` → ${(100 - remaining).toFixed(1)}% total`}
+                          {i === 0 ? `Start with ${r.pct}% (of ${startLabel})` : `${r.pct}% of the ${100 - before}% still unrated = ${total - before}% more`}
+                          {` → ${total}% total`}
                         </ThemedText>
                       );
                     });
@@ -280,11 +282,8 @@ export default function VaDisabilityScreen() {
                   const otherRatings = ratings.filter((r) => !r.limb);
                   // Recompute the bilateral subtotal the same way combinedRating()
                   // did internally, purely so this walkthrough can show it.
-                  const limbSorted = [...limbRatings].sort((a, b) => b.pct - a.pct);
-                  let limbRemaining = 100;
-                  for (const r of limbSorted) limbRemaining = limbRemaining * (1 - r.pct / 100);
-                  const limbSubtotalExact = 100 - limbRemaining;
-                  const bilateralValue = limbSubtotalExact + limbSubtotalExact * 0.1;
+                  const limbSubtotalExact = combineVaRatings(limbRatings.map((r) => r.pct));
+                  const bilateralValue = Math.min(100, Math.round(limbSubtotalExact * 1.1));
 
                   return (
                     <>
@@ -293,7 +292,7 @@ export default function VaDisabilityScreen() {
                       </ThemedText>
                       {walkThrough(limbRatings, '100%')}
                       <ThemedText style={[styles.breakdownStep, { color: tc.tactical }]}>
-                        {limbSubtotalExact.toFixed(1)}% + 10% bilateral factor = {bilateralValue.toFixed(1)}% (treated as one disability)
+                        {limbSubtotalExact}% + 10% bilateral factor = {bilateralValue}% (treated as one disability)
                       </ThemedText>
                       <ThemedText style={[styles.breakdownStep, { color: tc.tactical, fontWeight: '700', marginTop: 4 }]}>
                         Step 2 — combine that with your other ratings:
@@ -306,7 +305,7 @@ export default function VaDisabilityScreen() {
                   );
                 })()}
                 <ThemedText style={[styles.breakdownStep, { color: tc.textHint }]}>
-                  {combined.exact.toFixed(1)}% → rounds to <ThemedText style={{ fontWeight: '800', color: ratingColor }}>{combined.rounded}%</ThemedText>
+                  {combined.exact}% → rounds to <ThemedText style={{ fontWeight: '800', color: ratingColor }}>{combined.rounded}%</ThemedText>
                 </ThemedText>
               </View>
             </ThemedView>

@@ -15,6 +15,7 @@ import { calcLES, fersContributionRate, getDrillPay, retiredPayMultiplier } from
 import { calcRetirement } from '@/features/retirement/utils/retirementCalc';
 import { calcTspProjection } from '@/features/tsp/utils/tspCalc';
 import { estimateAnnualFedTax, ficaMonthly } from '@/data/federal-tax';
+import { getApproxInstallationForZip } from '@/data/installations';
 import { getBasicPay, getHigh3Average, getHigh3AverageDetailed } from '@/data/basic-pay-rates';
 import { combinedRating, monthlyCompensationDetailed, monthlyCompensation } from '@/features/va/utils/vaDisabilityCalc';
 import { getInstallationById } from '@/data/installations';
@@ -306,8 +307,8 @@ console.log('\n[9] VA bilateral factor');
   ]);
   assertTrue(withBilateral.bilateralApplied, 'Left-leg + right-leg ratings trigger the bilateral factor');
   assertTrue(withBilateral.bilateralBonus > 0, 'Bilateral bonus is a positive percentage');
-  // Hand-computed: combine(20,20) = 36; +10% = 39.6; combine(39.6, 10) = 45.64 -> rounds to 50.
-  assertEqual(withBilateral.exact, 45.64, 'Bilateral-adjusted exact combined value matches hand calculation');
+  // Hand-computed with the VA's whole-number rounding at each step: combine(20,20) = 36; +10% = 39.6 -> 40; combine(40,10) = 46 -> rounds to 50.
+  assertEqual(withBilateral.exact, 46, 'Bilateral-adjusted combined value matches hand calculation (VA rounds each step)');
   assertEqual(withBilateral.rounded, 50, 'Bilateral-adjusted rating rounds to 50%');
 
   const withoutBilateralTag = combinedRating([
@@ -734,6 +735,25 @@ assertEqual(retiredPayMultiplier(20, '2019-06-01'), 0.4, 'Entry on/after 2018-01
   const projEarly = calcTspProjection('E5', 5, 5, 0.07, 10, 28);
   assertEqual(Math.round(projEarly.finalBalance), Math.round(fv(getBasicPay('E5', 5) * 0.10, 0.07, 10)), 'TSP calculator before 26 YOS is unchanged');
 }
+
+// ── Audit round 2 (2026-11-07) ────────────────────────────────────────────────
+{
+  const r = (pcts: number[]) => combinedRating(pcts.map((pct, i) => ({ id: String(i), pct })));
+  assertEqual(r([30, 20, 10, 10]).rounded, 60, 'VA combined 30+20+10+10 = 55 -> 60 (rounds each step, not once at the end)');
+  assertEqual(r([10, 20, 30, 30]).rounded, 70, 'VA combined 10+20+30+30 = 65 -> 70');
+  assertEqual(r([10, 20, 30, 50]).rounded, 80, 'VA combined 10+20+30+50 = 75 -> 80');
+  assertEqual(r([50, 30]).rounded, 70, 'VA combined 50+30 = 65 -> 70');
+  assertEqual(r([60, 40]).exact, 76, 'VA combined 60+40 = 76');
+  const twoLegs = combinedRating([{ id: 'a', pct: 70, limb: 'left_leg' }, { id: 'b', pct: 70, limb: 'right_leg' }]);
+  assertTrue(twoLegs.exact <= 100 && twoLegs.remaining >= 0, 'Bilateral combined rating never exceeds 100');
+}
+{
+  const sf = getApproxInstallationForZip('94105');
+  assertTrue(!!sf && sf.mhaZip === '94102', 'A San Francisco ZIP maps to the San Francisco BAH area, not the first base in California');
+  const nyc = getApproxInstallationForZip('10001');
+  assertTrue(!!nyc && nyc.mhaZip === '10001', 'A New York City ZIP maps to its own BAH area');
+}
+assertEqual(getOconusCola('Yokota AB / Tokyo Area', 'E9', 40, true), getOconusCola('Yokota AB / Tokyo Area', 'E9', 39, true), 'OCONUS COLA at 40+ YOS uses the top bracket, not $0');
 
 // ── Summary ────────────────────────────────────────────────────────────────────
 console.log(`\n${pass} passed, ${fail} failed`);

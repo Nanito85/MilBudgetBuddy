@@ -1,3 +1,4 @@
+import { findBahKeyApprox } from '@/data/bah-rates';
 import { zipToState } from '@/data/zip-state-ranges';
 
 export interface Installation {
@@ -428,6 +429,21 @@ export function getApproxInstallationForZip(zip: string): Installation | null {
   if (!state) return null;
   const anchor = getStateFallbackAnchor(state);
   if (!anchor) return null;
+  // Prefer the BAH table's own closest area for this ZIP (San Francisco ZIPs
+  // get the San Francisco rates) over the first base listed for the state
+  // (which gave Fort Irwin rates to San Francisco). Only trusted when it is in
+  // the same state, so a prefix match can't jump across a state line.
+  const match = findBahKeyApprox(zip);
+  if (match && zipToState(match.key) === state) {
+    return {
+      ...anchor,
+      id: `zip_${zip}`,
+      mhaZip: match.key,
+      name: match.exact
+        ? `ZIP ${zip} (BAH area ${match.key})`
+        : `Near ZIP ${zip} (≈ BAH area ${match.key})`,
+    };
+  }
   return {
     ...anchor,
     id: `zip_${zip}`,
