@@ -16,6 +16,9 @@ import { calcRetirement } from '@/features/retirement/utils/retirementCalc';
 import { calcTspProjection } from '@/features/tsp/utils/tspCalc';
 import { estimateAnnualFedTax, ficaMonthly } from '@/data/federal-tax';
 import { getApproxInstallationForZip } from '@/data/installations';
+import { calcDITY } from '@/features/dity/utils/dityCalc';
+import { calcPayoff } from '@/features/debt/utils/debtCalc';
+import { localISODate, monthKeyLabel } from '@/utils/formatDate';
 import { getBasicPay, getHigh3Average, getHigh3AverageDetailed } from '@/data/basic-pay-rates';
 import { combinedRating, monthlyCompensationDetailed, monthlyCompensation } from '@/features/va/utils/vaDisabilityCalc';
 import { getInstallationById } from '@/data/installations';
@@ -754,6 +757,28 @@ assertEqual(retiredPayMultiplier(20, '2019-06-01'), 0.4, 'Entry on/after 2018-01
   assertTrue(!!nyc && nyc.mhaZip === '10001', 'A New York City ZIP maps to its own BAH area');
 }
 assertEqual(getOconusCola('Yokota AB / Tokyo Area', 'E9', 40, true), getOconusCola('Yokota AB / Tokyo Area', 'E9', 39, true), 'OCONUS COLA at 40+ YOS uses the top bracket, not $0');
+
+// ── Audit round 3 (2026-11-07) ────────────────────────────────────────────────
+{
+  const over = calcDITY({ grade: 'E5', withDep: true, hasSpouse: false, actualWeight: 11000, distanceMiles: 1000, taxBracket: 12, proGearWeight: 0 } as any);
+  assertEqual(over.effectiveWeight, 9000, 'DITY: unused pro-gear allowance cannot pay for overweight household goods (E5 w/ dependents, 11,000 lb -> 9,000 lb paid)');
+  assertTrue(over.overAllowance, 'DITY: household goods over the allowance set the overweight flag');
+  const withPg = calcDITY({ grade: 'E5', withDep: true, hasSpouse: false, actualWeight: 8000, distanceMiles: 1000, taxBracket: 12, proGearWeight: 1500 } as any);
+  assertEqual(withPg.effectiveWeight, 9500, 'DITY: pro-gear is paid on top of household goods');
+}
+{
+  const stuck = calcPayoff([{ id: 'a', name: 'Card', balance: 10000, apr: 24, minPayment: 100 } as any], 0, 'avalanche');
+  assertTrue(!!stuck && stuck.stuck.length === 1 && stuck.stuck[0].minNeeded === 201, 'Debt payoff: a payment below the interest is flagged with the minimum needed ($201)');
+  const ok = calcPayoff([{ id: 'a', name: 'Card', balance: 5000, apr: 18, minPayment: 150 } as any], 0, 'avalanche');
+  assertTrue(!!ok && ok.stuck.length === 0 && ok.totalMonths === 47, 'Debt payoff: a payable debt is not flagged (47 months)');
+}
+{
+  const a = calcRetirement({ grade: 'E7', retirementYOS: 20, currentAge: 28, currentYOS: 10, tspContribRate: 0.05, tspAnnualReturn: 0.07 });
+  const b = calcRetirement({ grade: 'E7', retirementYOS: 20, currentAge: 28, currentYOS: 10, tspContribRate: 0.15, tspAnnualReturn: 0.07 });
+  assertEqual(a.breakEvenYearsAfterRetirement, b.breakEvenYearsAfterRetirement, 'BRS break-even does not change with your own contribution rate (only government money counts)');
+}
+assertEqual(monthKeyLabel('2026-11'), 'November 2026', 'Month label is built from local parts, not UTC');
+assertEqual(localISODate(new Date(2026, 10, 30, 23, 30)), '2026-11-30', 'Local date at 11:30 PM stays the same day (not tomorrow in UTC)');
 
 // ── Summary ────────────────────────────────────────────────────────────────────
 console.log(`\n${pass} passed, ${fail} failed`);

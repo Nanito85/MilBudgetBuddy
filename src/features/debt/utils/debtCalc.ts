@@ -21,6 +21,9 @@ export interface PayoffResult {
   totalPaid: number;
   payoffDate: Date;
   monthlyCost: number;   // min payments + extra
+  // Debts still unpaid after the 50-year cap: their payment doesn't cover the monthly interest.
+  // totalMonths/totalInterest are meaningless when this is non-empty.
+  stuck: { id: string; name: string; minNeeded: number }[];
 }
 
 interface SimDebt {
@@ -125,6 +128,14 @@ export function calcPayoff(
 
   const payoffDate = new Date(today.getFullYear(), today.getMonth() + month, 1);
 
+  const stuck = sim
+    .filter((d) => d.balance > 0)
+    .map((d) => {
+      const start = debts.find((x) => x.id === d.id)!;
+      // Smallest whole-dollar payment that beats the first month's interest.
+      return { id: d.id, name: d.name, minNeeded: Math.floor((start.balance * start.apr) / 1200) + 1 };
+    });
+
   return {
     rows,
     totalMonths: month,
@@ -132,6 +143,7 @@ export function calcPayoff(
     totalPaid: Math.round(sim.reduce((s, d) => s + d.totalPaid, 0)),
     payoffDate,
     monthlyCost: totalPayment,
+    stuck,
   };
 }
 

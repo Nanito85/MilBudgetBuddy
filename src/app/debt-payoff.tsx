@@ -222,7 +222,7 @@ export default function DebtPayoffScreen() {
 
   // Avalanche always saves equal or more interest by definition.
   // monthsSaved > 0 means avalanche also finishes sooner.
-  const showCompare = (avalanche && snowball && interestSaved > 0) ?? false;
+  const showCompare = !!(avalanche && snowball && interestSaved > 0 && avalanche.stuck.length === 0 && snowball.stuck.length === 0);
 
   const commitExtra = () => {
     const n = parseFloat(extraInput);
@@ -370,8 +370,20 @@ export default function DebtPayoffScreen() {
                 </ThemedView>
               )}
 
+              {/* Payments that don't cover the interest never pay the debt off: say so instead of showing a 50-year "payoff" */}
+              {activeResult && activeResult.stuck.length > 0 && (
+                <ThemedView type="backgroundElement" style={[styles.resultCard, { borderLeftColor: tc.warning }]}>
+                  <ThemedText style={[styles.resultEyebrow, { color: tc.warning }]}>THIS PLAN NEVER PAYS OFF</ThemedText>
+                  {activeResult.stuck.map((s) => (
+                    <ThemedText key={s.id} style={[styles.resultSub, { color: tc.textPrimary }]}>
+                      {s.name}: your payment is less than the interest it adds each month, so the balance never shrinks. Pay at least {fmtDollar(s.minNeeded)} a month on it.
+                    </ThemedText>
+                  ))}
+                </ThemedView>
+              )}
+
               {/* Active strategy results */}
-              {activeResult && (
+              {activeResult && activeResult.stuck.length === 0 && (
                 <>
                   <SectionLabel text={`${strategy.toUpperCase()} RESULTS`} />
                   <ThemedView

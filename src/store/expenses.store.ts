@@ -1,6 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 
+import { localISODate, localMonthKey } from '@/utils/formatDate';
+
 const STORAGE_KEY = 'mbb_expenses';
 
 export interface Expense {
@@ -28,7 +30,7 @@ function uid() {
 }
 
 function today(): string {
-  return new Date().toISOString().slice(0, 10);
+  return localISODate();
 }
 
 function save(expenses: Expense[]) {
@@ -40,7 +42,7 @@ export function monthKey(date: string): string {
 }
 
 export function currentMonthKey(): string {
-  return new Date().toISOString().slice(0, 7);
+  return localMonthKey();
 }
 
 export const useExpensesStore = create<ExpensesState>((set, get) => ({

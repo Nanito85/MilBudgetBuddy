@@ -1,6 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 
+import { localISODate } from '@/utils/formatDate';
+
 const STORAGE_KEY = 'mbb_nw_snapshots';
 const MAX_SNAPSHOTS = 24; // keep up to 24 monthly snapshots (~2 years)
 
@@ -51,7 +53,7 @@ export const useNwSnapshotsStore = create<NwSnapshotsState>((set, get) => ({
   },
 
   saveSnapshot: (assets, liabilities) => {
-    const date = new Date().toISOString().slice(0, 10);
+    const date = localISODate();
     const existing = get().snapshots;
     // Replace existing snapshot for same month, or append
     const monthKey = date.slice(0, 7);

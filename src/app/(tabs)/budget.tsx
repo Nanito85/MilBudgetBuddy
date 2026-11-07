@@ -28,6 +28,7 @@ import {
   useBudgetStore,
 } from '@/store/budget.store';
 import { currentMonthKey, Expense, useExpensesStore } from '@/store/expenses.store';
+import { monthKeyLabel } from '@/utils/formatDate';
 import {
   GOAL_CATEGORY_META,
   GoalCategory,
@@ -962,10 +963,7 @@ export default function BudgetScreen() {
   const catMap: Record<string, BudgetCategory> = {};
   for (const c of categories) catMap[c.id] = c;
 
-  const monthLabel = new Date(mk + '-01').toLocaleDateString('en-US', {
-    month: 'long',
-    year: 'numeric',
-  });
+  const monthLabel = monthKeyLabel(mk);
 
   return (
     <KeyboardAvoidingView

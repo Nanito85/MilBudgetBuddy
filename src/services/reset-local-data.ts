@@ -57,7 +57,12 @@ export async function resetAllLocalData(): Promise<void> {
   // Kid Mode's PIN is SecureStore-backed and deliberately excluded from
   // sync (per-device by design), so it doesn't need the suppression above.
   await useKidModeStore.getState().resetAll();
-  await AsyncStorage.clear();
+  // Wipe every app key EXCEPT Firebase's persisted sign-in ("firebase:authUser:...").
+  // AsyncStorage.clear() removed that too, so Reset All Data silently signed the
+  // member out on the next launch even though the account is meant to stay
+  // signed in (see resetAllData below). Sign-out itself clears auth separately.
+  const keys = await AsyncStorage.getAllKeys();
+  await AsyncStorage.multiRemove(keys.filter((k) => !k.startsWith('firebase:')));
 }
 
 /**
