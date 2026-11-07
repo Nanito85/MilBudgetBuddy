@@ -72,6 +72,6 @@ const s = StyleSheet.create({
     backgroundColor: Brand.tactical, borderRadius: 6,
     paddingHorizontal: Spacing.four, paddingVertical: Spacing.two + 4,
   },
-  btnText: { color: '#FFFFFF', fontSize: 13, fontWeight: '800', letterSpacing: 0.5 },
+  btnText: { color: '#04080F', fontSize: 13, fontWeight: '800', letterSpacing: 0.5 },
   debug: { fontSize: 10, textAlign: 'center', marginTop: Spacing.two },
 });

@@ -102,7 +102,7 @@ const styles = StyleSheet.create({
   title: { fontSize: 18, lineHeight: 24, fontWeight: '900', letterSpacing: 1, textAlign: 'center' },
   body: { fontSize: 14, lineHeight: 20, textAlign: 'center' },
   primaryBtn: { backgroundColor: Brand.tactical, borderRadius: 6, paddingHorizontal: Spacing.four, paddingVertical: Spacing.two + 4 },
-  primaryBtnText: { color: '#FFFFFF', fontSize: 13, lineHeight: 18, fontWeight: '800', letterSpacing: 0.5 },
+  primaryBtnText: { color: '#04080F', fontSize: 13, lineHeight: 18, fontWeight: '800', letterSpacing: 0.5 },
   banner: {
     position: 'absolute', left: Spacing.three, right: Spacing.three,
     flexDirection: 'row', alignItems: 'flex-start', gap: Spacing.two,

@@ -68,7 +68,9 @@ function PINKeypad({
     const next = digits + d;
     setDigits(next);
     if (next.length === 4) {
-      setTimeout(() => onComplete(next), 100);
+      // Clear right after submitting so a wrong PIN can be retyped at once
+      // (the dots used to stay full and the keys ignored until backspace x4).
+      setTimeout(() => { onComplete(next); setDigits(''); }, 100);
     }
   };
 
@@ -160,13 +162,25 @@ function ExitPINModal({
 }) {
   const tc = useThemeColors();
   const [error, setError]       = useState('');
-  const [attempts, setAttempts] = useState(0);
   const [lockedUntil, setLockedUntil] = useState<number | null>(null);
   const [countdown, setCountdown]     = useState(0);
+  const recordFailedPin = useKidModeStore((s) => s.recordFailedPin);
+  const clearPinLock = useKidModeStore((s) => s.clearPinLock);
 
-  // Reset state when modal opens
+  // On open, pick up any lockout still running. The failed-attempt count and
+  // lockout live in the store (persisted), so closing and reopening this screen
+  // no longer resets them (that allowed unlimited brute force of the 10,000 PINs).
   React.useEffect(() => {
-    if (visible) { setAttempts(0); setLockedUntil(null); setCountdown(0); setError(''); }
+    if (!visible) return;
+    const until = useKidModeStore.getState().pinLockedUntil;
+    if (until > Date.now()) {
+      setLockedUntil(until);
+      setCountdown(Math.ceil((until - Date.now()) / 1000));
+    } else {
+      setLockedUntil(null);
+      setCountdown(0);
+    }
+    setError('');
   }, [visible]);
 
   // Countdown ticker during lockout
@@ -174,7 +188,7 @@ function ExitPINModal({
     if (!lockedUntil) return;
     const id = setInterval(() => {
       const remaining = Math.ceil((lockedUntil - Date.now()) / 1000);
-      if (remaining <= 0) { setLockedUntil(null); setCountdown(0); setAttempts(0); setError(''); }
+      if (remaining <= 0) { setLockedUntil(null); setCountdown(0); setError(''); }
       else setCountdown(remaining);
     }, 500);
     return () => clearInterval(id);
@@ -184,17 +198,17 @@ function ExitPINModal({
     if (lockedUntil && Date.now() < lockedUntil) return;
     if (entered === pin) {
       setError('');
-      setAttempts(0);
+      clearPinLock();
       onSuccess();
     } else {
-      const next = attempts + 1;
-      setAttempts(next);
-      if (next >= MAX_PIN_ATTEMPTS) {
-        setLockedUntil(Date.now() + LOCKOUT_SECONDS * 1000);
-        setCountdown(LOCKOUT_SECONDS);
-        setError(`Too many attempts. Locked for ${LOCKOUT_SECONDS}s.`);
+      const { failures, lockedUntil: until } = recordFailedPin(MAX_PIN_ATTEMPTS, LOCKOUT_SECONDS);
+      if (until > Date.now()) {
+        setLockedUntil(until);
+        setCountdown(Math.ceil((until - Date.now()) / 1000));
+        setError('Too many attempts. Locked.');
       } else {
-        setError(`Incorrect PIN — ${MAX_PIN_ATTEMPTS - next} attempt${MAX_PIN_ATTEMPTS - next !== 1 ? 's' : ''} remaining`);
+        const left = MAX_PIN_ATTEMPTS - (failures % MAX_PIN_ATTEMPTS);
+        setError(`Incorrect PIN — ${left} attempt${left !== 1 ? 's' : ''} remaining`);
       }
     }
   };
@@ -378,6 +392,11 @@ export function KidModeScreen() {
   const kids = useKidsStore((s) => s.kids);
   const kidsHydrated = useKidsStore((s) => s.hydrated);
   const [showExit, setShowExit] = useState(false);
+  // If the PIN can't be read back (a swallowed SecureStore error), no entry could ever match and the
+  // parent would be locked out of the app across launches. Treat a missing PIN as "no lock" and let them out.
+  React.useEffect(() => {
+    if (showExit && !pin) { setShowExit(false); deactivate(); }
+  }, [showExit, pin, deactivate]);
   const [tipIdx, setTipIdx] = useState(() => Math.floor(Math.random() * MONEY_TIPS.length));
 
   const kid = kids.find((k) => k.id === kidId);
@@ -506,7 +525,7 @@ export function KidModeScreen() {
 
       {/* Exit PIN modal */}
       <ExitPINModal
-        visible={showExit}
+        visible={showExit && !!pin}
         pin={pin ?? ''}
         accentColor={theme.primary}
         onSuccess={() => { setShowExit(false); deactivate(); }}

@@ -15,7 +15,7 @@ import { create } from 'zustand';
 
 import { trackSignup } from '@/services/analytics';
 import { auth } from '@/services/firebase';
-import { deleteCloudData, pushToCloud, stopSync } from '@/services/firestore-sync';
+import { deleteCloudData, pushToCloudStrict, stopSync } from '@/services/firestore-sync';
 import { resetAllLocalData } from '@/services/reset-local-data';
 
 const API_BASE = process.env.EXPO_PUBLIC_API_BASE_URL ?? 'http://localhost:3000';
@@ -115,7 +115,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       // below would drop a pending one). If the backup can't be confirmed,
       // keep the user signed in rather than wipe unsynced data.
       const outcome = await Promise.race([
-        pushToCloud(current.uid).then(() => 'ok' as const, () => 'failed' as const),
+        pushToCloudStrict(current.uid).then(() => 'ok' as const, () => 'failed' as const),
         new Promise<'timeout'>((resolve) => setTimeout(() => resolve('timeout'), 5000)),
       ]);
       if (outcome !== 'ok') {
