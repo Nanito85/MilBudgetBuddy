@@ -192,22 +192,15 @@ export const useUserStore = create<UserState>((set, get) => ({
       const raw = await AsyncStorage.getItem(STORAGE_KEY);
       const prefs: Partial<UserPreferences> = raw ? JSON.parse(raw) : {};
 
-      // Grandfather anyone who already had the app installed before Pro
-      // gating shipped — a device with no saved prefs at all (raw === null)
-      // is a genuinely fresh install and gets the normal 7-day-trial flow;
-      // a device with saved prefs but no installedAt predates this feature
-      // and gets free access backfilled, without ever overwriting a real
-      // purchase/admin-code entitlement it may already hold.
+      // installedAt is just a marker of when this device first ran the app.
+      // The one-time migration that used to hand free Pro (to 2099) to devices
+      // with saved prefs but no installedAt was removed: the paywall has been
+      // live since 2026-08-20, so every active install has long since been
+      // migrated, and the branch could also fire by mistake (a cloud profile
+      // saved to disk before this read looks exactly like a pre-gating
+      // install). Grants already stored as 'grandfather' are untouched.
       let patch: Partial<UserPreferences> = {};
-      if (!raw) {
-        patch.installedAt = new Date().toISOString();
-      } else if (!prefs.installedAt) {
-        patch.installedAt = '2020-01-01T00:00:00.000Z';
-        if (!prefs.proExpiresAt) {
-          patch.proExpiresAt = '2099-01-01T00:00:00.000Z';
-          patch.proSource = 'grandfather';
-        }
-      }
+      if (!prefs.installedAt) patch.installedAt = new Date().toISOString();
       const renamed = currentPostName(prefs.installationName);
       if (renamed) patch.installationName = renamed;
 
