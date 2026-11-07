@@ -788,6 +788,23 @@ assertEqual(localISODate(new Date(2026, 10, 30, 23, 30)), '2026-11-30', 'Local d
   assertTrue(pd('kunsan').matched === false, 'Per diem: a base with no entry of its own is flagged as approximate');
 }
 
+// ── Audit round 5 (2026-11-07) ────────────────────────────────────────────────
+assertEqual(getBasicPay('O8', 18), 17912, 'O-8 over 18 years is $17,912');
+assertEqual(getBasicPay('O8', 20), 18598, 'O-8 over 20 years is $18,598');
+assertEqual(getBasicPay('O8', 22), 18999, 'O-8 over 22 years is the $18,999 cap');
+{
+  const retiree = (state: string) => calcLES({
+    payGrade: 'E7', yos: 22, mhaZip: undefined, hasSpouse: false, specialPaysTotal: 0,
+    tspContribPct: 0, hasDentalFamily: false, sglOptOut: true, serviceStatus: 'retired', stateResidence: state,
+  });
+  const ga = retiree('GA');
+  assertEqual(ga.stateTax, 0, 'Georgia: a pension under the $65,000 exclusion has no state tax');
+  const ca = retiree('CA');
+  assertTrue(ca.stateTax > 0 && ca.stateTax < ca.basePay * 0.0275, 'California: only the pension above the $20,000 exclusion is taxed');
+  const va = retiree('VA');
+  assertEqual(va.stateTax, Math.max(0, va.basePay) * 0.0439, 'Virginia: no dollar exclusion modeled (age-conditional), taxed at the effective rate');
+}
+
 // ── Summary ────────────────────────────────────────────────────────────────────
 console.log(`\n${pass} passed, ${fail} failed`);
 if (fail > 0) process.exit(1);
