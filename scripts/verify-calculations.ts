@@ -11,8 +11,10 @@
  * Exits non-zero (and prints which assertion failed) if anything regresses.
  */
 import { adjustedPayDay, getPayDayInfo } from '@/features/home/utils/payScheduleCalc';
-import { calcLES, fersContributionRate, getDrillPay } from '@/features/home/utils/lesCalc';
-import { estimateAnnualFedTax } from '@/data/federal-tax';
+import { calcLES, fersContributionRate, getDrillPay, retiredPayMultiplier } from '@/features/home/utils/lesCalc';
+import { calcRetirement } from '@/features/retirement/utils/retirementCalc';
+import { calcTspProjection } from '@/features/tsp/utils/tspCalc';
+import { estimateAnnualFedTax, ficaMonthly } from '@/data/federal-tax';
 import { getBasicPay, getHigh3Average, getHigh3AverageDetailed } from '@/data/basic-pay-rates';
 import { combinedRating, monthlyCompensationDetailed, monthlyCompensation } from '@/features/va/utils/vaDisabilityCalc';
 import { getInstallationById } from '@/data/installations';
@@ -411,7 +413,7 @@ console.log('\n[13] TDP dental deduction gated for civilians (a TRICARE/military
     specialPaysTotal: 0, tspContribPct: 0, hasDentalFamily: true, sglOptOut: true,
     serviceStatus: 'retired', alsoGsCivilian: true, gsGrade: 12, gsStep: 5, gsLocalityKey: 'RUS',
   });
-  assertTrue(retiredGsDental.dental > 0, 'A retiree who also works a GS job can still be enrolled in TDP as a retiree (only pure civilians are gated out)');
+  assertEqual(retiredGsDental.dental, 0, 'A retiree (even one who also works a GS job) is not charged TDP: retirees are not TDP-eligible');
 }
 
 // ── 14. State tax on stacked GS wages uses the regular (non-exempt) table ────
@@ -683,6 +685,54 @@ console.log('\n[18] Branch/component-aware Reserve Hub guidance — Guard vs Res
     assertTrue(/update your status in Profile/.test(sadMsg), `${msgFn.name}: SAD (guard_known) message reminds the member to update Profile if orders changed`);
     assertTrue(/update your status in Profile/.test(t10Msg), `${msgFn.name}: Title 10 (guard_known) message reminds the member to update Profile if orders changed`);
   }
+}
+
+// ── Low-priority accuracy fixes (2026-11-07) ──────────────────────────────────
+assertEqual(ficaMonthly(5000), 382.5, 'FICA below the Social Security wage base is a flat 7.65%');
+assertEqual(ficaMonthly(20000), (184500 * 0.062 + 240000 * 0.0145) / 12, 'FICA caps the Social Security part at the 2026 wage base');
+assertEqual(ficaMonthly(0), 0, 'FICA on no wages is 0');
+
+assertEqual(retiredPayMultiplier(20), 0.5, 'Legacy retired pay is 2.5% per year (50% at 20)');
+assertEqual(retiredPayMultiplier(20, '2010-03-01'), 0.5, 'Pre-2018 entry stays on the 2.5% formula');
+assertEqual(retiredPayMultiplier(20, '2019-06-01'), 0.4, 'Entry on/after 2018-01-01 (BRS) is 2.0% per year');
+
+{
+  const retiree = calcLES({
+    payGrade: 'E7', yos: 20, mhaZip: undefined, hasSpouse: true, specialPaysTotal: 0,
+    tspContribPct: 0, hasDentalFamily: true, sglOptOut: false, serviceStatus: 'retired',
+  });
+  assertEqual(retiree.dental, 0, 'A retiree is not charged TDP dental (not eligible)');
+  const active = calcLES({
+    payGrade: 'E7', yos: 10, mhaZip: undefined, hasSpouse: true, specialPaysTotal: 0,
+    tspContribPct: 0, hasDentalFamily: true, sglOptOut: false,
+  });
+  assertTrue(active.dental > 0, 'Active duty with family dental is still charged');
+}
+
+{
+  // Jan 1, 2028 is a Saturday: observed Fri Dec 31, so payday is Thu Dec 30.
+  const d = adjustedPayDay(new Date(2028, 0, 1));
+  assertEqual(`${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`, '2027-12-30', 'Jan 1 payday skips the observed Dec 31 holiday');
+}
+
+{
+  const fv = (pmt: number, rate: number, years: number) => {
+    const r = rate / 12, n = years * 12;
+    return pmt * ((Math.pow(1 + r, n) - 1) / r);
+  };
+  const base = getBasicPay('E7', 10);
+  // No 26-year cutoff reached: balance equals the plain annuity of member + match.
+  const early = calcRetirement({ grade: 'E7', retirementYOS: 20, currentAge: 30, currentYOS: 10, tspContribRate: 0.05, tspAnnualReturn: 0.07 });
+  assertEqual(Math.round(early.brs.tspBalance), Math.round(fv(base * 0.10, 0.07, 10)), 'BRS TSP before 26 YOS: member + 5% match, full term');
+  // Cutoff reached: government part stops at 26 YOS, so it must be lower than the naive total.
+  const late = calcRetirement({ grade: 'E9', retirementYOS: 30, currentAge: 40, currentYOS: 20, tspContribRate: 0.05, tspAnnualReturn: 0.07 });
+  const naive = fv(getBasicPay('E9', 20) * 0.10, 0.07, 10);
+  assertTrue(late.brs.tspBalance < naive - 1, 'BRS TSP: government contributions stop after 26 YOS');
+  const proj = calcTspProjection('E9', 24, 5, 0.07, 10, 40);
+  const projNaive = fv(getBasicPay('E9', 24) * 0.10, 0.07, 10);
+  assertTrue(proj.finalBalance < projNaive - 1, 'TSP calculator: government contributions stop after 26 YOS');
+  const projEarly = calcTspProjection('E5', 5, 5, 0.07, 10, 28);
+  assertEqual(Math.round(projEarly.finalBalance), Math.round(fv(getBasicPay('E5', 5) * 0.10, 0.07, 10)), 'TSP calculator before 26 YOS is unchanged');
 }
 
 // ── Summary ────────────────────────────────────────────────────────────────────

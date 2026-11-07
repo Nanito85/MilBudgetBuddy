@@ -81,6 +81,7 @@ export default function SbpCalculatorScreen() {
 
   const storeGrade = useUserStore((s) => s.payGrade);
   const storeYos   = useUserStore((s) => s.yos);
+  const storeEntryDate = useUserStore((s) => s.dateOfEnlistment);
 
   // Estimated retirement pay — same formula as the authoritative retired-pay
   // calculation in lesCalc.ts (High-3 average x retiredPayMultiplier), not a
@@ -94,7 +95,7 @@ export default function SbpCalculatorScreen() {
   const [retirementPay, setRetirementPay] = useState<number>(() => {
     const yos = storeYos ?? 20;
     const high3 = getHigh3Average(storeGrade ?? 'E7', yos);
-    return Math.round(high3 * retiredPayMultiplier(yos));
+    return Math.round(high3 * retiredPayMultiplier(yos, storeEntryDate));
   });
   const [coverage, setCoverage] = useState(1.0);
   const [spouseAge, setSpouseAge] = useState(45);

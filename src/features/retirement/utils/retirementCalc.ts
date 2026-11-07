@@ -118,7 +118,14 @@ export function calcRetirement(inputs: RetirementInputs): RetirementResult {
   const govtRate = govtMatchRate(tspContribRate);
   const govtPMT = monthlyBasePay * govtRate;
   const totalPMT = memberPMT + govtPMT;
-  const tspBalance = fvAnnuity(totalPMT, tspAnnualReturn, yearsToRetirement);
+  // Government contributions (auto 1% + match) stop after 26 years of service;
+  // the member's own keep going until retirement. The government balance keeps
+  // compounding after its last contribution.
+  const govtYears = Math.min(yearsToRetirement, Math.max(0, 26 - currentYOS));
+  const growthAfterGovt = Math.pow(1 + tspAnnualReturn / 12, (yearsToRetirement - govtYears) * 12);
+  const tspBalance =
+    fvAnnuity(memberPMT, tspAnnualReturn, yearsToRetirement) +
+    fvAnnuity(govtPMT, tspAnnualReturn, govtYears) * growthAfterGovt;
 
   // ── Continuation pay ────────────────────────────────────────────────────────
   const cpYOS = 12;

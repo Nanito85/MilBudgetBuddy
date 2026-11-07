@@ -13,6 +13,7 @@ import { NumberStepper } from '@/features/retirement/components/NumberStepper';
 import { calcSbpPremium } from '@/features/retirement/utils/sbpCalc';
 import { VALID_RATINGS, monthlyCompensation } from '@/features/va/utils/vaDisabilityCalc';
 import { useThemeColors } from '@/hooks/use-theme';
+import { useUserStore } from '@/store/user.store';
 import {
   GUARD_DUTY_STATUS_DESCRIPTIONS,
   GUARD_DUTY_STATUS_FIELD_HINT,
@@ -282,6 +283,7 @@ export const RetiredPaySection = React.memo(function RetiredPaySection({
   onSbpCoveragePctChange: (pct: number) => void;
 }) {
   const tc = useThemeColors();
+  const entryDate = useUserStore((s) => s.dateOfEnlistment);
   return (
     <>
                 {/* Retired + currently working GS civilian — retired pay, VA
@@ -326,7 +328,7 @@ export const RetiredPaySection = React.memo(function RetiredPaySection({
                       ))}
                     </View>
                     <ThemedText style={[editStyles.dateHint, { color: tc.tactical }]}>
-                      ↳ Est. premium: {fmtPay(calcSbpPremium(getHigh3Average(grade, y) * retiredPayMultiplier(y), sbpCoveragePct))}/mo, deducted from retired pay
+                      ↳ Est. premium: {fmtPay(calcSbpPremium(getHigh3Average(grade, y) * retiredPayMultiplier(y, entryDate), sbpCoveragePct))}/mo, deducted from retired pay
                     </ThemedText>
                   </>
                 )}

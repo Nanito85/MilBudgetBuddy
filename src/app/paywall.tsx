@@ -204,9 +204,11 @@ export default function PaywallScreen() {
   // pre-selected card below it read $49.99/yr — a real pricing mismatch on
   // an IAP paywall, exactly the kind of thing App Store review flags. Now
   // tracks the selected plan and its live store price.
-  const headingPrice = selected === 'monthly'
-    ? `${monthlyDisplayPrice ?? '$4.99'}/mo`
-    : `${annualDisplayPrice ?? '$49.99'}/yr`;
+  // Only ever the store's own price — a hardcoded fallback could disagree with
+  // what the store actually charges (price changes, regional pricing). With no
+  // live price yet, the copy below drops the number instead of guessing.
+  const livePrice = selected === 'monthly' ? monthlyDisplayPrice : annualDisplayPrice;
+  const headingPrice = livePrice ? `${livePrice}${selected === 'monthly' ? '/mo' : '/yr'}` : null;
 
   // A real user reported being charged the full price immediately with no
   // free trial. The purchase itself was a genuine subscription (the backend
@@ -564,7 +566,7 @@ export default function PaywallScreen() {
             <>
               <ThemedText style={[styles.eyebrow, { color: tc.tactical }]}>{'// UNLOCK EVERYTHING'}</ThemedText>
               <ThemedText style={[styles.heading, { color: tc.textPrimary }]}>
-                {willGetTrial ? `7 days free, then ${headingPrice}` : headingPrice}
+                {willGetTrial ? (headingPrice ? `7 days free, then ${headingPrice}` : '7 days free') : (headingPrice ?? 'MilBudgetBuddy Pro')}
               </ThemedText>
 
               <View style={styles.featureList}>
@@ -581,7 +583,7 @@ export default function PaywallScreen() {
                   onPress={() => setSelected('monthly')}
                   style={[styles.planCard, { borderColor: tc.borderColor }, selected === 'monthly' && styles.planCardActive]}>
                   <ThemedText style={[styles.planLabel, { color: tc.textPrimary }]}>Monthly</ThemedText>
-                  <ThemedText style={[styles.planPrice, { color: tc.textPrimary }]}>{monthlyDisplayPrice ?? '$4.99'}</ThemedText>
+                  <ThemedText style={[styles.planPrice, { color: tc.textPrimary }]}>{monthlyDisplayPrice ?? '—'}</ThemedText>
                   <ThemedText type="small" themeColor="textSecondary">per month</ThemedText>
                 </Pressable>
                 <Pressable
@@ -591,7 +593,7 @@ export default function PaywallScreen() {
                     <ThemedText style={styles.bestValueText}>BEST VALUE</ThemedText>
                   </View>
                   <ThemedText style={[styles.planLabel, { color: tc.textPrimary }]}>Annual</ThemedText>
-                  <ThemedText style={[styles.planPrice, { color: tc.textPrimary }]}>{annualDisplayPrice ?? '$49.99'}</ThemedText>
+                  <ThemedText style={[styles.planPrice, { color: tc.textPrimary }]}>{annualDisplayPrice ?? '—'}</ThemedText>
                   <ThemedText type="small" themeColor="textSecondary">per year</ThemedText>
                 </Pressable>
               </View>
@@ -631,7 +633,7 @@ export default function PaywallScreen() {
                 style={({ pressed }) => [styles.ctaBtn, (pressed || purchaseDisabled) && { opacity: 0.7 }]}>
                 {verifying || (!productsReady && !productsTimedOut) ? <ActivityIndicator color="#04080F" /> : (
                   <ThemedText style={styles.ctaBtnText}>
-                    {willGetTrial ? 'START 7-DAY FREE TRIAL' : `SUBSCRIBE — ${headingPrice}`}
+                    {willGetTrial ? 'START 7-DAY FREE TRIAL' : (headingPrice ? `SUBSCRIBE — ${headingPrice}` : 'SUBSCRIBE')}
                   </ThemedText>
                 )}
               </Pressable>

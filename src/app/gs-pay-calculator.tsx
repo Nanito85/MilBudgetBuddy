@@ -13,7 +13,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Brand, Spacing } from '@/constants/theme';
-import { estimateAnnualFedTax, FICA_RATE } from '@/data/federal-tax';
+import { estimateAnnualFedTax, ficaMonthly } from '@/data/federal-tax';
 import { fersContributionRate } from '@/features/home/utils/lesCalc';
 import {
   GS_LOCALITIES,
@@ -36,7 +36,7 @@ const fmt  = (n: number) => '$' + Math.round(n).toLocaleString();
 // GS paycheck has; it used to be left out, overstating take-home.
 function estimateAnnualNet(annual: number): number {
   const tax = estimateAnnualFedTax(annual, false);
-  const fica = annual * FICA_RATE;
+  const fica = ficaMonthly(annual / 12) * 12;
   const fers = annual * fersContributionRate(undefined);
   return Math.round(annual - tax - fica - fers);
 }

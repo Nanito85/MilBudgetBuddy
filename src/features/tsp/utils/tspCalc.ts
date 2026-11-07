@@ -212,7 +212,11 @@ export function calcTspProjection(
   for (let y = 0; y <= yearsToGrow; y++) {
     const m = y * 12;
     const memberBal = fvAnnuity(capMonthly, annualReturn, m);
-    const totalBal = fvAnnuity(cappedTotal, annualReturn, m);
+    // Government contributions stop after 26 years of service; that balance
+    // keeps compounding afterwards.
+    const govtMonths = Math.min(m, Math.max(0, 26 - yos) * 12);
+    const govtBal = fvAnnuity(govtMonthly, annualReturn, govtMonths) * Math.pow(1 + annualReturn / 12, m - govtMonths);
+    const totalBal = memberBal + govtBal;
     points.push({ year: y, memberBalance: memberBal, totalBalance: totalBal });
   }
 

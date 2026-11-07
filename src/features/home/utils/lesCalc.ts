@@ -3,7 +3,7 @@ import { getBAS } from '@/data/bas-rates';
 import { getBasicPay, getHigh3Average } from '@/data/basic-pay-rates';
 import { getConusCola } from '@/data/conus-cola';
 import { getDeploymentLocation, IDP_MONTHLY } from '@/data/deployment-locations';
-import { estimateAnnualFedTax, FICA_RATE } from '@/data/federal-tax';
+import { estimateAnnualFedTax, ficaMonthly } from '@/data/federal-tax';
 import { calcCzteExcludedBasicPay } from '@/features/deployment/utils/deploymentCalc';
 import { getGSMonthly } from '@/data/gs-pay-rates';
 import { getOconusCola } from '@/data/oconus-cola';
@@ -176,6 +176,9 @@ export interface LESInputs {
   // First day of federal civilian service (the profile stores it in
   // dateOfEnlistment for civilians). Sets the FERS contribution rate.
   civilianStartDate?: string;
+  // Retirees only: the date they entered military service (profile
+  // dateOfEnlistment). Entering on/after 2018-01-01 means BRS (2.0%/yr).
+  militaryEntryDate?: string;
   // Deployment / hazard pay — independent of familySeparated above (a
   // single deployed member has no one to be "separated" from but still
   // draws IDP/CZTE; a member on an unaccompanied OCONUS tour draws FSA but
@@ -265,8 +268,16 @@ export function fersContributionRate(startDate: string | undefined): number {
  * +2.5% for every year served beyond that (e.g. 30 YOS = 75%). Clamped to
  * [0, 1] since DoD never pays out more than 100% of High-3 pay.
  */
-export function retiredPayMultiplier(yos: number): number {
-  return Math.min(1, Math.max(0, yos * 0.025));
+export function retiredPayMultiplier(yos: number, militaryEntryDate?: string): number {
+  // Blended Retirement System: 2.0% per year instead of 2.5%, for anyone who
+  // entered service on/after Jan 1, 2018 (members who opted in during 2018 have
+  // an earlier entry date and are not detected — they can use the override).
+  const rate = isBlendedRetirement(militaryEntryDate) ? 0.02 : 0.025;
+  return Math.min(1, Math.max(0, yos * rate));
+}
+
+export function isBlendedRetirement(militaryEntryDate: string | undefined): boolean {
+  return !!militaryEntryDate && /^\d{4}-\d{2}-\d{2}/.test(militaryEntryDate) && militaryEntryDate.slice(0, 10) >= '2018-01-01';
 }
 
 export function calcLES(inputs: LESInputs): LESBreakdown {
@@ -294,7 +305,7 @@ export function calcLES(inputs: LESInputs): LESBreakdown {
   const isDrillOnly = serviceStatus === 'reserve' && !reserveOnOrders && !isDeployed;
   // Pays that only exist for someone on full-time active duty.
   const noActiveAllowances = isRetired || isCivilianOnly || isDrillOnly;
-  const retiredPct = isRetired ? retiredPayMultiplier(yos) : 0;
+  const retiredPct = isRetired ? retiredPayMultiplier(yos, inputs.militaryEntryDate) : 0;
 
   // Family separation: a member stationed unaccompanied (OCONUS tour, sea
   // duty, etc.) with dependents living elsewhere draws BAH at the DEPENDENTS'
@@ -454,7 +465,10 @@ export function calcLES(inputs: LESInputs): LESBreakdown {
   // leaving them in overstated tax for anyone contributing. Allowances (BAH,
   // BAS, COLA, FSA) stay untaxed, as before.
   const taxablePays = isCzte ? 0 : specialPays + idp;
-  const fica    = (isRetired ? 0 : (basePay + specialPays + idp) * FICA_RATE) + gsGrossMonthly * FICA_RATE;
+  // FICA is on combined wages (the Social Security cap applies to the person,
+  // not each paycheck). Retired pay is not wages.
+  const milWages = isRetired ? 0 : basePay + specialPays + idp;
+  const fica    = ficaMonthly(milWages + gsGrossMonthly);
   const taxableBasePay = basePay - czteExcluded;
   const fedTaxableMonthly = Math.max(0, taxableBasePay + taxablePays + gsGrossMonthly - traditionalTsp - sbp);
   // Children feed the Child Tax Credit and, for an unmarried parent, head-
@@ -490,8 +504,12 @@ export function calcLES(inputs: LESInputs): LESBreakdown {
   // through FEDVIP instead, an entirely different enrollee-pays-full-premium
   // plan this app doesn't model — see the civilian-only gating of the
   // "Family Dental Plan" toggle itself in EditPayModal for the matching fix.
-  const dental   = (hasDentalFamily && !isCivilianOnly) ? dentalFamilyRate(payGrade) : 0;
-  const gsFica = gsGrossMonthly * FICA_RATE;
+  // Retirees are NOT eligible for TDP (they use FEDVIP, paid in full and not
+  // modeled here) — matches the TRICARE estimator, which already charges
+  // retirees $0 for TDP. This used to bill a retiree the active-duty family rate.
+  const dental   = (hasDentalFamily && !isCivilianOnly && !isRetired) ? dentalFamilyRate(payGrade) : 0;
+  // The GS paycheck's share of the (possibly capped) FICA total above.
+  const gsFica = milWages + gsGrossMonthly > 0 ? fica * (gsGrossMonthly / (milWages + gsGrossMonthly)) : 0;
   const fersRate = gsGrossMonthly > 0 ? fersContributionRate(civilianStartDate) : 0;
   const fers = gsGrossMonthly * fersRate;
 
