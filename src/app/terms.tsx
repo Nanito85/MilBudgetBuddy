@@ -83,7 +83,7 @@ export default function TermsScreen() {
 
         <Article num="4." title="SUBSCRIPTION AND IN-APP PURCHASES">
           <Para>
-            MilBudgetBuddy Pro is available as a monthly ($4.99/month) or annual ($49.99/year) subscription.
+            MilBudgetBuddy Pro is available as a monthly or annual subscription. The price for your country is shown on the subscription screen and in the store checkout before you subscribe, and the store price at checkout applies.
             Subscriptions automatically renew unless cancelled at least 24 hours before the renewal date.
             You may manage or cancel subscriptions through your device&apos;s App Store or Google Play account settings.
             No refunds are provided for partial subscription periods.
@@ -97,7 +97,7 @@ export default function TermsScreen() {
         <Article num="5." title="RESTORE PURCHASES">
           <Para>
             If you previously purchased a Pro subscription and need to restore access, use the
-            &quot;Restore Purchases&quot; option in the app&apos;s Settings screen. Contact support if you
+            &quot;Restore Purchases&quot; option on the subscription screen (open it from Settings). Contact support if you
             experience issues restoring your subscription.
           </Para>
         </Article>
