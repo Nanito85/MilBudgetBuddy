@@ -83,9 +83,28 @@ const ALL_COLLECTIONS = [
 // Permanently deletes every synced document for this user. Call this — and
 // await it — before deleting the Firebase Auth user, since Firestore security
 // rules gate these writes on the caller being that authenticated user.
-export async function deleteCloudData(uid: string) {
+//
+// keepEntitlement: used by Reset All Data, where the account stays. The profile
+// doc also holds the backend-written Pro fields (proExpiresAt/proSource) that
+// promo-code and admin grants live in and nothing else records; deleting the
+// whole doc erased that paid-for time. Security rules forbid the client from
+// changing those two fields, so they're carried over unchanged (a replace that
+// omits every other field) instead of deleting the doc.
+export async function deleteCloudData(uid: string, opts: { keepEntitlement?: boolean } = {}) {
   stopSync();
-  await Promise.all(ALL_COLLECTIONS.map((c) => deleteDoc(userDoc(uid, c))));
+  await Promise.all(ALL_COLLECTIONS.map(async (c) => {
+    if (c === 'profile' && opts.keepEntitlement) {
+      const d = (await getDoc(userDoc(uid, c))).data();
+      if (d && (d.proExpiresAt != null || d.proSource != null)) {
+        const keep: Record<string, unknown> = {};
+        if (d.proExpiresAt != null) keep.proExpiresAt = d.proExpiresAt;
+        if (d.proSource != null) keep.proSource = d.proSource;
+        await setDoc(userDoc(uid, c), keep); // no merge: drops every other field
+        return;
+      }
+    }
+    await deleteDoc(userDoc(uid, c));
+  }));
 }
 
 // ── Write helpers ─────────────────────────────────────────────────────────────

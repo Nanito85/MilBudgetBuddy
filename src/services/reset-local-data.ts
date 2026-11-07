@@ -76,7 +76,7 @@ export async function resetAllData(): Promise<void> {
   const uid = auth.currentUser?.uid;
   if (uid) {
     try {
-      await deleteCloudData(uid); // also stops sync listeners
+      await deleteCloudData(uid, { keepEntitlement: true }); // also stops sync listeners
     } catch (err) {
       startSync(uid);
       throw err;
