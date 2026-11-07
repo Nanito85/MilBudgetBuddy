@@ -7,7 +7,20 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { LIMITS_YEAR, TSP_CATCHUP_50, TSP_ELECTIVE_LIMIT, TSP_SUPER_CATCHUP_60_63, usd } from '@/data/annual-limits';
 import { Brand, Spacing } from '@/constants/theme';
+import { NO_INCOME_TAX_STATES, US_STATES } from '@/data/state-tax';
 import { useThemeColors } from '@/hooks/use-theme';
+
+// Built from the app's own state data so this guide can never disagree with the pay calculators.
+const STATE_GROUPS = (() => {
+  const named = (f: (s: (typeof US_STATES)[number]) => boolean) => US_STATES.filter(f).map((s) => s.name);
+  const noTax = (s: (typeof US_STATES)[number]) => NO_INCOME_TAX_STATES.has(s.code);
+  return {
+    noTax: named(noTax),
+    fullyExempt: named((s) => !noTax(s) && s.militaryExempt && !s.exemptWhenStationedOutside),
+    outsideOnly: named((s) => !noTax(s) && !!s.exemptWhenStationedOutside),
+    taxed: named((s) => !noTax(s) && !s.militaryExempt && !s.exemptWhenStationedOutside),
+  };
+})();
 
 interface TaxSection {
   id: string;
@@ -42,17 +55,17 @@ const SECTIONS: TaxSection[] = [
     id: 'state',
     icon: '🏛️',
     title: 'State Income Tax Exemptions',
-    summary: 'Nine states exempt all military pay. Others exempt partial amounts or have no income tax at all.',
+    summary: `${STATE_GROUPS.noTax.length} states have no income tax and ${STATE_GROUPS.fullyExempt.length} more fully exempt active-duty pay. Others tax it, exempt it only while you are stationed elsewhere, or exempt part of it.`,
     body:
       'STATES WITH NO INCOME TAX (all residents benefit):\n' +
-      'Alaska, Florida, Nevada, New Hampshire, South Dakota, Tennessee, Texas, Washington, Wyoming\n\n' +
-      'STATES THAT FULLY EXEMPT ACTIVE DUTY MILITARY PAY:\n' +
-      'Alabama, Arizona, Arkansas, Illinois, Indiana, Iowa, Kentucky, Minnesota, Mississippi, Missouri, Montana, New Mexico, North Dakota, Ohio, Oklahoma, Pennsylvania\n\n' +
-      'STATES WITH PARTIAL EXEMPTIONS OR CONDITIONS (verify current law — the boolean model above doesn\'t capture nuance like "only if stationed outside the state"):\n' +
-      '• California, Delaware, DC, Georgia, Kansas, Rhode Island, Utah: no exemption for active duty pay\n' +
-      '• Virginia: up to $15,000 exemption if pay is under $30,000 and you served 90+ consecutive days\n' +
-      '• Colorado, Connecticut, Idaho, Maine, Michigan, New York, Oregon, Vermont, West Virginia: exempt only if stationed outside the state, or other conditions apply\n' +
-      '• Hawaii, Louisiana, Maryland, Massachusetts, Nebraska, New Jersey, North Carolina, South Carolina, Wisconsin: exempt combat zone pay only, or Guard/Reserve-specific, or capped at a partial amount\n\n' +
+      STATE_GROUPS.noTax.join(', ') + '\n\n' +
+      'STATES THAT FULLY EXEMPT ACTIVE DUTY MILITARY PAY (they still tax most other income):\n' +
+      STATE_GROUPS.fullyExempt.join(', ') + '\n\n' +
+      'STATES THAT EXEMPT ACTIVE DUTY PAY ONLY WHILE YOU ARE STATIONED OUTSIDE THE STATE:\n' +
+      STATE_GROUPS.outsideOnly.join(', ') + '\n\n' +
+      'STATES THAT TAX ACTIVE DUTY PAY (some exclude part of it, for example a set dollar amount of Guard/Reserve pay or combat zone pay; check your state):\n' +
+      STATE_GROUPS.taxed.join(', ') + '\n\n' +
+      'These lists come from the same state data the pay calculators use. State rules change; confirm with your state tax authority.\n\n' +
       'SCRA HOME STATE RULE:\n' +
       'Under SCRA §4001, you can maintain your state of domicile (home of record) for tax purposes regardless of where you are stationed. If your home state has no income tax, you can file there even while stationed in a high-tax state.',
     tip: 'Your state of domicile is where you intend to return after the military — not necessarily where you are stationed. Choosing a no-income-tax state as your domicile (if legitimate) can save thousands per year.',

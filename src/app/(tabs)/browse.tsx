@@ -12,6 +12,7 @@ import { useThemeColors } from '@/hooks/use-theme';
 import { useKidModeStore } from '@/store/kid-mode.store';
 import { useKidsStore } from '@/store/kids.store';
 import { KidProfile, getKidTheme } from '@/types/kids.types';
+import { localISODate } from '@/utils/formatDate';
 
 // ── PIN Setup Modal ────────────────────────────────────────────────────────────
 
@@ -124,7 +125,7 @@ function KidCard({ kid, onPress, onRemove, onHandOff }: { kid: KidProfile; onPre
   const earned = kid.goals.reduce((sum, g) => sum + g.currentAmount, 0);
   const target = kid.goals.reduce((sum, g) => sum + g.targetAmount, 0);
   const completedToday = kid.chores.filter((c) =>
-    c.completedDates.includes(new Date().toISOString().slice(0, 10))
+    c.completedDates.includes(localISODate())
   ).length;
 
   return (

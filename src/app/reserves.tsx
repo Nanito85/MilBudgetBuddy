@@ -180,9 +180,13 @@ export default function ReservesScreen() {
     return retirePay;
   }, [retirementPoints, retirementHigh3, retirementMultiplier]);
 
-  // Year-based (simplified): multiplier × good years × High-3 average
+  // Year-based (simplified): a typical drilling year earns about 77 points
+  // (48 drills + 14 days annual training + 15 membership), and retired pay is
+  // (points / 360) x multiplier x High-3 - NOT a full 360 points per year,
+  // which overstated the estimate by roughly 4.5 times.
+  const TYPICAL_POINTS_PER_YEAR = 77;
   const yearBasedMonthly = useMemo(() => {
-    return retirementMultiplier * goodYears * retirementHigh3;
+    return retirementMultiplier * ((goodYears * TYPICAL_POINTS_PER_YEAR) / 360) * retirementHigh3;
   }, [goodYears, retirementHigh3, retirementMultiplier]);
 
   // ── Mobilization ──────────────────────────────────────────────────────────
@@ -448,7 +452,7 @@ export default function ReservesScreen() {
               <ThemedText style={[styles.heroMethodNote, { color: tc.textMuted }]}>
                 {retirementPoints > 0
                   ? `Using Total Retirement Points (${retirementPoints.toLocaleString()}) — Good Years above is ignored while this is set above 0.`
-                  : `Using Good Years (${goodYears}) — enter Total Retirement Points above for a more precise estimate.`}
+                  : `Using ${goodYears} good years at about 77 points a year (48 drills + 14 days annual training + 15 membership). Enter your actual Total Retirement Points above for a precise estimate.`}
               </ThemedText>
             </ThemedView>
 

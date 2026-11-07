@@ -70,8 +70,11 @@ export function calcDITY(inputs: DITYInputs): DITYResult {
   const cappedSpouseProGear = hasSpouse ? Math.min(Math.max(0, spouseProGearWeight), PRO_GEAR_SPOUSE_LBS) : 0;
 
   const totalRequestedWeight = actualWeight + cappedProGear + cappedSpouseProGear;
-  const overAllowance = totalRequestedWeight > totalAuthorizedWeight;
-  const effectiveWeight = Math.min(totalRequestedWeight, totalAuthorizedWeight);
+  // Household goods are capped at the grade's allowance; pro-gear is paid on top
+  // (up to its own cap) and cannot be used to cover excess household goods. The
+  // old combined cap let unused pro-gear allowance pay for overweight HHG.
+  const overAllowance = actualWeight > hhgAllowance;
+  const effectiveWeight = Math.min(actualWeight, hhgAllowance) + cappedProGear + cappedSpouseProGear;
   const weightPct = hhgAllowance > 0 ? Math.min(actualWeight, hhgAllowance) / hhgAllowance : 0;
 
   const ratePerLb = getRatePerLb(distanceMiles);

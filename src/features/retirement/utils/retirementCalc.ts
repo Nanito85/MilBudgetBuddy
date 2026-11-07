@@ -123,9 +123,8 @@ export function calcRetirement(inputs: RetirementInputs): RetirementResult {
   // compounding after its last contribution.
   const govtYears = Math.min(yearsToRetirement, Math.max(0, 26 - currentYOS));
   const growthAfterGovt = Math.pow(1 + tspAnnualReturn / 12, (yearsToRetirement - govtYears) * 12);
-  const tspBalance =
-    fvAnnuity(memberPMT, tspAnnualReturn, yearsToRetirement) +
-    fvAnnuity(govtPMT, tspAnnualReturn, govtYears) * growthAfterGovt;
+  const govtTspBalance = fvAnnuity(govtPMT, tspAnnualReturn, govtYears) * growthAfterGovt;
+  const tspBalance = fvAnnuity(memberPMT, tspAnnualReturn, yearsToRetirement) + govtTspBalance;
 
   // ── Continuation pay ────────────────────────────────────────────────────────
   const cpYOS = 12;
@@ -144,7 +143,11 @@ export function calcRetirement(inputs: RetirementInputs): RetirementResult {
   let breakEvenAge: number | null = null;
 
   if (pensionGapPerYear > 0) {
-    const totalBRSLead = tspBalance + cpAmount;
+    // Only what BRS adds: the government's contributions (and their growth) plus
+    // continuation pay. The member's own contributions can be made under the
+    // legacy plan too, so counting them made break-even depend on how much the
+    // member contributes (4 years at 0%, 27 years at 15%).
+    const totalBRSLead = govtTspBalance + cpAmount;
     breakEvenYears = Math.ceil(totalBRSLead / pensionGapPerYear);
     breakEvenAge = retirementAge + breakEvenYears;
   } else {
