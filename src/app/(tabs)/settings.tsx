@@ -786,7 +786,7 @@ export default function SettingsScreen() {
               onPress={() =>
                 Alert.alert(
                   'Delete Account',
-                  'This permanently deletes your account and all synced data. Local data on this device will remain until you reset the app. This cannot be undone.',
+                  'This permanently deletes your account and all synced data. Local data on this device will remain until you reset the app. Deleting your account does NOT cancel a Pro subscription. Cancel it in the App Store or Google Play first, or you will keep being billed. This cannot be undone.',
                   [
                     { text: 'Cancel', style: 'cancel' },
                     {

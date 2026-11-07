@@ -48,7 +48,7 @@ export default function LegalScreen() {
       // survives so a member doesn't lose their budget/profile/etc. just
       // because they deleted their account — Settings' own Reset All Data
       // button is the explicit, separate way to clear that.
-      'This permanently deletes your account and all cloud-synced data. Data stored only on this device — budget, profile, and everything else — is not affected and will remain until you use Reset All Data in Settings. This cannot be undone.',
+      'This permanently deletes your account and all cloud-synced data. Data stored only on this device — budget, profile, and everything else — is not affected and will remain until you use Reset All Data in Settings. Deleting your account does NOT cancel a Pro subscription. Cancel it in the App Store or Google Play first, or you will keep being billed. This cannot be undone.',
       [
         { text: 'Cancel', style: 'cancel' },
         {
