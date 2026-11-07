@@ -805,6 +805,19 @@ assertEqual(getBasicPay('O8', 22), 18999, 'O-8 over 22 years is the $18,999 cap'
   assertEqual(va.stateTax, Math.max(0, va.basePay) * 0.0439, 'Virginia: no dollar exclusion modeled (age-conditional), taxed at the effective rate');
 }
 
+// ── Audit round 7 (2026-11-07) ────────────────────────────────────────────────
+{
+  // A civilian has no military grade; the Home screen now passes a placeholder, which calcLES must ignore.
+  const civ = calcLES({
+    payGrade: 'E1', yos: 0, mhaZip: undefined, hasSpouse: false, specialPaysTotal: 0, tspContribPct: 0,
+    hasDentalFamily: true, sglOptOut: false, serviceStatus: 'civilian', gsGrade: 12, gsStep: 5, gsLocalityKey: 'DC',
+  });
+  assertEqual(Math.round(civ.gsGrossMonthly), Math.round((86659 * 1.3394) / 12), 'Civilian GS-12/5 in DC: gross is base x (1 + locality) / 12');
+  assertEqual(civ.basePay + civ.bah + civ.bas + civ.sgli + civ.dental, 0, 'Civilian has no military pay, housing, SGLI or TDP (the placeholder grade is ignored)');
+  const rus = calcLES({ payGrade: 'E1', yos: 0, mhaZip: undefined, hasSpouse: false, specialPaysTotal: 0, tspContribPct: 0, hasDentalFamily: false, sglOptOut: true, serviceStatus: 'civilian', gsGrade: 12, gsStep: 5 });
+  assertTrue(civ.gsGrossMonthly > rus.gsGrossMonthly, 'GS locality matters: DC pays more than the Rest-of-U.S. default');
+}
+
 // ── Summary ────────────────────────────────────────────────────────────────────
 console.log(`\n${pass} passed, ${fail} failed`);
 if (fail > 0) process.exit(1);

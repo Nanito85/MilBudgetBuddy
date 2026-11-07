@@ -14,6 +14,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { DatePickerModal } from '@/components/DatePickerModal';
+import { GS_LOCALITIES } from '@/data/gs-pay-rates';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Brand, Spacing } from '@/constants/theme';
@@ -737,8 +738,9 @@ const GS_STEPS  = Array.from({ length: 10 }, (_, i) => i + 1);
 function CivilianServiceInfoStep({
   onNext,
 }: {
-  onNext: (gsGrade: number, gsStep: number, lastName: string, nickname: string, startDate: string) => void;
+  onNext: (gsGrade: number, gsStep: number, lastName: string, nickname: string, startDate: string, gsLocalityKey: string) => void;
 }) {
+  const [gsLocality, setGsLocality] = useState('RUS');
   const [gsGrade, setGsGrade]     = useState(7);
   const [gsStep, setGsStep]       = useState(1);
   const [lastName, setLastName]   = useState('');
@@ -794,6 +796,28 @@ function CivilianServiceInfoStep({
         </View>
       </View>
 
+      {/* Pay locality: GS pay is base pay plus a locality percentage for where you work */}
+      <View style={styles.fieldBlock}>
+        <ThemedText type="smallBold" themeColor="textSecondary" style={styles.fieldLabel}>WHERE YOU WORK (LOCALITY PAY AREA)</ThemedText>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
+          {GS_LOCALITIES.map((loc) => (
+            <Pressable
+              key={loc.key}
+              accessibilityRole="button"
+              accessibilityState={{ selected: gsLocality === loc.key }}
+              onPress={() => setGsLocality(loc.key)}
+              style={[styles.gradeChip, { width: undefined, minWidth: 0, paddingHorizontal: 10 }, gsLocality === loc.key && styles.gradeChipActive]}>
+              <ThemedText style={[styles.gradeChipText, gsLocality === loc.key && styles.gradeChipTextActive]}>
+                {loc.label}
+              </ThemedText>
+            </Pressable>
+          ))}
+        </View>
+        <ThemedText type="small" themeColor="textSecondary" style={{ marginTop: 6 }}>
+          Not listed? Pick &quot;Rest of U.S.&quot;. You can change this later in Profile.
+        </ThemedText>
+      </View>
+
       {/* Last Name */}
       <View style={styles.fieldBlock}>
         <ThemedText type="smallBold" themeColor="textSecondary" style={styles.fieldLabel}>LAST NAME</ThemedText>
@@ -845,12 +869,12 @@ function CivilianServiceInfoStep({
 
       <View style={styles.btnGroup}>
         <Pressable
-          onPress={() => onNext(gsGrade, gsStep, lastName, nickname, startDate)}
+          onPress={() => onNext(gsGrade, gsStep, lastName, nickname, startDate, gsLocality)}
           style={({ pressed }) => [styles.primaryBtn, pressed && styles.btnPressed]}>
           <ThemedText style={styles.primaryBtnText}>Continue  →</ThemedText>
         </Pressable>
         <Pressable
-          onPress={() => onNext(gsGrade, gsStep, '', '', '')}
+          onPress={() => onNext(gsGrade, gsStep, '', '', '', gsLocality)}
           hitSlop={8}
           style={styles.skipBtn}>
           <ThemedText type="small" themeColor="textSecondary">Skip for now</ThemedText>
@@ -1414,8 +1438,9 @@ export function OnboardingFlow() {
     lastName: string,
     nickname: string,
     startDate: string,
+    gsLocalityKey: string,
   ) => {
-    setGSInfo(gsGrade, gsStep, lastName, nickname, startDate || undefined);
+    setGSInfo(gsGrade, gsStep, lastName, nickname, startDate || undefined, gsLocalityKey);
     setStep(5);
   };
 

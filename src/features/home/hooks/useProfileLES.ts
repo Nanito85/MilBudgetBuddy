@@ -70,7 +70,10 @@ export function useProfileLESInputs(): ProfileLESInputs {
 export function useProfileLES(): LESBreakdown | null {
   const inputs = useProfileLESInputs();
   return useMemo(
-    () => (inputs.payGrade ? calcLES({ ...inputs, payGrade: inputs.payGrade }) : null),
+    () => {
+      const grade = inputs.payGrade ?? (inputs.serviceStatus === 'civilian' ? ('E1' as PayGrade) : undefined);
+      return grade ? calcLES({ ...inputs, payGrade: grade }) : null;
+    },
     [inputs],
   );
 }
