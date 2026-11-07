@@ -818,6 +818,14 @@ assertEqual(getBasicPay('O8', 22), 18999, 'O-8 over 22 years is the $18,999 cap'
   assertTrue(civ.gsGrossMonthly > rus.gsGrossMonthly, 'GS locality matters: DC pays more than the Rest-of-U.S. default');
 }
 
+// ── Audit round 8 (2026-11-07) ────────────────────────────────────────────────
+{
+  const z = getInstallationById('zip_94105');
+  assertTrue(!!z && z.mhaZip === '94102' && z.id === 'zip_94105', 'A saved ZIP station id resolves back to the same ZIP area (not another base)');
+  const z2 = getInstallationById('zip_28307');
+  assertTrue(!!z2 && z2.id === 'zip_28307', 'A saved ZIP station keeps its zip_ id instead of turning into a listed base');
+}
+
 // ── Summary ────────────────────────────────────────────────────────────────────
 console.log(`\n${pass} passed, ${fail} failed`);
 if (fail > 0) process.exit(1);

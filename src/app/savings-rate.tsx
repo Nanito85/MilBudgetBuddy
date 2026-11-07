@@ -62,7 +62,7 @@ const RATE_GRADES = [
   { min: 10, max: 20,  label: 'LOW',        colorKey: 'warning'  as const, color: Brand.warning,  desc: 'Getting started. Push toward 20%.' },
   { min: 20, max: 35,  label: 'SOLID',      colorKey: 'accent'   as const, color: Brand.accent,   desc: 'On track. FI is achievable within career.' },
   { min: 35, max: 50,  label: 'STRONG',     colorKey: 'tactical' as const, color: Brand.tactical, desc: 'Ahead of peers. Accelerate to 50%.' },
-  { min: 50, max: 100, label: 'FIRE MODE',  colorKey: 'success'  as const, color: Brand.success,  desc: 'Financial independence in under 17 years.' },
+  { min: 50, max: 100, label: 'FIRE MODE',  colorKey: 'success'  as const, color: Brand.success,  desc: 'Starting from zero invested, financial independence in about 17 years or less.' },
 ];
 
 // RATE_GRADES brackets are all exclusive on their upper bound, including

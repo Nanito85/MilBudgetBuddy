@@ -279,9 +279,9 @@ export default function DITYCalculatorScreen() {
           </ThemedView>
 
           <WeightBar
-            authorizedWeight={result.totalAuthorizedWeight}
-            actualWeight={result.totalRequestedWeight}
-            effectiveWeight={result.effectiveWeight}
+            authorizedWeight={result.hhgAllowance}
+            actualWeight={result.actualWeight}
+            effectiveWeight={Math.min(result.actualWeight, result.hhgAllowance)}
             overAllowance={result.overAllowance}
           />
         </View>

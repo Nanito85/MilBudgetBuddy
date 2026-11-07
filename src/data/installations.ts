@@ -384,7 +384,10 @@ export function getInstallationByZip(zip: string | undefined | null): Installati
 /** Finds an installation by its stable id (needed for OCONUS stations, which have no mhaZip). */
 export function getInstallationById(id: string | undefined | null): Installation | null {
   if (!id) return null;
-  return INSTALLATIONS.find(i => i.id === id) ?? null;
+  // 'zip_12345' ids come from getApproxInstallationForZip (a member whose ZIP is not a listed base).
+  // They are not in INSTALLATIONS, so without this a saved ZIP station silently turned into whichever
+  // base happened to share its BAH area (ZIP 28307 became Pope Army Airfield on the next Profile save).
+  return INSTALLATIONS.find(i => i.id === id) ?? (id.startsWith('zip_') ? getApproxInstallationForZip(id.slice(4)) : null);
 }
 
 // ── ZIP fallback ─────────────────────────────────────────────────────────────

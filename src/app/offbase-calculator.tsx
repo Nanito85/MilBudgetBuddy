@@ -127,7 +127,7 @@ export default function OffbaseCalculatorScreen() {
 
         {/* Hero */}
         <ThemedView type="backgroundElement" style={styles.heroBanner}>
-          <ThemedText style={[styles.heroEyebrow, { color: tc.tactical }]}>SINGLE SERVICE MEMBER</ThemedText>
+          <ThemedText style={[styles.heroEyebrow, { color: tc.tactical }]}>SERVICE MEMBER</ThemedText>
           <ThemedText style={[styles.heroTitle, { color: tc.textPrimary }]}>Housing Decision Tool</ThemedText>
           <ThemedText style={[styles.heroBody, { color: tc.textHint }]}>
             Compare real off-base costs against your BAH entitlement to find your break-even and monthly net.
