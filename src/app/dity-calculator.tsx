@@ -82,7 +82,7 @@ export default function DITYCalculatorScreen() {
     <ThemedView style={styles.container}>
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
-        <Pressable accessibilityRole="button" accessibilityLabel="Go back"
+        <Pressable hitSlop={8} accessibilityRole="button" accessibilityLabel="Go back"
           onPress={() => (router.back())}
           style={({ pressed }) => [styles.backBtn, pressed && styles.pressed]}>
           <ThemedText style={styles.backChevron}>‹</ThemedText>
@@ -131,7 +131,7 @@ export default function DITYCalculatorScreen() {
               </ThemedText>
               <View style={styles.toggleRow}>
                 {([true, false] as const).map((val) => (
-                  <Pressable
+                  <Pressable accessibilityRole="button"
                     key={String(val)}
                     onPress={() => setWithDep(val)}
                     style={[styles.toggleBtn, withDep === val && styles.toggleBtnActive]}>
@@ -144,7 +144,7 @@ export default function DITYCalculatorScreen() {
               {withDep && (
                 <View style={{ marginTop: Spacing.two }}>
                   <View style={styles.toggleRow}>
-                    <Pressable
+                    <Pressable accessibilityRole="button"
                       onPress={() => setHasSpouse(!hasSpouse)}
                       style={[styles.toggleBtn, hasSpouse && styles.toggleBtnActive]}>
                       <ThemedText style={[styles.toggleText, hasSpouse && styles.toggleTextActive]}>
@@ -164,7 +164,7 @@ export default function DITYCalculatorScreen() {
               </ThemedText>
               <View style={styles.toggleRow}>
                 {([['full','Full PPM'],['partial','Partial PPM']] as [MoveType, string][]).map(([val, label]) => (
-                  <Pressable
+                  <Pressable accessibilityRole="button"
                     key={val}
                     onPress={() => setMoveType(val)}
                     style={[styles.toggleBtn, moveType === val && styles.toggleBtnActive]}>
@@ -347,7 +347,7 @@ export default function DITYCalculatorScreen() {
             <View style={styles.cardPadded}>
               <View style={styles.chipRow}>
                 {TAX_BRACKETS.map((bracket) => (
-                  <Pressable
+                  <Pressable accessibilityRole="button"
                     key={bracket}
                     onPress={() => setTaxBracket(bracket)}
                     style={[styles.chip, taxBracket === bracket && styles.chipActive]}>

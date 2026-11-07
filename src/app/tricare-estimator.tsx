@@ -37,7 +37,7 @@ function ChipRow<T extends string>({
       {options.map((o) => {
         const active = o.value === selected;
         return (
-          <Pressable
+          <Pressable accessibilityRole="button"
             key={o.value}
             onPress={() => onSelect(o.value)}
             style={[styles.chip, { borderColor: tc.borderColor }, active && styles.chipActive]}>
@@ -208,7 +208,7 @@ export default function TricareEstimatorScreen() {
 
         {/* Header */}
         <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
-          <Pressable onPress={() => router.back()} style={styles.backBtn}>
+          <Pressable accessibilityRole="button" hitSlop={8} onPress={() => router.back()} style={styles.backBtn}>
             <ThemedText style={[styles.backText, { color: tc.tactical }]}>‹ BACK</ThemedText>
           </Pressable>
           <ThemedText type="label" style={[styles.eyebrow, { color: tc.tactical }]}>{'// MEDICAL BENEFITS'}</ThemedText>

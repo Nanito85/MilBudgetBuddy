@@ -17,7 +17,7 @@ function ErrorFallback({ error, onRestart }: { error?: Error; onRestart: () => v
       <ThemedText style={[s.body, { color: tc.textSecondary }]}>
         An unexpected error occurred. Your data is safe — tap below to restart.
       </ThemedText>
-      <Pressable onPress={onRestart} style={s.btn}>
+      <Pressable accessibilityRole="button" onPress={onRestart} style={s.btn}>
         <ThemedText style={s.btnText}>RESTART SCREEN</ThemedText>
       </Pressable>
       {__DEV__ && error && (

@@ -46,7 +46,7 @@ function SectionHeader({
       <ThemedText style={[shStyles.label, { color: accentColor }]}>{label}</ThemedText>
       <View style={[shStyles.line, { backgroundColor: tc.borderColor }]} />
       {route && routeLabel && (
-        <Pressable onPress={() => router.push(route as any)} hitSlop={8}>
+        <Pressable accessibilityRole="button" onPress={() => router.push(route as any)} hitSlop={8}>
           <ThemedText style={[shStyles.action, { color: accentColor }]}>{routeLabel} ›</ThemedText>
         </Pressable>
       )}
@@ -270,7 +270,7 @@ export default function DashboardScreen() {
 
         {/* ── PERSONNEL PROFILE CARD ───────────────────────────────── */}
         {payGrade ? (
-          <Pressable
+          <Pressable accessibilityRole="button"
             onPress={() => router.push('/profile' as any)}
             style={({ pressed }) => [styles.personnelCard, { backgroundColor: tc.surface, borderColor: tc.borderColor }, pressed && { opacity: 0.85 }]}>
             <View style={styles.personnelLeft}>
@@ -304,7 +304,7 @@ export default function DashboardScreen() {
         ) : (
           !editProfileDismissed && (
             <View style={styles.editProfileRow}>
-              <Pressable
+              <Pressable accessibilityRole="button"
                 onPress={() => router.push('/profile' as any)}
                 style={({ pressed }) => [styles.editProfileChip, { backgroundColor: tc.surfaceInner, borderColor: tc.borderColor }, pressed && { opacity: 0.75 }]}>
                 <ThemedText style={[styles.editProfileText, { color: tc.textSecondary }]}>✏️  Set Up Profile</ThemedText>
@@ -334,7 +334,7 @@ export default function DashboardScreen() {
               )}
             </>
           ) : (
-            <Pressable
+            <Pressable accessibilityRole="button"
               onPress={() => router.push('/profile' as any)}
               style={({ pressed }) => [styles.setupPrompt, { backgroundColor: tc.surface }, pressed && { opacity: 0.8 }]}>
               <View style={styles.setupLeft}>
@@ -424,7 +424,7 @@ export default function DashboardScreen() {
             />
             <BudgetCard netPay={breakdown.netPay} />
             {budgetTop3.length > 0 && (
-              <Pressable
+              <Pressable accessibilityRole="button"
                 onPress={() => router.push('/budget' as any)}
                 style={[styles.budgetSnapshot, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
                 <View style={styles.budgetBars}>
@@ -454,7 +454,7 @@ export default function DashboardScreen() {
             route="/debt-payoff"
             routeLabel="PLAN"
           />
-          <Pressable
+          <Pressable accessibilityRole="button"
             onPress={() => router.push('/debt-payoff' as any)}
             style={({ pressed }) => [styles.statusPayCard, { backgroundColor: tc.surface, borderColor: tc.borderColor }, pressed && { opacity: 0.85 }]}>
             {debtEntries.length === 0 ? (
@@ -486,7 +486,7 @@ export default function DashboardScreen() {
             route="/net-worth"
             routeLabel="TRACK"
           />
-          <Pressable
+          <Pressable accessibilityRole="button"
             onPress={() => router.push('/net-worth' as any)}
             style={({ pressed }) => [styles.statusPayCard, { backgroundColor: tc.surface, borderColor: tc.borderColor }, pressed && { opacity: 0.85 }]}>
             {!nwHasData ? (
@@ -532,7 +532,7 @@ export default function DashboardScreen() {
           <ThemedText type="small" themeColor="textMuted" style={styles.intelCaption}>
             A new tip every week — tap to read more or browse the full library.
           </ThemedText>
-          <Pressable onPress={() => router.push(`/tip/${tip.id}` as any)}>
+          <Pressable accessibilityRole="button" onPress={() => router.push(`/tip/${tip.id}` as any)}>
             <TipCard tip={tip} />
           </Pressable>
         </View>
@@ -561,7 +561,7 @@ export default function DashboardScreen() {
               <View style={[styles.readinessSteps, { borderTopColor: tc.borderColor }]}>
                 <ThemedText style={[styles.readinessStepsTitle, { color: tc.textMuted }]}>STEPS TO REACH 100</ThemedText>
                 {readinessChecks.filter((c) => !c.done).map((c) => (
-                  <Pressable
+                  <Pressable accessibilityRole="button"
                     key={c.label}
                     onPress={() => router.push('/profile' as any)}
                     style={styles.readinessStep}>

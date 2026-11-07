@@ -70,7 +70,7 @@ function ChipRow<T extends string | number>({ label, options, selected, onSelect
       <ThemedText type="label" style={[ss.inputLabel, { color: tc.textHint }]}>{label}</ThemedText>
       <View style={ss.chipRow}>
         {options.map((o) => (
-          <Pressable
+          <Pressable accessibilityRole="button"
             key={o.value}
             onPress={() => onSelect(o.value)}
             style={[ss.chip, { borderColor: tc.borderColor, backgroundColor: tc.inputBg }, selected === o.value && ss.chipActive]}>

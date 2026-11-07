@@ -102,7 +102,7 @@ export function FeedbackModal({ visible, onClose }: Props) {
               <ThemedText style={[styles.successSub, { color: tc.textSecondary }]}>
                 Thanks — your feedback helps improve MilBudgetBuddy.
               </ThemedText>
-              <Pressable onPress={handleClose} style={styles.doneBtn}>
+              <Pressable accessibilityRole="button" onPress={handleClose} style={styles.doneBtn}>
                 <ThemedText style={styles.doneBtnText}>DONE</ThemedText>
               </Pressable>
             </View>
@@ -142,7 +142,7 @@ export function FeedbackModal({ visible, onClose }: Props) {
                 {CATEGORIES.map((cat) => {
                   const active = category === cat;
                   return (
-                    <Pressable
+                    <Pressable accessibilityRole="button"
                       key={cat}
                       onPress={() => setCategory(cat)}
                       style={[
@@ -197,7 +197,7 @@ export function FeedbackModal({ visible, onClose }: Props) {
               ) : null}
 
               {/* Submit */}
-              <Pressable
+              <Pressable accessibilityRole="button"
                 onPress={handleSubmit}
                 disabled={!canSubmit}
                 style={({ pressed }) => [
@@ -210,7 +210,7 @@ export function FeedbackModal({ visible, onClose }: Props) {
                   : <ThemedText style={styles.submitBtnText}>SUBMIT FEEDBACK</ThemedText>}
               </Pressable>
 
-              <Pressable onPress={handleClose} style={styles.cancelBtn}>
+              <Pressable accessibilityRole="button" onPress={handleClose} style={styles.cancelBtn}>
                 <ThemedText style={[styles.cancelText, { color: tc.textMuted }]}>Cancel</ThemedText>
               </Pressable>
             </ScrollView>

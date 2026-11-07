@@ -110,7 +110,7 @@ function CreateCodeForm({ onCreated }: { onCreated: () => void }) {
             maxLength={20}
           />
         </View>
-        <Pressable onPress={generateCode} style={s.genBtn}>
+        <Pressable accessibilityRole="button" onPress={generateCode} style={s.genBtn}>
           <ThemedText style={[s.genBtnText, { color: tc.accent }]}>GENERATE</ThemedText>
         </Pressable>
       </View>
@@ -151,7 +151,7 @@ function CreateCodeForm({ onCreated }: { onCreated: () => void }) {
         </View>
       </View>
 
-      <Pressable
+      <Pressable accessibilityRole="button"
         onPress={handleCreate}
         disabled={saving}
         style={({ pressed }) => [s.createBtn, (saving || pressed) && { opacity: 0.6 }]}>
@@ -186,12 +186,12 @@ function CodeRow({ item, onToggle, onDelete }: { item: DiscountCode; onToggle: (
         </ThemedText>
       </View>
       <View style={s.codeActions}>
-        <Pressable onPress={onToggle} style={[s.actionBtn, { borderColor: Brand.tactical + '50' }]}>
+        <Pressable accessibilityRole="button" onPress={onToggle} style={[s.actionBtn, { borderColor: Brand.tactical + '50' }]}>
           <ThemedText style={[s.actionBtnText, { color: tc.tactical }]}>
             {item.active ? 'DISABLE' : 'ENABLE'}
           </ThemedText>
         </Pressable>
-        <Pressable onPress={onDelete} style={[s.actionBtn, { borderColor: Brand.classified + '50' }]}>
+        <Pressable accessibilityRole="button" onPress={onDelete} style={[s.actionBtn, { borderColor: Brand.classified + '50' }]}>
           <ThemedText style={[s.actionBtnText, { color: Brand.classified }]}>DELETE</ThemedText>
         </Pressable>
       </View>
@@ -282,11 +282,11 @@ export default function CodesScreen() {
   return (
     <SafeAreaView style={[s.safe, { backgroundColor: tc.background }]} edges={['top']}>
       <View style={[s.header, { borderColor: tc.borderColor }]}>
-        <Pressable onPress={() => router.back()} style={s.back}>
+        <Pressable accessibilityRole="button" onPress={() => router.back()} style={s.back}>
           <ThemedText style={[s.backText, { color: tc.tactical }]}>‹ Admin</ThemedText>
         </Pressable>
         <ThemedText style={[s.headerTitle, { color: tc.textPrimary }]}>🎟️ DISCOUNT CODES</ThemedText>
-        <Pressable onPress={fetchCodes} style={s.back}>
+        <Pressable accessibilityRole="button" onPress={fetchCodes} style={s.back}>
           <ThemedText style={[s.refreshText, { color: tc.accent }]}>REFRESH</ThemedText>
         </Pressable>
       </View>

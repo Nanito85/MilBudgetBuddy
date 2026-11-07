@@ -23,7 +23,7 @@ function TipRow({ tip, featured, onPress }: { tip: Tip; featured?: boolean; onPr
   const toggleSave = useTipsStore((s) => s.toggleSave);
 
   return (
-    <Pressable
+    <Pressable accessibilityRole="button"
       onPress={onPress}
       style={({ pressed }) => [
         styles.tipRow,
@@ -37,7 +37,7 @@ function TipRow({ tip, featured, onPress }: { tip: Tip; featured?: boolean; onPr
             <ThemedText style={[styles.featuredBadgeText, { color: tc.accent }]}>THIS WEEK</ThemedText>
           </View>
         )}
-        <Pressable onPress={() => toggleSave(tip.id)} hitSlop={10} style={styles.heartBtn}>
+        <Pressable accessibilityRole="button" onPress={() => toggleSave(tip.id)} hitSlop={10} style={styles.heartBtn}>
           <ThemedText style={[styles.heart, { color: tc.textMuted }, saved && { color: tc.accent }]}>
             {saved ? '♥' : '♡'}
           </ThemedText>
@@ -87,7 +87,7 @@ export default function TipLibraryScreen() {
   return (
     <ThemedView style={styles.container}>
       <View style={[styles.header, { paddingTop: insets.top + Spacing.two, borderBottomColor: tc.borderColor }]}>
-        <Pressable onPress={() => router.back()} style={styles.backBtn} hitSlop={12}>
+        <Pressable accessibilityRole="button" onPress={() => router.back()} style={styles.backBtn} hitSlop={12}>
           <ThemedText style={[styles.backText, { color: tc.tactical }]}>‹ Back</ThemedText>
         </Pressable>
         <ThemedText style={[styles.title, { color: tc.textPrimary }]}>TIP LIBRARY</ThemedText>
@@ -112,7 +112,7 @@ export default function TipLibraryScreen() {
         {filterChips.map((c) => {
           const active = filter === c.value;
           return (
-            <Pressable
+            <Pressable accessibilityRole="button"
               key={c.value}
               onPress={() => setFilter(c.value)}
               style={[styles.chip, { borderColor: tc.borderColor }, active && { backgroundColor: Brand.accent, borderColor: Brand.accent }]}>

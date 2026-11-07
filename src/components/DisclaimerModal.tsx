@@ -154,7 +154,7 @@ export function DisclaimerModal() {
             </View>
 
           </ScrollView>
-          <Pressable
+          <Pressable accessibilityRole="button"
             onPress={() => {
               setAcknowledged(true);
               setDisclaimerAcknowledged();

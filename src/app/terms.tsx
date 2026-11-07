@@ -35,7 +35,7 @@ export default function TermsScreen() {
     <ThemedView style={s.container}>
       <SafeAreaView edges={['top']}>
         <View style={[s.header, { borderBottomColor: tc.borderColor }]}>
-          <Pressable onPress={() => router.back()} style={s.backBtn}>
+          <Pressable accessibilityRole="button" onPress={() => router.back()} style={s.backBtn}>
             <ThemedText style={[s.backText, { color: tc.tactical }]}>‹ Back</ThemedText>
           </Pressable>
           <ThemedText style={[s.title, { color: tc.textPrimary }]}>TERMS OF SERVICE</ThemedText>

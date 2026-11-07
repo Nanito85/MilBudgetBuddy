@@ -76,7 +76,7 @@ export function ProGateOverlay({ children }: { children: React.ReactNode }) {
 
       {gated && (
         <View style={styles.overlay} pointerEvents="box-none">
-          <Pressable style={styles.card} onPress={() => router.push('/paywall' as any)}>
+          <Pressable accessibilityRole="button" style={styles.card} onPress={() => router.push('/paywall' as any)}>
             <ThemedText style={styles.lockIcon}>🔒</ThemedText>
             <ThemedText style={styles.title}>MILBUDGETBUDDY PRO</ThemedText>
             <ThemedText style={styles.sub}>{unlockCopy}</ThemedText>

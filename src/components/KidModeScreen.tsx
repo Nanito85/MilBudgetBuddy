@@ -98,7 +98,7 @@ function PINKeypad({
 
       <View style={pinStyles.grid}>
         {keys.map((k, idx) => (
-          <Pressable
+          <Pressable accessibilityRole="button"
             key={idx}
             onPress={() => {
               if (k === '⌫') del();
@@ -115,7 +115,7 @@ function PINKeypad({
       </View>
 
       {onCancel && (
-        <Pressable onPress={onCancel} style={pinStyles.cancelBtn}>
+        <Pressable accessibilityRole="button" onPress={onCancel} style={pinStyles.cancelBtn}>
           <ThemedText style={[pinStyles.cancelText, { color: accentColor }]}>CANCEL</ThemedText>
         </Pressable>
       )}
@@ -289,7 +289,7 @@ function ChoreRow({
   const borderColor = done ? '#00B27A60' : pending ? '#FFB30060' : theme.primary + '20';
 
   return (
-    <Pressable
+    <Pressable accessibilityRole="button"
       onPress={handlePress}
       disabled={done || pending}
       style={({ pressed }) => [
@@ -413,7 +413,7 @@ export function KidModeScreen() {
     return (
       <View style={[screen.container, { backgroundColor: tc.background, alignItems: 'center', justifyContent: 'center' }]}>
         <ThemedText style={{ color: tc.textSecondary, fontSize: 14 }}>Kid profile not found.</ThemedText>
-        <Pressable onPress={deactivate} style={{ marginTop: 20 }}>
+        <Pressable accessibilityRole="button" onPress={deactivate} style={{ marginTop: 20 }}>
           <ThemedText style={{ color: '#00C8A8' }}>Back to Parent View</ThemedText>
         </Pressable>
       </View>
@@ -444,7 +444,7 @@ export function KidModeScreen() {
               {kid.nickname.toUpperCase()}
             </ThemedText>
           </View>
-          <Pressable
+          <Pressable accessibilityRole="button"
             onPress={() => setShowExit(true)}
             style={[screen.lockBtn, { backgroundColor: theme.primary + '20', borderColor: theme.primary + '40' }]}>
             <ThemedText style={[screen.lockIcon, { color: theme.primary }]}>🔒</ThemedText>
@@ -498,13 +498,13 @@ export function KidModeScreen() {
             <View style={screen.tipHeader}>
               <ThemedText style={[screen.tipLabel, { color: theme.accent }]}>💰 MONEY INTEL</ThemedText>
               <View style={screen.tipNav}>
-                <Pressable
+                <Pressable accessibilityRole="button"
                   onPress={() => setTipIdx((i) => (i - 1 + MONEY_TIPS.length) % MONEY_TIPS.length)}
                   hitSlop={10} style={screen.tipNavBtn}>
                   <ThemedText style={[screen.tipNavText, { color: theme.primary }]}>‹</ThemedText>
                 </Pressable>
                 <ThemedText style={screen.tipCounter}>{tipIdx + 1}/{MONEY_TIPS.length}</ThemedText>
-                <Pressable
+                <Pressable accessibilityRole="button"
                   onPress={() => setTipIdx((i) => (i + 1) % MONEY_TIPS.length)}
                   hitSlop={10} style={screen.tipNavBtn}>
                   <ThemedText style={[screen.tipNavText, { color: theme.primary }]}>›</ThemedText>

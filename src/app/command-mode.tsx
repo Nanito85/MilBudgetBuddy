@@ -341,11 +341,11 @@ export default function CommandModeScreen() {
     <ThemedView style={styles.container}>
       <SafeAreaView edges={['top']}>
         <View style={[styles.header, { borderBottomColor: tc.borderColor }]}>
-          <Pressable onPress={() => router.back()} style={styles.backBtn}>
+          <Pressable accessibilityRole="button" hitSlop={8} onPress={() => router.back()} style={styles.backBtn}>
             <ThemedText style={[styles.backText, { color: tc.tactical }]}>‹ Back</ThemedText>
           </Pressable>
           <ThemedText style={[styles.title, { color: tc.textPrimary }]}>FINANCIAL READINESS</ThemedText>
-          <Pressable onPress={handleShare} style={styles.shareBtn}>
+          <Pressable accessibilityRole="button" onPress={handleShare} style={styles.shareBtn}>
             <ThemedText style={[styles.shareText, { color: tc.tactical }]}>PDF ↑</ThemedText>
           </Pressable>
         </View>
@@ -378,7 +378,7 @@ export default function CommandModeScreen() {
         </View>
 
         {!breakdown && (
-          <Pressable
+          <Pressable accessibilityRole="button"
             onPress={() => router.push('/profile' as any)}
             style={styles.incompleteBox}>
             <ThemedText style={styles.incompleteIcon}>⚠️</ThemedText>
@@ -442,16 +442,16 @@ export default function CommandModeScreen() {
                   <TextInput value={addLabel} onChangeText={setAddLabel} placeholder="Label (e.g. Side Income)" placeholderTextColor={tc.textMuted} style={[styles.addItemInput, { backgroundColor: tc.inputBg, borderColor: tc.borderColor, color: tc.textPrimary }]} autoFocus />
                   <TextInput value={addAmount} onChangeText={setAddAmount} placeholder="Amount" placeholderTextColor={tc.textMuted} keyboardType="decimal-pad" style={[styles.addItemInput, styles.addItemAmtInput, { backgroundColor: tc.inputBg, borderColor: tc.borderColor, color: tc.textPrimary }]} />
                   <View style={styles.addItemBtns}>
-                    <Pressable onPress={() => { setAddingType(null); setAddLabel(''); setAddAmount(''); }} style={[styles.addItemCancel, { borderColor: tc.borderColor }]}>
+                    <Pressable accessibilityRole="button" onPress={() => { setAddingType(null); setAddLabel(''); setAddAmount(''); }} style={[styles.addItemCancel, { borderColor: tc.borderColor }]}>
                       <ThemedText style={[styles.addItemCancelText, { color: tc.textHint }]}>Cancel</ThemedText>
                     </Pressable>
-                    <Pressable onPress={commitAdd} style={styles.addItemConfirm}>
+                    <Pressable accessibilityRole="button" onPress={commitAdd} style={styles.addItemConfirm}>
                       <ThemedText style={styles.addItemConfirmText}>Add</ThemedText>
                     </Pressable>
                   </View>
                 </View>
               ) : (
-                <Pressable onPress={() => setAddingType('income')} style={styles.addItemBtn}>
+                <Pressable accessibilityRole="button" onPress={() => setAddingType('income')} style={styles.addItemBtn}>
                   <ThemedText style={[styles.addItemBtnText, { color: tc.tactical }]}>+ Add Income Item</ThemedText>
                 </Pressable>
               )}
@@ -513,16 +513,16 @@ export default function CommandModeScreen() {
                   <TextInput value={addLabel} onChangeText={setAddLabel} placeholder="Label (e.g. Allotment)" placeholderTextColor={tc.textMuted} style={[styles.addItemInput, { backgroundColor: tc.inputBg, borderColor: tc.borderColor, color: tc.textPrimary }]} autoFocus />
                   <TextInput value={addAmount} onChangeText={setAddAmount} placeholder="Amount" placeholderTextColor={tc.textMuted} keyboardType="decimal-pad" style={[styles.addItemInput, styles.addItemAmtInput, { backgroundColor: tc.inputBg, borderColor: tc.borderColor, color: tc.textPrimary }]} />
                   <View style={styles.addItemBtns}>
-                    <Pressable onPress={() => { setAddingType(null); setAddLabel(''); setAddAmount(''); }} style={[styles.addItemCancel, { borderColor: tc.borderColor }]}>
+                    <Pressable accessibilityRole="button" onPress={() => { setAddingType(null); setAddLabel(''); setAddAmount(''); }} style={[styles.addItemCancel, { borderColor: tc.borderColor }]}>
                       <ThemedText style={[styles.addItemCancelText, { color: tc.textHint }]}>Cancel</ThemedText>
                     </Pressable>
-                    <Pressable onPress={commitAdd} style={styles.addItemConfirm}>
+                    <Pressable accessibilityRole="button" onPress={commitAdd} style={styles.addItemConfirm}>
                       <ThemedText style={styles.addItemConfirmText}>Add</ThemedText>
                     </Pressable>
                   </View>
                 </View>
               ) : (
-                <Pressable onPress={() => setAddingType('deduction')} style={styles.addItemBtn}>
+                <Pressable accessibilityRole="button" onPress={() => setAddingType('deduction')} style={styles.addItemBtn}>
                   <ThemedText style={[styles.addItemBtnText, { color: tc.tactical }]}>+ Add Deduction</ThemedText>
                 </Pressable>
               )}
@@ -547,7 +547,7 @@ export default function CommandModeScreen() {
             <View style={[styles.card, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
               <SectionHeader label="MONTHLY EXPENSES (BUDGET)" color={Brand.accent} />
               {budgetWithEntries.length === 0 ? (
-                <Pressable onPress={() => router.push('/budget' as any)} style={styles.noBudgetRow}>
+                <Pressable accessibilityRole="button" onPress={() => router.push('/budget' as any)} style={styles.noBudgetRow}>
                   <ThemedText style={[styles.noBudgetText, { color: tc.textHint }]}>No budget entries yet — tap to add your expenses →</ThemedText>
                 </Pressable>
               ) : (
@@ -604,7 +604,7 @@ export default function CommandModeScreen() {
             <View style={[styles.card, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
               <SectionHeader label="DEBT PAYOFF PLAN" color="#E74C3C" />
               {debts.length === 0 ? (
-                <Pressable onPress={() => router.push('/debt-payoff' as any)} style={styles.noBudgetRow}>
+                <Pressable accessibilityRole="button" onPress={() => router.push('/debt-payoff' as any)} style={styles.noBudgetRow}>
                   <ThemedText style={[styles.noBudgetText, { color: tc.textHint }]}>No debts on file — tap to add your debts →</ThemedText>
                 </Pressable>
               ) : (
@@ -629,7 +629,7 @@ export default function CommandModeScreen() {
             <View style={[styles.card, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
               <SectionHeader label="NET WORTH" color="#1565C0" />
               {totalAssets === 0 && totalLiabilities === 0 ? (
-                <Pressable onPress={() => router.push('/net-worth' as any)} style={styles.noBudgetRow}>
+                <Pressable accessibilityRole="button" onPress={() => router.push('/net-worth' as any)} style={styles.noBudgetRow}>
                   <ThemedText style={[styles.noBudgetText, { color: tc.textHint }]}>Not tracked yet — tap to log assets & debts →</ThemedText>
                 </Pressable>
               ) : (

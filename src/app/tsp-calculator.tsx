@@ -27,7 +27,7 @@ function fmtM(n: number): string {
 function TabBtn({ label, active, onPress }: { label: string; active: boolean; onPress: () => void }) {
   const tc = useThemeColors();
   return (
-    <Pressable
+    <Pressable accessibilityRole="button"
       onPress={onPress}
       style={[styles.tabBtn, { borderColor: tc.borderColor }, active && styles.tabBtnActive]}>
       <ThemedText style={[styles.tabBtnText, { color: tc.textMuted }, active && styles.tabBtnTextActive]}>
@@ -80,7 +80,7 @@ export default function TspCalculatorScreen() {
   return (
     <ThemedView style={{ flex: 1 }}>
       <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
-        <Pressable accessibilityRole="button" accessibilityLabel="Go back"
+        <Pressable hitSlop={8} accessibilityRole="button" accessibilityLabel="Go back"
           onPress={() => (router.back())}
           style={styles.back}>
           <ThemedText style={styles.backChevron}>‹</ThemedText>
@@ -314,7 +314,7 @@ export default function TspCalculatorScreen() {
               const isCurrent = pct === contribPct;
               const isOptimal = pct >= 5;
               return (
-                <Pressable key={pct} onPress={() => setContribPct(pct)}>
+                <Pressable accessibilityRole="button" key={pct} onPress={() => setContribPct(pct)}>
                   <ThemedView
                     type="backgroundElement"
                     style={[

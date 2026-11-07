@@ -83,7 +83,7 @@ function DetailModal({ item, onClose, onUpdate }: { item: FeedbackRow; onClose: 
     <Modal visible animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
       <SafeAreaView style={{ flex: 1, backgroundColor: tc.background }}>
         <View style={[detail.header, { borderBottomColor: tc.borderColor }]}>
-          <Pressable onPress={onClose} hitSlop={12}>
+          <Pressable accessibilityRole="button" onPress={onClose} hitSlop={12}>
             <ThemedText style={[detail.back, { color: tc.tactical }]}>‹ Back</ThemedText>
           </Pressable>
           <ThemedText style={[detail.title, { color: tc.textPrimary }]}>FEEDBACK DETAIL</ThemedText>
@@ -114,7 +114,7 @@ function DetailModal({ item, onClose, onUpdate }: { item: FeedbackRow; onClose: 
           <ThemedText style={[detail.sectionLabel, { color: tc.textMuted }]}>UPDATE STATUS</ThemedText>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={detail.statusRowScroll} contentContainerStyle={detail.statusRow}>
             {STATUSES.filter((s) => s !== 'All').map((s) => (
-              <Pressable
+              <Pressable accessibilityRole="button"
                 key={s}
                 onPress={() => setStatus(s)}
                 style={[detail.statusChip, { borderColor: tc.borderColor, backgroundColor: tc.surface }, status === s && { borderColor: STATUS_COLOR[s] ?? '#888', backgroundColor: (STATUS_COLOR[s] ?? '#888') + '20' }]}>
@@ -138,7 +138,7 @@ function DetailModal({ item, onClose, onUpdate }: { item: FeedbackRow; onClose: 
             style={[detail.notesInput, { backgroundColor: tc.inputBg, borderColor: tc.borderColor, color: tc.textPrimary }]}
           />
 
-          <Pressable
+          <Pressable accessibilityRole="button"
             onPress={save}
             disabled={saving}
             style={({ pressed }) => [detail.saveBtn, pressed && { opacity: 0.7 }, saving && { opacity: 0.5 }]}>
@@ -249,7 +249,7 @@ export default function AdminFeedbackScreen() {
   };
 
   const renderItem = ({ item }: { item: FeedbackRow }) => (
-    <Pressable onPress={() => setSelected(item)} style={({ pressed }) => [styles.row, { backgroundColor: tc.surface }, pressed && { opacity: 0.7 }]}>
+    <Pressable accessibilityRole="button" onPress={() => setSelected(item)} style={({ pressed }) => [styles.row, { backgroundColor: tc.surface }, pressed && { opacity: 0.7 }]}>
       <View style={[styles.catBar, { backgroundColor: Brand.tactical }]} />
       <View style={styles.rowContent}>
         <View style={styles.rowTop}>
@@ -268,12 +268,12 @@ export default function AdminFeedbackScreen() {
     <SafeAreaView style={[styles.root, { backgroundColor: tc.background }]} edges={['top']}>
       {/* Header */}
       <View style={[styles.header, { borderBottomColor: tc.borderColor }]}>
-        <Pressable onPress={() => router.back()} hitSlop={12}>
+        <Pressable accessibilityRole="button" onPress={() => router.back()} hitSlop={12}>
           <ThemedText style={[styles.back, { color: tc.tactical }]}>‹ Back</ThemedText>
         </Pressable>
         <ThemedText style={[styles.title, { color: tc.textPrimary }]}>FEEDBACK</ThemedText>
         <View style={styles.headerRight}>
-          <Pressable onPress={() => router.push('/admin/reports' as any)} hitSlop={12}>
+          <Pressable accessibilityRole="button" onPress={() => router.push('/admin/reports' as any)} hitSlop={12}>
             <ThemedText style={[styles.reportsLink, { color: tc.tactical }]}>Reports ›</ThemedText>
           </Pressable>
         </View>
@@ -282,7 +282,7 @@ export default function AdminFeedbackScreen() {
       {/* Stats bar */}
       <View style={[styles.statsBar, { borderBottomColor: tc.borderColor }]}>
         <ThemedText style={[styles.statsText, { color: tc.textHint }]}>{adminTotal} total</ThemedText>
-        <Pressable onPress={exportCsv} disabled={exporting}>
+        <Pressable accessibilityRole="button" onPress={exportCsv} disabled={exporting}>
           <ThemedText style={[styles.exportBtn, { color: tc.accent }, exporting && { opacity: 0.5 }]}>
             {exporting ? 'EXPORTING…' : '⬇ EXPORT CSV'}
           </ThemedText>
@@ -292,7 +292,7 @@ export default function AdminFeedbackScreen() {
       {/* Category filter */}
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterRowScroll} contentContainerStyle={styles.filterRow}>
         {CATEGORIES.map((cat) => (
-          <Pressable key={cat} onPress={() => setCatFilter(cat)}
+          <Pressable accessibilityRole="button" key={cat} onPress={() => setCatFilter(cat)}
             style={[styles.filterChip, { borderColor: tc.borderColor, backgroundColor: tc.surface }, catFilter === cat && styles.filterChipActive]}>
             <ThemedText style={[styles.filterChipText, { color: tc.textHint }, catFilter === cat && [styles.filterChipTextActive, { color: tc.tactical }]]}>
               {cat}
@@ -304,7 +304,7 @@ export default function AdminFeedbackScreen() {
       {/* Status filter */}
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterRowScroll} contentContainerStyle={[styles.filterRow, { paddingTop: 0 }]}>
         {STATUSES.map((s) => (
-          <Pressable key={s} onPress={() => setStatus(s)}
+          <Pressable accessibilityRole="button" key={s} onPress={() => setStatus(s)}
             style={[styles.filterChip, { borderColor: tc.borderColor, backgroundColor: tc.surface }, statusFilter === s && styles.filterChipActive]}>
             <ThemedText style={[styles.filterChipText, { color: tc.textHint }, statusFilter === s && [styles.filterChipTextActive, { color: tc.tactical }]]}>
               {s === 'All' ? 'All status' : STATUS_LABEL[s]}
@@ -330,7 +330,7 @@ export default function AdminFeedbackScreen() {
       {adminError ? (
         <View style={styles.emptyBox}>
           <ThemedText style={[styles.emptyText, { color: tc.textHint }]}>{adminError}</ThemedText>
-          <Pressable onPress={() => load(true)} style={styles.retryBtn}>
+          <Pressable accessibilityRole="button" onPress={() => load(true)} style={styles.retryBtn}>
             <ThemedText style={[styles.retryText, { color: tc.tactical }]}>RETRY</ThemedText>
           </Pressable>
         </View>

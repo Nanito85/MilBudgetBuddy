@@ -21,7 +21,7 @@ export function BranchSelector({ selected, onSelect }: BranchSelectorProps) {
       {BRANCHES.map((branch) => {
         const isSelected = selected === branch;
         return (
-          <Pressable
+          <Pressable accessibilityRole="button"
             key={branch}
             onPress={() => onSelect(branch)}
             style={({ pressed }) => [

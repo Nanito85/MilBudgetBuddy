@@ -133,7 +133,7 @@ export default function LeaveCalculatorScreen() {
     <ThemedView style={styles.container}>
       {/* ── Header ─────────────────────────────────────────────────────────── */}
       <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
-        <Pressable accessibilityRole="button" accessibilityLabel="Go back"
+        <Pressable hitSlop={8} accessibilityRole="button" accessibilityLabel="Go back"
           onPress={() => (router.back())}
           style={({ pressed }) => [styles.backBtn, pressed && styles.pressed]}>
           <ThemedText style={styles.backChevron}>‹</ThemedText>
@@ -259,7 +259,7 @@ export default function LeaveCalculatorScreen() {
               </ThemedText>
               <View style={styles.toggleRow}>
                 {[false, true].map((val) => (
-                  <Pressable
+                  <Pressable accessibilityRole="button"
                     key={String(val)}
                     onPress={() => setUseOrLoseExempt(val)}
                     style={[styles.toggleBtn, useOrLoseExempt === val && styles.toggleBtnActive]}>

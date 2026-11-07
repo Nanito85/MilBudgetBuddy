@@ -75,7 +75,7 @@ function ClaimCard({ claim, onPress }: { claim: VaClaim; onPress: () => void }) 
   const daysLeft = deadline ? daysBetweenTodayAnd(deadline) : null;
 
   return (
-    <Pressable
+    <Pressable accessibilityRole="button"
       onPress={onPress}
       style={({ pressed }) => [
         styles.card,
@@ -207,7 +207,7 @@ function ClaimFormModal({
       <ThemedText style={[styles.fieldLabel, { color: tc.textHint }]}>CLAIM TYPE</ThemedText>
       <View style={styles.chipRow}>
         {CLAIM_TYPES.map((t) => (
-          <Pressable
+          <Pressable accessibilityRole="button"
             key={t.value}
             onPress={() => setClaimType(t.value)}
             style={[
@@ -225,7 +225,7 @@ function ClaimFormModal({
       <ThemedText style={[styles.fieldLabel, { color: tc.textHint }]}>STAGE</ThemedText>
       <View style={styles.chipRow}>
         {CLAIM_STAGES.map((s) => (
-          <Pressable
+          <Pressable accessibilityRole="button"
             key={s.value}
             onPress={() => setStage(s.value)}
             style={[
@@ -241,7 +241,7 @@ function ClaimFormModal({
       </View>
 
       <ThemedText style={[styles.fieldLabel, { color: tc.textHint }]}>DATE FILED</ThemedText>
-      <Pressable
+      <Pressable accessibilityRole="button"
         onPress={() => setPickerField('filed')}
         style={[styles.dateInput, { backgroundColor: tc.inputBg, borderColor: tc.borderColor }]}>
         <ThemedText style={{ color: dateFiled ? tc.textPrimary : tc.textHint }}>
@@ -251,7 +251,7 @@ function ClaimFormModal({
       </Pressable>
 
       <ThemedText style={[styles.fieldLabel, { color: tc.textHint }]}>C&P EXAM DATE (IF SCHEDULED)</ThemedText>
-      <Pressable
+      <Pressable accessibilityRole="button"
         onPress={() => setPickerField('exam')}
         style={[styles.dateInput, { backgroundColor: tc.inputBg, borderColor: tc.borderColor }]}>
         <ThemedText style={{ color: examDate ? tc.textPrimary : tc.textHint }}>
@@ -261,7 +261,7 @@ function ClaimFormModal({
       </Pressable>
 
       <ThemedText style={[styles.fieldLabel, { color: tc.textHint }]}>DECISION DATE (IF RECEIVED)</ThemedText>
-      <Pressable
+      <Pressable accessibilityRole="button"
         onPress={() => setPickerField('decision')}
         style={[styles.dateInput, { backgroundColor: tc.inputBg, borderColor: tc.borderColor }]}>
         <ThemedText style={{ color: decisionDate ? tc.textPrimary : tc.textHint }}>
@@ -297,14 +297,14 @@ function ClaimFormModal({
 
       <View style={styles.modalBtnRow}>
         {initial && onDelete && (
-          <Pressable onPress={handleDelete} style={[styles.deleteBtn, { borderColor: Brand.danger }]}>
+          <Pressable accessibilityRole="button" onPress={handleDelete} style={[styles.deleteBtn, { borderColor: Brand.danger }]}>
             <ThemedText style={[styles.deleteBtnText, { color: Brand.danger }]}>Delete</ThemedText>
           </Pressable>
         )}
-        <Pressable onPress={onClose} style={[styles.cancelBtn, { borderColor: tc.borderColor }]}>
+        <Pressable accessibilityRole="button" onPress={onClose} style={[styles.cancelBtn, { borderColor: tc.borderColor }]}>
           <ThemedText style={{ color: tc.textSecondary, fontWeight: '600' }}>Cancel</ThemedText>
         </Pressable>
-        <Pressable
+        <Pressable accessibilityRole="button"
           onPress={submit}
           disabled={!canSave}
           style={[styles.saveBtn, { backgroundColor: Brand.tactical }, !canSave && { opacity: 0.4 }]}>
@@ -361,7 +361,7 @@ export default function VaClaimsTrackerScreen() {
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <ThemedView style={{ flex: 1 }}>
         <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
-          <Pressable accessibilityRole="button" accessibilityLabel="Go back" onPress={() => router.back()} style={styles.back}>
+          <Pressable hitSlop={8} accessibilityRole="button" accessibilityLabel="Go back" onPress={() => router.back()} style={styles.back}>
             <ThemedText style={styles.backChevron}>‹</ThemedText>
           </Pressable>
           <ThemedText style={styles.title}>VA Claims & Appeals</ThemedText>
@@ -408,7 +408,7 @@ export default function VaClaimsTrackerScreen() {
             ))
           )}
 
-          <Pressable onPress={openAdd} style={styles.addBtn}>
+          <Pressable accessibilityRole="button" onPress={openAdd} style={styles.addBtn}>
             <ThemedText style={styles.addBtnText}>＋ Add Claim</ThemedText>
           </Pressable>
 

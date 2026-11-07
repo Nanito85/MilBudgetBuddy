@@ -43,7 +43,7 @@ function Row({ label, value, positive, negative, bold, indent, overridden, onInf
         {label}{overridden ? ' ✎' : ''}
       </ThemedText>
       {onInfoPress && (
-        <Pressable onPress={onInfoPress} hitSlop={8}>
+        <Pressable accessibilityRole="button" onPress={onInfoPress} hitSlop={8}>
           <ThemedText style={[rowStyles.infoIcon, { color: tc.textMuted }]}>ⓘ</ThemedText>
         </Pressable>
       )}
@@ -175,7 +175,7 @@ export function PaySummaryCard({ breakdown }: Props) {
         {/* Which year's pay tables this is. Turns amber once the calendar
             year has moved past them (e.g. on Jan 1 before a rate update
             ships) so last year's numbers never pass as current. */}
-        <Pressable
+        <Pressable accessibilityRole="button"
           disabled={!ratesOutdated}
           onPress={() => Alert.alert('Pay rates out of date', `This estimate uses ${BASIC_PAY_DATA_YEAR} pay tables. ${new Date().getFullYear()} rates (pay raise, BAH, BAS, tax brackets) will arrive in an app update — until then, check your LES for the new amounts.`)}>
           <ThemedText type="label" style={[styles.headerLabel, { color: ratesOutdated ? tc.warning : tc.textHint }]}>
@@ -201,11 +201,11 @@ export function PaySummaryCard({ breakdown }: Props) {
           )}
         </View>
         <View style={styles.heroRight}>
-          <Pressable onPress={() => setExpanded((v) => !v)} style={styles.expandBtn} hitSlop={12}>
+          <Pressable accessibilityRole="button" onPress={() => setExpanded((v) => !v)} style={styles.expandBtn} hitSlop={12}>
             <ThemedText style={[styles.expandIcon, { color: tc.textMuted }]}>{expanded ? '▲' : '▼'}</ThemedText>
             <ThemedText type="label" style={[styles.expandLabel, { color: tc.textMuted }]}>{expanded ? 'HIDE' : 'DETAIL'}</ThemedText>
           </Pressable>
-          <Pressable
+          <Pressable accessibilityRole="button"
             onPress={() => setShowEdit(true)}
             style={[styles.editLesBtn, { borderColor: tc.borderColor }, hasOverrides && styles.editLesBtnActive]}>
             <ThemedText style={[styles.editLesTxt, { color: tc.textHint }, hasOverrides && { color: tc.accent }]}>
@@ -403,7 +403,7 @@ export function PaySummaryCard({ breakdown }: Props) {
       )}
 
       {/* Spouse income entry */}
-      <Pressable onPress={() => setSpouseOpen((v) => !v)} style={[styles.spouseToggle, { borderTopColor: tc.borderColor }]}>
+      <Pressable accessibilityRole="button" onPress={() => setSpouseOpen((v) => !v)} style={[styles.spouseToggle, { borderTopColor: tc.borderColor }]}>
         <ThemedText style={styles.spouseToggleIcon}>{hasSpouseIncome ? '👫' : '+'}</ThemedText>
         <ThemedText style={[styles.spouseToggleLabel, { color: tc.textHint }]}>
           {hasSpouseIncome ? `SPOUSE INCOME: ${fmtPay(spouseMonthlyIncome)}/mo` : 'ADD SPOUSE INCOME'}
@@ -427,11 +427,11 @@ export function PaySummaryCard({ breakdown }: Props) {
               returnKeyType="done"
               onSubmitEditing={commitSpouseIncome}
             />
-            <Pressable style={styles.spouseSaveBtn} onPress={() => { commitSpouseIncome(); setSpouseOpen(false); }}>
+            <Pressable accessibilityRole="button" style={styles.spouseSaveBtn} onPress={() => { commitSpouseIncome(); setSpouseOpen(false); }}>
               <ThemedText style={styles.spouseSaveBtnText}>SAVE</ThemedText>
             </Pressable>
             {hasSpouseIncome && (
-              <Pressable style={styles.spouseClearBtn} onPress={() => { setSpouseMonthlyIncome(0); setSpouseInput(''); setSpouseOpen(false); }}>
+              <Pressable accessibilityRole="button" style={styles.spouseClearBtn} onPress={() => { setSpouseMonthlyIncome(0); setSpouseInput(''); setSpouseOpen(false); }}>
                 <ThemedText style={styles.spouseClearBtnText}>CLEAR</ThemedText>
               </Pressable>
             )}

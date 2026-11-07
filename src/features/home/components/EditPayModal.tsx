@@ -56,13 +56,13 @@ function PayTypePickerModal({ visible, selected, onSelect, onClose }: {
         <SafeAreaView style={ptStyles.safe}>
           <View style={ptStyles.header}>
             <ThemedText style={[ptStyles.title, { color: tc.textPrimary }]}>{'// SELECT PAY TYPE'}</ThemedText>
-            <Pressable onPress={onClose}><ThemedText style={[ptStyles.done, { color: tc.tactical }]}>DONE</ThemedText></Pressable>
+            <Pressable accessibilityRole="button" onPress={onClose}><ThemedText style={[ptStyles.done, { color: tc.tactical }]}>DONE</ThemedText></Pressable>
           </View>
           <ScrollView showsVerticalScrollIndicator={false}>
             {ALL_TYPES.map((type) => {
               const isSelected = selected === type;
               return (
-                <Pressable
+                <Pressable accessibilityRole="button"
                   key={type}
                   onPress={() => { onSelect(type); onClose(); }}
                   style={[ptStyles.row, { borderColor: tc.borderColor }, isSelected && ptStyles.rowSelected]}>
@@ -121,7 +121,7 @@ function DeploymentLocationPickerModal({ visible, selectedId, onSelect, onClose 
         <SafeAreaView style={dlStyles.safe}>
           <View style={dlStyles.header}>
             <ThemedText style={[dlStyles.title, { color: tc.textPrimary }]}>{'// DEPLOYMENT LOCATION'}</ThemedText>
-            <Pressable onPress={() => { setQuery(''); onClose(); }}><ThemedText style={[dlStyles.done, { color: tc.tactical }]}>DONE</ThemedText></Pressable>
+            <Pressable accessibilityRole="button" onPress={() => { setQuery(''); onClose(); }}><ThemedText style={[dlStyles.done, { color: tc.tactical }]}>DONE</ThemedText></Pressable>
           </View>
           <ThemedText style={[dlStyles.hint, { color: tc.textMuted }]}>
             Every DoD/IRS-designated Imminent Danger Pay area. &ldquo;Combat Zone&rdquo; locations also exclude basic pay from income tax.
@@ -140,7 +140,7 @@ function DeploymentLocationPickerModal({ visible, selectedId, onSelect, onClose 
             {filtered.map((loc) => {
               const isSelected = selectedId === loc.id;
               return (
-                <Pressable
+                <Pressable accessibilityRole="button"
                   key={loc.id}
                   onPress={() => handleSelect(loc)}
                   style={[dlStyles.row, { borderColor: tc.borderColor }, isSelected && dlStyles.rowSelected]}>
@@ -395,11 +395,11 @@ export function EditPayModal({ visible, onClose }: { visible: boolean; onClose: 
       <KeyboardAvoidingView style={{ flex: 1, backgroundColor: bg }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <SafeAreaView style={{ flex: 1 }}>
           <View style={[editStyles.header, { borderColor: tc.borderColor }]}>
-            <Pressable onPress={() => { Keyboard.dismiss(); onClose(); }}>
+            <Pressable accessibilityRole="button" onPress={() => { Keyboard.dismiss(); onClose(); }}>
               <ThemedText style={[editStyles.cancel, { color: tc.textMuted }]}>CANCEL</ThemedText>
             </Pressable>
             <ThemedText style={[editStyles.title, { color: tc.textPrimary }]}>💰 PAY & DEDUCTIONS</ThemedText>
-            <Pressable onPress={save}><ThemedText style={[editStyles.save, { color: tc.tactical }]}>SAVE</ThemedText></Pressable>
+            <Pressable accessibilityRole="button" onPress={save}><ThemedText style={[editStyles.save, { color: tc.tactical }]}>SAVE</ThemedText></Pressable>
           </View>
 
           <ScrollView
@@ -565,7 +565,7 @@ export function EditPayModal({ visible, onClose }: { visible: boolean; onClose: 
             {showAddPay ? (
               <View style={editStyles.addPayForm}>
                 <ThemedText style={[editStyles.fieldLabel, { color: tc.textHint }]}>PAY TYPE</ThemedText>
-                <Pressable onPress={() => setShowPayTypePicker(true)} style={[editStyles.payTypeDropdown, { backgroundColor: tc.inputBg, borderColor: tc.borderColor }]}>
+                <Pressable accessibilityRole="button" onPress={() => setShowPayTypePicker(true)} style={[editStyles.payTypeDropdown, { backgroundColor: tc.inputBg, borderColor: tc.borderColor }]}>
                   <View style={{ flex: 1 }}>
                     <ThemedText style={[editStyles.payTypeDropdownLabel, { color: tc.textPrimary }]}>{SPECIAL_PAY_LABELS[selectedPayType]}</ThemedText>
                     <ThemedText type="label" style={[editStyles.payTypeDropdownRange, { color: tc.textMuted }]}>Typical: {SPECIAL_PAY_RANGES[selectedPayType]}</ThemedText>
@@ -575,7 +575,7 @@ export function EditPayModal({ visible, onClose }: { visible: boolean; onClose: 
                 <ThemedText style={[editStyles.fieldLabel, { color: tc.textHint, marginTop: Spacing.two }]}>MONTHLY AMOUNT ($)</ThemedText>
                 <View style={editStyles.numpadGrid}>
                   {['1','2','3','4','5','6','7','8','9','','0','⌫'].map((key, i) => (
-                    <Pressable key={i} style={[editStyles.numpadKey, !key && editStyles.numpadKeyBlank]}
+                    <Pressable accessibilityRole="button" key={i} style={[editStyles.numpadKey, !key && editStyles.numpadKeyBlank]}
                       onPress={() => {
                         if (!key) return;
                         if (key === '⌫') setPayAmountInput((v) => v.slice(0, -1));
@@ -587,16 +587,16 @@ export function EditPayModal({ visible, onClose }: { visible: boolean; onClose: 
                 </View>
                 <ThemedText style={[editStyles.amountDisplay, { color: tc.accent }]}>${payAmountInput || '0'}/mo</ThemedText>
                 <View style={editStyles.formButtons}>
-                  <Pressable style={[editStyles.formBtnCancel, { borderColor: tc.borderColor }]} onPress={() => { setShowAddPay(false); setPayAmountInput(''); }}>
+                  <Pressable accessibilityRole="button" style={[editStyles.formBtnCancel, { borderColor: tc.borderColor }]} onPress={() => { setShowAddPay(false); setPayAmountInput(''); }}>
                     <ThemedText type="label" style={{ color: tc.textMuted }}>CANCEL</ThemedText>
                   </Pressable>
-                  <Pressable style={editStyles.formBtnAdd} onPress={handleAddSpecialPay}>
+                  <Pressable accessibilityRole="button" style={editStyles.formBtnAdd} onPress={handleAddSpecialPay}>
                     <ThemedText type="label" style={{ color: '#04080F' }}>ADD PAY</ThemedText>
                   </Pressable>
                 </View>
               </View>
             ) : (
-              <Pressable onPress={() => setShowAddPay(true)} style={editStyles.addRowBtn}>
+              <Pressable accessibilityRole="button" onPress={() => setShowAddPay(true)} style={editStyles.addRowBtn}>
                 <ThemedText style={[editStyles.addRowBtnText, { color: tc.tactical }]}>+ ADD SPECIAL PAY</ThemedText>
               </Pressable>
             )}
@@ -626,7 +626,7 @@ export function EditPayModal({ visible, onClose }: { visible: boolean; onClose: 
             </View>
 
             {deployed && (
-              <Pressable onPress={() => setShowLocationPicker(true)} style={[editStyles.inputWrap, { backgroundColor: inputBg, borderColor: tc.borderColor, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }]}>
+              <Pressable accessibilityRole="button" onPress={() => setShowLocationPicker(true)} style={[editStyles.inputWrap, { backgroundColor: inputBg, borderColor: tc.borderColor, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }]}>
                 <ThemedText style={{ color: selectedDeploymentLocation ? tc.textPrimary : placeholder, fontSize: 15 }}>
                   {selectedDeploymentLocation ? selectedDeploymentLocation.label : 'Select deployment location'}
                 </ThemedText>
@@ -665,7 +665,7 @@ export function EditPayModal({ visible, onClose }: { visible: boolean; onClose: 
                   style={[editStyles.input, { flex: 1, color: tc.textPrimary }]}
                   value={newIncomeAmt} onChangeText={setNewIncomeAmt}
                   placeholder="Monthly amount" placeholderTextColor={placeholder} keyboardType="decimal-pad" />
-                <Pressable onPress={addIncome} style={[editStyles.addBtn, { backgroundColor: Brand.tactical }]}>
+                <Pressable accessibilityRole="button" onPress={addIncome} style={[editStyles.addBtn, { backgroundColor: Brand.tactical }]}>
                   <ThemedText style={editStyles.addBtnTxt}>ADD</ThemedText>
                 </Pressable>
               </View>
@@ -743,7 +743,7 @@ export function EditPayModal({ visible, onClose }: { visible: boolean; onClose: 
                   style={[editStyles.input, { flex: 1, color: tc.textPrimary }]}
                   value={newDeductAmt} onChangeText={setNewDeductAmt}
                   placeholder="Monthly amount" placeholderTextColor={placeholder} keyboardType="decimal-pad" />
-                <Pressable onPress={addDeduction} style={[editStyles.addBtn, { backgroundColor: Brand.danger }]}>
+                <Pressable accessibilityRole="button" onPress={addDeduction} style={[editStyles.addBtn, { backgroundColor: Brand.danger }]}>
                   <ThemedText style={editStyles.addBtnTxt}>ADD</ThemedText>
                 </Pressable>
               </View>

@@ -111,7 +111,7 @@ function TopicCard({ topic }: { topic: Topic }) {
 
   return (
     <ThemedView type="backgroundElement" style={styles.card}>
-      <Pressable
+      <Pressable accessibilityRole="button"
         onPress={() => setExpanded((e) => !e)}
         style={styles.cardHeader}>
         <View style={styles.cardIconWrap}>
@@ -184,7 +184,7 @@ export default function Invest101Screen() {
   return (
     <ThemedView style={styles.container}>
       <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
-        <Pressable onPress={() => router.back()} hitSlop={12}>
+        <Pressable accessibilityRole="button" onPress={() => router.back()} hitSlop={12}>
           <ThemedText style={styles.backText}>← Back</ThemedText>
         </Pressable>
       </View>

@@ -27,6 +27,7 @@ export function NumberStepper({ label, value, min, max, step = 1, unit, onChange
           onPress={decrement}
           disabled={value <= min}
           accessibilityRole="button"
+          hitSlop={4}
           accessibilityLabel={`Decrease ${label}`}
           accessibilityState={{ disabled: value <= min }}
           style={({ pressed }) => [styles.btn, pressed && styles.btnPressed, value <= min && styles.btnDisabled]}>
@@ -42,6 +43,7 @@ export function NumberStepper({ label, value, min, max, step = 1, unit, onChange
           onPress={increment}
           disabled={value >= max}
           accessibilityRole="button"
+          hitSlop={4}
           accessibilityLabel={`Increase ${label}`}
           accessibilityState={{ disabled: value >= max }}
           style={({ pressed }) => [styles.btn, pressed && styles.btnPressed, value >= max && styles.btnDisabled]}>

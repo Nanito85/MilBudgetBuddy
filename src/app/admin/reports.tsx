@@ -58,11 +58,11 @@ function ReportDetailModal({ report, onClose }: { report: ReportRow; onClose: ()
     <Modal visible animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
       <SafeAreaView style={{ flex: 1, backgroundColor: tc.background }}>
         <View style={[modal.header, { borderBottomColor: tc.borderColor }]}>
-          <Pressable onPress={onClose} hitSlop={12}>
+          <Pressable accessibilityRole="button" onPress={onClose} hitSlop={12}>
             <ThemedText style={[modal.back, { color: tc.tactical }]}>‹ Back</ThemedText>
           </Pressable>
           <ThemedText style={[modal.title, { color: tc.textPrimary }]}>{data.report_type.toUpperCase()} REPORT</ThemedText>
-          <Pressable onPress={shareSummary} hitSlop={12}>
+          <Pressable accessibilityRole="button" onPress={shareSummary} hitSlop={12}>
             {/* Was labeled "COPY" but shareSummary() calls Share.share(), which
                 opens the native OS share sheet (Messages/Mail/etc.), not the
                 clipboard — a real mismatch between what the button says and
@@ -177,7 +177,7 @@ export default function AdminReportsScreen() {
   };
 
   const renderItem = ({ item }: { item: ReportRow }) => (
-    <Pressable
+    <Pressable accessibilityRole="button"
       onPress={() => setSelectedReport(item)}
       style={({ pressed }) => [styles.reportRow, { backgroundColor: tc.surface }, pressed && { opacity: 0.7 }]}>
       <View style={[styles.typeBadge, { backgroundColor: item.report_type === 'daily' ? Brand.tactical + '25' : Brand.accent + '25', borderColor: item.report_type === 'daily' ? Brand.tactical + '60' : Brand.accent + '60' }]}>
@@ -202,7 +202,7 @@ export default function AdminReportsScreen() {
     <SafeAreaView style={[styles.root, { backgroundColor: tc.background }]} edges={['top']}>
       {/* Header */}
       <View style={[styles.header, { borderBottomColor: tc.borderColor }]}>
-        <Pressable onPress={() => router.back()} hitSlop={12}>
+        <Pressable accessibilityRole="button" onPress={() => router.back()} hitSlop={12}>
           <ThemedText style={[styles.back, { color: tc.tactical }]}>‹ Back</ThemedText>
         </Pressable>
         <ThemedText style={[styles.title, { color: tc.textPrimary }]}>AI REPORTS</ThemedText>
@@ -211,7 +211,7 @@ export default function AdminReportsScreen() {
 
       {/* Generate buttons */}
       <View style={styles.generateRow}>
-        <Pressable
+        <Pressable accessibilityRole="button"
           onPress={() => handleGenerate('daily')}
           disabled={reportGenerating}
           style={({ pressed }) => [styles.genBtn, styles.genBtnDaily, (pressed || reportGenerating) && { opacity: 0.7 }]}>
@@ -219,7 +219,7 @@ export default function AdminReportsScreen() {
             ? <ActivityIndicator color="#fff" size="small" />
             : <ThemedText style={styles.genBtnText}>⚡ DAILY REPORT</ThemedText>}
         </Pressable>
-        <Pressable
+        <Pressable accessibilityRole="button"
           onPress={() => handleGenerate('weekly')}
           disabled={reportGenerating}
           style={({ pressed }) => [styles.genBtn, styles.genBtnWeekly, { backgroundColor: tc.surface }, (pressed || reportGenerating) && { opacity: 0.7 }]}>

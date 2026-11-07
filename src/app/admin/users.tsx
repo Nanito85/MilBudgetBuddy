@@ -205,7 +205,7 @@ export default function AdminUsersScreen() {
   return (
     <SafeAreaView style={[s.safe, { backgroundColor: tc.background }]} edges={['top']}>
       <View style={[s.header, { borderColor: tc.borderColor }]}>
-        <Pressable onPress={() => router.back()} style={s.back}>
+        <Pressable accessibilityRole="button" onPress={() => router.back()} style={s.back}>
           <ThemedText style={[s.backText, { color: tc.tactical }]}>‹ Admin</ThemedText>
         </Pressable>
         <ThemedText style={[s.headerTitle, { color: tc.textPrimary }]}>👤 GRANT / REVOKE PRO</ThemedText>
@@ -281,13 +281,13 @@ export default function AdminUsersScreen() {
           </View>
 
           <View style={s.btnRow}>
-            <Pressable
+            <Pressable accessibilityRole="button"
               onPress={handleGrant}
               disabled={busy !== null}
               style={({ pressed }) => [s.grantBtn, (busy !== null || pressed) && { opacity: 0.6 }]}>
               {busy === 'grant' ? <ActivityIndicator color="#04080F" /> : <ThemedText style={s.grantBtnText}>GRANT PRO</ThemedText>}
             </Pressable>
-            <Pressable
+            <Pressable accessibilityRole="button"
               onPress={handleRevoke}
               disabled={busy !== null}
               style={({ pressed }) => [s.revokeBtn, { borderColor: Brand.classified + '60' }, (busy !== null || pressed) && { opacity: 0.6 }]}>
@@ -315,7 +315,7 @@ export default function AdminUsersScreen() {
 
         <View style={s.listHeaderRow}>
           <ThemedText style={[s.sectionTitle, { color: tc.tactical }]}>{'// GRANTED / PRO ACCESS ('}{rows.length})</ThemedText>
-          <Pressable onPress={fetchRows}>
+          <Pressable accessibilityRole="button" onPress={fetchRows}>
             <ThemedText style={[s.refreshText, { color: tc.accent }]}>REFRESH</ThemedText>
           </Pressable>
         </View>
@@ -355,7 +355,7 @@ export default function AdminUsersScreen() {
                 </ThemedText>
               )}
               {active && (
-                <Pressable
+                <Pressable accessibilityRole="button"
                   onPress={() => handleRowRevoke(row)}
                   disabled={rowBusyUid !== null}
                   style={[s.rowRevokeBtn, { borderColor: Brand.classified + '50' }, rowBusyUid === row.uid && { opacity: 0.6 }]}>
@@ -369,7 +369,7 @@ export default function AdminUsersScreen() {
         })}
 
         {nextCursor && (
-          <Pressable
+          <Pressable accessibilityRole="button"
             onPress={loadMore}
             disabled={loadingMore}
             style={[s.loadMoreBtn, { borderColor: tc.borderColor }, loadingMore && { opacity: 0.6 }]}>

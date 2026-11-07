@@ -125,10 +125,10 @@ function DebtFormModal({
       />
 
       <View style={styles.modalBtns}>
-        <Pressable onPress={onClose} style={[styles.cancelBtn, { borderColor: tc.borderColor }]}>
+        <Pressable accessibilityRole="button" onPress={onClose} style={[styles.cancelBtn, { borderColor: tc.borderColor }]}>
           <ThemedText style={[styles.cancelBtnText, { color: tc.textHint }]}>Cancel</ThemedText>
         </Pressable>
-        <Pressable
+        <Pressable accessibilityRole="button"
           disabled={!canSave}
           onPress={() => {
             onSave(name.trim(), parseFloat(balance), parseFloat(apr), parseFloat(min));
@@ -155,7 +155,7 @@ function DebtCard({
 }) {
   const tc = useThemeColors();
   return (
-    <Pressable
+    <Pressable accessibilityRole="button"
       onLongPress={() =>
         Alert.alert('Remove Debt', `Remove "${debt.name}"?`, [
           { text: 'Cancel', style: 'cancel' },
@@ -179,7 +179,7 @@ function DebtCard({
               ]}>
               {debt.apr}%
             </ThemedText>
-            <Pressable onPress={onEdit} style={styles.editBtn} hitSlop={8}>
+            <Pressable accessibilityRole="button" onPress={onEdit} style={styles.editBtn} hitSlop={8}>
               <ThemedText style={styles.editBtnText}>✏ EDIT</ThemedText>
             </Pressable>
           </View>
@@ -239,7 +239,7 @@ export default function DebtPayoffScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <ThemedView style={{ flex: 1 }}>
         <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
-          <Pressable accessibilityRole="button" accessibilityLabel="Go back" onPress={() => router.back()} style={styles.back}>
+          <Pressable hitSlop={8} accessibilityRole="button" accessibilityLabel="Go back" onPress={() => router.back()} style={styles.back}>
             <ThemedText style={styles.backChevron}>‹</ThemedText>
           </Pressable>
           <ThemedText style={styles.title}>Debt Payoff</ThemedText>
@@ -290,7 +290,7 @@ export default function DebtPayoffScreen() {
             ))
           )}
 
-          <Pressable onPress={openAdd} style={styles.addDebtBtn}>
+          <Pressable accessibilityRole="button" onPress={openAdd} style={styles.addDebtBtn}>
             <ThemedText style={styles.addDebtBtnText}>＋ Add Debt</ThemedText>
           </Pressable>
 
@@ -321,7 +321,7 @@ export default function DebtPayoffScreen() {
               {/* Strategy toggle */}
               <SectionLabel text="PAYOFF STRATEGY" />
               <View style={styles.strategyRow}>
-                <Pressable
+                <Pressable accessibilityRole="button"
                   onPress={() => setStrategy('avalanche')}
                   style={[styles.stratBtn, { borderColor: tc.borderColor }, strategy === 'avalanche' && styles.stratBtnActiveAvalanche]}>
                   <ThemedText style={[styles.stratLabel, { color: tc.textHint }, strategy === 'avalanche' && { color: tc.textPrimary }]}>
@@ -331,7 +331,7 @@ export default function DebtPayoffScreen() {
                     Highest APR first · saves most interest
                   </ThemedText>
                 </Pressable>
-                <Pressable
+                <Pressable accessibilityRole="button"
                   onPress={() => setStrategy('snowball')}
                   style={[styles.stratBtn, { borderColor: tc.borderColor }, strategy === 'snowball' && styles.stratBtnActiveSnowball]}>
                   <ThemedText style={[styles.stratLabel, { color: tc.textHint }, strategy === 'snowball' && { color: tc.textPrimary }]}>

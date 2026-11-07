@@ -104,7 +104,7 @@ export function OHACard({ installation, area, grade, withDep }: Props) {
           <View style={styles.divider} />
 
           {/* Expand/collapse all grades */}
-          <Pressable
+          <Pressable accessibilityRole="button"
             onPress={() => setExpanded(e => !e)}
             style={({ pressed }) => [styles.expandBtn, pressed && { opacity: 0.6 }]}>
             <ThemedText type="small" themeColor="textSecondary" style={styles.expandLabel}>
@@ -163,7 +163,7 @@ export function OHACard({ installation, area, grade, withDep }: Props) {
             {stale ? ' Data may be outdated.' : ''}
           </ThemedText>
         </View>
-        <Pressable
+        <Pressable accessibilityRole="button"
           onPress={openDTMO}
           style={({ pressed }) => [styles.dtmoBtn, pressed && { opacity: 0.7 }]}>
           <ThemedText style={styles.dtmoBtnText}>DTMO ↗</ThemedText>

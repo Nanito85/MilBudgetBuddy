@@ -121,11 +121,11 @@ export default function AdminAccountsScreen() {
   return (
     <SafeAreaView style={[s.safe, { backgroundColor: tc.background }]} edges={['top']}>
       <View style={[s.header, { borderColor: tc.borderColor }]}>
-        <Pressable onPress={() => router.back()} style={s.back}>
+        <Pressable accessibilityRole="button" onPress={() => router.back()} style={s.back}>
           <ThemedText style={[s.backText, { color: tc.tactical }]}>‹ Admin</ThemedText>
         </Pressable>
         <ThemedText style={[s.headerTitle, { color: tc.textPrimary }]}>📋 ALL ACCOUNTS</ThemedText>
-        <Pressable onPress={fetchFirstPage} style={s.back}>
+        <Pressable accessibilityRole="button" onPress={fetchFirstPage} style={s.back}>
           <ThemedText style={[s.refreshText, { color: tc.accent }]}>REFRESH</ThemedText>
         </Pressable>
       </View>
@@ -159,7 +159,7 @@ export default function AdminAccountsScreen() {
               ] as { mode: SortMode; label: string }[]).map(({ mode, label }) => {
                 const active = sortMode === mode;
                 return (
-                  <Pressable
+                  <Pressable accessibilityRole="button"
                     key={mode}
                     onPress={() => setSortMode(mode)}
                     style={[
@@ -199,7 +199,7 @@ export default function AdminAccountsScreen() {
         ))}
 
         {nextPageToken && (
-          <Pressable
+          <Pressable accessibilityRole="button"
             onPress={loadMore}
             disabled={loadingMore}
             style={[s.loadMoreBtn, { borderColor: tc.borderColor }, loadingMore && { opacity: 0.6 }]}>

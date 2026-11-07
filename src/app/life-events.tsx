@@ -50,7 +50,7 @@ export default function LifeEventsScreen() {
       <SafeAreaView edges={['top']} style={{ flex: 1 }}>
 
         <View style={styles.header}>
-          <Pressable onPress={() => router.back()} style={styles.backBtn}>
+          <Pressable accessibilityRole="button" hitSlop={8} onPress={() => router.back()} style={styles.backBtn}>
             <ThemedText style={[styles.backText, { color: tc.tactical }]}>‹ Back</ThemedText>
           </Pressable>
           <ThemedText style={[styles.eyebrow, { color: tc.tactical }]}>{'// MILBUDGETBUDDY'}</ThemedText>
@@ -62,14 +62,14 @@ export default function LifeEventsScreen() {
 
         {/* Tab bar */}
         <View style={[styles.tabBar, { borderBottomColor: tc.borderColor }]}>
-          <Pressable
+          <Pressable accessibilityRole="button"
             style={[styles.tab, tab === 'active' && styles.tabActive]}
             onPress={() => setTab('active')}>
             <ThemedText style={[styles.tabText, { color: tc.textMuted }, tab === 'active' && [styles.tabTextActive, { color: tc.accent }]]}>
               ACTIVE {activeEvents.length > 0 ? `(${activeEvents.length})` : ''}
             </ThemedText>
           </Pressable>
-          <Pressable
+          <Pressable accessibilityRole="button"
             style={[styles.tab, tab === 'browse' && styles.tabActive]}
             onPress={() => setTab('browse')}>
             <ThemedText style={[styles.tabText, { color: tc.textMuted }, tab === 'browse' && [styles.tabTextActive, { color: tc.accent }]]}>
@@ -90,7 +90,7 @@ export default function LifeEventsScreen() {
                   <ThemedText style={[styles.emptySub, { color: tc.textSecondary }]}>
                     Browse all events and activate the ones that apply to you.
                   </ThemedText>
-                  <Pressable onPress={() => setTab('browse')} style={styles.browseBtn}>
+                  <Pressable accessibilityRole="button" onPress={() => setTab('browse')} style={styles.browseBtn}>
                     <ThemedText style={styles.browseBtnText}>BROWSE EVENTS</ThemedText>
                   </Pressable>
                 </View>
@@ -112,7 +112,7 @@ export default function LifeEventsScreen() {
                             {done}/{total} tasks complete
                           </ThemedText>
                         </View>
-                        <Pressable onPress={() => dismissEvent(activeEvent.type)} style={styles.dismissBtn}>
+                        <Pressable accessibilityRole="button" onPress={() => dismissEvent(activeEvent.type)} style={styles.dismissBtn}>
                           <ThemedText style={[styles.dismissBtnText, { color: tc.textSecondary }]}>Dismiss</ThemedText>
                         </Pressable>
                         <Pressable accessibilityRole="button" accessibilityLabel="Remove" onPress={() => handleRemove(activeEvent.type)} style={styles.removeBtn}>
@@ -130,7 +130,7 @@ export default function LifeEventsScreen() {
                         {meta.checklist.map((item) => {
                           const checked = activeEvent.completedItems.includes(item.id);
                           return (
-                            <Pressable
+                            <Pressable accessibilityRole="button"
                               key={item.id}
                               style={styles.checkItem}
                               onPress={() => toggleItem(activeEvent.type, item.id)}>
@@ -157,7 +157,7 @@ export default function LifeEventsScreen() {
                       )}
 
                       {meta.relatedTool && (
-                        <Pressable
+                        <Pressable accessibilityRole="button"
                           onPress={() => router.push(meta.relatedTool!.route as any)}
                           style={[styles.relatedToolRow, { borderTopColor: tc.borderColor }]}>
                           <ThemedText style={[styles.relatedToolText, { color: meta.color }]}>
@@ -177,7 +177,7 @@ export default function LifeEventsScreen() {
                   {dismissedEvents.map((e) => {
                     const meta = LIFE_EVENTS[e.type];
                     return (
-                      <Pressable
+                      <Pressable accessibilityRole="button"
                         key={e.type}
                         style={[styles.dismissedRow, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}
                         onPress={() => activateEvent(e.type)}>
@@ -199,7 +199,7 @@ export default function LifeEventsScreen() {
 
               return (
                 <View key={type} style={[styles.browseCard, { backgroundColor: tc.surface, borderColor: tc.borderColor, borderLeftColor: meta.color }]}>
-                  <Pressable
+                  <Pressable accessibilityRole="button"
                     style={styles.browseCardInner}
                     onPress={() => setPreviewType(isOpen ? null : type)}>
                     <ThemedText style={styles.browseIcon}>{meta.icon}</ThemedText>
@@ -230,7 +230,7 @@ export default function LifeEventsScreen() {
                         <ThemedText style={[styles.browsePreviewMore, { color: tc.textMuted }]}>+{meta.checklist.length - 5} more tasks</ThemedText>
                       )}
                       {meta.relatedTool && (
-                        <Pressable
+                        <Pressable accessibilityRole="button"
                           onPress={() => router.push(meta.relatedTool!.route as any)}
                           style={styles.relatedToolInlineRow}>
                           <ThemedText style={[styles.relatedToolInlineText, { color: meta.color }]}>
@@ -239,7 +239,7 @@ export default function LifeEventsScreen() {
                         </Pressable>
                       )}
                       {!isActive && (
-                        <Pressable
+                        <Pressable accessibilityRole="button"
                           onPress={() => handleActivate(type)}
                           style={[styles.browseActivateBtn, { backgroundColor: meta.color + '20', borderColor: meta.color + '60' }]}>
                           <ThemedText style={[styles.browseActivateBtnText, { color: meta.color }]}>

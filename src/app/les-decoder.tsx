@@ -52,7 +52,7 @@ function FieldCard({ field }: { field: LESField }) {
   const meta = SECTION_META[field.section];
 
   return (
-    <Pressable
+    <Pressable accessibilityRole="button"
       onPress={() => setOpen((v) => !v)}
       style={({ pressed }) => [styles.fieldCard, pressed && styles.pressed]}>
       {/* Left accent */}
@@ -198,7 +198,7 @@ export default function LESDecoderScreen() {
     <ThemedView style={styles.container}>
       {/* ── Header ─────────────────────────────────────────────────────────── */}
       <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
-        <Pressable accessibilityRole="button" accessibilityLabel="Go back"
+        <Pressable hitSlop={8} accessibilityRole="button" accessibilityLabel="Go back"
           onPress={() => (router.back())}
           style={({ pressed }) => [styles.backBtn, pressed && styles.pressed]}>
           <ThemedText style={styles.backChevron}>‹</ThemedText>
@@ -214,7 +214,7 @@ export default function LESDecoderScreen() {
       {/* ── Tab bar ────────────────────────────────────────────────────────── */}
       <View style={styles.tabBar}>
         {TABS.map((t) => (
-          <Pressable key={t.id} onPress={() => setActiveTab(t.id)} style={styles.tabItem}>
+          <Pressable accessibilityRole="button" key={t.id} onPress={() => setActiveTab(t.id)} style={styles.tabItem}>
             <ThemedText style={[styles.tabLabel, { color: tc.textMuted }, activeTab === t.id && [styles.tabLabelActive, { color: tc.accent }]]}>
               {t.label}
             </ThemedText>
@@ -249,7 +249,7 @@ export default function LESDecoderScreen() {
               const meta = s === 'all' ? null : SECTION_META[s];
               const active = activeSection === s;
               return (
-                <Pressable
+                <Pressable accessibilityRole="button"
                   key={s}
                   onPress={() => setActiveSection(s)}
                   style={[

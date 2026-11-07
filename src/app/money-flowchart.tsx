@@ -98,7 +98,7 @@ function StepCard({ step, checked, onToggle }: {
 
       <View style={styles.stepContent}>
         {/* Header row */}
-        <Pressable
+        <Pressable accessibilityRole="button"
           onPress={() => setExpanded((v) => !v)}
           style={styles.stepHeader}>
           <View style={[styles.stepNum, { borderColor: step.color }]}>
@@ -111,7 +111,7 @@ function StepCard({ step, checked, onToggle }: {
             </ThemedText>
             <ThemedText style={[styles.stepTarget, { color: tc.textHint }]}>{step.target}</ThemedText>
           </View>
-          <Pressable
+          <Pressable accessibilityRole="button"
             onPress={onToggle}
             style={[styles.checkBox, { borderColor: tc.borderColor }, checked && { backgroundColor: step.color, borderColor: step.color }]}>
             {checked && <ThemedText style={styles.checkMark}>✓</ThemedText>}
@@ -153,7 +153,7 @@ export default function MoneyFlowchartScreen() {
   return (
     <ThemedView style={{ flex: 1 }}>
       <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
-        <Pressable accessibilityRole="button" accessibilityLabel="Go back"
+        <Pressable hitSlop={8} accessibilityRole="button" accessibilityLabel="Go back"
           onPress={() => (router.back())}
           style={styles.back}>
           <ThemedText style={styles.backChevron}>‹</ThemedText>

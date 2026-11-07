@@ -123,7 +123,7 @@ export default function SbpCalculatorScreen() {
   return (
     <ThemedView style={{ flex: 1 }}>
       <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
-        <Pressable accessibilityRole="button" accessibilityLabel="Go back"
+        <Pressable hitSlop={8} accessibilityRole="button" accessibilityLabel="Go back"
           onPress={() => (router.back())}
           style={styles.back}>
           <ThemedText style={styles.backChevron}>‹</ThemedText>
@@ -162,7 +162,7 @@ export default function SbpCalculatorScreen() {
             <ThemedText style={[styles.fieldLabel, { color: tc.textHint }]}>COVERAGE BASE</ThemedText>
             <View style={styles.chipRow}>
               {COVERAGE_OPTIONS.map((opt) => (
-                <Pressable
+                <Pressable accessibilityRole="button"
                   key={opt.value}
                   onPress={() => setCoverage(opt.value)}
                   style={[styles.chip, { borderColor: tc.borderColor }, coverage === opt.value && styles.chipActive]}>

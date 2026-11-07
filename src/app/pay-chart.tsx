@@ -58,7 +58,7 @@ export default function PayChartScreen() {
         <ThemedText style={[styles.gradeGroupLabel, { color: tc.textMuted }]}>{label}</ThemedText>
         <View style={styles.gradeRow}>
           {grades.map((g) => (
-            <Pressable
+            <Pressable accessibilityRole="button"
               key={g}
               onPress={() => setSelectedGrade(g)}
               style={[styles.gradeChip, { borderColor: tc.borderColor }, selectedGrade === g && styles.gradeChipActive]}>
@@ -75,7 +75,7 @@ export default function PayChartScreen() {
   return (
     <ThemedView style={{ flex: 1 }}>
       <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
-        <Pressable accessibilityRole="button" accessibilityLabel="Go back"
+        <Pressable hitSlop={8} accessibilityRole="button" accessibilityLabel="Go back"
           onPress={() => (router.back())}
           style={styles.back}>
           <ThemedText style={styles.backChevron}>‹</ThemedText>
@@ -86,13 +86,13 @@ export default function PayChartScreen() {
 
       {/* Mode toggle */}
       <View style={styles.modeRow}>
-        <Pressable onPress={() => setMode('lookup')} style={[styles.modeBtn, { borderColor: tc.borderColor }, mode === 'lookup' && styles.modeBtnActive]}>
+        <Pressable accessibilityRole="button" onPress={() => setMode('lookup')} style={[styles.modeBtn, { borderColor: tc.borderColor }, mode === 'lookup' && styles.modeBtnActive]}>
           <ThemedText style={[styles.modeBtnText, { color: tc.textMuted }, mode === 'lookup' && styles.modeBtnTextActive]}>LOOKUP</ThemedText>
         </Pressable>
-        <Pressable onPress={() => setMode('table')} style={[styles.modeBtn, { borderColor: tc.borderColor }, mode === 'table' && styles.modeBtnActive]}>
+        <Pressable accessibilityRole="button" onPress={() => setMode('table')} style={[styles.modeBtn, { borderColor: tc.borderColor }, mode === 'table' && styles.modeBtnActive]}>
           <ThemedText style={[styles.modeBtnText, { color: tc.textMuted }, mode === 'table' && styles.modeBtnTextActive]}>FULL TABLE</ThemedText>
         </Pressable>
-        <Pressable onPress={() => setMode('reserve')} style={[styles.modeBtn, { borderColor: tc.borderColor }, mode === 'reserve' && styles.modeBtnActive]}>
+        <Pressable accessibilityRole="button" onPress={() => setMode('reserve')} style={[styles.modeBtn, { borderColor: tc.borderColor }, mode === 'reserve' && styles.modeBtnActive]}>
           <ThemedText style={[styles.modeBtnText, { color: tc.textMuted }, mode === 'reserve' && styles.modeBtnTextActive]}>RESERVE/DRILL</ThemedText>
         </Pressable>
       </View>
@@ -124,7 +124,7 @@ export default function PayChartScreen() {
               <ThemedText style={[styles.cardLabel, { color: tc.textHint }]}>YEARS OF SERVICE</ThemedText>
               <View style={styles.yosRow}>
                 {YOS_CHIPS.map((y) => (
-                  <Pressable
+                  <Pressable accessibilityRole="button"
                     key={y}
                     onPress={() => setSelectedYos(y)}
                     style={[styles.yosChip, { borderColor: tc.borderColor }, chipActive(y, selectedYos) && styles.yosChipActive]}>
@@ -190,7 +190,7 @@ export default function PayChartScreen() {
               {([...ENLISTED, ...WARRANT, ...OFFICER] as PayGrade[]).map((g) => {
                 const pay = getBasicPay(g, selectedYos);
                 return (
-                  <Pressable key={g} onPress={() => setSelectedGrade(g)}>
+                  <Pressable accessibilityRole="button" key={g} onPress={() => setSelectedGrade(g)}>
                     <View style={[styles.allGradeRow, g === selectedGrade && styles.allGradeRowActive]}>
                       <ThemedText style={[styles.allGradeLabel, { color: tc.textSecondary }, g === selectedGrade && { color: tc.tactical }]}>{g}</ThemedText>
                       <ThemedText style={[styles.allGradePay, { color: tc.textPrimary }, g === selectedGrade && { color: tc.tactical }]}>{fmtPay(pay)}/mo</ThemedText>
@@ -234,7 +234,7 @@ export default function PayChartScreen() {
                 const pay = getBasicPay(g, selectedYos);
                 const weekend = Math.round(pay / 30 * 4);
                 return (
-                  <Pressable key={g} onPress={() => setSelectedGrade(g)}>
+                  <Pressable accessibilityRole="button" key={g} onPress={() => setSelectedGrade(g)}>
                     <View style={[styles.allGradeRow, g === selectedGrade && styles.allGradeRowActive]}>
                       <ThemedText style={[styles.allGradeLabel, { color: tc.textSecondary }, g === selectedGrade && { color: tc.tactical }]}>{g}</ThemedText>
                       <ThemedText style={[styles.allGradePay, { color: tc.textPrimary }, g === selectedGrade && { color: tc.tactical }]}>{fmtPay(weekend)}/weekend</ThemedText>
@@ -250,7 +250,7 @@ export default function PayChartScreen() {
                 const pay = getBasicPay(g, selectedYos);
                 const weekend = Math.round(pay / 30 * 4);
                 return (
-                  <Pressable key={g} onPress={() => setSelectedGrade(g)}>
+                  <Pressable accessibilityRole="button" key={g} onPress={() => setSelectedGrade(g)}>
                     <View style={[styles.allGradeRow, g === selectedGrade && styles.allGradeRowActive]}>
                       <ThemedText style={[styles.allGradeLabel, { color: tc.textSecondary }, g === selectedGrade && { color: tc.tactical }]}>{g}</ThemedText>
                       <ThemedText style={[styles.allGradePay, { color: tc.textPrimary }, g === selectedGrade && { color: tc.tactical }]}>{fmtPay(weekend)}/weekend</ThemedText>

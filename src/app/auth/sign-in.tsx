@@ -120,16 +120,16 @@ export default function SignInScreen() {
                   onSubmitEditing={handleSignIn}
                   style={[styles.inputFlex, { color: tc.textPrimary }]}
                 />
-                <Pressable onPress={() => setShowPassword((v) => !v)} style={styles.eyeBtn} hitSlop={8}>
+                <Pressable accessibilityRole="button" onPress={() => setShowPassword((v) => !v)} style={styles.eyeBtn} hitSlop={8}>
                   <Ionicons name={showPassword ? 'eye-off-outline' : 'eye-outline'} size={20} color={tc.textHint} />
                 </Pressable>
               </View>
-              <Pressable onPress={handleForgotPassword} hitSlop={8} style={styles.forgotBtn}>
+              <Pressable accessibilityRole="button" onPress={handleForgotPassword} hitSlop={8} style={styles.forgotBtn}>
                 <ThemedText style={[styles.forgotText, { color: tc.tactical }]}>Forgot password?</ThemedText>
               </Pressable>
             </View>
 
-            <Pressable
+            <Pressable accessibilityRole="button"
               onPress={handleSignIn}
               disabled={loading || !email.trim() || !password}
               style={({ pressed }) => [
@@ -145,12 +145,12 @@ export default function SignInScreen() {
 
           <View style={styles.footer}>
             <ThemedText style={[styles.footerText, { color: tc.textSecondary }]}>Don&apos;t have an account?</ThemedText>
-            <Pressable onPress={() => router.push('/auth/sign-up' as any)}>
+            <Pressable accessibilityRole="button" onPress={() => router.push('/auth/sign-up' as any)}>
               <ThemedText style={[styles.footerLink, { color: tc.tactical }]}>Create account →</ThemedText>
             </Pressable>
           </View>
 
-          <Pressable
+          <Pressable accessibilityRole="button"
             onPress={() => router.push('/' as any)}
             style={styles.skipBtn}>
             <ThemedText style={[styles.skipText, { color: tc.textMuted }]}>Use without account (local only)</ThemedText>

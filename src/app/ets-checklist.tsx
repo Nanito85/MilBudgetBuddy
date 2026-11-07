@@ -247,13 +247,13 @@ export default function EtsChecklistScreen() {
   return (
     <ThemedView style={{ flex: 1 }}>
       <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
-        <Pressable accessibilityRole="button" accessibilityLabel="Go back"
+        <Pressable hitSlop={8} accessibilityRole="button" accessibilityLabel="Go back"
           onPress={() => (router.back())}
           style={styles.back}>
           <ThemedText style={styles.backChevron}>‹</ThemedText>
         </Pressable>
         <ThemedText style={styles.title}>EAS/ETS/Separation Checklist</ThemedText>
-        <Pressable onPress={handleReset} style={styles.resetBtn}>
+        <Pressable accessibilityRole="button" onPress={handleReset} style={styles.resetBtn}>
           <ThemedText style={[styles.resetText, { color: tc.textSecondary }]}>Reset</ThemedText>
         </Pressable>
       </View>
@@ -266,14 +266,14 @@ export default function EtsChecklistScreen() {
         <ThemedText style={[styles.progressLabel, { color: tc.tactical }]}>{checkedCount}/{totalItems} COMPLETED</ThemedText>
       </View>
 
-      <Pressable onPress={() => router.push('/life-events' as any)} style={styles.relatedToolRow}>
+      <Pressable accessibilityRole="button" onPress={() => router.push('/life-events' as any)} style={styles.relatedToolRow}>
         <ThemedText style={[styles.relatedToolText, { color: tc.textSecondary }]}>
           Want a shorter financial/admin task list instead? See Life Event Checklists
         </ThemedText>
         <ThemedText style={[styles.relatedToolChevron, { color: tc.accent }]}>›</ThemedText>
       </Pressable>
 
-      <Pressable onPress={() => router.push('/va-claims-tracker' as any)} style={styles.relatedToolRow}>
+      <Pressable accessibilityRole="button" onPress={() => router.push('/va-claims-tracker' as any)} style={styles.relatedToolRow}>
         <ThemedText style={[styles.relatedToolText, { color: tc.textSecondary }]}>
           Filing a VA claim? Track its stage and appeal deadline in the VA Claims & Appeals Tracker
         </ThemedText>
@@ -313,7 +313,7 @@ export default function EtsChecklistScreen() {
                 const done = !!checked[item.id];
                 const open = !!expanded[item.id];
                 return (
-                  <Pressable
+                  <Pressable accessibilityRole="button"
                     key={item.id}
                     onPress={() => toggleExpand(item.id)}
                     style={[
@@ -321,7 +321,7 @@ export default function EtsChecklistScreen() {
                       { backgroundColor: tc.surface, borderColor: tc.borderColor },
                       done && styles.itemCardDone,
                     ]}>
-                    <Pressable
+                    <Pressable accessibilityRole="button"
                       onPress={() => toggle(item.id)}
                       style={[
                         styles.checkbox,
