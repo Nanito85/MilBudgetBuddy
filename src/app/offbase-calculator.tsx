@@ -32,7 +32,7 @@ export default function OffbaseCalculatorScreen() {
     label, selected, onPress,
   }: { label: string; selected: boolean; onPress: () => void }) {
     return (
-      <Pressable
+      <Pressable accessibilityRole="button"
         onPress={onPress}
         style={[styles.chip, { backgroundColor: tc.background, borderColor: tc.borderColor }, selected && styles.chipSelected]}>
         <ThemedText style={[styles.chipText, { color: tc.textHint }, selected && [styles.chipTextSelected, { color: tc.tactical }]]}>
@@ -96,11 +96,11 @@ export default function OffbaseCalculatorScreen() {
       <View style={styles.stepperRow}>
         <ThemedText style={[styles.stepperLabel, { color: tc.textSecondary }]}>{label}</ThemedText>
         <View style={styles.stepperControls}>
-          <Pressable style={[styles.stepBtn, { backgroundColor: tc.background, borderColor: tc.borderColor }]} onPress={() => onChange(Math.max(min, value - step))}>
+          <Pressable accessibilityRole="button" hitSlop={8} style={[styles.stepBtn, { backgroundColor: tc.background, borderColor: tc.borderColor }]} onPress={() => onChange(Math.max(min, value - step))}>
             <ThemedText style={[styles.stepBtnText, { color: tc.tactical }]}>−</ThemedText>
           </Pressable>
           <ThemedText style={[styles.stepperValue, { color: tc.textPrimary }]}>{fmt(value)}</ThemedText>
-          <Pressable style={[styles.stepBtn, { backgroundColor: tc.background, borderColor: tc.borderColor }]} onPress={() => onChange(Math.min(max, value + step))}>
+          <Pressable accessibilityRole="button" hitSlop={8} style={[styles.stepBtn, { backgroundColor: tc.background, borderColor: tc.borderColor }]} onPress={() => onChange(Math.min(max, value + step))}>
             <ThemedText style={[styles.stepBtnText, { color: tc.tactical }]}>+</ThemedText>
           </Pressable>
         </View>
@@ -111,7 +111,7 @@ export default function OffbaseCalculatorScreen() {
   return (
     <ThemedView style={{ flex: 1 }}>
       <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
-        <Pressable accessibilityRole="button" accessibilityLabel="Go back"
+        <Pressable hitSlop={8} accessibilityRole="button" accessibilityLabel="Go back"
           onPress={() => (router.back())}
           style={styles.back}>
           <ThemedText style={styles.backChevron}>‹</ThemedText>
@@ -185,7 +185,7 @@ export default function OffbaseCalculatorScreen() {
                 <ThemedText style={[styles.resultsEmpty, { color: tc.textHint }]}>No locations match — try the installation name or city.</ThemedText>
               )}
               {searchResults.map((inst) => (
-                <Pressable
+                <Pressable accessibilityRole="button"
                   key={inst.id}
                   onPress={() => { setZip(inst.mhaZip); setSelectedInstallation(inst); setLocSearch(''); }}
                   style={({ pressed }) => [styles.resultRow, { borderBottomColor: tc.borderColor, backgroundColor: tc.surface }, pressed && { opacity: 0.7 }]}>
@@ -203,7 +203,7 @@ export default function OffbaseCalculatorScreen() {
               <ThemedText style={[styles.selectedCardLabel, { color: tc.tactical }]}>SELECTED LOCATION</ThemedText>
               <ThemedText style={[styles.selectedCardName, { color: tc.textPrimary }]}>{selectedInstallation.name}</ThemedText>
               <ThemedText style={[styles.selectedCardSub, { color: tc.textHint }]}>{selectedInstallation.city}, {selectedInstallation.state} · {selectedInstallation.branch}</ThemedText>
-              <Pressable onPress={() => { setZip(''); setSelectedInstallation(null); }} style={[styles.changeBtn, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
+              <Pressable accessibilityRole="button" onPress={() => { setZip(''); setSelectedInstallation(null); }} style={[styles.changeBtn, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
                 <ThemedText style={[styles.changeBtnText, { color: tc.textHint }]}>Change Location</ThemedText>
               </Pressable>
             </View>

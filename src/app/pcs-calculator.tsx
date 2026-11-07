@@ -130,11 +130,11 @@ function Stepper({ label, value, min, max, onChange }: {
     <View style={styles.stepperRow}>
       <ThemedText style={styles.stepperLabel}>{label}</ThemedText>
       <View style={styles.stepperCtrl}>
-        <Pressable onPress={() => onChange(Math.max(min, value - 1))} style={styles.stepBtn}>
+        <Pressable accessibilityRole="button" hitSlop={8} onPress={() => onChange(Math.max(min, value - 1))} style={styles.stepBtn}>
           <ThemedText style={styles.stepBtnTxt}>−</ThemedText>
         </Pressable>
         <ThemedText style={styles.stepVal}>{value}</ThemedText>
-        <Pressable onPress={() => onChange(Math.min(max, value + 1))} style={styles.stepBtn}>
+        <Pressable accessibilityRole="button" hitSlop={8} onPress={() => onChange(Math.min(max, value + 1))} style={styles.stepBtn}>
           <ThemedText style={styles.stepBtnTxt}>+</ThemedText>
         </Pressable>
       </View>
@@ -267,7 +267,7 @@ export default function PCSCalculatorScreen() {
     <ThemedView style={styles.container}>
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
-        <Pressable accessibilityRole="button" accessibilityLabel="Go back"
+        <Pressable hitSlop={8} accessibilityRole="button" accessibilityLabel="Go back"
           onPress={() => (router.back())}
           style={({ pressed }) => [styles.backBtn, pressed && styles.pressed]}>
           <ThemedText style={styles.backChevron}>‹</ThemedText>
@@ -283,7 +283,7 @@ export default function PCSCalculatorScreen() {
       {/* ── Tab bar ────────────────────────────────────────────────────────── */}
       <View style={styles.tabBar}>
         {TABS.map((t) => (
-          <Pressable key={t.id} onPress={() => setActiveTab(t.id)} style={styles.tabItem}>
+          <Pressable accessibilityRole="button" key={t.id} onPress={() => setActiveTab(t.id)} style={styles.tabItem}>
             <ThemedText style={[styles.tabLabel, { color: tc.textMuted }, activeTab === t.id && [styles.tabLabelActive, { color: tc.accent }]]}>
               {t.label}
             </ThemedText>
@@ -360,7 +360,7 @@ export default function PCSCalculatorScreen() {
               </ThemedText>
               <View style={styles.depToggle}>
                 {[true, false].map((val) => (
-                  <Pressable
+                  <Pressable accessibilityRole="button"
                     key={String(val)}
                     onPress={() => setWithDep(val)}
                     style={[styles.depBtn, withDep === val && styles.depBtnActive]}>
@@ -382,7 +382,7 @@ export default function PCSCalculatorScreen() {
 
           <StationPicker label="Current Station" selected={currentStation} onSelect={setCurrentStation} />
 
-          <Pressable
+          <Pressable accessibilityRole="button"
             onPress={swapStations}
             style={({ pressed }) => [styles.swapBtn, pressed && styles.pressed]}>
             <ThemedText style={styles.swapIcon}>⇅</ThemedText>
@@ -406,7 +406,7 @@ export default function PCSCalculatorScreen() {
               </ThemedText>
               <View style={styles.depToggle}>
                 {[true, false].map((val) => (
-                  <Pressable
+                  <Pressable accessibilityRole="button"
                     key={String(val)}
                     onPress={() => setIsDriving(val)}
                     style={[styles.depBtn, isDriving === val && styles.depBtnActive]}>
@@ -459,7 +459,7 @@ export default function PCSCalculatorScreen() {
                   </ThemedText>
                   <View style={styles.depToggle}>
                     {([1, 2] as const).map((v) => (
-                      <Pressable
+                      <Pressable accessibilityRole="button"
                         key={v}
                         onPress={() => setVehicles(v)}
                         style={[styles.depBtn, vehicles === v && styles.depBtnActive]}>

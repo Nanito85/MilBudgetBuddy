@@ -42,7 +42,7 @@ export default function PrivacyCenterScreen() {
     <ThemedView style={s.container}>
       <SafeAreaView edges={['top']}>
         <View style={[s.header, { borderBottomColor: tc.borderColor }]}>
-          <Pressable onPress={() => router.back()} style={s.backBtn}>
+          <Pressable accessibilityRole="button" onPress={() => router.back()} style={s.backBtn}>
             <ThemedText style={[s.backText, { color: tc.tactical }]}>‹ Back</ThemedText>
           </Pressable>
           <ThemedText style={[s.title, { color: tc.textPrimary }]}>PRIVACY CENTER</ThemedText>
@@ -98,12 +98,12 @@ export default function PrivacyCenterScreen() {
         </Section>
 
         <View style={s.linksCard}>
-          <Pressable
+          <Pressable accessibilityRole="button"
             onPress={() => Linking.openURL(PRIVACY_URL)}
             style={({ pressed }) => [s.linkBtn, pressed && { opacity: 0.7 }]}>
             <ThemedText style={s.linkBtnText}>FULL PRIVACY POLICY ↗</ThemedText>
           </Pressable>
-          <Pressable
+          <Pressable accessibilityRole="button"
             onPress={() => router.push('/terms' as any)}
             style={({ pressed }) => [s.linkBtnSecondary, { borderColor: tc.borderColor }, pressed && { opacity: 0.7 }]}>
             <ThemedText style={[s.linkBtnSecondaryText, { color: tc.textSecondary }]}>TERMS OF SERVICE →</ThemedText>

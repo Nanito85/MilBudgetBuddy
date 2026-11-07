@@ -19,7 +19,7 @@ export function TipListItem({ tip, onPress }: TipListItemProps) {
   const toggleSave = useTipsStore((s) => s.toggleSave);
 
   return (
-    <Pressable onPress={onPress} style={({ pressed }) => pressed && styles.pressed}>
+    <Pressable accessibilityRole="button" onPress={onPress} style={({ pressed }) => pressed && styles.pressed}>
       <ThemedView type="backgroundElement" style={styles.row}>
         <View style={styles.textBlock}>
           <ThemedText style={styles.title} numberOfLines={2}>
@@ -30,7 +30,7 @@ export function TipListItem({ tip, onPress }: TipListItemProps) {
           </ThemedText>
         </View>
         <View style={styles.right}>
-          <Pressable
+          <Pressable accessibilityRole="button"
             onPress={() => toggleSave(tip.id)}
             hitSlop={12}
             style={styles.saveBtn}

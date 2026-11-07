@@ -26,7 +26,7 @@ export function QuickActionsGrid() {
       </View>
       <View style={styles.grid}>
         {actions.map((a) => (
-          <Pressable
+          <Pressable accessibilityRole="button"
             key={a.id}
             onPress={() => router.push(a.route as any)}
             style={({ pressed }) => [styles.tile, pressed && styles.pressed]}>

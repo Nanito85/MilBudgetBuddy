@@ -36,7 +36,7 @@ export function AddKidModal({ visible, onClose, onAdd }: {
         <SafeAreaView style={styles.safe}>
           <View style={styles.header}>
             <ThemedText style={[styles.title, { color: tc.textPrimary }]}>{'// NEW CADET'}</ThemedText>
-            <Pressable onPress={onClose}>
+            <Pressable accessibilityRole="button" onPress={onClose}>
               <ThemedText style={[styles.cancel, { color: tc.textMuted }]}>CANCEL</ThemedText>
             </Pressable>
           </View>
@@ -60,7 +60,7 @@ export function AddKidModal({ visible, onClose, onAdd }: {
               const theme = getKidTheme(g);
               const isSelected = gender === g;
               return (
-                <Pressable
+                <Pressable accessibilityRole="button"
                   key={g}
                   onPress={() => setGender(g)}
                   style={[styles.themeBtn, { borderColor: tc.borderColor }, isSelected && { borderColor: theme.primary, backgroundColor: theme.bg }]}>
@@ -73,7 +73,7 @@ export function AddKidModal({ visible, onClose, onAdd }: {
             })}
           </View>
 
-          <Pressable
+          <Pressable accessibilityRole="button"
             onPress={submit}
             style={[styles.addBtn, { backgroundColor: tc.accent }, !nickname.trim() && { opacity: 0.4 }]}>
             <ThemedText style={[styles.addBtnText, { color: tc.tactical }]}>ACTIVATE PROFILE →</ThemedText>

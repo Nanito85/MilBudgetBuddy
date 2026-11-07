@@ -26,11 +26,11 @@ function Stepper({ label, value, step, min, max, onChange, unit }: {
     <View style={styles.stepperRow}>
       <ThemedText style={[styles.stepperLabel, { color: tc.textSecondary }]}>{label}</ThemedText>
       <View style={styles.stepperControls}>
-        <Pressable style={[styles.stepBtn, { borderColor: tc.borderColor, backgroundColor: tc.background }]} onPress={() => onChange(Math.max(min, value - step))}>
+        <Pressable accessibilityRole="button" hitSlop={8} style={[styles.stepBtn, { borderColor: tc.borderColor, backgroundColor: tc.background }]} onPress={() => onChange(Math.max(min, value - step))}>
           <ThemedText style={[styles.stepBtnText, { color: tc.tactical }]}>−</ThemedText>
         </Pressable>
         <ThemedText style={[styles.stepperValue, { color: tc.textPrimary }]}>{unit === 'mo' ? `${value} mo` : fmt(value)}</ThemedText>
-        <Pressable style={[styles.stepBtn, { borderColor: tc.borderColor, backgroundColor: tc.background }]} onPress={() => onChange(Math.min(max, value + step))}>
+        <Pressable accessibilityRole="button" hitSlop={8} style={[styles.stepBtn, { borderColor: tc.borderColor, backgroundColor: tc.background }]} onPress={() => onChange(Math.min(max, value + step))}>
           <ThemedText style={[styles.stepBtnText, { color: tc.tactical }]}>+</ThemedText>
         </Pressable>
       </View>
@@ -98,7 +98,7 @@ export default function DeploymentSavingsScreen() {
   return (
     <ThemedView style={{ flex: 1 }}>
       <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
-        <Pressable accessibilityRole="button" accessibilityLabel="Go back"
+        <Pressable hitSlop={8} accessibilityRole="button" accessibilityLabel="Go back"
           onPress={() => (router.back())}
           style={styles.back}>
           <ThemedText style={styles.backChevron}>‹</ThemedText>

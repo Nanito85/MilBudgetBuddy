@@ -80,7 +80,7 @@ function PINSetupModal({ visible, accentColor, onComplete, onCancel }: {
 
           <View style={pinSetupStyles.grid}>
             {keys.map((k, idx) => (
-              <Pressable
+              <Pressable accessibilityRole="button"
                 key={idx}
                 onPress={() => { if (k === '⌫') del(); else if (k !== '') pressKey(k); }}
                 style={({ pressed }) => [
@@ -93,7 +93,7 @@ function PINSetupModal({ visible, accentColor, onComplete, onCancel }: {
             ))}
           </View>
 
-          <Pressable onPress={handleClose} style={pinSetupStyles.cancelBtn}>
+          <Pressable accessibilityRole="button" onPress={handleClose} style={pinSetupStyles.cancelBtn}>
             <ThemedText style={[pinSetupStyles.cancelText, { color: accentColor }]}>CANCEL</ThemedText>
           </Pressable>
         </View>
@@ -130,7 +130,7 @@ function KidCard({ kid, onPress, onRemove, onHandOff }: { kid: KidProfile; onPre
 
   return (
     <View style={[kidCardStyles.wrapper, { backgroundColor: tc.surface, borderColor: theme.primary + '40' }]}>
-      <Pressable
+      <Pressable accessibilityRole="button"
         onPress={onPress}
         onLongPress={onRemove}
         style={({ pressed }) => [kidCardStyles.card, pressed && { opacity: 0.7 }]}>
@@ -164,7 +164,7 @@ function KidCard({ kid, onPress, onRemove, onHandOff }: { kid: KidProfile; onPre
       </Pressable>
 
       {/* Hand-off button */}
-      <Pressable
+      <Pressable accessibilityRole="button"
         onPress={onHandOff}
         style={({ pressed }) => [
           kidCardStyles.handOffBtn,
@@ -305,7 +305,7 @@ export default function KidsScreen() {
         )}
 
         {/* Add button */}
-        <Pressable
+        <Pressable accessibilityRole="button"
           onPress={() => setShowAdd(true)}
           style={({ pressed }) => [styles.addBtn, { backgroundColor: tc.surface }, pressed && { opacity: 0.7 }]}>
           <ThemedText style={[styles.addBtnText, { color: tc.tactical }]}>+ ENROLL NEW CADET</ThemedText>

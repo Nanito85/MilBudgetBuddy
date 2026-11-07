@@ -74,7 +74,7 @@ function EntryRow({ entry, isDefault }: EntryRowProps) {
   };
 
   return (
-    <Pressable onLongPress={handleLongPress}>
+    <Pressable accessibilityRole="button" onLongPress={handleLongPress}>
       <ThemedView type="backgroundElement" style={styles.entryRow}>
         <View style={[styles.rowAccent, { backgroundColor: accentColor }]} />
         <View style={styles.entryInfo}>
@@ -89,7 +89,7 @@ function EntryRow({ entry, isDefault }: EntryRowProps) {
               returnKeyType="done"
             />
           ) : (
-            <Pressable onPress={!isDefault ? () => { setLabelVal(entry.label); setEditingLabel(true); } : undefined}>
+            <Pressable accessibilityRole="button" onPress={!isDefault ? () => { setLabelVal(entry.label); setEditingLabel(true); } : undefined}>
               <ThemedText style={[styles.entryLabel, { color: tc.textPrimary }]}>{entry.label}</ThemedText>
             </Pressable>
           )}
@@ -109,7 +109,7 @@ function EntryRow({ entry, isDefault }: EntryRowProps) {
             placeholder="0"
           />
         ) : (
-          <Pressable
+          <Pressable accessibilityRole="button"
             onPress={() => { setVal(entry.amount > 0 ? String(entry.amount) : ''); setEditing(true); }}
             style={styles.amountBtn}>
             <ThemedText style={[styles.entryAmount, { color: entry.amount > 0 ? accentColor : tc.textMuted }]}>
@@ -148,7 +148,7 @@ function AddRow({ category, onAdd }: { category: NetWorthCategory; onAdd: (label
         onSubmitEditing={submit}
       />
       {name.trim().length > 0 && (
-        <Pressable onPress={submit} style={[styles.addBtn, { backgroundColor: category === 'asset' ? Brand.tactical : Brand.danger }]}>
+        <Pressable accessibilityRole="button" onPress={submit} style={[styles.addBtn, { backgroundColor: category === 'asset' ? Brand.tactical : Brand.danger }]}>
           <ThemedText style={styles.addBtnText}>Add</ThemedText>
         </Pressable>
       )}
@@ -262,7 +262,7 @@ export default function NetWorthScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <ThemedView style={{ flex: 1 }}>
         <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
-          <Pressable accessibilityRole="button" accessibilityLabel="Go back"
+          <Pressable hitSlop={8} accessibilityRole="button" accessibilityLabel="Go back"
             onPress={() => (router.back())}
             style={styles.back}>
             <ThemedText style={styles.backChevron}>‹</ThemedText>
@@ -273,10 +273,10 @@ export default function NetWorthScreen() {
 
         {/* Mode toggle */}
         <View style={styles.modeRow}>
-          <Pressable onPress={() => setMode('tracker')} style={[styles.modeBtn, { borderColor: tc.borderColor }, mode === 'tracker' && styles.modeBtnActive]}>
+          <Pressable accessibilityRole="button" onPress={() => setMode('tracker')} style={[styles.modeBtn, { borderColor: tc.borderColor }, mode === 'tracker' && styles.modeBtnActive]}>
             <ThemedText style={[styles.modeBtnText, { color: tc.textMuted }, mode === 'tracker' && styles.modeBtnTextActive]}>TRACKER</ThemedText>
           </Pressable>
-          <Pressable onPress={() => setMode('history')} style={[styles.modeBtn, { borderColor: tc.borderColor }, mode === 'history' && styles.modeBtnActive]}>
+          <Pressable accessibilityRole="button" onPress={() => setMode('history')} style={[styles.modeBtn, { borderColor: tc.borderColor }, mode === 'history' && styles.modeBtnActive]}>
             <ThemedText style={[styles.modeBtnText, { color: tc.textMuted }, mode === 'history' && styles.modeBtnTextActive]}>
               HISTORY {snapshots.length > 0 ? `(${snapshots.length})` : ''}
             </ThemedText>
@@ -344,7 +344,7 @@ export default function NetWorthScreen() {
               ))}
               <AddRow category="liability" onAdd={(label) => addEntry(label, 'liability')} />
 
-              <Pressable onPress={handleSaveSnapshot} style={styles.snapshotBtn}>
+              <Pressable accessibilityRole="button" onPress={handleSaveSnapshot} style={styles.snapshotBtn}>
                 <ThemedText style={[styles.snapshotBtnText, { color: tc.accent }]}>📸 Save Monthly Snapshot</ThemedText>
               </Pressable>
               <ThemedText style={[styles.snapshotHint, { color: tc.textMuted }]}>
@@ -404,7 +404,7 @@ export default function NetWorthScreen() {
                     })}
                   </ThemedView>
 
-                  <Pressable onPress={handleClearHistory} style={styles.clearBtn}>
+                  <Pressable accessibilityRole="button" onPress={handleClearHistory} style={styles.clearBtn}>
                     <ThemedText style={styles.clearBtnText}>Clear History</ThemedText>
                   </Pressable>
                 </>

@@ -55,7 +55,7 @@ function ExpandableItem({
 }) {
   const [open, setOpen] = useState(false);
   return (
-    <Pressable
+    <Pressable accessibilityRole="button"
       onPress={() => setOpen((v) => !v)}
       style={({ pressed }) => [styles.expandItem, pressed && styles.pressed]}>
       <View style={styles.expandHeader}>
@@ -99,7 +99,7 @@ export default function SchoolsFinderScreen() {
     <ThemedView style={styles.container}>
       {/* ── Header ─────────────────────────────────────────────────────────── */}
       <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
-        <Pressable accessibilityRole="button" accessibilityLabel="Go back"
+        <Pressable hitSlop={8} accessibilityRole="button" accessibilityLabel="Go back"
           onPress={() => (router.back())}
           style={({ pressed }) => [styles.backBtn, pressed && styles.pressed]}>
           <ThemedText style={styles.backChevron}>‹</ThemedText>
@@ -115,7 +115,7 @@ export default function SchoolsFinderScreen() {
       {/* ── Tab bar ────────────────────────────────────────────────────────── */}
       <View style={styles.tabBar}>
         {TABS.map((t) => (
-          <Pressable key={t.id} onPress={() => setActiveTab(t.id)} style={styles.tabItem}>
+          <Pressable accessibilityRole="button" key={t.id} onPress={() => setActiveTab(t.id)} style={styles.tabItem}>
             <ThemedText
               style={[
                 styles.tabLabel,

@@ -81,7 +81,7 @@ function PINManageModal({ visible, onClose }: { visible: boolean; onClose: () =>
       <View style={pinModalStyles.bg}>
         <SafeAreaView style={pinModalStyles.safe}>
           <View style={pinModalStyles.header}>
-            <Pressable onPress={handleClose}><ThemedText style={pinModalStyles.cancel}>CANCEL</ThemedText></Pressable>
+            <Pressable accessibilityRole="button" onPress={handleClose}><ThemedText style={pinModalStyles.cancel}>CANCEL</ThemedText></Pressable>
             <ThemedText style={pinModalStyles.title}>{'// KIDS MODE PIN'}</ThemedText>
             <View style={{ width: 60 }} />
           </View>
@@ -98,14 +98,14 @@ function PINManageModal({ visible, onClose }: { visible: boolean; onClose: () =>
                   : 'Without a PIN, anyone can exit Kids Mode. Set one to keep your kids in their view.'}
               </ThemedText>
 
-              <Pressable onPress={() => { setStep('new'); setDigits(''); }} style={pinModalStyles.primaryBtn}>
+              <Pressable accessibilityRole="button" onPress={() => { setStep('new'); setDigits(''); }} style={pinModalStyles.primaryBtn}>
                 <ThemedText style={pinModalStyles.primaryBtnText}>
                   {currentPin ? 'CHANGE PIN' : 'SET NEW PIN'}
                 </ThemedText>
               </Pressable>
 
               {currentPin && (
-                <Pressable
+                <Pressable accessibilityRole="button"
                   onPress={() => Alert.alert('Remove PIN', 'Kids will be able to exit Kids Mode without a PIN.', [
                     { text: 'Cancel', style: 'cancel' },
                     { text: 'Remove', style: 'destructive', onPress: () => { clearPin().then(handleClose); } },
@@ -132,14 +132,14 @@ function PINManageModal({ visible, onClose }: { visible: boolean; onClose: () =>
               </View>
               <View style={pinModalStyles.grid}>
                 {keys.map((k, idx) => (
-                  <Pressable key={idx}
+                  <Pressable accessibilityRole="button" key={idx}
                     onPress={() => { if (k === '⌫') handleDel(); else if (k !== '') handleDigit(k); }}
                     style={({ pressed }) => [pinModalStyles.key, k === '' && { opacity: 0 }, pressed && k !== '' && { backgroundColor: Brand.accent + '20' }]}>
                     <ThemedText style={[pinModalStyles.keyText, k === '⌫' && { fontSize: 22 }]}>{k}</ThemedText>
                   </Pressable>
                 ))}
               </View>
-              <Pressable onPress={() => { setStep('menu'); setDigits(''); setNewPin(''); }}>
+              <Pressable accessibilityRole="button" onPress={() => { setStep('menu'); setDigits(''); setNewPin(''); }}>
                 <ThemedText style={pinModalStyles.back}>← BACK</ThemedText>
               </Pressable>
             </View>
@@ -303,7 +303,7 @@ export default function SettingsScreen() {
       />
       <SafeAreaView edges={['top']}>
         <View style={[styles.header, { borderBottomColor: tc.borderColor }]}>
-          <Pressable onPress={() => router.back()} style={styles.backBtn}>
+          <Pressable accessibilityRole="button" hitSlop={8} onPress={() => router.back()} style={styles.backBtn}>
             <ThemedText style={[styles.backText, { color: tc.tactical }]}>‹ Back</ThemedText>
           </Pressable>
           <ThemedText style={[styles.title, { color: text }]}>SETTINGS</ThemedText>
@@ -316,7 +316,7 @@ export default function SettingsScreen() {
         showsVerticalScrollIndicator={false}>
 
         {/* ── PROFILE ────────────────────────────────────────────────── */}
-        <Pressable
+        <Pressable accessibilityRole="button"
           onPress={() => router.push('/profile' as any)}
           style={({ pressed }) => [
             styles.profileNavRow,
@@ -344,7 +344,7 @@ export default function SettingsScreen() {
           {(['dark', 'light'] as const).map((opt) => {
             const isSelected = appTheme === opt;
             return (
-              <Pressable
+              <Pressable accessibilityRole="button"
                 key={opt}
                 onPress={() => setAppTheme(opt)}
                 style={({ pressed }) => [
@@ -382,7 +382,7 @@ export default function SettingsScreen() {
           {FONT_SCALE_OPTIONS.map((opt) => {
             const isSelected = Math.abs(fontScale - opt.value) < 0.05;
             return (
-              <Pressable
+              <Pressable accessibilityRole="button"
                 key={opt.value}
                 onPress={() => setFontScale(opt.value)}
                 style={({ pressed }) => [
@@ -422,7 +422,7 @@ export default function SettingsScreen() {
         </ThemedText>
         <View style={styles.tilesGrid}>
           {ALL_QUICK_ACTIONS.filter((a) => selected.includes(a.id)).map((action) => (
-            <Pressable
+            <Pressable accessibilityRole="button"
               key={action.id}
               onPress={() => toggle(action.id)}
               style={({ pressed }) => [
@@ -458,7 +458,7 @@ export default function SettingsScreen() {
           {ALL_QUICK_ACTIONS.filter((a) => !selected.includes(a.id)).map((action) => {
             const isDisabled = selected.length >= MAX_TILES;
             return (
-              <Pressable
+              <Pressable accessibilityRole="button"
                 key={action.id}
                 onPress={() => toggle(action.id)}
                 disabled={isDisabled}
@@ -498,7 +498,7 @@ export default function SettingsScreen() {
               <ThemedText style={[settingsProStyles.proSub, { color: textDim }]} numberOfLines={1}>{user.email}</ThemedText>
             </View>
             <View style={{ gap: 6 }}>
-              <Pressable
+              <Pressable accessibilityRole="button"
                 onPress={() => {
                   // Previously fire-and-forget — a failed signOut() (e.g. a
                   // transient network error) had zero visible feedback, so
@@ -514,7 +514,7 @@ export default function SettingsScreen() {
             </View>
           </View>
         ) : (
-          <Pressable
+          <Pressable accessibilityRole="button"
             onPress={() => router.push('/auth/sign-in' as any)}
             style={({ pressed }) => [settingsProStyles.upgradeCard, { backgroundColor: card, borderColor: Brand.tactical + '40' }, pressed && { opacity: 0.7 }]}>
             <ThemedText style={settingsProStyles.proIcon}>☁️</ThemedText>
@@ -533,7 +533,7 @@ export default function SettingsScreen() {
         </View>
 
         {isPro ? (
-          <Pressable
+          <Pressable accessibilityRole="button"
             onPress={() => router.push('/paywall' as any)}
             style={({ pressed }) => [settingsProStyles.upgradeCard, { backgroundColor: card, borderColor: Brand.tactical + '40' }, pressed && { opacity: 0.7 }]}>
             <ThemedText style={settingsProStyles.proIcon}>✓</ThemedText>
@@ -548,7 +548,7 @@ export default function SettingsScreen() {
         ) : null}
 
         {isPro && (
-          <Pressable
+          <Pressable accessibilityRole="button"
             onPress={handleManageSubscription}
             style={({ pressed }) => [settingsProStyles.upgradeCard, { backgroundColor: card, borderColor: tc.borderColor }, pressed && { opacity: 0.7 }]}>
             <ThemedText style={settingsProStyles.proIcon}>⚙️</ThemedText>
@@ -561,7 +561,7 @@ export default function SettingsScreen() {
         )}
 
         {!isPro && (
-          <Pressable
+          <Pressable accessibilityRole="button"
             onPress={() => router.push('/paywall' as any)}
             style={({ pressed }) => [settingsProStyles.upgradeCard, { backgroundColor: card, borderColor: Brand.accent + '40' }, pressed && { opacity: 0.7 }]}>
             <ThemedText style={settingsProStyles.proIcon}>🎖️</ThemedText>
@@ -579,7 +579,7 @@ export default function SettingsScreen() {
           <ThemedText style={[styles.sectionTitle, { color: text }]}>TUTORIAL</ThemedText>
         </View>
 
-        <Pressable
+        <Pressable accessibilityRole="button"
           onPress={() => setShowTutorial(true)}
           style={({ pressed }) => [settingsProStyles.upgradeCard, { backgroundColor: card, borderColor: Brand.accent + '40' }, pressed && { opacity: 0.7 }]}>
           <ThemedText style={settingsProStyles.proIcon}>🎖️</ThemedText>
@@ -596,7 +596,7 @@ export default function SettingsScreen() {
           <ThemedText style={[styles.sectionTitle, { color: text }]}>FEEDBACK</ThemedText>
         </View>
 
-        <Pressable
+        <Pressable accessibilityRole="button"
           onPress={() => setShowFeedback(true)}
           style={({ pressed }) => [settingsProStyles.upgradeCard, { backgroundColor: card, borderColor: Brand.tactical + '40' }, pressed && { opacity: 0.7 }]}>
           <ThemedText style={settingsProStyles.proIcon}>💬</ThemedText>
@@ -613,7 +613,7 @@ export default function SettingsScreen() {
           <ThemedText style={[styles.sectionTitle, { color: text }]}>SUPPORT MILBUDGETBUDDY</ThemedText>
         </View>
 
-        <Pressable
+        <Pressable accessibilityRole="button"
           onPress={handleRateApp}
           style={({ pressed }) => [settingsProStyles.upgradeCard, { backgroundColor: card, borderColor: Brand.tactical + '40' }, pressed && { opacity: 0.7 }]}>
           <ThemedText style={settingsProStyles.proIcon}>⭐</ThemedText>
@@ -624,7 +624,7 @@ export default function SettingsScreen() {
           <ThemedText style={[settingsProStyles.chevron, { color: tc.tactical }]}>›</ThemedText>
         </Pressable>
 
-        <Pressable
+        <Pressable accessibilityRole="button"
           onPress={handleShareApp}
           style={({ pressed }) => [settingsProStyles.upgradeCard, { backgroundColor: card, borderColor: Brand.tactical + '40' }, pressed && { opacity: 0.7 }]}>
           <ThemedText style={settingsProStyles.proIcon}>📤</ThemedText>
@@ -641,7 +641,7 @@ export default function SettingsScreen() {
           <ThemedText style={[styles.sectionTitle, { color: text }]}>KIDS MODE PIN</ThemedText>
         </View>
 
-        <Pressable
+        <Pressable accessibilityRole="button"
           onPress={() => setShowPINManage(true)}
           style={({ pressed }) => [settingsProStyles.upgradeCard, { backgroundColor: card, borderColor: Brand.tactical + '40' }, pressed && { opacity: 0.7 }]}>
           <ThemedText style={settingsProStyles.proIcon}>🔐</ThemedText>
@@ -662,7 +662,7 @@ export default function SettingsScreen() {
           <ThemedText style={[styles.sectionTitle, { color: text }]}>RESET OPTIONS</ThemedText>
         </View>
 
-        <Pressable
+        <Pressable accessibilityRole="button"
           onPress={() =>
             Alert.alert(
               'Reset All Data',
@@ -699,7 +699,7 @@ export default function SettingsScreen() {
           <ThemedText style={[styles.sectionTitle, { color: text }]}>PRIVACY & LEGAL</ThemedText>
         </View>
 
-        <Pressable
+        <Pressable accessibilityRole="button"
           onPress={() => router.push('/privacy-center' as any)}
           style={({ pressed }) => [settingsProStyles.upgradeCard, { backgroundColor: card, borderColor: Brand.tactical + '40' }, pressed && { opacity: 0.7 }]}>
           <ThemedText style={settingsProStyles.proIcon}>🔐</ThemedText>
@@ -710,7 +710,7 @@ export default function SettingsScreen() {
           <ThemedText style={[settingsProStyles.chevron, { color: tc.tactical }]}>›</ThemedText>
         </Pressable>
 
-        <Pressable
+        <Pressable accessibilityRole="button"
           onPress={() => router.push('/terms' as any)}
           style={({ pressed }) => [settingsProStyles.upgradeCard, { backgroundColor: card, borderColor: tc.borderColor }, pressed && { opacity: 0.7 }]}>
           <ThemedText style={settingsProStyles.proIcon}>📄</ThemedText>
@@ -723,7 +723,7 @@ export default function SettingsScreen() {
 
         {!adminResolving && isAdmin && (
           <>
-            <Pressable
+            <Pressable accessibilityRole="button"
               onPress={() => router.push('/admin/feedback' as any)}
               style={({ pressed }) => [settingsProStyles.upgradeCard, { backgroundColor: card, borderColor: '#8B5CF640' }, pressed && { opacity: 0.7 }]}>
               <ThemedText style={settingsProStyles.proIcon}>🔐</ThemedText>
@@ -733,7 +733,7 @@ export default function SettingsScreen() {
               </View>
               <ThemedText style={[settingsProStyles.chevron, { color: '#8B5CF6' }]}>›</ThemedText>
             </Pressable>
-            <Pressable
+            <Pressable accessibilityRole="button"
               onPress={() => router.push('/admin/reports' as any)}
               style={({ pressed }) => [settingsProStyles.upgradeCard, { backgroundColor: card, borderColor: '#8B5CF640' }, pressed && { opacity: 0.7 }]}>
               <ThemedText style={settingsProStyles.proIcon}>📊</ThemedText>
@@ -743,7 +743,7 @@ export default function SettingsScreen() {
               </View>
               <ThemedText style={[settingsProStyles.chevron, { color: '#8B5CF6' }]}>›</ThemedText>
             </Pressable>
-            <Pressable
+            <Pressable accessibilityRole="button"
               onPress={() => router.push('/admin/accounts' as any)}
               style={({ pressed }) => [settingsProStyles.upgradeCard, { backgroundColor: card, borderColor: '#8B5CF640' }, pressed && { opacity: 0.7 }]}>
               <ThemedText style={settingsProStyles.proIcon}>📋</ThemedText>
@@ -753,7 +753,7 @@ export default function SettingsScreen() {
               </View>
               <ThemedText style={[settingsProStyles.chevron, { color: '#8B5CF6' }]}>›</ThemedText>
             </Pressable>
-            <Pressable
+            <Pressable accessibilityRole="button"
               onPress={() => router.push('/admin/users' as any)}
               style={({ pressed }) => [settingsProStyles.upgradeCard, { backgroundColor: card, borderColor: '#8B5CF640' }, pressed && { opacity: 0.7 }]}>
               <ThemedText style={settingsProStyles.proIcon}>👤</ThemedText>
@@ -763,7 +763,7 @@ export default function SettingsScreen() {
               </View>
               <ThemedText style={[settingsProStyles.chevron, { color: '#8B5CF6' }]}>›</ThemedText>
             </Pressable>
-            <Pressable
+            <Pressable accessibilityRole="button"
               onPress={() => router.push('/admin/codes' as any)}
               style={({ pressed }) => [settingsProStyles.upgradeCard, { backgroundColor: card, borderColor: '#8B5CF640' }, pressed && { opacity: 0.7 }]}>
               <ThemedText style={settingsProStyles.proIcon}>🎟️</ThemedText>
@@ -773,7 +773,7 @@ export default function SettingsScreen() {
               </View>
               <ThemedText style={[settingsProStyles.chevron, { color: '#8B5CF6' }]}>›</ThemedText>
             </Pressable>
-            <Pressable
+            <Pressable accessibilityRole="button"
               onPress={() => router.push('/admin/usage' as any)}
               style={({ pressed }) => [settingsProStyles.upgradeCard, { backgroundColor: card, borderColor: '#8B5CF640' }, pressed && { opacity: 0.7 }]}>
               <ThemedText style={settingsProStyles.proIcon}>📊</ThemedText>
@@ -801,7 +801,7 @@ export default function SettingsScreen() {
             <View style={styles.section}>
               <ThemedText type="label" style={[styles.eyebrow, { color: tc.tactical }]}>{'// DANGER ZONE'}</ThemedText>
             </View>
-            <Pressable
+            <Pressable accessibilityRole="button"
               onPress={() =>
                 Alert.alert(
                   'Delete Account',
@@ -842,7 +842,7 @@ export default function SettingsScreen() {
             : `Update: ${Updates.updateId?.slice(0, 8) ?? 'unknown'}`}
         </ThemedText>
 
-        <Pressable
+        <Pressable accessibilityRole="button"
           onPress={handleCheckForUpdates}
           disabled={updateCheckState === 'checking' || updateCheckState === 'downloading'}
           style={styles.checkUpdateBtn}>
@@ -868,7 +868,7 @@ export default function SettingsScreen() {
       <PINManageModal visible={showPINManage} onClose={() => setShowPINManage(false)} />
 
       <View style={[styles.footer, { paddingBottom: insets.bottom + Spacing.two, backgroundColor: bg, borderTopColor: tc.borderColor }]}>
-        <Pressable onPress={save} style={({ pressed }) => [styles.saveBtn, pressed && { opacity: 0.8 }]}>
+        <Pressable accessibilityRole="button" onPress={save} style={({ pressed }) => [styles.saveBtn, pressed && { opacity: 0.8 }]}>
           <ThemedText style={styles.saveBtnText}>SAVE CHANGES</ThemedText>
         </Pressable>
       </View>

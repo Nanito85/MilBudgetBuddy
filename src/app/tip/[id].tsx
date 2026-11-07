@@ -37,7 +37,7 @@ export default function TipDetailScreen() {
   return (
     <ThemedView style={styles.container}>
       <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
-        <Pressable onPress={handleBack} hitSlop={12} style={styles.backBtn}>
+        <Pressable accessibilityRole="button" onPress={handleBack} hitSlop={12} style={styles.backBtn}>
           <ThemedText style={styles.backText}>← Back</ThemedText>
         </Pressable>
       </View>
@@ -52,7 +52,7 @@ export default function TipDetailScreen() {
 
         <View style={styles.metaRow}>
           <CategoryBadge category={tip.category} />
-          <Pressable
+          <Pressable accessibilityRole="button"
             onPress={() => toggleSave(tip.id)}
             hitSlop={12}
             style={styles.saveBtn}

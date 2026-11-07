@@ -122,7 +122,7 @@ function SectionIntro({ text }: { text: string }) {
 function FactorRow({ factor, expanded, onToggle }: { factor: typeof FACTORS[0]; expanded: boolean; onToggle: () => void }) {
   const tc = useThemeColors();
   return (
-    <Pressable onPress={onToggle} style={ss.factorRow}>
+    <Pressable accessibilityRole="button" onPress={onToggle} style={ss.factorRow}>
       <View style={ss.factorTop}>
         <ThemedText style={ss.factorIcon}>{factor.icon}</ThemedText>
         <View style={ss.factorMid}>
@@ -159,7 +159,7 @@ export default function CreditScoreScreen() {
 
         {/* Header */}
         <View style={[ss.header, { paddingTop: insets.top + Spacing.two }]}>
-          <Pressable onPress={() => router.back()} style={ss.backBtn}>
+          <Pressable accessibilityRole="button" hitSlop={8} onPress={() => router.back()} style={ss.backBtn}>
             <ThemedText style={[ss.backText, { color: tc.tactical }]}>‹ BACK</ThemedText>
           </Pressable>
           <View style={ss.classBar}>

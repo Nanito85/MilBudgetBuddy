@@ -46,7 +46,7 @@ function GradePicker({ value, onChange }: { value: number; onChange: (v: number)
   return (
     <View style={pick.row}>
       {GRADES.map((g) => (
-        <Pressable
+        <Pressable accessibilityRole="button"
           key={g}
           onPress={() => onChange(g)}
           style={[pick.btn, { backgroundColor: tc.surface, borderColor: tc.borderColor }, value === g && pick.btnActive]}>
@@ -64,7 +64,7 @@ function StepPicker({ value, onChange }: { value: number; onChange: (v: number) 
   return (
     <View style={pick.row}>
       {STEPS.map((s) => (
-        <Pressable
+        <Pressable accessibilityRole="button"
           key={s}
           onPress={() => onChange(s)}
           style={[pick.btn, { backgroundColor: tc.surface, borderColor: tc.borderColor }, value === s && pick.btnActive]}>
@@ -189,7 +189,7 @@ export default function GSPayCalculatorScreen() {
   return (
     <ThemedView style={{ flex: 1 }}>
       <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
-        <Pressable accessibilityRole="button" accessibilityLabel="Go back" onPress={() => router.back()} style={styles.back}>
+        <Pressable hitSlop={8} accessibilityRole="button" accessibilityLabel="Go back" onPress={() => router.back()} style={styles.back}>
           <ThemedText style={styles.backChevron}>‹</ThemedText>
         </Pressable>
         <ThemedText style={[styles.title, { color: tc.tactical }]}>GS Pay Calculator</ThemedText>
@@ -233,7 +233,7 @@ export default function GSPayCalculatorScreen() {
         {/* Locality selector */}
         <ThemedView type="backgroundElement" style={styles.card}>
           <ThemedText style={[styles.cardLabel, { color: tc.tactical }]}>LOCALITY PAY AREA</ThemedText>
-          <Pressable
+          <Pressable accessibilityRole="button"
             onPress={() => setShowLocModal(true)}
             style={[styles.localityBtn, { backgroundColor: tc.background, borderColor: tc.borderColor }]}>
             <View style={{ flex: 1 }}>
@@ -292,7 +292,7 @@ export default function GSPayCalculatorScreen() {
               const mon = getGSMonthly(grade, s, localityKey);
               const isSelected = s === step;
               return (
-                <Pressable
+                <Pressable accessibilityRole="button"
                   key={s}
                   onPress={() => setStep(s)}
                   style={[styles.stepsRow, { borderBottomColor: tc.borderColor + '50' }, isSelected && styles.stepsRowSelected]}>

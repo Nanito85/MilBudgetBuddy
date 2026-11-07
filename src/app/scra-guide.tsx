@@ -127,7 +127,7 @@ function ProtectionCard({ item }: { item: Protection }) {
   const tc = useThemeColors();
   const [expanded, setExpanded] = useState(false);
   return (
-    <Pressable
+    <Pressable accessibilityRole="button"
       onPress={() => setExpanded((v) => !v)}
       style={({ pressed }) => [styles.card, { backgroundColor: tc.surface, borderColor: tc.borderColor }, pressed && { opacity: 0.85 }]}>
       <View style={styles.cardHeader}>
@@ -160,7 +160,7 @@ export default function ScraGuideScreen() {
   return (
     <ThemedView style={{ flex: 1 }}>
       <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
-        <Pressable accessibilityRole="button" accessibilityLabel="Go back"
+        <Pressable hitSlop={8} accessibilityRole="button" accessibilityLabel="Go back"
           onPress={() => (router.back())}
           style={styles.back}>
           <ThemedText style={styles.backChevron}>‹</ThemedText>

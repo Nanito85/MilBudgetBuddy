@@ -39,7 +39,7 @@ type Tab = 'calculator' | 'rates';
 function TabBtn({ label, active, onPress }: { label: string; active: boolean; onPress: () => void }) {
   const tc = useThemeColors();
   return (
-    <Pressable
+    <Pressable accessibilityRole="button"
       onPress={onPress}
       style={[styles.tabBtn, { borderColor: tc.borderColor }, active && styles.tabBtnActive]}>
       <ThemedText
@@ -55,7 +55,7 @@ function RatingPicker({ value, onChange }: { value: number; onChange: (v: number
   return (
     <View style={styles.ratingPicker}>
       {VALID_RATINGS.map((r) => (
-        <Pressable
+        <Pressable accessibilityRole="button"
           key={r}
           onPress={() => onChange(r)}
           style={[styles.ratingChip, { borderColor: tc.borderColor }, value === r && styles.ratingChipActive]}>
@@ -127,7 +127,7 @@ export default function VaDisabilityScreen() {
   return (
     <ThemedView style={{ flex: 1 }}>
       <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
-        <Pressable accessibilityRole="button" accessibilityLabel="Go back"
+        <Pressable hitSlop={8} accessibilityRole="button" accessibilityLabel="Go back"
           onPress={() => (router.back())}
           style={styles.back}>
           <ThemedText style={styles.backChevron}>‹</ThemedText>
@@ -141,7 +141,7 @@ export default function VaDisabilityScreen() {
         <TabBtn label="RATE TABLE"  active={tab === 'rates'}      onPress={() => setTab('rates')} />
       </View>
 
-      <Pressable onPress={() => router.push('/va-claims-tracker' as any)} style={styles.relatedToolRow}>
+      <Pressable accessibilityRole="button" onPress={() => router.push('/va-claims-tracker' as any)} style={styles.relatedToolRow}>
         <ThemedText style={[styles.relatedToolText, { color: tc.textSecondary }]}>
           Already filed? Track its stage and appeal deadline in the VA Claims & Appeals Tracker
         </ThemedText>
@@ -189,13 +189,13 @@ export default function VaDisabilityScreen() {
                   <View style={styles.limbRow}>
                     <ThemedText style={[styles.limbLabel, { color: tc.textMuted }]}>LIMB (OPTIONAL — FOR BILATERAL FACTOR):</ThemedText>
                     <View style={styles.limbChips}>
-                      <Pressable
+                      <Pressable accessibilityRole="button"
                         onPress={() => updateLimb(r.id, undefined)}
                         style={[styles.limbChip, { borderColor: tc.borderColor }, !r.limb && styles.limbChipActive]}>
                         <ThemedText style={[styles.limbChipText, { color: tc.textHint }, !r.limb && styles.limbChipTextActive]}>N/A</ThemedText>
                       </Pressable>
                       {LIMB_OPTIONS.map((opt) => (
-                        <Pressable
+                        <Pressable accessibilityRole="button"
                           key={opt.value}
                           onPress={() => updateLimb(r.id, opt.value)}
                           style={[styles.limbChip, { borderColor: tc.borderColor }, r.limb === opt.value && styles.limbChipActive]}>
@@ -210,7 +210,7 @@ export default function VaDisabilityScreen() {
               ))}
 
               {ratings.length < 10 && (
-                <Pressable onPress={addRating} style={[styles.addRatingBtn, { borderColor: tc.borderColor }]}>
+                <Pressable accessibilityRole="button" onPress={addRating} style={[styles.addRatingBtn, { borderColor: tc.borderColor }]}>
                   <ThemedText style={[styles.addRatingText, { color: tc.tactical }]}>＋ Add Another Rating</ThemedText>
                 </Pressable>
               )}
@@ -317,7 +317,7 @@ export default function VaDisabilityScreen() {
 
                 <View style={styles.toggleRow}>
                   <ThemedText style={[styles.toggleLabel, { color: tc.textPrimary }]}>Spouse</ThemedText>
-                  <Pressable
+                  <Pressable accessibilityRole="button"
                     onPress={() => setHasSpouse((v) => !v)}
                     style={[styles.toggle, { borderColor: tc.borderColor }, hasSpouse && styles.toggleActive]}>
                     <ThemedText style={[styles.toggleText, { color: tc.textHint }, hasSpouse && styles.toggleTextActive]}>
@@ -329,13 +329,13 @@ export default function VaDisabilityScreen() {
                 <View style={styles.toggleRow}>
                   <ThemedText style={[styles.toggleLabel, { color: tc.textPrimary }]}>Children ({numChildren})</ThemedText>
                   <View style={styles.childCounter}>
-                    <Pressable
+                    <Pressable accessibilityRole="button"
                       onPress={() => setNumChildren((v) => Math.max(0, v - 1))}
                       style={[styles.counterBtn, { borderColor: tc.borderColor }]}>
                       <ThemedText style={[styles.counterBtnText, { color: tc.textPrimary }]}>−</ThemedText>
                     </Pressable>
                     <ThemedText style={[styles.counterVal, { color: tc.textPrimary }]}>{numChildren}</ThemedText>
-                    <Pressable
+                    <Pressable accessibilityRole="button"
                       onPress={() => setNumChildren((v) => Math.min(10, v + 1))}
                       style={[styles.counterBtn, { borderColor: tc.borderColor }]}>
                       <ThemedText style={[styles.counterBtnText, { color: tc.textPrimary }]}>+</ThemedText>
@@ -348,7 +348,7 @@ export default function VaDisabilityScreen() {
                     calculator. Expands to spouse Aid & Attendance, school-age
                     (18-23) children, and dependent parent(s) — each a real,
                     separate VA add-on this app didn't account for before. */}
-                <Pressable onPress={() => setShowAdvancedDeps((v) => !v)} style={styles.advancedDepsToggle}>
+                <Pressable accessibilityRole="button" onPress={() => setShowAdvancedDeps((v) => !v)} style={styles.advancedDepsToggle}>
                   <ThemedText style={[styles.advancedDepsToggleText, { color: tc.tactical }]}>
                     {showAdvancedDeps ? '▾' : '▸'} Additional VA Dependents / Special Circumstances
                   </ThemedText>
@@ -362,7 +362,7 @@ export default function VaDisabilityScreen() {
                           <ThemedText style={[styles.toggleLabel, { color: tc.textPrimary }]}>Spouse needs Aid & Attendance</ThemedText>
                           <ThemedText type="small" style={{ color: tc.textHint }}>Housebound or needs regular help — a separate VA add-on</ThemedText>
                         </View>
-                        <Pressable
+                        <Pressable accessibilityRole="button"
                           onPress={() => setSpouseAidAttendance((v) => !v)}
                           style={[styles.toggle, { borderColor: tc.borderColor }, spouseAidAttendance && styles.toggleActive]}>
                           <ThemedText style={[styles.toggleText, { color: tc.textHint }, spouseAidAttendance && styles.toggleTextActive]}>
@@ -378,13 +378,13 @@ export default function VaDisabilityScreen() {
                         <ThemedText type="small" style={{ color: tc.textHint }}>In a VA-qualifying school program — a higher add-on than a regular child</ThemedText>
                       </View>
                       <View style={styles.childCounter}>
-                        <Pressable
+                        <Pressable accessibilityRole="button"
                           onPress={() => setNumSchoolChildren((v) => Math.max(0, v - 1))}
                           style={[styles.counterBtn, { borderColor: tc.borderColor }]}>
                           <ThemedText style={[styles.counterBtnText, { color: tc.textPrimary }]}>−</ThemedText>
                         </Pressable>
                         <ThemedText style={[styles.counterVal, { color: tc.textPrimary }]}>{numSchoolChildren}</ThemedText>
-                        <Pressable
+                        <Pressable accessibilityRole="button"
                           onPress={() => setNumSchoolChildren((v) => Math.min(10, v + 1))}
                           style={[styles.counterBtn, { borderColor: tc.borderColor }]}>
                           <ThemedText style={[styles.counterBtnText, { color: tc.textPrimary }]}>+</ThemedText>
@@ -396,7 +396,7 @@ export default function VaDisabilityScreen() {
                       <ThemedText style={[styles.toggleLabel, { color: tc.textPrimary }]}>Dependent parent(s)</ThemedText>
                       <View style={styles.childCounter}>
                         {([0, 1, 2] as const).map((n) => (
-                          <Pressable
+                          <Pressable accessibilityRole="button"
                             key={n}
                             onPress={() => setNumDependentParents(n)}
                             style={[styles.counterBtn, { borderColor: tc.borderColor, width: 32 }, numDependentParents === n && styles.toggleActive]}>

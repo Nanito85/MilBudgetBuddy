@@ -74,7 +74,7 @@ export default function TLECalculatorScreen() {
     <ThemedView style={styles.container}>
       {/* ── Header ─────────────────────────────────────────────────────────── */}
       <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
-        <Pressable accessibilityRole="button" accessibilityLabel="Go back"
+        <Pressable hitSlop={8} accessibilityRole="button" accessibilityLabel="Go back"
           onPress={() => (router.back())}
           style={({ pressed }) => [styles.backBtn, pressed && styles.pressed]}>
           <ThemedText style={styles.backChevron}>‹</ThemedText>
@@ -112,7 +112,7 @@ export default function TLECalculatorScreen() {
           <View style={styles.modeToggle}>
             {([['tle', '🏠  CONUS (TLE)', 'Up to 21 days'], ['tla', '✈️  OCONUS (TLA)', 'Up to 60 days']] as [MoveMode, string, string][]).map(
               ([val, label, sub]) => (
-                <Pressable
+                <Pressable accessibilityRole="button"
                   key={val}
                   onPress={() => handleModeChange(val)}
                   style={[styles.modeBtn, mode === val && styles.modeBtnActive]}>
@@ -144,7 +144,7 @@ export default function TLECalculatorScreen() {
                   setUseCustomRate(false);
                 }}
               />
-              <Pressable onPress={() => { setLocality(null); setUseCustomRate(true); }}>
+              <Pressable accessibilityRole="button" onPress={() => { setLocality(null); setUseCustomRate(true); }}>
                 <ThemedText style={styles.customRateLink}>
                   My location isn&apos;t listed — enter a custom rate
                 </ThemedText>
@@ -169,7 +169,7 @@ export default function TLECalculatorScreen() {
                   Enter a rate greater than $0.
                 </ThemedText>
               )}
-              <Pressable
+              <Pressable accessibilityRole="button"
                 onPress={() => { setUseCustomRate(false); setCustomRateText(''); }}
                 style={styles.backToListBtn}>
                 <ThemedText style={styles.customRateLink}>← Back to installation list</ThemedText>

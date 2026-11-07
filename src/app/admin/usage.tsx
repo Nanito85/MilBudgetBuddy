@@ -95,18 +95,18 @@ export default function AdminUsageScreen() {
   return (
     <SafeAreaView style={[s.safe, { backgroundColor: tc.background }]} edges={['top']}>
       <View style={[s.header, { borderColor: tc.borderColor }]}>
-        <Pressable onPress={() => router.back()} style={s.back}>
+        <Pressable accessibilityRole="button" onPress={() => router.back()} style={s.back}>
           <ThemedText style={[s.backText, { color: tc.tactical }]}>‹ Admin</ThemedText>
         </Pressable>
         <ThemedText style={[s.headerTitle, { color: tc.textPrimary }]}>📊 TOOL USAGE</ThemedText>
-        <Pressable onPress={() => fetchUsage(days)} style={s.back}>
+        <Pressable accessibilityRole="button" onPress={() => fetchUsage(days)} style={s.back}>
           <ThemedText style={[s.refreshText, { color: tc.accent }]}>REFRESH</ThemedText>
         </Pressable>
       </View>
 
       <View style={s.windowRow}>
         {WINDOWS.map((w) => (
-          <Pressable
+          <Pressable accessibilityRole="button"
             key={w.days}
             onPress={() => setDays(w.days)}
             style={[

@@ -74,7 +74,7 @@ const SITUATIONS = [
 function MenuCard({ item, onPress }: { item: MenuItem; onPress: () => void }) {
   const tc = useThemeColors();
   return (
-    <Pressable
+    <Pressable accessibilityRole="button"
       onPress={onPress}
       style={({ pressed }) => [styles.card, { backgroundColor: tc.surface, borderBottomColor: tc.borderColor }, pressed && { opacity: 0.7 }]}>
       <View style={[styles.cardAccent, { backgroundColor: item.color }]} />
@@ -110,7 +110,7 @@ function CategorySection({
   const labelColor = (tc.isLight ? category.colorLight : category.colorDark) ?? category.color;
   return (
     <View style={[styles.categoryBlock, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
-      <Pressable onPress={() => setExpanded(v => !v)} style={styles.categoryHeader} hitSlop={8}>
+      <Pressable accessibilityRole="button" onPress={() => setExpanded(v => !v)} style={styles.categoryHeader} hitSlop={8}>
         <View style={[styles.categoryDot, { backgroundColor: labelColor }]} />
         <View style={{ flex: 1 }}>
           <ThemedText style={[styles.categoryEyebrow, { color: tc.textMuted }]}>{category.eyebrow}</ThemedText>
@@ -231,7 +231,7 @@ export default function ToolsScreen() {
               {SITUATIONS.map((s) => {
                 const titleColor = (tc.isLight ? s.colorLight : s.colorDark) ?? s.color;
                 return (
-                  <Pressable
+                  <Pressable accessibilityRole="button"
                     key={s.id}
                     onPress={() => router.push(s.route as any)}
                     style={({ pressed }) => [styles.situationCard, { backgroundColor: tc.surface, borderColor: s.color + '40' }, pressed && { opacity: 0.7 }]}>
@@ -277,7 +277,7 @@ export default function ToolsScreen() {
               <ThemedText style={[styles.sectionLabelText, { color: tc.textSecondary }]}>APP</ThemedText>
               <View style={[styles.sectionLine, { backgroundColor: tc.borderColor }]} />
             </View>
-            <Pressable
+            <Pressable accessibilityRole="button"
               onPress={() => router.push('/settings' as any)}
               style={({ pressed }) => [styles.shortcutRow, { backgroundColor: tc.surface }, pressed && { opacity: 0.7 }]}>
               <ThemedText style={styles.shortcutIcon}>⚙️</ThemedText>

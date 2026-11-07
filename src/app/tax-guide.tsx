@@ -205,7 +205,7 @@ function SectionCard({ section }: { section: TaxSection }) {
   const [expanded, setExpanded] = useState(false);
   const tc = useThemeColors();
   return (
-    <Pressable
+    <Pressable accessibilityRole="button"
       onPress={() => setExpanded((v) => !v)}
       style={({ pressed }) => [
         styles.card,
@@ -244,7 +244,7 @@ export default function TaxGuideScreen() {
   return (
     <ThemedView style={{ flex: 1 }}>
       <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
-        <Pressable accessibilityRole="button" accessibilityLabel="Go back"
+        <Pressable hitSlop={8} accessibilityRole="button" accessibilityLabel="Go back"
           onPress={() => (router.back())}
           style={styles.back}>
           <ThemedText style={styles.backChevron}>‹</ThemedText>

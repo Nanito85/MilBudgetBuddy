@@ -28,7 +28,7 @@ export default function CategoryScreen() {
   return (
     <ThemedView style={styles.container}>
       <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
-        <Pressable onPress={handleBack} hitSlop={12} style={styles.backBtn}>
+        <Pressable accessibilityRole="button" onPress={handleBack} hitSlop={12} style={styles.backBtn}>
           <ThemedText style={styles.backText}>← Back</ThemedText>
         </Pressable>
         <View style={styles.titleRow}>

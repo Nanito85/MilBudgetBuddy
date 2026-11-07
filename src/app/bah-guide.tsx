@@ -109,7 +109,7 @@ function getEligibility(grade: PayGrade, depStatus: DepStatus, tc: { success: st
 function Chip({ label, selected, onPress }: { label: string; selected: boolean; onPress: () => void }) {
   const tc = useThemeColors();
   return (
-    <Pressable
+    <Pressable accessibilityRole="button"
       onPress={onPress}
       style={[styles.chip, { backgroundColor: tc.background }, selected && styles.chipSelected]}>
       <ThemedText style={[styles.chipText, { color: tc.textHint }, selected && [styles.chipTextSelected, { color: tc.tactical }]]}>{label}</ThemedText>
@@ -237,7 +237,7 @@ function LocationSearch({
             </ThemedText>
           )}
           {results.map((inst) => (
-            <Pressable
+            <Pressable accessibilityRole="button"
               key={inst.id}
               onPress={() => onSelect(inst)}
               style={({ pressed }) => [styles.resultRow, { backgroundColor: tc.surface, borderBottomColor: tc.borderColor }, pressed && { opacity: 0.7 }]}>
@@ -271,7 +271,7 @@ function LocationSearch({
               <ThemedText style={styles.branchBadgeText}>{selectedInstallation.branch}</ThemedText>
             </View>
           </View>
-          <Pressable onPress={onClear} style={[styles.changeBtn, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
+          <Pressable accessibilityRole="button" onPress={onClear} style={[styles.changeBtn, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
             <ThemedText style={[styles.changeBtnText, { color: tc.textHint }]}>Change Location</ThemedText>
           </Pressable>
         </View>
@@ -345,7 +345,7 @@ function OhaSearch({
             </ThemedText>
           )}
           {results.map((loc, i) => (
-            <Pressable
+            <Pressable accessibilityRole="button"
               key={i}
               onPress={() => onSelect(loc)}
               style={({ pressed }) => [styles.resultRow, { backgroundColor: tc.surface, borderBottomColor: tc.borderColor }, pressed && { opacity: 0.7 }]}>
@@ -373,7 +373,7 @@ function OhaSearch({
           <View style={[styles.ohaNote, { backgroundColor: tc.surface }]}>
             <ThemedText style={[styles.ohaNoteText, { color: tc.textSecondary }]}>{selectedLoc.note}</ThemedText>
           </View>
-          <Pressable onPress={onClear} style={[styles.changeBtn, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
+          <Pressable accessibilityRole="button" onPress={onClear} style={[styles.changeBtn, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
             <ThemedText style={[styles.changeBtnText, { color: tc.textHint }]}>Change Location</ThemedText>
           </Pressable>
         </View>
@@ -450,7 +450,7 @@ export default function BahGuideScreen() {
       <ThemedView style={{ flex: 1 }}>
         {/* Header */}
         <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
-          <Pressable accessibilityRole="button" accessibilityLabel="Go back"
+          <Pressable hitSlop={8} accessibilityRole="button" accessibilityLabel="Go back"
             onPress={() => (router.back())}
             style={styles.back}>
             <ThemedText style={styles.backChevron}>‹</ThemedText>
@@ -465,7 +465,7 @@ export default function BahGuideScreen() {
             { key: 'bah' as TabMode, label: '🏠  BAH (CONUS)' },
             { key: 'oha' as TabMode, label: '✈️  OHA (OCONUS)' },
           ] as const).map((t) => (
-            <Pressable
+            <Pressable accessibilityRole="button"
               key={t.key}
               onPress={() => setTab(t.key)}
               style={[styles.tabBtn, tab === t.key && styles.tabBtnActive]}>

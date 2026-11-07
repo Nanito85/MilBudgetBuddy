@@ -41,7 +41,7 @@ export function FamilyComposer({ hasSpouse, childAges, onSpouseChange, onChildAg
         <ThemedText style={styles.label}>Married (Spouse)</ThemedText>
         <View style={styles.toggle}>
           {([false, true] as const).map((val) => (
-            <Pressable
+            <Pressable accessibilityRole="button"
               key={String(val)}
               onPress={() => onSpouseChange(val)}
               style={[styles.toggleBtn, hasSpouse === val && styles.toggleBtnActive]}>
@@ -66,7 +66,7 @@ export function FamilyComposer({ hasSpouse, childAges, onSpouseChange, onChildAg
           </ThemedText>
         </View>
         {childAges.length < 8 && (
-          <Pressable onPress={addChild} style={styles.addChildBtn}>
+          <Pressable accessibilityRole="button" onPress={addChild} style={styles.addChildBtn}>
             <ThemedText style={styles.addChildBtnText}>+ Add</ThemedText>
           </Pressable>
         )}
@@ -88,13 +88,13 @@ export function FamilyComposer({ hasSpouse, childAges, onSpouseChange, onChildAg
             </View>
             <View style={styles.childRight}>
               <View style={styles.ageCtrl}>
-                <Pressable
+                <Pressable accessibilityRole="button"
                   onPress={() => updateAge(idx, Math.max(0, age - 1))}
                   style={styles.ageBtn}>
                   <ThemedText style={styles.ageBtnTxt}>−</ThemedText>
                 </Pressable>
                 <ThemedText style={styles.ageVal}>{age} yrs</ThemedText>
-                <Pressable
+                <Pressable accessibilityRole="button"
                   onPress={() => updateAge(idx, Math.min(17, age + 1))}
                   style={styles.ageBtn}>
                   <ThemedText style={styles.ageBtnTxt}>+</ThemedText>

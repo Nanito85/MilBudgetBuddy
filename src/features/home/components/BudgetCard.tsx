@@ -26,7 +26,7 @@ export function BudgetCard({ netPay }: Props) {
   const barColor = overBudget ? Brand.danger : pct > 75 ? Brand.warning : Brand.tactical;
 
   return (
-    <Pressable onPress={() => router.push('/budget')} style={({ pressed }) => pressed && styles.pressed}>
+    <Pressable accessibilityRole="button" onPress={() => router.push('/budget')} style={({ pressed }) => pressed && styles.pressed}>
       <TacticalCard accentColor={Brand.tactical} cornerSize={10} style={styles.card}>
         <View style={styles.headerBar}>
           <View style={styles.headerLeft}>

@@ -143,7 +143,7 @@ const StatePickerModal = React.memo(function StatePickerModal({ visible, selecte
         <SafeAreaView style={stateStyles.safe}>
           <View style={stateStyles.header}>
             <ThemedText style={[stateStyles.title, { color: tc.textPrimary }]}>{'// SELECT STATE'}</ThemedText>
-            <Pressable onPress={onClose}>
+            <Pressable accessibilityRole="button" onPress={onClose}>
               <ThemedText style={[stateStyles.cancel, { color: tc.tactical }]}>DONE</ThemedText>
             </Pressable>
           </View>
@@ -160,7 +160,7 @@ const StatePickerModal = React.memo(function StatePickerModal({ visible, selecte
             {filtered.map((s) => {
               const isSelected = selected === s.code;
               return (
-                <Pressable
+                <Pressable accessibilityRole="button"
                   key={s.code}
                   onPress={() => { onSelect(s.code); onClose(); }}
                   style={[stateStyles.row, { borderColor: tc.borderColor }, isSelected && stateStyles.rowSelected]}>
@@ -235,7 +235,7 @@ function TimePickerModal({ visible, selectedHour, selectedMinute, onSelect, onCl
         <SafeAreaView style={stateStyles.safe}>
           <View style={stateStyles.header}>
             <ThemedText style={[stateStyles.title, { color: tc.textPrimary }]}>{'// REMINDER TIME'}</ThemedText>
-            <Pressable onPress={onClose}>
+            <Pressable accessibilityRole="button" onPress={onClose}>
               <ThemedText style={[stateStyles.cancel, { color: tc.tactical }]}>DONE</ThemedText>
             </Pressable>
           </View>
@@ -246,7 +246,7 @@ function TimePickerModal({ visible, selectedHour, selectedMinute, onSelect, onCl
             {TIME_PRESETS.map((t) => {
               const isSelected = selectedHour === t.hour && selectedMinute === t.minute;
               return (
-                <Pressable
+                <Pressable accessibilityRole="button"
                   key={`${t.hour}-${t.minute}`}
                   onPress={() => onSelect(t.hour, t.minute)}
                   style={[timeStyles.chip, { borderColor: tc.borderColor }, isSelected && timeStyles.chipActive]}>
@@ -486,11 +486,11 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
       <KeyboardAvoidingView style={{ flex: 1, backgroundColor: bg }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <SafeAreaView style={{ flex: 1 }}>
           <View style={[editStyles.header, { borderColor: tc.borderColor }]}>
-            <Pressable onPress={() => { Keyboard.dismiss(); onClose(); }}>
+            <Pressable accessibilityRole="button" onPress={() => { Keyboard.dismiss(); onClose(); }}>
               <ThemedText style={[editStyles.cancel, { color: tc.textMuted }]}>CANCEL</ThemedText>
             </Pressable>
             <ThemedText style={[editStyles.title, { color: tc.textPrimary }]}>🪖 PERSONAL INFO</ThemedText>
-            <Pressable onPress={save}><ThemedText style={[editStyles.save, { color: tc.tactical }]}>SAVE</ThemedText></Pressable>
+            <Pressable accessibilityRole="button" onPress={save}><ThemedText style={[editStyles.save, { color: tc.tactical }]}>SAVE</ThemedText></Pressable>
           </View>
 
           <ScrollView
@@ -507,7 +507,7 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
               {STATUS_CHOICES.map((opt) => {
                 const active = status === opt.value;
                 return (
-                  <Pressable
+                  <Pressable accessibilityRole="button"
                     key={opt.value}
                     onPress={() => setStatus(opt.value)}
                     style={[editStyles.statusChip, { borderColor: tc.borderColor, backgroundColor: tc.surface }, active && editStyles.statusChipActive]}>
@@ -550,7 +550,7 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
                     {variants.map((opt) => {
                       const active = rankVariant === opt.variant;
                       return (
-                        <Pressable
+                        <Pressable accessibilityRole="button"
                           key={opt.variant}
                           onPress={() => setRankVariant(opt.variant)}
                           style={[editStyles.variantChip, { borderColor: tc.borderColor }, active && editStyles.variantChipActive]}>
@@ -579,7 +579,7 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
 
             {/* Dates */}
             <ThemedText style={[editStyles.fieldLabel, { color: tc.textHint }]}>DATE OF ENLISTMENT / COMMISSION</ThemedText>
-            <Pressable
+            <Pressable accessibilityRole="button"
               onPress={() => setShowEnlistPicker(true)}
               style={[editStyles.inputWrap, { backgroundColor: inputBg, borderColor: tc.borderColor, flexDirection: 'row', alignItems: 'center' }]}>
               <ThemedText style={[editStyles.input, { color: enlistDate ? tc.textPrimary : placeholder, flex: 1, paddingVertical: Spacing.two + 4 }]}>
@@ -595,7 +595,7 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
             )}
 
             <ThemedText style={[editStyles.fieldLabel, { color: tc.textHint }]}>DATE OF CURRENT RANK</ThemedText>
-            <Pressable
+            <Pressable accessibilityRole="button"
               onPress={() => setShowRankPicker(true)}
               style={[editStyles.inputWrap, { backgroundColor: inputBg, borderColor: tc.borderColor, flexDirection: 'row', alignItems: 'center' }]}>
               <ThemedText style={[editStyles.input, { color: rankDate ? tc.textPrimary : placeholder, flex: 1, paddingVertical: Spacing.two + 4 }]}>
@@ -640,7 +640,7 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
             {isRetired && (
               <>
                 <ThemedText style={[editStyles.fieldLabel, { color: tc.textHint }]}>MONTH & YEAR YOU RETIRED</ThemedText>
-                <Pressable
+                <Pressable accessibilityRole="button"
                   onPress={() => setShowRetDatePicker(true)}
                   style={[editStyles.inputWrap, { backgroundColor: inputBg, borderColor: tc.borderColor, flexDirection: 'row', alignItems: 'center' }]}>
                   <ThemedText style={[editStyles.input, { color: retirementDate ? tc.textPrimary : placeholder, flex: 1, paddingVertical: Spacing.two + 4 }]}>
@@ -673,7 +673,7 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
 
             {/* State */}
             <ThemedText style={[editStyles.fieldLabel, { color: tc.textHint }]}>STATE OF RESIDENCE</ThemedText>
-            <Pressable onPress={() => setShowStatePicker(true)} style={[editStyles.inputWrap, { backgroundColor: inputBg, borderColor: tc.borderColor, flexDirection: 'row', alignItems: 'center' }]}>
+            <Pressable accessibilityRole="button" onPress={() => setShowStatePicker(true)} style={[editStyles.inputWrap, { backgroundColor: inputBg, borderColor: tc.borderColor, flexDirection: 'row', alignItems: 'center' }]}>
               <ThemedText style={[editStyles.input, { color: state ? tc.textPrimary : placeholder, flex: 1, paddingVertical: Spacing.two + 4 }]}>
                 {stateInfo ? `${stateInfo.name} (${stateInfo.code})` : 'Tap to select state'}
               </ThemedText>
@@ -874,7 +874,7 @@ export default function ProfileScreen() {
         keyboardDismissMode="on-drag">
         <SafeAreaView>
           {router.canGoBack() && (
-            <Pressable onPress={() => router.back()} hitSlop={12} style={styles.backBtn}>
+            <Pressable accessibilityRole="button" onPress={() => router.back()} hitSlop={12} style={styles.backBtn}>
               <ThemedText style={[styles.backText, { color: tc.tactical }]}>‹ Back</ThemedText>
             </Pressable>
           )}
@@ -925,7 +925,7 @@ export default function ProfileScreen() {
         <SectionLabel text="EDIT YOUR INFO" />
         <View style={styles.tilesRow}>
           {/* PERSONAL tile */}
-          <Pressable
+          <Pressable accessibilityRole="button"
             onPress={() => setShowEditPersonal(true)}
             style={({ pressed }) => [styles.editTile, { borderColor: Brand.accent + '60', backgroundColor: Brand.accent + '08' }, pressed && { opacity: 0.7 }]}>
             <ThemedText style={styles.tileIcon}>🪖</ThemedText>
@@ -942,7 +942,7 @@ export default function ProfileScreen() {
           </Pressable>
 
           {/* PAY tile */}
-          <Pressable
+          <Pressable accessibilityRole="button"
             onPress={() => setShowEditPay(true)}
             style={({ pressed }) => [styles.editTile, { borderColor: Brand.tactical + '60', backgroundColor: Brand.tactical + '08' }, pressed && { opacity: 0.7 }]}>
             <ThemedText style={styles.tileIcon}>💰</ThemedText>
@@ -976,7 +976,7 @@ export default function ProfileScreen() {
                 : `${rankAbbrev || 'SGT'} ${lastName?.toUpperCase() || 'SMITH'}`;
               const active = (greetingStyle ?? 'nickname') === style;
               return (
-                <Pressable key={style} onPress={() => setGreetingStyle(style)}
+                <Pressable accessibilityRole="button" key={style} onPress={() => setGreetingStyle(style)}
                   style={[styles.greetingBtn, { borderColor: tc.borderColor }, active && { borderColor: Brand.accent, backgroundColor: Brand.accent + '15' }]}>
                   <ThemedText style={[styles.greetingBtnLabel, { color: tc.textHint }, active && { color: tc.accent }]}>
                     {style === 'nickname' ? '😎 NICKNAME' : '🪖 RANK'}
@@ -1004,7 +1004,7 @@ export default function ProfileScreen() {
                     <ThemedText style={[styles.pendingDate, { color: tc.textSecondary }]}>{completion.submittedDate} · +${completion.choreValue.toFixed(2)}</ThemedText>
                   </View>
                   <View style={styles.pendingActions}>
-                    <Pressable
+                    <Pressable accessibilityRole="button"
                       onPress={() => approveCompletion(kid.id, completion.id)}
                       style={[styles.pendingBtn, styles.pendingBtnApprove]}>
                       <ThemedText style={styles.pendingBtnApproveText}>✓ APPROVE</ThemedText>
@@ -1037,7 +1037,7 @@ export default function ProfileScreen() {
             return (
               <React.Fragment key={kid.id}>
                 {index > 0 && <View style={[styles.divider, { backgroundColor: tc.borderColor }]} />}
-                <Pressable
+                <Pressable accessibilityRole="button"
                   onPress={() => router.push(`/kids/${kid.id}` as any)}
                   style={({ pressed }) => [styles.kidRow, pressed && { opacity: 0.7 }]}>
                   <ThemedText style={styles.kidEmoji}>{kid.gender === 'boy' ? '🚀' : '🌸'}</ThemedText>
@@ -1070,7 +1070,7 @@ export default function ProfileScreen() {
             );
           })}
           <View style={[styles.divider, { backgroundColor: tc.borderColor }]} />
-          <Pressable onPress={() => setShowAddKid(true)} style={styles.addRowBtn}>
+          <Pressable accessibilityRole="button" onPress={() => setShowAddKid(true)} style={styles.addRowBtn}>
             <ThemedText type="label" style={[styles.addRowBtnText, { color: tc.tactical }]}>+ ENROLL NEW CADET</ThemedText>
           </Pressable>
         </TacticalCard>
@@ -1079,7 +1079,7 @@ export default function ProfileScreen() {
         <SectionLabel text="PREFERENCES" accentColor={Brand.primary} />
         <TacticalCard accentColor={Brand.primary} style={styles.sectionCard}>
           <View style={styles.prefRow}>
-            <Pressable
+            <Pressable accessibilityRole="button"
               disabled={!notificationsEnabled}
               onPress={() => setShowTimePicker(true)}
               style={{ flex: 1, gap: 2 }}>
@@ -1105,7 +1105,7 @@ export default function ProfileScreen() {
         <ThemedText type="small" themeColor="textSecondary" style={styles.intelStatsCaption}>
           Your Home screen tip rotates weekly — 58 tips means about a year before any repeat. Tap below to browse the full library, filter by topic, or read your saved tips.
         </ThemedText>
-        <Pressable onPress={() => router.push('/tip-library' as any)} style={({ pressed }) => pressed && { opacity: 0.8 }}>
+        <Pressable accessibilityRole="button" onPress={() => router.push('/tip-library' as any)} style={({ pressed }) => pressed && { opacity: 0.8 }}>
           <View style={styles.statsRow}>
             {[
               { val: savedTipIds.length, label: 'SAVED' },
@@ -1129,16 +1129,16 @@ export default function ProfileScreen() {
             <ThemedText style={[styles.aboutVal, { color: tc.textPrimary, fontFamily: Fonts.data }]}>{APP_VERSION}</ThemedText>
           </View>
           <View style={[styles.divider, { backgroundColor: tc.borderColor }]} />
-          <Pressable onPress={() => router.push('/legal' as any)} style={styles.aboutLinkRow}>
+          <Pressable accessibilityRole="button" onPress={() => router.push('/legal' as any)} style={styles.aboutLinkRow}>
             <ThemedText type="label" style={[styles.aboutLinkText, { color: tc.tactical }]}>PRIVACY POLICY & TERMS</ThemedText>
             <ThemedText style={[styles.aboutChevron, { color: tc.tactical }]}>›</ThemedText>
           </Pressable>
           <View style={[styles.divider, { backgroundColor: tc.borderColor }]} />
-          <Pressable onPress={() => Alert.alert('Clear Saved Tips', 'Remove all saved tips?', [{ text: 'Cancel', style: 'cancel' }, { text: 'Clear', style: 'destructive', onPress: clearSaved }])} style={styles.dangerRow}>
+          <Pressable accessibilityRole="button" onPress={() => Alert.alert('Clear Saved Tips', 'Remove all saved tips?', [{ text: 'Cancel', style: 'cancel' }, { text: 'Clear', style: 'destructive', onPress: clearSaved }])} style={styles.dangerRow}>
             <ThemedText type="label" style={styles.dangerText}>CLEAR SAVED TIPS</ThemedText>
           </Pressable>
           <View style={[styles.divider, { backgroundColor: tc.borderColor }]} />
-          <Pressable onPress={handleResetApp} style={styles.dangerRow}>
+          <Pressable accessibilityRole="button" onPress={handleResetApp} style={styles.dangerRow}>
             <ThemedText type="label" style={styles.dangerText}>RESET ALL APP DATA</ThemedText>
           </Pressable>
         </TacticalCard>

@@ -46,7 +46,7 @@ function OptionRow<T extends string>({
   return (
     <View style={styles.optionRow}>
       {options.map((o) => (
-        <Pressable
+        <Pressable accessibilityRole="button"
           key={o}
           onPress={() => onChange(o)}
           style={[styles.optionChip, { borderColor: tc.borderColor }, value === o && styles.optionChipActive]}>
@@ -102,7 +102,7 @@ export default function GiBillCalculatorScreen() {
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
     <ThemedView style={{ flex: 1 }}>
       <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
-        <Pressable accessibilityRole="button" accessibilityLabel="Go back"
+        <Pressable hitSlop={8} accessibilityRole="button" accessibilityLabel="Go back"
           onPress={() => (router.back())}
           style={styles.back}>
           <ThemedText style={styles.backChevron}>‹</ThemedText>
@@ -123,7 +123,7 @@ export default function GiBillCalculatorScreen() {
           <ThemedText style={[styles.cardHint, { color: tc.textMuted }]}>Based on qualifying active duty service after 9/10/2001</ThemedText>
           <View style={styles.tierRow}>
             {ELIGIBILITY_TIERS.map((t) => (
-              <Pressable
+              <Pressable accessibilityRole="button"
                 key={t.id}
                 onPress={() => setTierPct(t.pct)}
                 style={[styles.tierChip, { borderColor: tc.borderColor }, tierPct === t.pct && styles.tierChipActive]}>

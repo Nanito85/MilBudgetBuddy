@@ -45,7 +45,7 @@ export function ChoresList({ chores, goals, accentColor, onComplete, onUncomplet
                 from the delete button below rather than making the whole
                 row one Pressable, so the two touch targets don't fight each
                 other. */}
-            <Pressable
+            <Pressable accessibilityRole="button"
               onPress={() => {
                 // Complete/uncomplete regardless of whether a goal exists yet —
                 // a kid with no savings goal set up should still be able to get

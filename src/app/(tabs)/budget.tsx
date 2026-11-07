@@ -149,7 +149,7 @@ function CategoryRow({ cat, netPay }: { cat: BudgetCategory; netPay: number }) {
   };
 
   return (
-    <Pressable onLongPress={handleOptions} delayLongPress={400}>
+    <Pressable accessibilityRole="button" onLongPress={handleOptions} delayLongPress={400}>
       <ThemedView type="backgroundElement" style={styles.catRow}>
         <ThemedText style={styles.catEmoji}>{cat.emoji}</ThemedText>
         <View style={styles.catInfo}>
@@ -185,7 +185,7 @@ function CategoryRow({ cat, netPay }: { cat: BudgetCategory; netPay: number }) {
               placeholder="0"
             />
           ) : (
-            <Pressable
+            <Pressable accessibilityRole="button"
               onPress={() => {
                 setAmountVal(cat.monthlyBudget > 0 ? String(cat.monthlyBudget) : '');
                 setEditingAmount(true);
@@ -195,7 +195,7 @@ function CategoryRow({ cat, netPay }: { cat: BudgetCategory; netPay: number }) {
               </ThemedText>
             </Pressable>
           )}
-          <Pressable onPress={handleOptions} hitSlop={8} style={styles.catOptions}>
+          <Pressable accessibilityRole="button" onPress={handleOptions} hitSlop={8} style={styles.catOptions}>
             <ThemedText style={[styles.catOptionsDots, { color: tc.textMuted }]}>···</ThemedText>
           </Pressable>
         </ThemedView>
@@ -224,15 +224,15 @@ function MoveCategoryModal({
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
-      <Pressable style={styles.modalOverlay} onPress={onClose}>
-        <Pressable style={[styles.modalCard, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
+      <Pressable accessibilityRole="button" style={styles.modalOverlay} onPress={onClose}>
+        <Pressable accessibilityRole="button" style={[styles.modalCard, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
           <ThemedText style={[styles.modalTitle, { color: tc.textPrimary }]}>Move to Category</ThemedText>
           <View style={{ gap: Spacing.one }}>
             {GROUP_ORDER.map((group) => {
               const meta = GROUP_META[group];
               const isCurrent = group === currentGroup;
               return (
-                <Pressable
+                <Pressable accessibilityRole="button"
                   key={group}
                   disabled={isCurrent}
                   onPress={() => { onSelect(group); onClose(); }}
@@ -252,7 +252,7 @@ function MoveCategoryModal({
               );
             })}
           </View>
-          <Pressable onPress={onClose} style={[styles.modalCancelBtn, { borderColor: tc.borderColor, marginTop: Spacing.two }]}>
+          <Pressable accessibilityRole="button" onPress={onClose} style={[styles.modalCancelBtn, { borderColor: tc.borderColor, marginTop: Spacing.two }]}>
             <ThemedText style={[styles.modalCancelText, { color: tc.textHint }]}>Cancel</ThemedText>
           </Pressable>
         </Pressable>
@@ -291,7 +291,7 @@ function AddCustomRow({
         onSubmitEditing={submit}
       />
       {name.trim().length > 0 && (
-        <Pressable onPress={submit} style={styles.addBtn}>
+        <Pressable accessibilityRole="button" onPress={submit} style={styles.addBtn}>
           <ThemedText style={styles.addBtnText}>Add</ThemedText>
         </Pressable>
       )}
@@ -345,7 +345,7 @@ function GroupSection({
             )}
           </View>
           {canAddMore && (
-            <Pressable
+            <Pressable accessibilityRole="button"
               onPress={() => setAdding((v) => !v)}
               hitSlop={8}
               style={[styles.groupAddBtn, { borderColor: meta.color }]}>
@@ -398,7 +398,7 @@ function SpendingRow({
             {fmtPay(spent)} spent{budget > 0 ? ` of ${fmtPay(budget)}` : ' (no budget set)'}
           </ThemedText>
         </View>
-        <Pressable
+        <Pressable accessibilityRole="button"
           onPress={() => onAddExpense(cat.id, cat.name, cat.emoji)}
           style={styles.logBtn}>
           <ThemedText style={[styles.logBtnText, { color: tc.tactical }]}>+ Log</ThemedText>
@@ -448,7 +448,7 @@ function ExpenseItem({
   });
 
   return (
-    <Pressable onLongPress={handleLongPress}>
+    <Pressable accessibilityRole="button" onLongPress={handleLongPress}>
       <View style={styles.expenseItem}>
         <ThemedText style={styles.expenseEmoji}>{catEmoji}</ThemedText>
         <View style={styles.expenseInfo}>
@@ -526,7 +526,7 @@ function AddExpensePanel({
         returnKeyType="done"
         onSubmitEditing={submit}
       />
-      <Pressable onPress={submit} style={styles.panelSubmit}>
+      <Pressable accessibilityRole="button" onPress={submit} style={styles.panelSubmit}>
         <ThemedText style={styles.panelSubmitText}>Save Expense</ThemedText>
       </Pressable>
     </ThemedView>
@@ -548,13 +548,13 @@ function TipRotator() {
       <View style={styles.tipHeader}>
         <ThemedText style={[styles.tipLabel, { color: tc.tactical }]}>{'// FIN-OPS INTEL'}</ThemedText>
         <View style={styles.tipNav}>
-          <Pressable onPress={prev} hitSlop={8} style={styles.tipNavBtn}>
+          <Pressable accessibilityRole="button" onPress={prev} hitSlop={8} style={styles.tipNavBtn}>
             <ThemedText style={[styles.tipNavText, { color: tc.tactical }]}>‹</ThemedText>
           </Pressable>
           <ThemedText style={[styles.tipCounter, { color: tc.textMuted }]}>
             {idx + 1}/{MIL_TIPS.length}
           </ThemedText>
-          <Pressable onPress={next} hitSlop={8} style={styles.tipNavBtn}>
+          <Pressable accessibilityRole="button" onPress={next} hitSlop={8} style={styles.tipNavBtn}>
             <ThemedText style={[styles.tipNavText, { color: tc.tactical }]}>›</ThemedText>
           </Pressable>
         </View>
@@ -595,7 +595,7 @@ function GoalCard({
   };
 
   return (
-    <Pressable onLongPress={handleLongPress}>
+    <Pressable accessibilityRole="button" onLongPress={handleLongPress}>
       <ThemedView
         type="backgroundElement"
         style={[styles.goalCard, { backgroundColor: tc.surface }, done && styles.goalCardDone]}>
@@ -623,10 +623,10 @@ function GoalCard({
             />
           </View>
           <View style={styles.goalActions}>
-            <Pressable onPress={onDeposit} style={[styles.goalBtn, { borderColor: goal.color + '60' }]}>
+            <Pressable accessibilityRole="button" onPress={onDeposit} style={[styles.goalBtn, { borderColor: goal.color + '60' }]}>
               <ThemedText style={[styles.goalBtnText, { color: goal.color }]}>+ Deposit</ThemedText>
             </Pressable>
-            <Pressable
+            <Pressable accessibilityRole="button"
               onPress={onWithdraw}
               style={[styles.goalBtn, { borderColor: tc.borderColor }]}>
               <ThemedText style={[styles.goalBtnText, { color: tc.textSecondary }]}>− Withdraw</ThemedText>
@@ -669,8 +669,8 @@ function AmountModal({
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
-      <Pressable style={styles.modalOverlay} onPress={onClose}>
-        <Pressable style={[styles.modalCard, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
+      <Pressable accessibilityRole="button" style={styles.modalOverlay} onPress={onClose}>
+        <Pressable accessibilityRole="button" style={[styles.modalCard, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
           <ThemedText style={[styles.modalTitle, { color: tc.textPrimary }]}>{title}</ThemedText>
           <TextInput
             value={val}
@@ -682,10 +682,10 @@ function AmountModal({
             style={[styles.modalInput, { color: tc.textPrimary, borderBottomColor: tc.borderColor }]}
           />
           <View style={styles.modalBtns}>
-            <Pressable onPress={onClose} style={[styles.modalCancelBtn, { borderColor: tc.borderColor }]}>
+            <Pressable accessibilityRole="button" onPress={onClose} style={[styles.modalCancelBtn, { borderColor: tc.borderColor }]}>
               <ThemedText style={[styles.modalCancelText, { color: tc.textHint }]}>Cancel</ThemedText>
             </Pressable>
-            <Pressable onPress={handleSubmit} style={[styles.modalSubmitBtn, { backgroundColor: submitColor }]}>
+            <Pressable accessibilityRole="button" onPress={handleSubmit} style={[styles.modalSubmitBtn, { backgroundColor: submitColor }]}>
               <ThemedText style={styles.modalSubmitText}>{submitLabel}</ThemedText>
             </Pressable>
           </View>
@@ -731,8 +731,8 @@ function AddGoalModal({
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <Pressable style={styles.modalOverlay} onPress={onClose}>
-        <Pressable style={[styles.modalCard, { maxHeight: '85%', backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
+      <Pressable accessibilityRole="button" style={styles.modalOverlay} onPress={onClose}>
+        <Pressable accessibilityRole="button" style={[styles.modalCard, { maxHeight: '85%', backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
           <ThemedText style={[styles.modalTitle, { color: tc.textPrimary }]}>New Savings Goal</ThemedText>
 
           <ThemedText style={[styles.fieldLabel, { color: tc.textMuted }]}>GOAL NAME</ThemedText>
@@ -766,7 +766,7 @@ function AddGoalModal({
             style={{ marginBottom: Spacing.two, flexGrow: 0, flexShrink: 0 }}
             contentContainerStyle={{ gap: Spacing.one, paddingVertical: Spacing.one }}>
             {CATS.map(([key, meta]) => (
-              <Pressable
+              <Pressable accessibilityRole="button"
                 key={key}
                 onPress={() => setCategory(key)}
                 style={[
@@ -788,10 +788,10 @@ function AddGoalModal({
           </ScrollView>
 
           <View style={styles.modalBtns}>
-            <Pressable onPress={onClose} style={[styles.modalCancelBtn, { borderColor: tc.borderColor }]}>
+            <Pressable accessibilityRole="button" onPress={onClose} style={[styles.modalCancelBtn, { borderColor: tc.borderColor }]}>
               <ThemedText style={[styles.modalCancelText, { color: tc.textHint }]}>Cancel</ThemedText>
             </Pressable>
-            <Pressable
+            <Pressable accessibilityRole="button"
               onPress={submit}
               style={[styles.modalSubmitBtn, { backgroundColor: GOAL_CATEGORY_META[category].color }]}>
               <ThemedText style={styles.modalSubmitText}>Create Goal</ThemedText>
@@ -859,7 +859,7 @@ function GoalsMode() {
       ))}
 
       {/* Add goal button */}
-      <Pressable onPress={() => setAddVisible(true)} style={styles.addGoalBtn}>
+      <Pressable accessibilityRole="button" onPress={() => setAddVisible(true)} style={styles.addGoalBtn}>
         <ThemedText style={[styles.addGoalBtnText, { color: tc.accent }]}>+ NEW SAVINGS GOAL</ThemedText>
       </Pressable>
 
@@ -980,7 +980,7 @@ export default function BudgetScreen() {
         {/* Mode toggle — 3 tabs */}
         <View style={styles.modeRow}>
           {(['budget', 'spending', 'goals'] as Mode[]).map((m) => (
-            <Pressable
+            <Pressable accessibilityRole="button"
               key={m}
               onPress={() => setMode(m)}
               style={[styles.modeBtn, { borderColor: tc.borderColor }, mode === m && styles.modeBtnActive]}>

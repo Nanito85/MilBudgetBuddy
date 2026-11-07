@@ -73,7 +73,7 @@ function SectionHeader({ title, subtitle }: { title: string; subtitle?: string }
 function GradeChip({ grade, selected, onPress }: { grade: PayGrade; selected: boolean; onPress: () => void }) {
   const tc = useThemeColors();
   return (
-    <Pressable onPress={onPress} style={[styles.gradeChip, { borderColor: tc.borderColor }, selected && styles.gradeChipActive]}>
+    <Pressable accessibilityRole="button" onPress={onPress} style={[styles.gradeChip, { borderColor: tc.borderColor }, selected && styles.gradeChipActive]}>
       <ThemedText style={[styles.gradeChipText, { color: tc.textHint }, selected && styles.gradeChipTextActive]}>{grade}</ThemedText>
     </Pressable>
   );
@@ -212,7 +212,7 @@ export default function ReservesScreen() {
     return (
       <View style={styles.yosRow}>
         {yosBrackets.map((y) => (
-          <Pressable
+          <Pressable accessibilityRole="button"
             key={y}
             onPress={() => setYos(y)}
             style={[styles.yosChip, { borderColor: tc.borderColor }, yos >= y && yos < y + 2 && styles.yosChipActive]}>
@@ -229,7 +229,7 @@ export default function ReservesScreen() {
     <ThemedView style={{ flex: 1 }}>
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
-        <Pressable accessibilityRole="button" accessibilityLabel="Go back" onPress={() => router.back()} style={styles.back}>
+        <Pressable hitSlop={8} accessibilityRole="button" accessibilityLabel="Go back" onPress={() => router.back()} style={styles.back}>
           <ThemedText style={styles.backChevron}>‹</ThemedText>
         </Pressable>
         <View style={{ flex: 1 }}>
@@ -255,7 +255,7 @@ export default function ReservesScreen() {
         style={styles.tabBarScroll}
         contentContainerStyle={[styles.tabBar, { borderBottomColor: tc.borderColor }]}>
         {TABS.map((t) => (
-          <Pressable
+          <Pressable accessibilityRole="button"
             key={t.id}
             onPress={() => setActiveTab(t.id)}
             style={[
@@ -378,7 +378,7 @@ export default function ReservesScreen() {
                 <ThemedText style={[styles.rowLabel, { color: tc.textSecondary }]}>Retirement System</ThemedText>
                 <View style={styles.stepperWrap}>
                   {(['brs', 'high3'] as const).map((sys) => (
-                    <Pressable
+                    <Pressable accessibilityRole="button"
                       key={sys}
                       onPress={() => setRetirementSystem(sys)}
                       style={[
@@ -401,11 +401,11 @@ export default function ReservesScreen() {
               <View style={styles.rowItem}>
                 <ThemedText style={[styles.rowLabel, { color: tc.textSecondary }]}>Good Years (qualifying)</ThemedText>
                 <View style={styles.stepperWrap}>
-                  <Pressable onPress={() => setGoodYears(Math.max(0, goodYears - 1))} style={[styles.stepBtn, { backgroundColor: tc.borderColor }]}>
+                  <Pressable accessibilityRole="button" hitSlop={8} onPress={() => setGoodYears(Math.max(0, goodYears - 1))} style={[styles.stepBtn, { backgroundColor: tc.borderColor }]}>
                     <ThemedText style={[styles.stepBtnText, { color: tc.textPrimary }]}>−</ThemedText>
                   </Pressable>
                   <ThemedText style={[styles.stepValue, { color: tc.textPrimary }]}>{goodYears}</ThemedText>
-                  <Pressable onPress={() => setGoodYears(Math.min(40, goodYears + 1))} style={[styles.stepBtn, { backgroundColor: tc.borderColor }]}>
+                  <Pressable accessibilityRole="button" hitSlop={8} onPress={() => setGoodYears(Math.min(40, goodYears + 1))} style={[styles.stepBtn, { backgroundColor: tc.borderColor }]}>
                     <ThemedText style={[styles.stepBtnText, { color: tc.textPrimary }]}>+</ThemedText>
                   </Pressable>
                 </View>
@@ -414,11 +414,11 @@ export default function ReservesScreen() {
               <View style={styles.rowItem}>
                 <ThemedText style={[styles.rowLabel, { color: tc.textSecondary }]}>Total Retirement Points</ThemedText>
                 <View style={styles.stepperWrap}>
-                  <Pressable onPress={() => setRetirementPoints(Math.max(0, retirementPoints - 50))} style={[styles.stepBtn, { backgroundColor: tc.borderColor }]}>
+                  <Pressable accessibilityRole="button" hitSlop={8} onPress={() => setRetirementPoints(Math.max(0, retirementPoints - 50))} style={[styles.stepBtn, { backgroundColor: tc.borderColor }]}>
                     <ThemedText style={[styles.stepBtnText, { color: tc.textPrimary }]}>−</ThemedText>
                   </Pressable>
                   <ThemedText style={[styles.stepValue, { color: tc.textPrimary }]}>{retirementPoints.toLocaleString()}</ThemedText>
-                  <Pressable onPress={() => setRetirementPoints(retirementPoints + 50)} style={[styles.stepBtn, { backgroundColor: tc.borderColor }]}>
+                  <Pressable accessibilityRole="button" hitSlop={8} onPress={() => setRetirementPoints(retirementPoints + 50)} style={[styles.stepBtn, { backgroundColor: tc.borderColor }]}>
                     <ThemedText style={[styles.stepBtnText, { color: tc.textPrimary }]}>+</ThemedText>
                   </Pressable>
                 </View>
@@ -566,7 +566,7 @@ export default function ReservesScreen() {
               <ThemedText style={[styles.cardLabel, { color: tc.textSecondary }]}>DEPLOYMENT DURATION</ThemedText>
               <View style={styles.yosRow}>
                 {[3, 6, 9, 12, 15, 18].map((m) => (
-                  <Pressable
+                  <Pressable accessibilityRole="button"
                     key={m}
                     onPress={() => setDeployMonths(m)}
                     style={[styles.yosChip, { borderColor: tc.borderColor }, deployMonths === m && styles.yosChipActive]}>

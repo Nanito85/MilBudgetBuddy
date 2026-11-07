@@ -146,7 +146,7 @@ export function DatePickerModal({
   return (
     <Modal visible={visible} transparent animationType="fade">
       {/* Backdrop */}
-      <Pressable
+      <Pressable accessibilityRole="button"
         style={[StyleSheet.absoluteFillObject, s.backdrop]}
         onPress={onCancel}
       />
@@ -162,11 +162,11 @@ export function DatePickerModal({
 
           {/* Header */}
           <View style={[s.header, { borderBottomColor: tc.borderColor }]}>
-            <Pressable onPress={onCancel} hitSlop={16} style={s.headerSide}>
+            <Pressable accessibilityRole="button" onPress={onCancel} hitSlop={16} style={s.headerSide}>
               <ThemedText style={[s.cancelText, { color: tc.textSecondary }]}>Cancel</ThemedText>
             </Pressable>
             <ThemedText style={[s.titleText, { color: tc.textPrimary }]}>{title}</ThemedText>
-            <Pressable onPress={confirm} hitSlop={16} style={[s.headerSide, s.headerRight]}>
+            <Pressable accessibilityRole="button" onPress={confirm} hitSlop={16} style={[s.headerSide, s.headerRight]}>
               <ThemedText style={[s.doneText, { color: tc.tactical }]}>Done</ThemedText>
             </Pressable>
           </View>
@@ -176,7 +176,7 @@ export function DatePickerModal({
             <>
               <View style={s.yearHeader}>
                 <ThemedText style={[s.yearHeaderLabel, { color: tc.textMuted }]}>SELECT YEAR</ThemedText>
-                <Pressable onPress={() => setMode('day')} hitSlop={12}>
+                <Pressable accessibilityRole="button" onPress={() => setMode('day')} hitSlop={12}>
                   <ThemedText style={[s.yearHeaderBack, { color: tc.tactical }]}>↩ Back</ThemedText>
                 </Pressable>
               </View>
@@ -188,7 +188,7 @@ export function DatePickerModal({
                 {years.map((y) => {
                   const isCurrentView = y === viewYear;
                   return (
-                    <Pressable
+                    <Pressable accessibilityRole="button"
                       key={y}
                       onPress={() => selectYear(y)}
                       style={({ pressed }) => [
@@ -216,7 +216,7 @@ export function DatePickerModal({
             <>
               {/* Month / Year navigation */}
               <View style={s.navRow}>
-                <Pressable
+                <Pressable accessibilityRole="button"
                   onPress={prevMonth}
                   disabled={!canGoPrev}
                   hitSlop={12}
@@ -225,14 +225,14 @@ export function DatePickerModal({
                 </Pressable>
 
                 {/* Tap label to open year picker */}
-                <Pressable onPress={() => setMode('year')} style={s.navLabelBtn} hitSlop={8}>
+                <Pressable accessibilityRole="button" onPress={() => setMode('year')} style={s.navLabelBtn} hitSlop={8}>
                   <ThemedText style={[s.navLabel, { color: tc.textPrimary }]}>
                     {MONTH_NAMES[viewMonth]}  {viewYear}
                   </ThemedText>
                   <ThemedText style={[s.navLabelChevron, { color: tc.tactical }]}>▾</ThemedText>
                 </Pressable>
 
-                <Pressable
+                <Pressable accessibilityRole="button"
                   onPress={nextMonth}
                   disabled={!canGoNext}
                   hitSlop={12}
@@ -256,7 +256,7 @@ export function DatePickerModal({
                   const today    = isToday(day);
                   const future   = isFuture(viewYear, viewMonth, day);
                   return (
-                    <Pressable
+                    <Pressable accessibilityRole="button"
                       key={`d-${day}`}
                       onPress={() => selectDay(day)}
                       disabled={future}

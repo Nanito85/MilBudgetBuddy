@@ -536,7 +536,7 @@ export default function PaywallScreen() {
     <ThemedView style={styles.container}>
       <SafeAreaView edges={['top']} style={{ flex: 1 }}>
         <View style={[styles.header, { borderBottomColor: tc.borderColor }]}>
-          <Pressable onPress={() => router.back()} style={styles.backBtn}>
+          <Pressable accessibilityRole="button" hitSlop={8} onPress={() => router.back()} style={styles.backBtn}>
             <ThemedText style={[styles.backText, { color: tc.tactical }]}>‹ Back</ThemedText>
           </Pressable>
           <ThemedText style={[styles.title, { color: tc.textPrimary }]}>MILBUDGETBUDDY PRO</ThemedText>
@@ -547,7 +547,7 @@ export default function PaywallScreen() {
               content, not to Settings specifically — so without this link, a
               signed-in non-Pro member had literally no way to reach Settings
               (sign out, account, etc.) at all once gated. */}
-          <Pressable onPress={() => router.push('/settings' as any)} style={styles.backBtn}>
+          <Pressable accessibilityRole="button" hitSlop={8} onPress={() => router.push('/settings' as any)} style={styles.backBtn}>
             <ThemedText style={[styles.backText, { color: tc.tactical }, { textAlign: 'right' }]}>Settings</ThemedText>
           </Pressable>
         </View>
@@ -579,14 +579,14 @@ export default function PaywallScreen() {
               </View>
 
               <View style={styles.planRow}>
-                <Pressable
+                <Pressable accessibilityRole="button"
                   onPress={() => setSelected('monthly')}
                   style={[styles.planCard, { borderColor: tc.borderColor }, selected === 'monthly' && styles.planCardActive]}>
                   <ThemedText style={[styles.planLabel, { color: tc.textPrimary }]}>Monthly</ThemedText>
                   <ThemedText style={[styles.planPrice, { color: tc.textPrimary }]}>{monthlyDisplayPrice ?? '—'}</ThemedText>
                   <ThemedText type="small" themeColor="textSecondary">per month</ThemedText>
                 </Pressable>
-                <Pressable
+                <Pressable accessibilityRole="button"
                   onPress={() => setSelected('annual')}
                   style={[styles.planCard, { borderColor: tc.borderColor }, selected === 'annual' && styles.planCardActive]}>
                   <View style={styles.bestValueBadge}>
@@ -609,7 +609,7 @@ export default function PaywallScreen() {
                     Couldn&apos;t load pricing from the {Platform.OS === 'ios' ? 'App Store' : 'Play Store'}.
                     Check your connection and try again.
                   </ThemedText>
-                  <Pressable onPress={loadProducts} style={[styles.loadErrorRetryBtn, { borderColor: tc.tactical }]}>
+                  <Pressable accessibilityRole="button" onPress={loadProducts} style={[styles.loadErrorRetryBtn, { borderColor: tc.tactical }]}>
                     <ThemedText style={[styles.loadErrorRetryText, { color: tc.tactical }]}>RETRY</ThemedText>
                   </Pressable>
                 </View>
@@ -627,7 +627,7 @@ export default function PaywallScreen() {
                 </ThemedText>
               )}
 
-              <Pressable
+              <Pressable accessibilityRole="button"
                 onPress={purchase}
                 disabled={purchaseDisabled}
                 style={({ pressed }) => [styles.ctaBtn, (pressed || purchaseDisabled) && { opacity: 0.7 }]}>
@@ -662,7 +662,7 @@ export default function PaywallScreen() {
                 </Pressable>
               </View>
 
-              <Pressable onPress={handleRestore} disabled={verifying} style={styles.restoreBtn}>
+              <Pressable accessibilityRole="button" onPress={handleRestore} disabled={verifying} style={styles.restoreBtn}>
                 <ThemedText style={[styles.restoreText, { color: tc.tactical }]}>Restore Purchases</ThemedText>
               </Pressable>
             </>

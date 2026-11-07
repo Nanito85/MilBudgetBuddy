@@ -105,7 +105,7 @@ function StepHeader({
   return (
     <View style={styles.stepHeader}>
       {onBack ? (
-        <Pressable onPress={onBack} hitSlop={12} style={styles.backBtn}>
+        <Pressable accessibilityRole="button" onPress={onBack} hitSlop={12} style={styles.backBtn}>
           <ThemedText style={styles.backText}>‹ Back</ThemedText>
         </Pressable>
       ) : (
@@ -194,7 +194,7 @@ function AuthModal({
       <KeyboardAvoidingView style={{ flex: 1, backgroundColor: tc.background }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <SafeAreaView style={{ flex: 1 }}>
           <View style={authModalStyles.header}>
-            <Pressable onPress={onClose}><ThemedText style={[authModalStyles.cancel, { color: tc.textSecondary }]}>CANCEL</ThemedText></Pressable>
+            <Pressable accessibilityRole="button" onPress={onClose}><ThemedText style={[authModalStyles.cancel, { color: tc.textSecondary }]}>CANCEL</ThemedText></Pressable>
             <ThemedText style={[authModalStyles.title, { color: tc.textPrimary }]}>
               {mode === 'signup' ? 'CREATE ACCOUNT' : 'SIGN IN'}
             </ThemedText>
@@ -237,7 +237,7 @@ function AuthModal({
             </ThemedView>
 
             {mode === 'signin' && (
-              <Pressable onPress={forgotPassword} hitSlop={8} style={authModalStyles.forgotBtn}>
+              <Pressable accessibilityRole="button" onPress={forgotPassword} hitSlop={8} style={authModalStyles.forgotBtn}>
                 <ThemedText style={[authModalStyles.forgotText, { color: Brand.primary }]}>Forgot password?</ThemedText>
               </Pressable>
             )}
@@ -260,7 +260,7 @@ function AuthModal({
               </>
             )}
 
-            <Pressable
+            <Pressable accessibilityRole="button"
               onPress={submit}
               disabled={!canSubmit}
               style={({ pressed }) => [authModalStyles.primaryBtn, (!canSubmit || pressed) && { opacity: 0.6 }]}>
@@ -317,17 +317,17 @@ function AuthStep({ onSkip }: { onSkip: () => void }) {
         </ThemedText>
       </View>
       <View style={styles.btnGroup}>
-        <Pressable
+        <Pressable accessibilityRole="button"
           onPress={() => setAuthMode('signin')}
           style={({ pressed }) => [styles.primaryBtn, pressed && styles.btnPressed]}>
           <ThemedText style={styles.primaryBtnText}>Sign In  →</ThemedText>
         </Pressable>
-        <Pressable
+        <Pressable accessibilityRole="button"
           onPress={() => setAuthMode('signup')}
           style={({ pressed }) => [styles.secondaryBtn, pressed && styles.btnPressed]}>
           <ThemedText style={styles.secondaryBtnText}>Create Account</ThemedText>
         </Pressable>
-        <Pressable onPress={onSkip} hitSlop={8} style={styles.skipBtn}>
+        <Pressable accessibilityRole="button" onPress={onSkip} hitSlop={8} style={styles.skipBtn}>
           <ThemedText type="small" themeColor="textSecondary">Continue without account (local only)</ThemedText>
         </Pressable>
       </View>
@@ -353,7 +353,7 @@ function WelcomeStep({ onNext }: { onNext: () => void }) {
           Know your pay, plan your budget, and make the most of every dollar — built for servicemembers and their families.
         </ThemedText>
       </View>
-      <Pressable
+      <Pressable accessibilityRole="button"
         onPress={onNext}
         style={({ pressed }) => [styles.primaryBtn, pressed && styles.btnPressed]}>
         <ThemedText style={styles.primaryBtnText}>Get Started  →</ThemedText>
@@ -384,12 +384,12 @@ function BranchStep({
         </View>
       </View>
       <View style={styles.btnGroup}>
-        <Pressable
+        <Pressable accessibilityRole="button"
           onPress={() => onNext(selected)}
           style={({ pressed }) => [styles.primaryBtn, pressed && styles.btnPressed]}>
           <ThemedText style={styles.primaryBtnText}>Continue  →</ThemedText>
         </Pressable>
-        <Pressable onPress={() => onNext(undefined)} hitSlop={8} style={styles.skipBtn}>
+        <Pressable accessibilityRole="button" onPress={() => onNext(undefined)} hitSlop={8} style={styles.skipBtn}>
           <ThemedText type="small" themeColor="textSecondary">Skip for now</ThemedText>
         </Pressable>
       </View>
@@ -428,7 +428,7 @@ function ServiceStatusStep({
         </ThemedText>
         <View style={{ gap: Spacing.two, marginTop: Spacing.three }}>
           {STATUS_OPTIONS.map((opt) => (
-            <Pressable
+            <Pressable accessibilityRole="button"
               key={opt.value}
               onPress={() => setSelected(opt.value)}
               style={[styles.optionCard, selected === opt.value && styles.optionCardActive]}>
@@ -447,12 +447,12 @@ function ServiceStatusStep({
         </View>
       </View>
       <View style={styles.btnGroup}>
-        <Pressable
+        <Pressable accessibilityRole="button"
           onPress={() => onNext(selected)}
           style={({ pressed }) => [styles.primaryBtn, pressed && styles.btnPressed]}>
           <ThemedText style={styles.primaryBtnText}>Continue  →</ThemedText>
         </Pressable>
-        <Pressable onPress={() => onNext(undefined)} hitSlop={8} style={styles.skipBtn}>
+        <Pressable accessibilityRole="button" onPress={() => onNext(undefined)} hitSlop={8} style={styles.skipBtn}>
           <ThemedText type="small" themeColor="textSecondary">Skip for now</ThemedText>
         </Pressable>
       </View>
@@ -537,7 +537,7 @@ function ServiceInfoStep({
           <ThemedText type="smallBold" themeColor="textSecondary" style={styles.fieldLabel}>RANK TITLE</ThemedText>
           <View style={styles.toggle}>
             {variants.map((v) => (
-              <Pressable
+              <Pressable accessibilityRole="button"
                 key={v.variant}
                 onPress={() => setRankVariant(v.variant)}
                 style={[styles.toggleBtn, rankVariant === v.variant && styles.toggleBtnActive]}>
@@ -589,7 +589,7 @@ function ServiceInfoStep({
         <ThemedText type="smallBold" themeColor="textSecondary" style={styles.fieldLabel}>
           DATE OF ENLISTMENT / COMMISSION
         </ThemedText>
-        <Pressable onPress={() => setShowEnlistPicker(true)} style={styles.dateTrigger}>
+        <Pressable accessibilityRole="button" onPress={() => setShowEnlistPicker(true)} style={styles.dateTrigger}>
           <ThemedText style={[styles.dateValue, !enlistDate && styles.datePlaceholder]}>
             {enlistDate ? fmtDate(enlistDate) : 'Tap to select date'}
           </ThemedText>
@@ -605,7 +605,7 @@ function ServiceInfoStep({
         <ThemedText type="smallBold" themeColor="textSecondary" style={styles.fieldLabel}>
           DATE OF CURRENT RANK
         </ThemedText>
-        <Pressable onPress={() => setShowRankPicker(true)} style={styles.dateTrigger}>
+        <Pressable accessibilityRole="button" onPress={() => setShowRankPicker(true)} style={styles.dateTrigger}>
           <ThemedText style={[styles.dateValue, !rankDate && styles.datePlaceholder]}>
             {rankDate ? fmtDate(rankDate) : 'Tap to select date'}
           </ThemedText>
@@ -649,7 +649,7 @@ function ServiceInfoStep({
           </ThemedText>
           <View style={styles.toggle}>
             {(['guard', 'reserve'] as const).map((c) => (
-              <Pressable
+              <Pressable accessibilityRole="button"
                 key={c}
                 onPress={() => setReserveComponentLocal(c)}
                 style={[styles.toggleBtn, reserveComponent === c && styles.toggleBtnActive]}>
@@ -679,7 +679,7 @@ function ServiceInfoStep({
             {GUARD_DUTY_STATUS_FIELD_HINT} This affects your TRICARE, SCRA, and retirement-point eligibility, so keep it current — you can update it any time in your Profile.
           </ThemedText>
           {(['title32', 'title10', 'sad'] as const).map((s) => (
-            <Pressable
+            <Pressable accessibilityRole="button"
               key={s}
               onPress={() => setGuardDutyStatus(s)}
               style={[styles.radioRow, guardDutyStatus === s && styles.radioRowActive]}>
@@ -695,12 +695,12 @@ function ServiceInfoStep({
       )}
 
       <View style={styles.btnGroup}>
-        <Pressable
+        <Pressable accessibilityRole="button"
           onPress={() => onNext(grade, lastName, nickname, yos, rankVariant, enlistDate, rankDate, drillsPerMonth, hasGuardOption ? reserveComponent : undefined, guardDutyStatus)}
           style={({ pressed }) => [styles.primaryBtn, pressed && styles.btnPressed]}>
           <ThemedText style={styles.primaryBtnText}>Continue  →</ThemedText>
         </Pressable>
-        <Pressable
+        <Pressable accessibilityRole="button"
           onPress={() => onNext(undefined, '', '', yos, 'default', '', '', drillsPerMonth, hasGuardOption ? reserveComponent : undefined, guardDutyStatus)}
           hitSlop={8}
           style={styles.skipBtn}>
@@ -767,7 +767,7 @@ function CivilianServiceInfoStep({
         <ThemedText type="smallBold" themeColor="textSecondary" style={styles.fieldLabel}>GS GRADE</ThemedText>
         <View style={styles.chipGrid}>
           {GS_GRADES.map((g) => (
-            <Pressable
+            <Pressable accessibilityRole="button"
               key={g}
               onPress={() => setGsGrade(g)}
               style={[styles.gradeChip, gsGrade === g && styles.gradeChipActive]}>
@@ -784,7 +784,7 @@ function CivilianServiceInfoStep({
         <ThemedText type="smallBold" themeColor="textSecondary" style={styles.fieldLabel}>STEP</ThemedText>
         <View style={styles.chipGrid}>
           {GS_STEPS.map((s) => (
-            <Pressable
+            <Pressable accessibilityRole="button"
               key={s}
               onPress={() => setGsStep(s)}
               style={[styles.gradeChip, gsStep === s && styles.gradeChipActive]}>
@@ -854,7 +854,7 @@ function CivilianServiceInfoStep({
         <ThemedText type="smallBold" themeColor="textSecondary" style={styles.fieldLabel}>
           DATE FEDERAL SERVICE BEGAN
         </ThemedText>
-        <Pressable onPress={() => setShowDatePicker(true)} style={styles.dateTrigger}>
+        <Pressable accessibilityRole="button" onPress={() => setShowDatePicker(true)} style={styles.dateTrigger}>
           <ThemedText style={[styles.dateValue, !startDate && styles.datePlaceholder]}>
             {startDate ? fmtDate(startDate) : 'Tap to select date'}
           </ThemedText>
@@ -868,12 +868,12 @@ function CivilianServiceInfoStep({
       </View>
 
       <View style={styles.btnGroup}>
-        <Pressable
+        <Pressable accessibilityRole="button"
           onPress={() => onNext(gsGrade, gsStep, lastName, nickname, startDate, gsLocality)}
           style={({ pressed }) => [styles.primaryBtn, pressed && styles.btnPressed]}>
           <ThemedText style={styles.primaryBtnText}>Continue  →</ThemedText>
         </Pressable>
-        <Pressable
+        <Pressable accessibilityRole="button"
           onPress={() => onNext(gsGrade, gsStep, '', '', '', gsLocality)}
           hitSlop={8}
           style={styles.skipBtn}>
@@ -966,7 +966,7 @@ function RetiredServiceInfoStep({
           <ThemedText type="smallBold" themeColor="textSecondary" style={styles.fieldLabel}>RANK TITLE</ThemedText>
           <View style={styles.toggle}>
             {variants.map((v) => (
-              <Pressable
+              <Pressable accessibilityRole="button"
                 key={v.variant}
                 onPress={() => setRankVariant(v.variant)}
                 style={[styles.toggleBtn, rankVariant === v.variant && styles.toggleBtnActive]}>
@@ -1015,7 +1015,7 @@ function RetiredServiceInfoStep({
         <ThemedText type="smallBold" themeColor="textSecondary" style={styles.fieldLabel}>
           DATE OF ENLISTMENT / COMMISSION
         </ThemedText>
-        <Pressable onPress={() => setShowEnlistPicker(true)} style={styles.dateTrigger}>
+        <Pressable accessibilityRole="button" onPress={() => setShowEnlistPicker(true)} style={styles.dateTrigger}>
           <ThemedText style={[styles.dateValue, !enlistDate && styles.datePlaceholder]}>
             {enlistDate ? fmtDate(enlistDate) : 'Tap to select date'}
           </ThemedText>
@@ -1028,7 +1028,7 @@ function RetiredServiceInfoStep({
         <ThemedText type="smallBold" themeColor="textSecondary" style={styles.fieldLabel}>
           MONTH & YEAR YOU RETIRED
         </ThemedText>
-        <Pressable onPress={() => setShowDatePicker(true)} style={styles.dateTrigger}>
+        <Pressable accessibilityRole="button" onPress={() => setShowDatePicker(true)} style={styles.dateTrigger}>
           <ThemedText style={[styles.dateValue, !retirementDate && styles.datePlaceholder]}>
             {retirementDate ? fmtMonthYear(retirementDate) : 'Tap to select date'}
           </ThemedText>
@@ -1061,7 +1061,7 @@ function RetiredServiceInfoStep({
         </ThemedText>
         <View style={styles.chipGrid}>
           {VA_PERCENT_OPTIONS.map((p) => (
-            <Pressable
+            <Pressable accessibilityRole="button"
               key={p}
               onPress={() => setVaPercent(p)}
               style={[styles.gradeChip, vaPercent === p && styles.gradeChipActive]}>
@@ -1074,12 +1074,12 @@ function RetiredServiceInfoStep({
       </View>
 
       <View style={styles.btnGroup}>
-        <Pressable
+        <Pressable accessibilityRole="button"
           onPress={() => onNext(grade, lastName, nickname, retirementDate, vaPercent, yos, enlistDate)}
           style={({ pressed }) => [styles.primaryBtn, pressed && styles.btnPressed]}>
           <ThemedText style={styles.primaryBtnText}>Continue  →</ThemedText>
         </Pressable>
-        <Pressable
+        <Pressable accessibilityRole="button"
           onPress={() => onNext(undefined, '', '', '', 0, 0, '')}
           hitSlop={8}
           style={styles.skipBtn}>
@@ -1163,7 +1163,7 @@ function LocationFamilyStep({
           HOME STATE (FOR TAX ESTIMATE)
         </ThemedText>
         {stateCode ? (
-          <Pressable
+          <Pressable accessibilityRole="button"
             onPress={() => { setStateCode(''); setStateQuery(''); }}
             style={[styles.toggleBtn, styles.toggleBtnActive, { alignSelf: 'flex-start', paddingHorizontal: Spacing.three }]}>
             <ThemedText style={styles.toggleTextActive}>
@@ -1185,7 +1185,7 @@ function LocationFamilyStep({
             {showStateList && stateQuery.length > 0 && (
               <View style={[styles.stateDropdown, { backgroundColor: tc.surface }]}>
                 {filteredStates.map((s) => (
-                  <Pressable
+                  <Pressable accessibilityRole="button"
                     key={s.code}
                     onPress={() => { setStateCode(s.code); setStateQuery(''); setShowStateList(false); }}
                     style={styles.stateOption}>
@@ -1212,7 +1212,7 @@ function LocationFamilyStep({
         <ThemedText type="smallBold" themeColor="textSecondary" style={styles.fieldLabel}>MARRIED (SPOUSE)</ThemedText>
         <View style={styles.toggle}>
           {([false, true] as const).map((val) => (
-            <Pressable
+            <Pressable accessibilityRole="button"
               key={String(val)}
               onPress={() => setHasSpouse(val)}
               style={[styles.toggleBtn, hasSpouse === val && styles.toggleBtnActive]}>
@@ -1235,7 +1235,7 @@ function LocationFamilyStep({
         </ThemedText>
         <View style={{ gap: Spacing.one }}>
           {HOUSING_STATUS_ORDER.map((hs) => (
-            <Pressable
+            <Pressable accessibilityRole="button"
               key={hs}
               onPress={() => setHousingStatus(hs)}
               style={[styles.housingOption, housingStatus === hs && styles.housingOptionActive]}>
@@ -1256,12 +1256,12 @@ function LocationFamilyStep({
       </View>
 
       <View style={styles.btnGroup}>
-        <Pressable
+        <Pressable accessibilityRole="button"
           onPress={() => onNext(station?.mhaZip ?? '', station?.name ?? '', hasSpouse, numChildren, stateCode, housingStatus, station?.id ?? '')}
           style={({ pressed }) => [styles.primaryBtn, pressed && styles.btnPressed]}>
           <ThemedText style={styles.primaryBtnText}>Continue  →</ThemedText>
         </Pressable>
-        <Pressable onPress={() => onNext('', '', false, 0, '', 'off_base', '')} hitSlop={8} style={styles.skipBtn}>
+        <Pressable accessibilityRole="button" onPress={() => onNext('', '', false, 0, '', 'off_base', '')} hitSlop={8} style={styles.skipBtn}>
           <ThemedText type="small" themeColor="textSecondary">Skip for now</ThemedText>
         </Pressable>
       </View>
@@ -1290,7 +1290,7 @@ function FinancialGoalStep({
         </ThemedText>
         <View style={styles.goalGrid}>
           {GOAL_ORDER.map((goal) => (
-            <Pressable
+            <Pressable accessibilityRole="button"
               key={goal}
               onPress={() => setSelected(goal)}
               style={[styles.goalCard, selected === goal && styles.goalCardActive]}>
@@ -1303,12 +1303,12 @@ function FinancialGoalStep({
         </View>
       </View>
       <View style={styles.btnGroup}>
-        <Pressable
+        <Pressable accessibilityRole="button"
           onPress={() => onNext(selected)}
           style={({ pressed }) => [styles.primaryBtn, pressed && styles.btnPressed]}>
           <ThemedText style={styles.primaryBtnText}>Continue  →</ThemedText>
         </Pressable>
-        <Pressable onPress={() => onNext(undefined)} hitSlop={8} style={styles.skipBtn}>
+        <Pressable accessibilityRole="button" onPress={() => onNext(undefined)} hitSlop={8} style={styles.skipBtn}>
           <ThemedText type="small" themeColor="textSecondary">Skip for now</ThemedText>
         </Pressable>
       </View>
@@ -1365,7 +1365,7 @@ function NotificationsStep({ onFinish }: { onFinish: () => void }) {
         </ThemedView>
       </View>
       <View style={styles.btnGroup}>
-        <Pressable
+        <Pressable accessibilityRole="button"
           onPress={onFinish}
           style={({ pressed }) => [styles.primaryBtn, pressed && styles.btnPressed]}>
           <ThemedText style={styles.primaryBtnText}>Enter MilBudgetBuddy</ThemedText>

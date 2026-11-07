@@ -90,7 +90,7 @@ export default function LegalScreen() {
       <SafeAreaView edges={['top']} style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
 
-          <Pressable onPress={() => router.back()} style={styles.backBtn}>
+          <Pressable accessibilityRole="button" hitSlop={8} onPress={() => router.back()} style={styles.backBtn}>
             <ThemedText style={[styles.backText, { color: tc.tactical }]}>‹ Back</ThemedText>
           </Pressable>
 
@@ -99,7 +99,7 @@ export default function LegalScreen() {
 
           {/* Privacy Policy */}
           <View style={[styles.section, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
-            <Pressable style={styles.sectionHeader} onPress={() => toggle('privacy')}>
+            <Pressable accessibilityRole="button" style={styles.sectionHeader} onPress={() => toggle('privacy')}>
               <ThemedText style={[styles.sectionTitle, { color: tc.textPrimary }]}>Privacy Policy</ThemedText>
               <ThemedText style={[styles.chevron, { color: tc.tactical }]}>{expanded === 'privacy' ? '▲' : '▼'}</ThemedText>
             </Pressable>
@@ -122,7 +122,7 @@ export default function LegalScreen() {
                   Firebase Authentication is used for optional account sign-in. Google&apos;s privacy policy applies to that
                   service.
                 </ThemedText>
-                <Pressable onPress={() => Linking.openURL(PRIVACY_URL)} style={styles.linkBtn}>
+                <Pressable accessibilityRole="button" onPress={() => Linking.openURL(PRIVACY_URL)} style={styles.linkBtn}>
                   <ThemedText style={[styles.linkText, { color: tc.accent }]}>View Full Privacy Policy →</ThemedText>
                 </Pressable>
               </View>
@@ -131,7 +131,7 @@ export default function LegalScreen() {
 
           {/* Terms of Service */}
           <View style={[styles.section, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
-            <Pressable style={styles.sectionHeader} onPress={() => toggle('terms')}>
+            <Pressable accessibilityRole="button" style={styles.sectionHeader} onPress={() => toggle('terms')}>
               <ThemedText style={[styles.sectionTitle, { color: tc.textPrimary }]}>Terms of Service</ThemedText>
               <ThemedText style={[styles.chevron, { color: tc.tactical }]}>{expanded === 'terms' ? '▲' : '▼'}</ThemedText>
             </Pressable>
@@ -156,7 +156,7 @@ export default function LegalScreen() {
                   You can manage or cancel your subscription anytime through your device&apos;s App Store or Google Play
                   account settings.
                 </ThemedText>
-                <Pressable onPress={() => Linking.openURL(TERMS_URL)} style={styles.linkBtn}>
+                <Pressable accessibilityRole="button" onPress={() => Linking.openURL(TERMS_URL)} style={styles.linkBtn}>
                   <ThemedText style={[styles.linkText, { color: tc.accent }]}>View Full Terms of Service →</ThemedText>
                 </Pressable>
               </View>
@@ -169,7 +169,7 @@ export default function LegalScreen() {
             <ThemedText style={[styles.supportBody, { color: tc.textSecondary }]}>
               For help, feedback, or questions, contact us at:
             </ThemedText>
-            <Pressable onPress={handleContact} style={styles.contactRow}>
+            <Pressable accessibilityRole="button" onPress={handleContact} style={styles.contactRow}>
               <ThemedText style={[styles.contactEmail, { color: tc.accent }]}>{SUPPORT_EMAIL}</ThemedText>
             </Pressable>
           </View>
@@ -181,7 +181,7 @@ export default function LegalScreen() {
               You may delete your account and all associated cloud data at any time. Deletion is immediate and
               permanent. Data stored only on this device is not affected — use Reset All Data in Settings to clear that separately.
             </ThemedText>
-            <Pressable onPress={handleDeleteAccount} style={styles.deleteBtn}>
+            <Pressable accessibilityRole="button" onPress={handleDeleteAccount} style={styles.deleteBtn}>
               <ThemedText style={styles.deleteBtnText}>Delete Account Now</ThemedText>
             </Pressable>
           </View>

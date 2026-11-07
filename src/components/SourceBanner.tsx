@@ -39,7 +39,7 @@ export function SourceBanner({ sources, disclaimer }: Props) {
                 {meta.text}{src.year ? ` · FY${src.year}` : ''}
               </ThemedText>
               {src.url ? (
-                <Pressable onPress={() => Linking.openURL(src.url!)} hitSlop={8}>
+                <Pressable accessibilityRole="button" onPress={() => Linking.openURL(src.url!)} hitSlop={8}>
                   <ThemedText style={[s.source, { color: tc.textSecondary }]}>{src.label} ↗</ThemedText>
                 </Pressable>
               ) : (

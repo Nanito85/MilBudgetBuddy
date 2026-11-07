@@ -54,7 +54,7 @@ export const GsPaySelector = React.memo(function GsPaySelector({ gsGrade, gsStep
                 <ThemedText style={[editStyles.fieldLabel, { color: tc.textHint }]}>GS GRADE</ThemedText>
                 <View style={editStyles.gsRow}>
                   {Array.from({ length: 15 }, (_, i) => i + 1).map((g) => (
-                    <Pressable
+                    <Pressable accessibilityRole="button"
                       key={g}
                       onPress={() => setGsGrade(g)}
                       style={[editStyles.gsChip, { borderColor: tc.borderColor, backgroundColor: tc.surface }, gsGrade === g && editStyles.gsChipActive]}>
@@ -68,7 +68,7 @@ export const GsPaySelector = React.memo(function GsPaySelector({ gsGrade, gsStep
                 <ThemedText style={[editStyles.fieldLabel, { color: tc.textHint }]}>GS STEP</ThemedText>
                 <View style={editStyles.gsRow}>
                   {Array.from({ length: 10 }, (_, i) => i + 1).map((s) => (
-                    <Pressable
+                    <Pressable accessibilityRole="button"
                       key={s}
                       onPress={() => setGsStep(s)}
                       style={[editStyles.gsChip, { borderColor: tc.borderColor, backgroundColor: tc.surface }, gsStep === s && editStyles.gsChipActive]}>
@@ -82,7 +82,7 @@ export const GsPaySelector = React.memo(function GsPaySelector({ gsGrade, gsStep
                 <ThemedText style={[editStyles.fieldLabel, { color: tc.textHint }]}>GS LOCALITY PAY AREA</ThemedText>
                 <View style={{ gap: Spacing.one }}>
                   {GS_LOCALITIES.map((loc) => (
-                    <Pressable
+                    <Pressable accessibilityRole="button"
                       key={loc.key}
                       onPress={() => setGsLocality(loc.key)}
                       style={[
@@ -157,7 +157,7 @@ export const ReserveSection = React.memo(function ReserveSection({
                     <ThemedText style={[editStyles.fieldLabel, { color: tc.textHint, marginTop: Spacing.two }]}>GUARD OR RESERVE?</ThemedText>
                     <View style={{ flexDirection: 'row', gap: Spacing.one }}>
                       {(['guard', 'reserve'] as const).map((c) => (
-                        <Pressable
+                        <Pressable accessibilityRole="button"
                           key={c}
                           onPress={() => setReserveComponentLocal(c)}
                           style={[
@@ -193,7 +193,7 @@ export const ReserveSection = React.memo(function ReserveSection({
                     )}
                     <View style={{ gap: Spacing.one }}>
                       {(['title32', 'title10', 'sad'] as const).map((s) => (
-                        <Pressable
+                        <Pressable accessibilityRole="button"
                           key={s}
                           onPress={() => setGuardDutyStatusLocal(s)}
                           style={[
@@ -239,7 +239,7 @@ export const VaDisabilitySection = React.memo(function VaDisabilitySection({ vaP
             </ThemedText>
             <View style={editStyles.gsRow}>
               {VA_PICKER_OPTIONS.map((p) => (
-                <Pressable
+                <Pressable accessibilityRole="button"
                   key={p}
                   onPress={() => setVaPercent(p)}
                   style={[editStyles.gsChip, { width: 52, borderColor: tc.borderColor, backgroundColor: tc.surface }, vaPercent === p && editStyles.gsChipActive]}>
@@ -317,7 +317,7 @@ export const RetiredPaySection = React.memo(function RetiredPaySection({
                     </ThemedText>
                     <View style={editStyles.gsRow}>
                       {[1, 0.75, 0.5, 0.25].map((pct) => (
-                        <Pressable
+                        <Pressable accessibilityRole="button"
                           key={pct}
                           onPress={() => setSbpCoveragePctLocal(pct)}
                           style={[editStyles.gsChip, { width: 60, borderColor: tc.borderColor, backgroundColor: tc.surface }, sbpCoveragePct === pct && editStyles.gsChipActive]}>
@@ -352,7 +352,7 @@ export const HousingSection = React.memo(function HousingSection({ housing, onCh
             </ThemedText>
             <View style={{ gap: Spacing.one }}>
               {HOUSING_STATUS_ORDER.map((hs) => (
-                <Pressable
+                <Pressable accessibilityRole="button"
                   key={hs}
                   onPress={() => setHousing(hs)}
                   style={[

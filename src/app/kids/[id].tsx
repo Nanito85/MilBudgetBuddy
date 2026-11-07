@@ -72,7 +72,7 @@ function AddGoalModal({ visible, accentColor, onClose, onAdd }: {
               <ThemedText style={[addGoalStyles.cancelText, { color: tc.textSecondary }]}>✕</ThemedText>
             </Pressable>
             <ThemedText style={[addGoalStyles.title, { color: accentColor }]}>🎯 NEW GOAL</ThemedText>
-            <Pressable
+            <Pressable accessibilityRole="button"
               onPress={submit}
               disabled={!isValid}
               style={[addGoalStyles.saveBtn, { backgroundColor: accentColor }, !isValid && { opacity: 0.4 }]}>
@@ -94,7 +94,7 @@ function AddGoalModal({ visible, accentColor, onClose, onAdd }: {
               style={addGoalStyles.emojiScrollWrap}
               contentContainerStyle={addGoalStyles.emojiScroll}>
               {GOAL_EMOJIS.map((e) => (
-                <Pressable
+                <Pressable accessibilityRole="button"
                   key={e}
                   onPress={() => setEmoji(e)}
                   style={[
@@ -280,7 +280,7 @@ function EditGoalModal({ visible, goal, accentColor, onClose, onSave, onDelete }
               <ThemedText style={[addGoalStyles.cancelText, { color: tc.textSecondary }]}>✕</ThemedText>
             </Pressable>
             <ThemedText style={[addGoalStyles.title, { color: accentColor }]}>✏️ EDIT GOAL</ThemedText>
-            <Pressable onPress={submit} style={[addGoalStyles.saveBtn, { backgroundColor: accentColor }]}>
+            <Pressable accessibilityRole="button" onPress={submit} style={[addGoalStyles.saveBtn, { backgroundColor: accentColor }]}>
               <ThemedText style={addGoalStyles.saveBtnText}>SAVE</ThemedText>
             </Pressable>
           </View>
@@ -298,7 +298,7 @@ function EditGoalModal({ visible, goal, accentColor, onClose, onSave, onDelete }
               style={addGoalStyles.emojiScrollWrap}
               contentContainerStyle={addGoalStyles.emojiScroll}>
               {GOAL_EMOJIS.map((e) => (
-                <Pressable
+                <Pressable accessibilityRole="button"
                   key={e}
                   onPress={() => setEmoji(e)}
                   style={[
@@ -354,7 +354,7 @@ function EditGoalModal({ visible, goal, accentColor, onClose, onSave, onDelete }
               />
             </View>
 
-            <Pressable onPress={handleDelete} style={editGoalStyles.deleteBtn}>
+            <Pressable accessibilityRole="button" onPress={handleDelete} style={editGoalStyles.deleteBtn}>
               <ThemedText style={editGoalStyles.deleteBtnText}>🗑️  DELETE THIS GOAL</ThemedText>
             </Pressable>
           </ScrollView>
@@ -413,7 +413,7 @@ function AddChoreModal({ visible, defaultFrequency, accentColor, onClose, onAdd 
               <ThemedText style={[addGoalStyles.cancelText, { color: tc.textSecondary }]}>✕</ThemedText>
             </Pressable>
             <ThemedText style={[addGoalStyles.title, { color: accentColor }]}>⚡ NEW MISSION</ThemedText>
-            <Pressable
+            <Pressable accessibilityRole="button"
               onPress={submit}
               disabled={!isValid}
               style={[addGoalStyles.saveBtn, { backgroundColor: accentColor }, !isValid && { opacity: 0.4 }]}>
@@ -430,7 +430,7 @@ function AddChoreModal({ visible, defaultFrequency, accentColor, onClose, onAdd 
             <ThemedText style={[addGoalStyles.fieldLabel, { color: tc.textSecondary }]}>FREQUENCY</ThemedText>
             <View style={choreStyles.freqRow}>
               {FREQ_OPTIONS.map((f) => (
-                <Pressable
+                <Pressable accessibilityRole="button"
                   key={f.key}
                   onPress={() => setFrequency(f.key)}
                   style={[
@@ -534,7 +534,7 @@ function EditKidModal({ visible, nickname, gender, onClose, onSave }: {
               <ThemedText style={[addGoalStyles.cancelText, { color: tc.textSecondary }]}>✕</ThemedText>
             </Pressable>
             <ThemedText style={[addGoalStyles.title, { color: theme.accent }]}>✏️ EDIT CADET</ThemedText>
-            <Pressable
+            <Pressable accessibilityRole="button"
               onPress={submit}
               disabled={!isValid}
               style={[addGoalStyles.saveBtn, { backgroundColor: theme.accent }, !isValid && { opacity: 0.4 }]}>
@@ -569,7 +569,7 @@ function EditKidModal({ visible, nickname, gender, onClose, onSave }: {
                 const gTheme = getKidTheme(g);
                 const isSelected = selectedGender === g;
                 return (
-                  <Pressable
+                  <Pressable accessibilityRole="button"
                     key={g}
                     onPress={() => setSelectedGender(g)}
                     style={[
@@ -649,10 +649,10 @@ export default function KidScreen() {
       {/* Header */}
       <SafeAreaView edges={['top']}>
         <View style={styles.header}>
-          <Pressable onPress={() => router.canGoBack() ? router.back() : router.push('/profile')} style={styles.backBtn}>
+          <Pressable accessibilityRole="button" hitSlop={8} onPress={() => router.canGoBack() ? router.back() : router.push('/profile')} style={styles.backBtn}>
             <ThemedText style={[styles.backText, { color: theme.accentLight }]}>‹ Back</ThemedText>
           </Pressable>
-          <Pressable onPress={() => setShowEditKid(true)} style={styles.headerCenter} hitSlop={8}>
+          <Pressable accessibilityRole="button" onPress={() => setShowEditKid(true)} style={styles.headerCenter} hitSlop={8}>
             <View style={[styles.headerBadge, { backgroundColor: theme.primary + '30' }]}>
               <ThemedText style={[styles.rankLabel, { color: theme.accentLight }]}>{theme.label}</ThemedText>
             </View>
@@ -683,7 +683,7 @@ export default function KidScreen() {
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <ThemedText style={[styles.sectionTitle, { color: theme.accentLight }]}>🎯 MISSION GOALS</ThemedText>
-            <Pressable
+            <Pressable accessibilityRole="button"
               onPress={() => setShowAddGoal(true)}
               style={[styles.addPill, { borderColor: theme.accent, backgroundColor: theme.accent + '15' }]}>
               <ThemedText style={[styles.addPillText, { color: theme.accent }]}>+ Add Goal</ThemedText>
@@ -691,7 +691,7 @@ export default function KidScreen() {
           </View>
 
           {kid.goals.length === 0 ? (
-            <Pressable onPress={() => setShowAddGoal(true)} style={[styles.emptyCard, { borderColor: theme.accent + '60' }]}>
+            <Pressable accessibilityRole="button" onPress={() => setShowAddGoal(true)} style={[styles.emptyCard, { borderColor: theme.accent + '60' }]}>
               <ThemedText style={styles.emptyCardEmoji}>🌟</ThemedText>
               <ThemedText style={[styles.emptyCardTitle, { color: theme.accent }]}>No goals yet!</ThemedText>
               <ThemedText style={styles.emptyCardSub}>Tap to set your first savings goal.</ThemedText>
@@ -699,7 +699,7 @@ export default function KidScreen() {
           ) : (
             <View style={styles.goalsContainer}>
               {kid.goals.map((g) => (
-                <Pressable
+                <Pressable accessibilityRole="button"
                   key={g.id}
                   onPress={() => openEditGoal(g)}
                   style={({ pressed }) => [
@@ -721,7 +721,7 @@ export default function KidScreen() {
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <ThemedText style={[styles.sectionTitle, { color: theme.accentLight }]}>⚡ DAILY MISSIONS</ThemedText>
-            <Pressable onPress={() => openAddChore('daily')} style={[styles.addPill, { borderColor: theme.accent, backgroundColor: theme.accent + '15' }]}>
+            <Pressable accessibilityRole="button" onPress={() => openAddChore('daily')} style={[styles.addPill, { borderColor: theme.accent, backgroundColor: theme.accent + '15' }]}>
               <ThemedText style={[styles.addPillText, { color: theme.accent }]}>+ Add</ThemedText>
             </Pressable>
           </View>
@@ -740,7 +740,7 @@ export default function KidScreen() {
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <ThemedText style={[styles.sectionTitle, { color: theme.accentLight }]}>📅 WEEKLY MISSIONS</ThemedText>
-            <Pressable onPress={() => openAddChore('weekly')} style={[styles.addPill, { borderColor: theme.accent, backgroundColor: theme.accent + '15' }]}>
+            <Pressable accessibilityRole="button" onPress={() => openAddChore('weekly')} style={[styles.addPill, { borderColor: theme.accent, backgroundColor: theme.accent + '15' }]}>
               <ThemedText style={[styles.addPillText, { color: theme.accent }]}>+ Add</ThemedText>
             </Pressable>
           </View>
@@ -755,7 +755,7 @@ export default function KidScreen() {
               onDelete={handleDeleteChore}
             />
           ) : (
-            <Pressable onPress={() => openAddChore('weekly')} style={[styles.freqEmptyRow, { borderColor: theme.accent + '40' }]}>
+            <Pressable accessibilityRole="button" onPress={() => openAddChore('weekly')} style={[styles.freqEmptyRow, { borderColor: theme.accent + '40' }]}>
               <ThemedText style={styles.freqEmptyIcon}>📅</ThemedText>
               <ThemedText style={styles.freqEmptyText}>Add a weekly mission</ThemedText>
               <ThemedText style={[styles.freqEmptyPlus, { color: theme.accent }]}>+</ThemedText>
@@ -767,7 +767,7 @@ export default function KidScreen() {
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <ThemedText style={[styles.sectionTitle, { color: theme.accentLight }]}>🗓️ MONTHLY MISSIONS</ThemedText>
-            <Pressable onPress={() => openAddChore('monthly')} style={[styles.addPill, { borderColor: theme.accent, backgroundColor: theme.accent + '15' }]}>
+            <Pressable accessibilityRole="button" onPress={() => openAddChore('monthly')} style={[styles.addPill, { borderColor: theme.accent, backgroundColor: theme.accent + '15' }]}>
               <ThemedText style={[styles.addPillText, { color: theme.accent }]}>+ Add</ThemedText>
             </Pressable>
           </View>
@@ -782,7 +782,7 @@ export default function KidScreen() {
               onDelete={handleDeleteChore}
             />
           ) : (
-            <Pressable onPress={() => openAddChore('monthly')} style={[styles.freqEmptyRow, { borderColor: theme.accent + '40' }]}>
+            <Pressable accessibilityRole="button" onPress={() => openAddChore('monthly')} style={[styles.freqEmptyRow, { borderColor: theme.accent + '40' }]}>
               <ThemedText style={styles.freqEmptyIcon}>🗓️</ThemedText>
               <ThemedText style={styles.freqEmptyText}>Add a monthly mission</ThemedText>
               <ThemedText style={[styles.freqEmptyPlus, { color: theme.accent }]}>+</ThemedText>
@@ -811,13 +811,13 @@ export default function KidScreen() {
           <View style={styles.sectionHeader}>
             <ThemedText style={[styles.sectionTitle, { color: theme.accentLight }]}>🎓 JUNIOR INTEL BRIEF</ThemedText>
             <View style={[styles.briefNav, { borderColor: theme.accent + '40' }]}>
-              <Pressable
+              <Pressable accessibilityRole="button"
                 onPress={() => setBriefIdx((i) => (i - 1 + KIDS_TIPS.length) % KIDS_TIPS.length)}
                 hitSlop={10}>
                 <ThemedText style={[styles.briefArrow, { color: theme.accent }]}>‹</ThemedText>
               </Pressable>
               <ThemedText style={styles.briefCounter}>{briefIdx + 1}/{KIDS_TIPS.length}</ThemedText>
-              <Pressable
+              <Pressable accessibilityRole="button"
                 onPress={() => setBriefIdx((i) => (i + 1) % KIDS_TIPS.length)}
                 hitSlop={10}>
                 <ThemedText style={[styles.briefArrow, { color: theme.accent }]}>›</ThemedText>

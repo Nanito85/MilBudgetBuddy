@@ -38,7 +38,7 @@ export function LocalityPicker({ selected, oconus, onSelect }: Props) {
 
   return (
     <>
-      <Pressable onPress={() => setOpen(true)} style={({ pressed }) => pressed && styles.pressed}>
+      <Pressable accessibilityRole="button" onPress={() => setOpen(true)} style={({ pressed }) => pressed && styles.pressed}>
         <ThemedView type="backgroundElement" style={styles.trigger}>
           <View style={styles.triggerContent}>
             <ThemedText type="small" themeColor="textSecondary" style={styles.triggerLabel}>
@@ -66,7 +66,7 @@ export function LocalityPicker({ selected, oconus, onSelect }: Props) {
         <View style={[styles.sheet, { backgroundColor: colors.background, paddingTop: insets.top, paddingBottom: insets.bottom + Spacing.three }]}>
           <View style={styles.sheetHeader}>
             <ThemedText style={styles.sheetTitle}>Select Location</ThemedText>
-            <Pressable onPress={() => { setOpen(false); setQuery(''); }}>
+            <Pressable accessibilityRole="button" onPress={() => { setOpen(false); setQuery(''); }}>
               <ThemedText style={styles.closeBtn}>Done</ThemedText>
             </Pressable>
           </View>
@@ -91,7 +91,7 @@ export function LocalityPicker({ selected, oconus, onSelect }: Props) {
             renderItem={({ item, index }) => (
               <>
                 {index > 0 && <View style={[styles.divider, { backgroundColor: colors.backgroundElement }]} />}
-                <Pressable
+                <Pressable accessibilityRole="button"
                   onPress={() => handleSelect(item)}
                   style={({ pressed }) => [styles.row, pressed && { opacity: 0.6 }]}>
                   <View style={styles.rowMain}>

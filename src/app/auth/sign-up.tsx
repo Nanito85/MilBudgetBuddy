@@ -70,7 +70,7 @@ export default function SignUpScreen() {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}>
 
-          <Pressable onPress={() => router.back()} style={styles.backBtn}>
+          <Pressable accessibilityRole="button" hitSlop={8} onPress={() => router.back()} style={styles.backBtn}>
             <ThemedText style={[styles.backText, { color: tc.tactical }]}>‹ Back</ThemedText>
           </Pressable>
 
@@ -116,7 +116,7 @@ export default function SignUpScreen() {
                   returnKeyType="next"
                   style={[styles.inputFlex, { color: tc.textPrimary }]}
                 />
-                <Pressable onPress={() => setShowPassword((v) => !v)} style={styles.eyeBtn} hitSlop={8}>
+                <Pressable accessibilityRole="button" onPress={() => setShowPassword((v) => !v)} style={styles.eyeBtn} hitSlop={8}>
                   <Ionicons name={showPassword ? 'eye-off-outline' : 'eye-outline'} size={20} color={tc.textHint} />
                 </Pressable>
               </View>
@@ -135,13 +135,13 @@ export default function SignUpScreen() {
                   onSubmitEditing={handleSignUp}
                   style={[styles.inputFlex, { color: tc.textPrimary }]}
                 />
-                <Pressable onPress={() => setShowConfirm((v) => !v)} style={styles.eyeBtn} hitSlop={8}>
+                <Pressable accessibilityRole="button" onPress={() => setShowConfirm((v) => !v)} style={styles.eyeBtn} hitSlop={8}>
                   <Ionicons name={showConfirm ? 'eye-off-outline' : 'eye-outline'} size={20} color={tc.textHint} />
                 </Pressable>
               </View>
             </View>
 
-            <Pressable
+            <Pressable accessibilityRole="button"
               onPress={handleSignUp}
               disabled={!canSubmit}
               style={({ pressed }) => [styles.btn, !canSubmit && { opacity: 0.5 }, pressed && { opacity: 0.7 }]}>
@@ -159,7 +159,7 @@ export default function SignUpScreen() {
 
           <View style={styles.footer}>
             <ThemedText style={[styles.footerText, { color: tc.textSecondary }]}>Already have an account?</ThemedText>
-            <Pressable onPress={() => router.push('/auth/sign-in' as any)}>
+            <Pressable accessibilityRole="button" onPress={() => router.push('/auth/sign-in' as any)}>
               <ThemedText style={[styles.footerLink, { color: tc.tactical }]}>Sign in →</ThemedText>
             </Pressable>
           </View>

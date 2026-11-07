@@ -49,7 +49,7 @@ export function StationPicker({ label, selected, onSelect, conusOnly = false }: 
 
   return (
     <>
-      <Pressable onPress={() => setOpen(true)} style={({ pressed }) => pressed && styles.pressed}>
+      <Pressable accessibilityRole="button" onPress={() => setOpen(true)} style={({ pressed }) => pressed && styles.pressed}>
         <ThemedView type="backgroundElement" style={styles.trigger}>
           <View style={styles.triggerContent}>
             <ThemedText type="small" themeColor="textSecondary" style={styles.triggerLabel}>
@@ -77,7 +77,7 @@ export function StationPicker({ label, selected, onSelect, conusOnly = false }: 
         <View style={[styles.sheet, { backgroundColor: colors.background, paddingTop: insets.top, paddingBottom: insets.bottom + Spacing.three }]}>
           <View style={styles.sheetHeader}>
             <ThemedText style={styles.sheetTitle}>{label}</ThemedText>
-            <Pressable onPress={() => { setOpen(false); setQuery(''); }}>
+            <Pressable accessibilityRole="button" onPress={() => { setOpen(false); setQuery(''); }}>
               <ThemedText style={styles.closeBtn}>Done</ThemedText>
             </Pressable>
           </View>
@@ -98,7 +98,7 @@ export function StationPicker({ label, selected, onSelect, conusOnly = false }: 
           )}
 
           {!zipMode && (
-            <Pressable onPress={() => setZipMode(true)} style={styles.zipToggle}>
+            <Pressable accessibilityRole="button" onPress={() => setZipMode(true)} style={styles.zipToggle}>
               <ThemedText style={[styles.zipToggleText, { color: tc.tactical }]}>
                 Can&apos;t find your duty station? Enter your ZIP code
               </ThemedText>
@@ -125,7 +125,7 @@ export function StationPicker({ label, selected, onSelect, conusOnly = false }: 
                 approximate BAH based on the nearest covered rate area, not your exact ZIP.
               </ThemedText>
               {zipMatch && (
-                <Pressable
+                <Pressable accessibilityRole="button"
                   onPress={() => handleSelect(zipMatch)}
                   style={({ pressed }) => [styles.row, styles.zipResultRow, pressed && { opacity: 0.6 }]}>
                   <View style={styles.rowMain}>
@@ -141,7 +141,7 @@ export function StationPicker({ label, selected, onSelect, conusOnly = false }: 
                   Couldn&apos;t match that ZIP to a state — try searching by installation or city instead.
                 </ThemedText>
               )}
-              <Pressable onPress={() => { setZipMode(false); setZipQuery(''); }} style={styles.zipBack}>
+              <Pressable accessibilityRole="button" onPress={() => { setZipMode(false); setZipQuery(''); }} style={styles.zipBack}>
                 <ThemedText style={[styles.zipToggleText, { color: colors.textSecondary }]}>
                   ‹ Back to search
                 </ThemedText>
@@ -157,7 +157,7 @@ export function StationPicker({ label, selected, onSelect, conusOnly = false }: 
               renderItem={({ item, index }) => (
                 <>
                   {index > 0 && <View style={[styles.divider, { backgroundColor: colors.backgroundElement }]} />}
-                  <Pressable
+                  <Pressable accessibilityRole="button"
                     onPress={() => handleSelect(item)}
                     style={({ pressed }) => [styles.row, pressed && { opacity: 0.6 }]}>
                     <View style={styles.rowMain}>

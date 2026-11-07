@@ -164,7 +164,7 @@ export function TutorialModal({ visible, onDismiss }: TutorialModalProps) {
             <ThemedText style={[styles.headerTag, { color: currentAccent }]}>
               {'// ORIENTATION'}
             </ThemedText>
-            <Pressable onPress={skip} hitSlop={12}>
+            <Pressable accessibilityRole="button" onPress={skip} hitSlop={12}>
               <ThemedText style={[styles.skipText, { color: tc.textMuted }]}>SKIP ✕</ThemedText>
             </Pressable>
           </View>
@@ -214,7 +214,7 @@ export function TutorialModal({ visible, onDismiss }: TutorialModalProps) {
           </View>
 
           {/* CTA */}
-          <Pressable
+          <Pressable accessibilityRole="button"
             onPress={goNext}
             style={({ pressed }) => [
               styles.cta,
