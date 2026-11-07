@@ -109,21 +109,34 @@ export async function deleteCloudData(uid: string, opts: { keepEntitlement?: boo
 
 // ── Write helpers ─────────────────────────────────────────────────────────────
 
+type DocWriter = (ref: ReturnType<typeof userDoc>, data: Record<string, unknown>) => Promise<unknown>;
+
+function pushAll(uid: string, write: DocWriter) {
+  return Promise.all([
+    write(userDoc(uid, 'profile'),     { ...snapshotUser() }),
+    write(userDoc(uid, 'budget'),      { categories: useBudgetStore.getState().categories }),
+    write(userDoc(uid, 'debt'),        { debts: useDebtStore.getState().debts, extraMonthly: useDebtStore.getState().extraMonthly }),
+    write(userDoc(uid, 'expenses'),    { expenses: useExpensesStore.getState().expenses }),
+    write(userDoc(uid, 'kids'),        { kids: useKidsStore.getState().kids }),
+    write(userDoc(uid, 'goals'),       { goals: useSavingsGoalsStore.getState().goals }),
+    write(userDoc(uid, 'networth'),    { entries: useNetWorthStore.getState().entries }),
+    write(userDoc(uid, 'nwSnapshots'), { snapshots: useNwSnapshotsStore.getState().snapshots }),
+    write(userDoc(uid, 'lifeEvents'),  { events: useLifeEventsStore.getState().events }),
+    write(userDoc(uid, 'tips'),        { savedTipIds: useTipsStore.getState().savedTipIds }),
+    write(userDoc(uid, 'vaClaims'),    { claims: useVaClaimsStore.getState().claims }),
+  ]);
+}
+
+// Fire-and-forget style: failures are reported to Sentry but never thrown.
 export async function pushToCloud(uid: string) {
-  const writes = [
-    safeSetDoc(userDoc(uid, 'profile'),     { ...snapshotUser() }),
-    safeSetDoc(userDoc(uid, 'budget'),      { categories: useBudgetStore.getState().categories }),
-    safeSetDoc(userDoc(uid, 'debt'),        { debts: useDebtStore.getState().debts, extraMonthly: useDebtStore.getState().extraMonthly }),
-    safeSetDoc(userDoc(uid, 'expenses'),    { expenses: useExpensesStore.getState().expenses }),
-    safeSetDoc(userDoc(uid, 'kids'),        { kids: useKidsStore.getState().kids }),
-    safeSetDoc(userDoc(uid, 'goals'),       { goals: useSavingsGoalsStore.getState().goals }),
-    safeSetDoc(userDoc(uid, 'networth'),    { entries: useNetWorthStore.getState().entries }),
-    safeSetDoc(userDoc(uid, 'nwSnapshots'), { snapshots: useNwSnapshotsStore.getState().snapshots }),
-    safeSetDoc(userDoc(uid, 'lifeEvents'),  { events: useLifeEventsStore.getState().events }),
-    safeSetDoc(userDoc(uid, 'tips'),        { savedTipIds: useTipsStore.getState().savedTipIds }),
-    safeSetDoc(userDoc(uid, 'vaClaims'),    { claims: useVaClaimsStore.getState().claims }),
-  ];
-  await Promise.all(writes);
+  await pushAll(uid, safeSetDoc);
+}
+
+// For flows that must KNOW the backup landed (sign-out wipes the device after it):
+// rejects if any document is refused (rules denial, document over 1 MiB, etc.).
+// safeSetDoc swallows those, which let a failed backup look like a successful one.
+export async function pushToCloudStrict(uid: string) {
+  await pushAll(uid, (ref, data) => setDoc(ref, stripUndefined(data), { merge: true }));
 }
 
 // ── Pull from cloud (first login on new device) ───────────────────────────────
@@ -131,6 +144,15 @@ export async function pushToCloud(uid: string) {
 export async function pullFromCloud(uid: string): Promise<boolean> {
   const snap = await getDoc(userDoc(uid, 'profile'));
   if (!snap.exists()) return false; // No cloud data yet — first-ever login
+  // The backend creates this doc with ONLY proExpiresAt/proSource when a purchase is verified.
+  // Someone who buys first and creates an account later has that doc but no real data in the
+  // cloud, and treating it as "has data" skipped the first upload of their budget, debts and
+  // kids. Take the Pro fields, but report "no cloud data" so the caller pushes local data up.
+  const hasUserData = Object.keys(snap.data() ?? {}).some((k) => k !== 'proExpiresAt' && k !== 'proSource');
+  if (!hasUserData) {
+    applyUser(snap.data());
+    return false;
+  }
 
   const [profile, budget, debt, expenses, kids, goals, networth, nwSnapshots, lifeEvents, tips, vaClaims] = await Promise.all([
     getDoc(userDoc(uid, 'profile')),

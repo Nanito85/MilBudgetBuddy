@@ -63,6 +63,9 @@ export default function RootLayout() {
   // whole store, so every loading/error toggle during sign-in/sign-up also
   // re-rendered the entire app shell.
   const user = useAuthStore((s) => s.user);
+  // linkWithCredential keeps the SAME User object, so `user` alone never changes when an anonymous
+  // session becomes a real account; this primitive does, which is what starts cloud sync.
+  const isAnonymous = useAuthStore((s) => s.user?.isAnonymous);
   const initialized = useAuthStore((s) => s.initialized);
   const initAuth = useAuthStore((s) => s.init);
 
@@ -139,7 +142,7 @@ export default function RootLayout() {
       setUserContext(null);
       stopSync();
     }
-  }, [user, initialized]);
+  }, [user, isAnonymous, initialized]);
 
   // Not yet resolved — show nothing while Firebase checks session
   if (!initialized || !hydrated) return null;

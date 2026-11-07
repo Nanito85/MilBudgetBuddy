@@ -15,7 +15,7 @@ import { calcLES, fersContributionRate, getDrillPay, retiredPayMultiplier } from
 import { calcRetirement } from '@/features/retirement/utils/retirementCalc';
 import { calcTspProjection } from '@/features/tsp/utils/tspCalc';
 import { estimateAnnualFedTax, ficaMonthly } from '@/data/federal-tax';
-import { getApproxInstallationForZip } from '@/data/installations';
+import { getApproxInstallationForZip, getInstallationById } from '@/data/installations';
 import { calcDITY } from '@/features/dity/utils/dityCalc';
 import { calcPayoff } from '@/features/debt/utils/debtCalc';
 import { localISODate, monthKeyLabel } from '@/utils/formatDate';
@@ -779,6 +779,14 @@ assertEqual(getOconusCola('Yokota AB / Tokyo Area', 'E9', 40, true), getOconusCo
 }
 assertEqual(monthKeyLabel('2026-11'), 'November 2026', 'Month label is built from local parts, not UTC');
 assertEqual(localISODate(new Date(2026, 10, 30, 23, 30)), '2026-11-30', 'Local date at 11:30 PM stays the same day (not tomorrow in UTC)');
+
+// ── Audit round 4 (2026-11-07) ────────────────────────────────────────────────
+{
+  const pd = (id: string) => getStationPerDiem(getInstallationById(id)!);
+  assertEqual(pd('vicenza').total, 364, 'Per diem: Vicenza uses its own rate ($364), not the Aviano rate');
+  assertEqual(pd('sasebo').total, 252, 'Per diem: Sasebo uses its own rate ($252), not the Yokosuka rate');
+  assertTrue(pd('kunsan').matched === false, 'Per diem: a base with no entry of its own is flagged as approximate');
+}
 
 // ── Summary ────────────────────────────────────────────────────────────────────
 console.log(`\n${pass} passed, ${fail} failed`);

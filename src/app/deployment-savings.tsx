@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Brand, Spacing } from '@/constants/theme';
+import { estimateAnnualFedTax, ficaMonthly } from '@/data/federal-tax';
 import { useThemeColors } from '@/hooks/use-theme';
 import { useUserStore } from '@/store/user.store';
 
@@ -69,19 +70,29 @@ export default function DeploymentSavingsScreen() {
   const specialPaysTotal = useUserStore((s) => s.specialPays).reduce((s, p) => s + p.monthlyAmount, 0);
 
   const idpMonthly  = idp ? IDP_MONTHLY : 0;
-  const taxSavings  = czte ? basePay * 0.20 : 0; // rough estimate: ~20% effective rate
-
   const deployIncome  = basePay + idpMonthly + specialPaysTotal;
   const deployExpenses = homeCosts;
-  const deployMonthlySavings = deployIncome - deployExpenses;
+
+  // Take-home math, so deployment and home are compared on the same footing.
+  // Federal income tax is estimated with the app's own bracket function (single filer). In a combat
+  // zone, basic pay and IDP are excluded from income tax (enlisted; officers have a cap this screen
+  // does not model), FICA is still withheld.
+  const monthlyFedTax = (gross: number) => estimateAnnualFedTax(gross * 12, false, 0) / 12;
+  const taxDeployed = czte ? 0 : monthlyFedTax(deployIncome);
+  const taxSavings  = czte ? monthlyFedTax(deployIncome) : 0; // tax avoided vs. paying on the same income
+  const fica = ficaMonthly(deployIncome);
+
+  const deployMonthlySavings = deployIncome - taxDeployed - fica - deployExpenses;
   const totalSavings = deployMonthlySavings * months;
 
-  // SDP: can deposit up to $10K during deployment, earns 10% annual
-  // annualized at months/12 of deployment
-  const sdpPrincipal = Math.min(10000, totalSavings);
+  // SDP: only available while deployed to a combat zone; up to $10K deposited, 10% annual,
+  // for months/12 of the deployment. Never negative (no deposit if there is no surplus).
+  const sdpPrincipal = czte ? Math.max(0, Math.min(10000, totalSavings)) : 0;
   const sdpInterest  = sdpPrincipal * SDP_RATE * (months / 12);
 
-  const totalWithSdp = totalSavings + sdpInterest + taxSavings * months;
+  // taxSavings is already inside totalSavings (deployMonthlySavings has no tax in a combat zone);
+  // it is shown only to explain where part of the surplus comes from.
+  const totalWithSdp = totalSavings + sdpInterest;
   const goalPct = goal > 0 ? Math.min(1, totalWithSdp / goal) : 0;
 
   return (
@@ -117,7 +128,7 @@ export default function DeploymentSavingsScreen() {
             <View style={styles.toggleInfo}>
               <ThemedText style={[styles.toggleTitle, { color: tc.textPrimary }]}>Combat Zone (CZTE)</ThemedText>
               <ThemedText style={[styles.toggleDesc, { color: tc.textHint }]}>
-                All military pay is excluded from federal income tax while in a designated CZTE.
+                Your basic pay and imminent danger pay are excluded from federal income tax in a designated combat zone (officers have a cap). FICA still applies.
               </ThemedText>
             </View>
             <Switch
@@ -158,7 +169,7 @@ export default function DeploymentSavingsScreen() {
           <Row label="Base pay" value={fmt(basePay)} />
           {idp && <Row label="IDP / Hostile Fire Pay" value={fmt(IDP_MONTHLY)} color={Brand.success} />}
           {specialPaysTotal > 0 && <Row label="Special pays (from profile)" value={fmt(specialPaysTotal)} />}
-          {czte && <Row label="Tax savings est. (CZTE)" value={fmt(taxSavings)} color={Brand.success} sub="~20% of base pay not withheld" />}
+          {czte && <Row label="Federal tax avoided (CZTE)" value={fmt(taxSavings)} color={Brand.success} sub="estimated, already counted in your surplus" />}
           <View style={[styles.divider, { backgroundColor: tc.borderColor }]} />
           <Row label="Monthly expenses" value={`−${fmt(homeCosts)}`} />
           <Row
@@ -179,7 +190,7 @@ export default function DeploymentSavingsScreen() {
           </View>
 
           <Row label="Base savings (surplus × months)" value={fmt(totalSavings)} />
-          {czte && <Row label="Tax savings (CZTE)" value={fmt(taxSavings * months)} color={Brand.success} />}
+          {czte && <Row label="Of which federal tax avoided (CZTE)" value={fmt(taxSavings * months)} color={Brand.success} />}
           <Row
             label="SDP interest earned"
             value={fmt(sdpInterest)}

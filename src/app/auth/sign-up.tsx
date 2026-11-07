@@ -34,7 +34,7 @@ export default function SignUpScreen() {
   // rendered.
   useEffect(() => {
     if (user && !user.isAnonymous) router.replace('/');
-  }, [user]);
+  }, [user, user?.isAnonymous]);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');

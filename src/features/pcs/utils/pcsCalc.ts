@@ -35,6 +35,12 @@ function countryMatches(instState: string, locCountry: string): boolean {
 const PERDIEM_ID_OVERRIDE: Record<string, string> = {
   torii_station: 'oc_kadena',
   white_beach: 'oc_kadena',
+  // These shared no word with their own entry, so the generic match picked another base's rate:
+  // Vicenza matched Aviano ($206 instead of $364) and Sasebo matched Yokosuka ($317 instead of $252).
+  vicenza: 'oc_vicenza',
+  sasebo: 'oc_sasebo',
+  // Camp Carroll (Waegwan) has no entry of its own; Daegu is the nearest listed locality.
+  camp_carroll: 'oc_daegu',
 };
 
 export interface StationPerDiem {
@@ -95,7 +101,15 @@ export function getStationPerDiem(inst: Installation): StationPerDiem {
     }
     // best is guaranteed non-null since countryCandidates is non-empty; a same-country match
     // (even a generic "[Other]"-style one) beats falling back to an unrelated CONUS placeholder.
-    return { total: best!.loc.total, lodging: best!.loc.lodging, meals: best!.loc.meals, oconus: true, matched: true, label: best!.loc.name };
+    // A score of 0 means no word of the installation's name appears in the entry, so it is only the
+    // first listing for the country (e.g. Kunsan got Camp Humphreys' rate): say so instead of
+    // presenting it as this base's own rate.
+    const exact = best!.score > 0;
+    return {
+      total: best!.loc.total, lodging: best!.loc.lodging, meals: best!.loc.meals, oconus: true,
+      matched: exact,
+      label: exact ? best!.loc.name : `${best!.loc.country} - nearest listed: ${best!.loc.name}`,
+    };
   }
   return { total: STANDARD_TOTAL, lodging: STANDARD_LODGING, meals: STANDARD_MEALS, oconus: true, matched: false, label: 'Unmatched — placeholder rate' };
 }
