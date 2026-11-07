@@ -811,13 +811,13 @@ export default function KidScreen() {
           <View style={styles.sectionHeader}>
             <ThemedText style={[styles.sectionTitle, { color: theme.accentLight }]}>🎓 JUNIOR INTEL BRIEF</ThemedText>
             <View style={[styles.briefNav, { borderColor: theme.accent + '40' }]}>
-              <Pressable accessibilityRole="button"
+              <Pressable accessibilityLabel="Go back" accessibilityRole="button"
                 onPress={() => setBriefIdx((i) => (i - 1 + KIDS_TIPS.length) % KIDS_TIPS.length)}
                 hitSlop={10}>
                 <ThemedText style={[styles.briefArrow, { color: theme.accent }]}>‹</ThemedText>
               </Pressable>
               <ThemedText style={styles.briefCounter}>{briefIdx + 1}/{KIDS_TIPS.length}</ThemedText>
-              <Pressable accessibilityRole="button"
+              <Pressable accessibilityLabel="Next" accessibilityRole="button"
                 onPress={() => setBriefIdx((i) => (i + 1) % KIDS_TIPS.length)}
                 hitSlop={10}>
                 <ThemedText style={[styles.briefArrow, { color: theme.accent }]}>›</ThemedText>

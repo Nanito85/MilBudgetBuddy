@@ -177,7 +177,8 @@ function ClaimFormModal({
       examDate: examDate || undefined,
       decisionDate: decisionDate || undefined,
       effectiveDate: initial?.effectiveDate,
-      ratingAwarded: isNaN(rating) ? undefined : rating,
+      // A VA rating is a whole percent from 0 to 100 (it used to accept 150 or 3000).
+      ratingAwarded: isNaN(rating) ? undefined : Math.min(100, Math.max(0, Math.round(rating))),
       notes: notes.trim() || undefined,
     });
     onClose();

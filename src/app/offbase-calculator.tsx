@@ -55,6 +55,7 @@ export default function OffbaseCalculatorScreen() {
 
   const storedGrade = useUserStore((s) => s.payGrade);
   const storedZip   = useUserStore((s) => s.mhaZip);
+  const profileHasDependents = useUserStore((s) => s.hasSpouse || s.numChildren > 0);
 
   const [grade,    setGrade]    = useState<PayGrade>(storedGrade ?? 'E4');
   const [zip,      setZip]      = useState(storedZip ?? '');
@@ -73,7 +74,7 @@ export default function OffbaseCalculatorScreen() {
   );
   const hasSearch = locSearch.trim().length > 0;
 
-  const bah = useMemo(() => (zip ? getBahRate(zip, grade, false) ?? 0 : 0), [zip, grade]);
+  const bah = useMemo(() => (zip ? getBahRate(zip, grade, profileHasDependents) ?? 0 : 0), [zip, grade, profileHasDependents]);
 
   const offbaseMonthlyCost = rent + utils + commute;
   const offbaseNet = bah - offbaseMonthlyCost;
@@ -96,11 +97,11 @@ export default function OffbaseCalculatorScreen() {
       <View style={styles.stepperRow}>
         <ThemedText style={[styles.stepperLabel, { color: tc.textSecondary }]}>{label}</ThemedText>
         <View style={styles.stepperControls}>
-          <Pressable accessibilityRole="button" hitSlop={8} style={[styles.stepBtn, { backgroundColor: tc.background, borderColor: tc.borderColor }]} onPress={() => onChange(Math.max(min, value - step))}>
+          <Pressable accessibilityLabel="Decrease" accessibilityRole="button" hitSlop={8} style={[styles.stepBtn, { backgroundColor: tc.background, borderColor: tc.borderColor }]} onPress={() => onChange(Math.max(min, value - step))}>
             <ThemedText style={[styles.stepBtnText, { color: tc.tactical }]}>−</ThemedText>
           </Pressable>
           <ThemedText style={[styles.stepperValue, { color: tc.textPrimary }]}>{fmt(value)}</ThemedText>
-          <Pressable accessibilityRole="button" hitSlop={8} style={[styles.stepBtn, { backgroundColor: tc.background, borderColor: tc.borderColor }]} onPress={() => onChange(Math.min(max, value + step))}>
+          <Pressable accessibilityLabel="Increase" accessibilityRole="button" hitSlop={8} style={[styles.stepBtn, { backgroundColor: tc.background, borderColor: tc.borderColor }]} onPress={() => onChange(Math.min(max, value + step))}>
             <ThemedText style={[styles.stepBtnText, { color: tc.tactical }]}>+</ThemedText>
           </Pressable>
         </View>
@@ -319,7 +320,7 @@ export default function OffbaseCalculatorScreen() {
             'E4: Request a BAH waiver from your unit commander if housing is unavailable on-post.',
             'E5+: You are entitled to BAH without dependents. Move off-base to start building housing equity.',
             'Roommate strategy: Split a 2BR apartment with another SM — each gets full BAH, costs cut in half.',
-            'Utility allowance: Your BAH "without dependents" rate factors in average utility costs. Undercut utilities to pocket more.',
+            'Utility allowance: Your BAH rate factors in average utility costs. Undercut utilities to pocket more.',
             'Renter\'s insurance: ~$15/mo — worth it. Barracks theft is not automatically covered by the military.',
           ].map((tip, i) => (
             <View key={i} style={styles.tipRow}>

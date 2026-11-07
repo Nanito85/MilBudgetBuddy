@@ -116,7 +116,10 @@ export default function SbpCalculatorScreen() {
   // Without this cap, a retiree who retires young at 38-45 (this screen's
   // own age-input range) and lives to 78 would be charged 33-40 years of
   // premiums here while every other card on this same screen assumes 30.
-  const premiumYears = Math.min(Math.max(0, estRetireeDeathAge - retireeAge), 30);
+  // SBP is paid up only when BOTH 30 years (360 months) of premiums are paid AND the retiree is 70, so
+  // someone who retires young pays until 70 (e.g. retiring at 38 means 32 years, not 30).
+  const premiumYearsOwed = Math.max(30, 70 - retireeAge);
+  const premiumYears = Math.min(Math.max(0, estRetireeDeathAge - retireeAge), premiumYearsOwed);
   const estPremiumTotal = result.annualPremium * premiumYears;
   const estNetBenefit = estAnnuityTotal - estPremiumTotal;
 

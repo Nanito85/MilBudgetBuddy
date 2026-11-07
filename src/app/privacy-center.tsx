@@ -85,7 +85,7 @@ export default function PrivacyCenterScreen() {
 
         <Section title="YOUR RIGHTS">
           <Row icon="📤" label="Export Your Data" value="Your data lives on your device (and your own cloud account if signed in) — access it directly in the app or use the Financial Readiness Worksheet to export." />
-          <Row icon="🗑️" label="Delete Your Data" value="Delete Account (Settings → Account) permanently removes your synced cloud data. Analytics, purchase records and feedback are kept separately — email milbudgetbuddy@proton.me to remove those too. Local data can be cleared via Settings → Reset All Data." />
+          <Row icon="🗑️" label="Delete Your Data" value="Delete Account (Settings → Account) permanently removes your synced cloud data, your account, and the usage analytics, feedback and subscription-claim records the app stored under it. Apple and Google keep their own purchase records, and deleting your account does not cancel a subscription: cancel in the App Store or Google Play first. Email milbudgetbuddy@proton.me with any questions. Local data can be cleared via Settings → Reset All Data." />
           <Row icon="👁️" label="Data Transparency" value="You can view all stored data at any time in the app — profile, budget, expenses, goals." />
         </Section>
 

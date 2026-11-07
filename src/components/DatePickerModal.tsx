@@ -216,7 +216,7 @@ export function DatePickerModal({
             <>
               {/* Month / Year navigation */}
               <View style={s.navRow}>
-                <Pressable accessibilityRole="button"
+                <Pressable accessibilityLabel="Go back" accessibilityRole="button"
                   onPress={prevMonth}
                   disabled={!canGoPrev}
                   hitSlop={12}
@@ -232,7 +232,7 @@ export function DatePickerModal({
                   <ThemedText style={[s.navLabelChevron, { color: tc.tactical }]}>▾</ThemedText>
                 </Pressable>
 
-                <Pressable accessibilityRole="button"
+                <Pressable accessibilityLabel="Next" accessibilityRole="button"
                   onPress={nextMonth}
                   disabled={!canGoNext}
                   hitSlop={12}

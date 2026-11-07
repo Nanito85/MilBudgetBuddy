@@ -595,7 +595,7 @@ function ServiceInfoStep({
           </ThemedText>
           <ThemedText style={styles.dateIcon}>📅</ThemedText>
         </Pressable>
-        {enlistDate && (
+        {!!enlistDate && (
           <ThemedText style={[styles.dateHint, { color: tc.tactical }]}>↳ {yearsAgo(enlistDate)} years of service</ThemedText>
         )}
       </View>
@@ -611,7 +611,7 @@ function ServiceInfoStep({
           </ThemedText>
           <ThemedText style={styles.dateIcon}>📅</ThemedText>
         </Pressable>
-        {rankDate && (
+        {!!rankDate && (
           <ThemedText style={[styles.dateHint, { color: tc.tactical }]}>↳ {yearsAgo(rankDate)} years in grade</ThemedText>
         )}
       </View>
@@ -860,7 +860,7 @@ function CivilianServiceInfoStep({
           </ThemedText>
           <ThemedText style={styles.dateIcon}>📅</ThemedText>
         </Pressable>
-        {startDate && (
+        {!!startDate && (
           <ThemedText style={[styles.dateHint, { color: tc.tactical }]}>
             ↳ {yearsAgo(startDate)} years of federal service
           </ThemedText>
@@ -1039,7 +1039,7 @@ function RetiredServiceInfoStep({
       {/* Years of Service at Retirement — drives the retired-pay % shown on Home */}
       <View style={styles.fieldBlock}>
         <NumberStepper
-          label={enlistDate && retirementDate ? 'Years of Service at Retirement (auto-calculated — override if needed)' : 'Years of Service at Retirement'}
+          label={!!enlistDate && retirementDate ? 'Years of Service at Retirement (auto-calculated — override if needed)' : 'Years of Service at Retirement'}
           value={yos}
           min={0}
           max={40}
@@ -1324,6 +1324,11 @@ function NotificationsStep({ onFinish }: { onFinish: () => void }) {
   const notificationHour            = useUserStore((s) => s.notificationHour);
   const notificationMinute          = useUserStore((s) => s.notificationMinute);
   const serviceStatus                = useUserStore((s) => s.serviceStatus);
+  // Onboarding never asked for a TSP percent, so everyone's take-home silently assumed 0%. A retiree has no
+  // payroll TSP, so it is skipped for them.
+  const storedTsp                    = useUserStore((s) => s.tspContribPct);
+  const updateProfile                = useUserStore((s) => s.updateProfile);
+  const showTsp                      = serviceStatus !== 'retired';
 
   const handleToggle = async (value: boolean) => {
     setEnabled(value);
@@ -1363,6 +1368,26 @@ function NotificationsStep({ onFinish }: { onFinish: () => void }) {
             thumbColor="#FFFFFF"
           />
         </ThemedView>
+        {showTsp && (
+          <ThemedView type="backgroundElement" style={[styles.toggleRow, { flexDirection: 'column', alignItems: 'flex-start', gap: 8 }]}>
+            <View>
+              <ThemedText style={styles.toggleLabel}>TSP contribution</ThemedText>
+              <ThemedText type="small" themeColor="textSecondary">% of base pay you put in the Thrift Savings Plan (0 if none). You can change it any time in Profile.</ThemedText>
+            </View>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
+              {[0, 1, 3, 5, 10, 15].map((p) => (
+                <Pressable
+                  key={p}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: (storedTsp ?? 0) === p }}
+                  onPress={() => updateProfile({ tspContribPct: p })}
+                  style={[styles.gradeChip, { width: undefined, minWidth: 0, paddingHorizontal: 12 }, (storedTsp ?? 0) === p && styles.gradeChipActive]}>
+                  <ThemedText style={[styles.gradeChipText, (storedTsp ?? 0) === p && styles.gradeChipTextActive]}>{p}%</ThemedText>
+                </Pressable>
+              ))}
+            </View>
+          </ThemedView>
+        )}
       </View>
       <View style={styles.btnGroup}>
         <Pressable accessibilityRole="button"

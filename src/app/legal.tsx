@@ -181,9 +181,16 @@ export default function LegalScreen() {
               You may delete your account and all associated cloud data at any time. Deletion is immediate and
               permanent. Data stored only on this device is not affected — use Reset All Data in Settings to clear that separately.
             </ThemedText>
-            <Pressable accessibilityRole="button" onPress={handleDeleteAccount} style={styles.deleteBtn}>
-              <ThemedText style={styles.deleteBtnText}>Delete Account Now</ThemedText>
-            </Pressable>
+            {/* Only for a signed-in member: signed out, the button could only answer "Not signed in". */}
+            {user && !user.isAnonymous ? (
+              <Pressable accessibilityRole="button" onPress={handleDeleteAccount} style={styles.deleteBtn}>
+                <ThemedText style={styles.deleteBtnText}>Delete Account Now</ThemedText>
+              </Pressable>
+            ) : (
+              <ThemedText type="small" themeColor="textSecondary" style={styles.supportBody}>
+                Sign in from Settings to delete your account. Without an account there is nothing stored in the cloud to delete.
+              </ThemedText>
+            )}
           </View>
 
           <ThemedText style={[styles.footer, { color: tc.textMuted }]}>

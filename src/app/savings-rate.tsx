@@ -40,11 +40,11 @@ function Stepper({ label, value, step, min, max, onChange }: {
     <View style={styles.stepperRow}>
       <ThemedText style={[styles.stepperLabel, { color: tc.textSecondary }]}>{label}</ThemedText>
       <View style={styles.stepperControls}>
-        <Pressable accessibilityRole="button" hitSlop={8} style={[styles.stepBtn, { borderColor: tc.borderColor, backgroundColor: tc.background }]} onPress={() => onChange(Math.max(min, value - step))}>
+        <Pressable accessibilityLabel="Decrease" accessibilityRole="button" hitSlop={8} style={[styles.stepBtn, { borderColor: tc.borderColor, backgroundColor: tc.background }]} onPress={() => onChange(Math.max(min, value - step))}>
           <ThemedText style={[styles.stepBtnText, { color: tc.tactical }]}>−</ThemedText>
         </Pressable>
         <ThemedText style={[styles.stepperValue, { color: tc.textPrimary }]}>{fmt(value)}</ThemedText>
-        <Pressable accessibilityRole="button" hitSlop={8} style={[styles.stepBtn, { borderColor: tc.borderColor, backgroundColor: tc.background }]} onPress={() => onChange(Math.min(max, value + step))}>
+        <Pressable accessibilityLabel="Increase" accessibilityRole="button" hitSlop={8} style={[styles.stepBtn, { borderColor: tc.borderColor, backgroundColor: tc.background }]} onPress={() => onChange(Math.min(max, value + step))}>
           <ThemedText style={[styles.stepBtnText, { color: tc.tactical }]}>+</ThemedText>
         </Pressable>
       </View>

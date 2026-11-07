@@ -88,13 +88,13 @@ export function FamilyComposer({ hasSpouse, childAges, onSpouseChange, onChildAg
             </View>
             <View style={styles.childRight}>
               <View style={styles.ageCtrl}>
-                <Pressable accessibilityRole="button"
+                <Pressable accessibilityLabel="Decrease" accessibilityRole="button"
                   onPress={() => updateAge(idx, Math.max(0, age - 1))}
                   style={styles.ageBtn}>
                   <ThemedText style={styles.ageBtnTxt}>−</ThemedText>
                 </Pressable>
                 <ThemedText style={styles.ageVal}>{age} yrs</ThemedText>
-                <Pressable accessibilityRole="button"
+                <Pressable accessibilityLabel="Increase" accessibilityRole="button"
                   onPress={() => updateAge(idx, Math.min(17, age + 1))}
                   style={styles.ageBtn}>
                   <ThemedText style={styles.ageBtnTxt}>+</ThemedText>

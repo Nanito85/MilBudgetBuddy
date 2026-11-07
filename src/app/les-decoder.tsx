@@ -156,6 +156,7 @@ export default function LESDecoderScreen() {
 
   // Verify tab inputs
   const [basicPayText, setBasicPayText]   = useState('');
+  const [otherPayText, setOtherPayText]   = useState('');
   const [ficaText, setFicaText]           = useState('');
   const [ficaMedText, setFicaMedText]     = useState('');
   const [netPayText, setNetPayText]       = useState('');
@@ -163,14 +164,18 @@ export default function LESDecoderScreen() {
   const [totalDedText, setTotalDedText]   = useState('');
 
   const basicPay   = parseFloat(basicPayText)   || 0;
+  // Special, incentive and bonus pays are FICA wages too (BAH/BAS are not), so the expected FICA is
+  // on BASEPAY plus these. Checking BASEPAY alone gave false X marks for anyone with special pay.
+  const otherPay   = parseFloat(otherPayText)   || 0;
+  const ficaBase   = basicPay + otherPay;
   const ficaEntered = parseFloat(ficaText)       || 0;
   const ficaMedEntered = parseFloat(ficaMedText) || 0;
   const netEntered  = parseFloat(netPayText)     || 0;
   const totalEnt    = parseFloat(totalEntText)   || 0;
   const totalDed    = parseFloat(totalDedText)   || 0;
 
-  const expectedFica    = basicPay * 0.062;
-  const expectedFicaMed = basicPay * 0.0145;
+  const expectedFica    = ficaBase * 0.062;
+  const expectedFicaMed = ficaBase * 0.0145;
   const expectedNet     = totalEnt - totalDed;
 
   // Glossary filtered results
@@ -328,6 +333,7 @@ export default function LESDecoderScreen() {
             <ThemedView type="backgroundElement" style={styles.card}>
               {[
                 { label: 'BASEPAY (monthly)',        value: basicPayText,   set: setBasicPayText,  placeholder: 'e.g. 3451' },
+                { label: 'OTHER TAXABLE PAY (special / incentive, monthly)', value: otherPayText, set: setOtherPayText, placeholder: 'e.g. 250 (0 if none)' },
                 { label: 'FICA SOC SEC TAX',         value: ficaText,       set: setFicaText,      placeholder: 'e.g. 214' },
                 { label: 'FICA MED TAX',             value: ficaMedText,    set: setFicaMedText,   placeholder: 'e.g. 50' },
                 { label: 'TOTAL ENT (gross)',        value: totalEntText,   set: setTotalEntText,  placeholder: 'e.g. 6200' },
@@ -364,7 +370,7 @@ export default function LESDecoderScreen() {
                     label="Social Security Tax (FICA)"
                     expected={expectedFica}
                     entered={ficaEntered}
-                    formula={`= $${basicPay.toFixed(0)} × 6.2%`}
+                    formula={`= $${ficaBase.toFixed(0)} × 6.2%${otherPay > 0 ? ' (BASEPAY + other taxable pay)' : ''}`}
                   />
                 )}
                 {ficaMedEntered > 0 && (
@@ -374,7 +380,7 @@ export default function LESDecoderScreen() {
                       label="Medicare Tax (FICA)"
                       expected={expectedFicaMed}
                       entered={ficaMedEntered}
-                      formula={`= $${basicPay.toFixed(0)} × 1.45%`}
+                      formula={`= $${ficaBase.toFixed(0)} × 1.45%${otherPay > 0 ? ' (BASEPAY + other taxable pay)' : ''}`}
                     />
                   </>
                 )}
@@ -385,7 +391,7 @@ export default function LESDecoderScreen() {
                       label="Net Pay Math"
                       expected={expectedNet}
                       entered={netEntered}
-                      formula={`= $${totalEnt.toFixed(0)} − $${totalDed.toFixed(0)}`}
+                      formula={`= $${totalEnt.toFixed(0)} − $${totalDed.toFixed(0)} (allotments and some other items are listed separately on many LES layouts: subtract them too if your NET AMT is lower)`}
                     />
                   </>
                 )}

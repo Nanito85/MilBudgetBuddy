@@ -34,8 +34,11 @@ export const SCHOOL_DATA: InstallationSchoolInfo[] = [
   // ── ARMY — CONUS ───────────────────────────────────────────────────────────
   {
     installationId: 'fort_liberty',
-    hasDoDEA: false,
+    // DoDEA operates schools on Fort Liberty (Fort Bragg); the school list is not entered here, so the
+    // note below points to dodea.edu for the current roster.
+    hasDoDEA: true,
     dodea: [],
+    notes: 'DoDEA operates elementary and middle schools on post. Check dodea.edu or your School Liaison Office for the current list, grades and zoning.',
     localDistrict: 'Cumberland County Schools (NC)',
     districtUrl: 'www.ccs.k12.nc.us',
     sloNotes: 'SLO office located on post. Cumberland County operates 10+ schools near the installation including district-run "military-friendly" schools.',

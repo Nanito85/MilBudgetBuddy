@@ -77,11 +77,11 @@ const PROTECTIONS: Protection[] = [
     title: 'Credit & Default Protections',
     summary: 'Creditors cannot take adverse action solely due to SCRA-reduced payments.',
     details:
-      'Under 50 USC §3938, a creditor may not:\n' +
+      'Under the SCRA, a creditor may not:\n' +
       '• Accelerate a debt, terminate a contract, or repossess property solely because of your SCRA-reduced interest rate.\n' +
       '• Report a default to a credit bureau if the default was caused by a court-ordered reduction.\n\n' +
       'ACTIVE DUTY ALERT: You can place a free 1-year active duty alert on your credit report (all 3 bureaus). This requires creditors to verify your identity before issuing new credit.\n\n' +
-      'FREE CREDIT FREEZE: Active duty members may freeze their credit reports at no cost with Equifax, Experian, and TransUnion for the duration of deployment.',
+      'FREE CREDIT FREEZE: Since 2018 anyone can freeze their credit reports for free with Equifax, Experian, and TransUnion (a freeze stops new accounts from being opened in your name).',
     action: 'Place an active duty alert by calling any one of the three major bureaus — they must notify the others. Visit AnnualCreditReport.com for free reports.',
   },
   {
@@ -182,7 +182,7 @@ export default function ScraGuideScreen() {
           <ThemedText style={[styles.heroEyebrow, { color: tc.tactical }]}>SERVICEMEMBERS CIVIL RELIEF ACT</ThemedText>
           <ThemedText style={[styles.heroTitle, { color: tc.textPrimary }]}>Know Your Rights</ThemedText>
           <ThemedText style={[styles.heroBody, { color: tc.textHint }]}>
-            The SCRA (50 USC Chapter 50) provides automatic legal and financial protections the moment you go on active duty. These rights do not apply automatically — you must assert them.
+            The SCRA (50 USC Chapter 50) gives you legal and financial protections as soon as you go on active duty, but most of them have to be claimed: you must notify the lender, landlord or creditor in writing and send a copy of your orders.
           </ThemedText>
         </ThemedView>
 

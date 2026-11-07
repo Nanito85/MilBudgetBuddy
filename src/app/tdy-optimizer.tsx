@@ -127,11 +127,11 @@ export default function TdyOptimizerScreen() {
   function Stepper({ value, step, min, max, onChange }: { value: number; step: number; min: number; max: number; onChange: (v: number) => void }) {
     return (
       <View style={styles.inlineStepperControls}>
-        <Pressable accessibilityRole="button" hitSlop={8} style={[styles.stepBtn, { backgroundColor: tc.background, borderColor: tc.borderColor }]} onPress={() => onChange(Math.max(min, value - step))}>
+        <Pressable accessibilityLabel="Decrease" accessibilityRole="button" hitSlop={8} style={[styles.stepBtn, { backgroundColor: tc.background, borderColor: tc.borderColor }]} onPress={() => onChange(Math.max(min, value - step))}>
           <ThemedText style={[styles.stepBtnText, { color: tc.tactical }]}>−</ThemedText>
         </Pressable>
         <ThemedText style={[styles.stepperValue, { color: tc.textPrimary }]}>{value} days</ThemedText>
-        <Pressable accessibilityRole="button" hitSlop={8} style={[styles.stepBtn, { backgroundColor: tc.background, borderColor: tc.borderColor }]} onPress={() => onChange(Math.min(max, value + step))}>
+        <Pressable accessibilityLabel="Increase" accessibilityRole="button" hitSlop={8} style={[styles.stepBtn, { backgroundColor: tc.background, borderColor: tc.borderColor }]} onPress={() => onChange(Math.min(max, value + step))}>
           <ThemedText style={[styles.stepBtnText, { color: tc.tactical }]}>+</ThemedText>
         </Pressable>
       </View>

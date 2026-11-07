@@ -125,8 +125,16 @@ export function calcGiBill(inputs: GiBillInputs): GiBillResult {
     tuitionCap = tuitionPerYear;   // VA pays 100% of in-state tuition
     tuitionNote = 'VA pays 100% of in-state tuition for public schools.';
   } else if (schoolType === 'public_outofstate') {
-    tuitionCap = tuitionPerYear;   // Schools in Yellow Ribbon or per NDAA often covered; use actual
-    tuitionNote = 'VA pays up to in-state rate; school/Yellow Ribbon may cover the rest.';
+    // Out-of-state students at public schools are covered at the in-state rate, and the VA does NOT
+    // know that rate from this screen's single tuition field, so the full entered tuition is
+    // treated as the in-state figure. The note now says so instead of promising "up to in-state"
+    // while counting everything.
+    tuitionCap = tuitionPerYear;
+    tuitionNote = 'Enter the IN-STATE tuition for this school: the VA pays up to the in-state rate (out-of-state students are not covered above it). Yellow Ribbon may cover part of the difference.';
+  } else if (schoolType === 'online_only') {
+    // Online students still get tuition paid: public up to in-state rate, private up to the cap.
+    tuitionCap = GI_BILL_TUITION_CAP_PRIVATE;
+    tuitionNote = `VA pays tuition for online programs too (public: in-state rate; private: up to $${GI_BILL_TUITION_CAP_PRIVATE.toLocaleString()}/yr). Enter your annual tuition.`;
   } else {
     tuitionCap = GI_BILL_TUITION_CAP_PRIVATE;
     tuitionNote = `VA pays up to $${GI_BILL_TUITION_CAP_PRIVATE.toLocaleString()}/yr for private schools (AY${GI_BILL_DATA_YEAR}).`;
@@ -142,9 +150,7 @@ export function calcGiBill(inputs: GiBillInputs): GiBillResult {
   const monthlyTuitionValue = Math.round(annualTuitionCoverage / 9);   // ~9-month academic year
   const monthlyTotalValue = monthlyBah + monthlyBookStipend + monthlyTuitionValue;
 
-  const monthlyTuitionDisplay = schoolType === 'online_only'
-    ? 'N/A (online)'
-    : `~$${monthlyTuitionValue.toLocaleString()}/mo`;
+  const monthlyTuitionDisplay = `~$${monthlyTuitionValue.toLocaleString()}/mo`;
 
   const bahNote = enrollment === 'half'
     ? 'No housing allowance is payable at exactly half-time — MHA requires enrollment MORE than half-time (38 CFR 21.9700). Tuition and the book stipend still apply.'

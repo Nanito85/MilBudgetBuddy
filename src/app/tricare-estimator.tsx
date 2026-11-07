@@ -377,7 +377,7 @@ export default function TricareEstimatorScreen() {
             <View style={[styles.dentalNoteCard, { backgroundColor: tc.surface, borderColor: tc.borderColor }]}>
               <ThemedText style={[styles.dentalNoteTitle, { color: tc.textPrimary }]}>FEDVIP (Federal Dental/Vision)</ThemedText>
               <ThemedText style={[styles.dentalNoteBody, { color: tc.textSecondary }]}>
-                Retirees are not covered by TDP. FEDVIP is available during open season (Nov–Dec) with premiums varying by plan and location — typically $25–$55/month for family dental coverage. Enroll at benefeds.com.
+                Retirees are not covered by TDP. FEDVIP is available during the federal open season (mid-November to mid-December) with premiums varying by plan and location — typically $25–$55/month for family dental coverage. Enroll at benefeds.com.
               </ThemedText>
               <View style={styles.dentalNoteRow}>
                 <ThemedText style={[styles.dentalNoteStat, { color: tc.tactical }]}>$25–$55/mo</ThemedText>
@@ -393,8 +393,8 @@ export default function TricareEstimatorScreen() {
           {[
             { icon: '📍', title: 'MTF PROXIMITY', body: 'Prime is most valuable when you live near a Military Treatment Facility. MTF care is free for active duty families under Prime.' },
             { icon: '🔄', title: 'REFERRALS', body: 'Prime requires a PCM referral to see a specialist. Select lets you book specialists directly — important for families with ongoing conditions.' },
-            { icon: '📅', title: 'ENROLLMENT PERIOD', body: 'You can change plans each year (Nov 1–Dec 31 for most) or within 90 days of a qualifying life event (PCS, birth, marriage).' },
-            { icon: '🏥', title: 'URGENT CARE', body: 'Both plans cover TRICARE-authorized urgent care. Active Duty Prime: $0. Retired/Reserve Prime: $39 copay. Select/TRS: flat network copay ($26–$38 depending on group), 20–25% for non-network.' },
+            { icon: '📅', title: 'ENROLLMENT PERIOD', body: 'You can change plans each year (open season runs roughly mid-November to mid-December; the dates are announced each year) or within 90 days of a qualifying life event (PCS, birth, marriage).' },
+            { icon: '🏥', title: 'URGENT CARE', body: 'Both plans cover TRICARE-authorized urgent care. Active Duty Prime: $0. Prime for retirees and reservists, and Select/TRS, use flat copays that depend on your group and plan (see the plan cards above); non-network care costs 20–25% instead.' },
           ].map((d) => (
             <View key={d.title} style={styles.decisionRow}>
               <ThemedText style={styles.decisionIcon}>{d.icon}</ThemedText>

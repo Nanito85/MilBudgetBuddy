@@ -96,9 +96,9 @@ export const LES_FIELDS: LESField[] = [
     name: 'JUMP',
     plainName: 'Parachute Pay (Jump Pay)',
     section: 'entitlements',
-    summary: '$200/month for rated parachutists who perform a jump each month.',
+    summary: 'Monthly pay for rated parachutists who perform a jump each month (the rate depends on your service and year).',
     detail: 'Hazardous Duty Incentive Pay for parachute jumping. Requires at least one jump per month to receive. HALO-qualified personnel receive higher rates. This pay appears under the "HAZARDOUS DUTY" category on some LES formats.',
-    formula: '$200/month (static line, increased from $150 effective Oct 1, 2025) | $225/month (HALO/HAHO)',
+    formula: 'Historically $150/month (static line) and $225/month (HALO/HAHO). The Army announced an increase to $200/month for static line effective Oct 1, 2025: other services may differ, so check your own LES and unit finance office.',
     tip: 'If you didn\'t jump that month, you should NOT see this pay. If you see it for a no-jump month, it could indicate a system error — report to finance.',
   },
   {

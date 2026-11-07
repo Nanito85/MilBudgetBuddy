@@ -247,7 +247,7 @@ export default function CommandModeScreen() {
   ${breakdown.extraIncomeItems.map((i) => row('· ' + i.label, fmt(i.amount))).join('')}
   ${vaMonthly > 0 ? row(`VA Disability Compensation (${vaDisabilityPercent}%)${crdpEligible ? '' : ' — offsets retired pay, not additive'}`, fmt(vaMonthly)) : ''}
   ${spouseIncome > 0 ? row('Spouse / Household Income', fmt(spouseIncome)) : ''}
-  ${row('TOTAL GROSS', fmt(breakdown.grossPay + spouseIncome + vaInTotal), true)}
+  ${row(spouseIncome > 0 || vaInTotal > 0 ? 'TOTAL GROSS (HOUSEHOLD, incl. spouse/VA)' : 'TOTAL GROSS', fmt(breakdown.grossPay + spouseIncome + vaInTotal), true)}
 
   ${sectionHeader('DEDUCTIONS', '#B71C1C')}
   ${row(breakdown.isCzte && breakdown.czteExcluded > 0 ? 'Federal Income Tax (est., combat zone exclusion applied)' : 'Federal Income Tax (est.)', fmt(breakdown.fedTax))}
@@ -257,13 +257,15 @@ export default function CommandModeScreen() {
   ${breakdown.rothTsp > 0 ? row(`Roth TSP (${rothTspPct}%)`, fmt(breakdown.rothTsp)) : ''}
   ${breakdown.sgli > 0 ? row('SGLI Premium', fmt(breakdown.sgli)) : ''}
   ${breakdown.dental > 0 ? row('TDP Dental (Family)', fmt(breakdown.dental)) : ''}
+  ${breakdown.sbp > 0 ? row('SBP (Survivor Benefit Plan)', fmt(breakdown.sbp)) : ''}
+  ${breakdown.fers > 0 ? row(`FERS Retirement (${breakdown.fersRatePct}%)`, fmt(breakdown.fers)) : ''}
   ${breakdown.extraDeductionItems.map((i) => row('· ' + i.label, fmt(i.amount))).join('')}
   ${row('TOTAL DEDUCTIONS', fmt(breakdown.totalDeductions), true)}
 </table>
 
 <table>
   <tr class="net-row">
-    <td>NET TAKE-HOME PAY</td>
+    <td>${spouseIncome > 0 || vaInTotal > 0 ? 'YOUR NET TAKE-HOME PAY (excludes spouse/VA)' : 'NET TAKE-HOME PAY'}</td>
     <td style="text-align:right;font-family:monospace;">${fmt(breakdown.netPay)}</td>
   </tr>
 </table>
@@ -477,7 +479,7 @@ export default function CommandModeScreen() {
 
               <Divider />
               <Row
-                label="TOTAL GROSS"
+                label={spouseIncome > 0 || vaInTotal > 0 ? 'TOTAL GROSS (HOUSEHOLD)' : 'TOTAL GROSS'}
                 value={fmt(breakdown.grossPay + spouseIncome + vaInTotal)}
                 bold
                 accent={Brand.success}
@@ -500,6 +502,8 @@ export default function CommandModeScreen() {
               {breakdown.tsp === 0         && <Row label="TSP Contribution" value={fmt(0)} />}
               {breakdown.sgli > 0 && <Row label="SGLI Premium" value={fmt(breakdown.sgli)} />}
               {breakdown.dental > 0 && <Row label="TDP Dental (Family)" value={fmt(breakdown.dental)} />}
+              {breakdown.sbp > 0 && <Row label="SBP (Survivor Benefit Plan)" value={fmt(breakdown.sbp)} />}
+              {breakdown.fers > 0 && <Row label={`FERS Retirement (${breakdown.fersRatePct}%)`} value={fmt(breakdown.fers)} />}
               {breakdown.extraDeductionItems.map((item) => (
                 <View key={item.id} style={styles.extraItemRow}>
                   <Row label={item.label} value={fmt(item.amount)} dim />
@@ -533,7 +537,7 @@ export default function CommandModeScreen() {
             {/* ── NET PAY ── */}
             <View style={[styles.card, styles.netCard]}>
               <View style={styles.netRow}>
-                <ThemedText style={[styles.netLabel, { color: tc.success }]}>NET TAKE-HOME PAY</ThemedText>
+                <ThemedText style={[styles.netLabel, { color: tc.success }]}>{spouseIncome > 0 || vaInTotal > 0 ? 'YOUR NET TAKE-HOME (EXCL. SPOUSE/VA)' : 'NET TAKE-HOME PAY'}</ThemedText>
                 <ThemedText style={[styles.netValue, { color: tc.success }]}>{fmt(breakdown.netPay)}</ThemedText>
               </View>
               {(spouseIncome > 0 || vaInTotal > 0) && (

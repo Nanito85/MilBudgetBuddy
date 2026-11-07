@@ -63,7 +63,8 @@ function uid() {
 }
 
 function persist(claims: VaClaim[]) {
-  AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(claims));
+  // A failed write must not become an unhandled promise rejection.
+  AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(claims)).catch(() => {});
 }
 
 export const useVaClaimsStore = create<VaClaimsState>((set, get) => ({
