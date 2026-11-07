@@ -54,7 +54,10 @@ const DLA: Record<PayGrade, { noDep: number; withDep: number }> = {
   O10: { noDep: 5187.33, withDep: 6385.58 },
 };
 
-const MALT_RATE = 0.205; // CY2026, $/mile per vehicle (PDTATAC MAP-CAP 73-25(I), effective 1 Jan 2026)
+// $/mile per vehicle. DoD's updated CY2026 POV mileage memo (MAP-CAP 46-26(I), 30 Jul 2026) raised the MALT
+// rate to $0.235 for travel on/after 1 Jul 2026 (it was $0.205 from 1 Jan 2026). The figure comes from a
+// secondary source; the memo itself could not be read (403), so confirm with your transportation office.
+const MALT_RATE = 0.235;
 
 const fmt = (n: number) => `$${Math.round(n).toLocaleString()}`;
 
@@ -443,7 +446,7 @@ export default function PCSCalculatorScreen() {
                     <ThemedText type="small" themeColor="textSecondary">miles</ThemedText>
                   </View>
                   <ThemedText type="small" themeColor="textSecondary" style={styles.hint}>
-                    MALT rate: ${MALT_RATE.toFixed(2)}/mile × vehicles
+                    MALT rate: ${MALT_RATE.toFixed(3)}/mile × vehicles
                   </ThemedText>
                 </View>
 
@@ -592,7 +595,7 @@ export default function PCSCalculatorScreen() {
                   </ThemedText>
                   <ThemedText type="small" themeColor="textSecondary">
                     {isDriving
-                      ? `$${MALT_RATE.toFixed(2)}/mile mileage reimbursement${miles === 0 ? ' — enter distance above' : ''}`
+                      ? `$${MALT_RATE.toFixed(3)}/mile mileage reimbursement${miles === 0 ? ' — enter distance above' : ''}`
                       : 'Not applicable — not driving'}
                   </ThemedText>
                 </View>
@@ -773,7 +776,7 @@ export default function PCSCalculatorScreen() {
 
         {/* Disclaimer */}
         <ThemedText type="small" themeColor="textSecondary" style={styles.disclaimer}>
-          BAH rates: {BAH_DATA_YEAR}. OHA rates: Q2 2026 (approx.). DLA: FY2026 (JTR). MALT: ${MALT_RATE.toFixed(2)}/mile FY2026. TLE/TLA uses the same JTR family-percentage table as the dedicated TLE/TLA calculator: lodging and M&IE are each calculated separately, then combined — for TLE (CONUS) that combined total is capped at ${TLE_DAILY_CAP}/day per JTR par. 050601 (PDTATAC MAP 66-24(R), effective 01 OCT 2025 for FY2026); TLA (OCONUS) has no flat-dollar cap. OHA and unmatched OCONUS TLA rates are approximate — verify current rates at DTMO before signing a lease. Verify all entitlements with your installation finance office.
+          BAH rates: {BAH_DATA_YEAR}. OHA rates: Q2 2026 (approx.). DLA: FY2026 (JTR). MALT: ${MALT_RATE.toFixed(3)}/mile for travel on or after 1 Jul 2026 ($0.205 before). TLE/TLA uses the same JTR family-percentage table as the dedicated TLE/TLA calculator: lodging and M&IE are each calculated separately, then combined — for TLE (CONUS) that combined total is capped at ${TLE_DAILY_CAP}/day per JTR par. 050601 (PDTATAC MAP 66-24(R), effective 01 OCT 2025 for FY2026); TLA (OCONUS) has no flat-dollar cap. OHA and unmatched OCONUS TLA rates are approximate — verify current rates at DTMO before signing a lease. Verify all entitlements with your installation finance office.
         </ThemedText>
       </ScrollView>
       )}

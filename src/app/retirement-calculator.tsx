@@ -8,7 +8,7 @@ import { ThemedView } from '@/components/themed-view';
 import { PAY_GRADES, PayGrade } from '@/data/bah-rates';
 import { BASIC_PAY_DATA_YEAR, getBasicPay } from '@/data/basic-pay-rates';
 import { estimateAnnualFedTax, FEDERAL_TAX_DATA_YEAR } from '@/data/federal-tax';
-import { getRetirementStateTaxRate, getStateTaxInfo, RETIREMENT_TAX_EXEMPT_STATES, stateTaxBadge, US_STATES } from '@/data/state-tax';
+import { getRetirementExemptAnnual, getRetirementStateTaxRate, getStateTaxInfo, RETIREMENT_TAX_EXEMPT_STATES, stateTaxBadge, US_STATES } from '@/data/state-tax';
 import { BreakEvenChart } from '@/features/retirement/components/BreakEvenChart';
 import { NumberStepper } from '@/features/retirement/components/NumberStepper';
 import { BRSCard, High3Card } from '@/features/retirement/components/RetirementSummaryCard';
@@ -135,7 +135,7 @@ export default function RetirementCalculatorScreen() {
   const annualTaxable = taxablePensionMonthly * 12;
   const fedTaxMonthly = estimateAnnualFedTax(annualTaxable, married, numChildren) / 12;
   const stateRate = getRetirementStateTaxRate(retireState);
-  const stateTaxMonthly = taxablePensionMonthly * stateRate;
+  const stateTaxMonthly = Math.max(0, taxablePensionMonthly - getRetirementExemptAnnual(retireState) / 12) * stateRate;
   const stateInfo = getStateTaxInfo(retireState);
   const stateExempt = !!retireState && RETIREMENT_TAX_EXEMPT_STATES.has(retireState);
   const afterTaxPensionMonthly = pensionMonthly - fedTaxMonthly - stateTaxMonthly;

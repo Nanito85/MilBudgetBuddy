@@ -25,6 +25,10 @@ export interface StateTaxInfo {
   // Annual amount of Guard/Reserve drill pay the state excludes (e.g. MS's
   // first $15,000), applied only to drill-only reservists.
   drillPayExemptAnnual?: number;
+  // Annual amount of MILITARY RETIRED pay the state excludes (a dollar cap, not a full exemption).
+  // Only caps with no age condition are modeled here; states whose exclusion needs an age or
+  // income test are left out so they are not overstated. GA $65k (2026), CA $20k, KY $31,110.
+  retirementExemptAnnual?: number;
   note?: string;
 }
 
@@ -34,53 +38,53 @@ export const US_STATES: StateTaxInfo[] = [
   { code: 'AL', name: 'Alabama',        effectiveRate: 0.046,  militaryExempt: false },
   { code: 'AR', name: 'Arkansas',       effectiveRate: 0,      militaryExempt: true,  note: 'Active duty pay exempt', civilianRate: 0.0355 },
   { code: 'AZ', name: 'Arizona',        effectiveRate: 0,      militaryExempt: true,  note: 'Active duty pay exempt', civilianRate: 0.0215 },
-  { code: 'CA', name: 'California',     effectiveRate: 0.062,  militaryExempt: false, exemptWhenStationedOutside: true, note: 'Exempt while stationed outside CA (FTB Pub 1032)' },
-  { code: 'CO', name: 'Colorado',       effectiveRate: 0.044,  militaryExempt: false },
-  { code: 'CT', name: 'Connecticut',    effectiveRate: 0.050,  militaryExempt: false, exemptWhenStationedOutside: true, note: 'Exempt while stationed outside CT with no CT home and 30 days or less in CT' },
-  { code: 'DC', name: 'Washington D.C.',effectiveRate: 0.075,  militaryExempt: false },
+  { code: 'CA', name: 'California',     effectiveRate: 0.0275,  militaryExempt: false, retirementExemptAnnual: 20000, exemptWhenStationedOutside: true, note: 'Exempt while stationed outside CA (FTB Pub 1032)' },
+  { code: 'CO', name: 'Colorado',       effectiveRate: 0.0322,  militaryExempt: false },
+  { code: 'CT', name: 'Connecticut',    effectiveRate: 0.0296,  militaryExempt: false, exemptWhenStationedOutside: true, note: 'Exempt while stationed outside CT with no CT home and 30 days or less in CT' },
+  { code: 'DC', name: 'Washington D.C.',effectiveRate: 0.0409,  militaryExempt: false },
   { code: 'DE', name: 'Delaware',       effectiveRate: 0.042,  militaryExempt: false },
   { code: 'FL', name: 'Florida',        effectiveRate: 0,      militaryExempt: true,  note: 'No state income tax' },
-  { code: 'GA', name: 'Georgia',        effectiveRate: 0.0549, militaryExempt: false },
-  { code: 'HI', name: 'Hawaii',         effectiveRate: 0.075,  militaryExempt: false },
+  { code: 'GA', name: 'Georgia',        effectiveRate: 0.0415, militaryExempt: false, retirementExemptAnnual: 65000 },
+  { code: 'HI', name: 'Hawaii',         effectiveRate: 0.0505,  militaryExempt: false },
   { code: 'IA', name: 'Iowa',           effectiveRate: 0,      militaryExempt: true,  note: 'Active duty pay exempt', civilianRate: 0.0271 },
-  { code: 'ID', name: 'Idaho',          effectiveRate: 0.058,  militaryExempt: false, exemptWhenStationedOutside: true, note: 'Exempt while stationed outside ID' },
+  { code: 'ID', name: 'Idaho',          effectiveRate: 0.0345,  militaryExempt: false, exemptWhenStationedOutside: true, note: 'Exempt while stationed outside ID' },
   { code: 'IL', name: 'Illinois',       effectiveRate: 0,      militaryExempt: true,  note: 'Active duty pay exempt', civilianRate: 0.0471 },
   { code: 'IN', name: 'Indiana',        effectiveRate: 0,      militaryExempt: true,  note: 'Active duty pay exempt', civilianRate: 0.029 },
-  { code: 'KS', name: 'Kansas',         effectiveRate: 0.055,  militaryExempt: false },
-  { code: 'KY', name: 'Kentucky',       effectiveRate: 0,      militaryExempt: true,  note: 'Active duty pay exempt', civilianRate: 0.033 },
-  { code: 'LA', name: 'Louisiana',      effectiveRate: 0.035,  militaryExempt: false },
+  { code: 'KS', name: 'Kansas',         effectiveRate: 0.0425,  militaryExempt: false },
+  { code: 'KY', name: 'Kentucky',       effectiveRate: 0,      militaryExempt: true, retirementExemptAnnual: 31110,  note: 'Active duty pay exempt', civilianRate: 0.033 },
+  { code: 'LA', name: 'Louisiana',      effectiveRate: 0.0236,  militaryExempt: false },
   { code: 'MA', name: 'Massachusetts',  effectiveRate: 0.050,  militaryExempt: false },
-  { code: 'MD', name: 'Maryland',       effectiveRate: 0.058,  militaryExempt: false },
-  { code: 'ME', name: 'Maine',          effectiveRate: 0.065,  militaryExempt: false, exemptWhenStationedOutside: true, note: 'Exempt while stationed outside ME under orders' },
+  { code: 'MD', name: 'Maryland',       effectiveRate: 0.0414,  militaryExempt: false },
+  { code: 'ME', name: 'Maine',          effectiveRate: 0.0478,  militaryExempt: false, exemptWhenStationedOutside: true, note: 'Exempt while stationed outside ME under orders' },
   { code: 'MI', name: 'Michigan',       effectiveRate: 0,      militaryExempt: true,  note: 'Military pay exempt', civilianRate: 0.0383 },
   { code: 'MN', name: 'Minnesota',      effectiveRate: 0,      militaryExempt: true,  note: 'Active duty pay exempt', civilianRate: 0.0426 },
   { code: 'MO', name: 'Missouri',       effectiveRate: 0,      militaryExempt: true,  note: 'Active duty pay exempt', civilianRate: 0.0314 },
   // Active-duty pay is taxed; only combat-zone pay and the first $15,000 of Guard/Reserve pay are excluded.
   { code: 'MS', name: 'Mississippi',    effectiveRate: 0.0278, militaryExempt: false, drillPayExemptAnnual: 15000 },
   { code: 'MT', name: 'Montana',        effectiveRate: 0,      militaryExempt: true,  note: 'Active duty pay exempt', civilianRate: 0.0344 },
-  { code: 'NC', name: 'North Carolina', effectiveRate: 0.0475, militaryExempt: false },
+  { code: 'NC', name: 'North Carolina', effectiveRate: 0.0314, militaryExempt: false },
   { code: 'ND', name: 'North Dakota',   effectiveRate: 0,      militaryExempt: true,  note: 'Active duty pay exempt', civilianRate: 0.0 },
-  { code: 'NE', name: 'Nebraska',       effectiveRate: 0.052,  militaryExempt: false },
+  { code: 'NE', name: 'Nebraska',       effectiveRate: 0.0308,  militaryExempt: false },
   { code: 'NH', name: 'New Hampshire',  effectiveRate: 0,      militaryExempt: true,  note: 'No wage income tax' },
-  { code: 'NJ', name: 'New Jersey',     effectiveRate: 0.058,  militaryExempt: false, exemptWhenStationedOutside: true, note: 'Exempt while stationed outside NJ with no NJ home and 30 days or less in NJ' },
+  { code: 'NJ', name: 'New Jersey',     effectiveRate: 0.0295,  militaryExempt: false, exemptWhenStationedOutside: true, note: 'Exempt while stationed outside NJ with no NJ home and 30 days or less in NJ' },
   { code: 'NM', name: 'New Mexico',     effectiveRate: 0,      militaryExempt: true,  note: 'Active duty pay exempt', civilianRate: 0.0276 },
   { code: 'NV', name: 'Nevada',         effectiveRate: 0,      militaryExempt: true,  note: 'No state income tax' },
-  { code: 'NY', name: 'New York',       effectiveRate: 0.063,  militaryExempt: false, exemptWhenStationedOutside: true, note: 'Exempt while stationed outside NY with no NY home and 30 days or less in NY' },
+  { code: 'NY', name: 'New York',       effectiveRate: 0.0432,  militaryExempt: false, exemptWhenStationedOutside: true, note: 'Exempt while stationed outside NY with no NY home and 30 days or less in NY' },
   { code: 'OH', name: 'Ohio',           effectiveRate: 0.0145, militaryExempt: false, exemptWhenStationedOutside: true, note: 'Exempt while stationed outside OH' },
   { code: 'OK', name: 'Oklahoma',       effectiveRate: 0,      militaryExempt: true,  note: 'Active duty pay exempt', civilianRate: 0.0359 },
-  { code: 'OR', name: 'Oregon',         effectiveRate: 0.083,  militaryExempt: false, exemptWhenStationedOutside: true, note: 'Exempt while stationed outside OR; up to $6,000 subtractable in-state' },
+  { code: 'OR', name: 'Oregon',         effectiveRate: 0.0737,  militaryExempt: false, exemptWhenStationedOutside: true, note: 'Exempt while stationed outside OR; up to $6,000 subtractable in-state' },
   { code: 'PA', name: 'Pennsylvania',   effectiveRate: 0.0307, militaryExempt: false, exemptWhenStationedOutside: true, note: 'Exempt while stationed outside PA' },
-  { code: 'RI', name: 'Rhode Island',   effectiveRate: 0.054,  militaryExempt: false },
-  { code: 'SC', name: 'South Carolina', effectiveRate: 0.062,  militaryExempt: false },
+  { code: 'RI', name: 'Rhode Island',   effectiveRate: 0.0272,  militaryExempt: false },
+  { code: 'SC', name: 'South Carolina', effectiveRate: 0.0407,  militaryExempt: false },
   { code: 'SD', name: 'South Dakota',   effectiveRate: 0,      militaryExempt: true,  note: 'No state income tax' },
   { code: 'TN', name: 'Tennessee',      effectiveRate: 0,      militaryExempt: true,  note: 'No wage income tax' },
   { code: 'TX', name: 'Texas',          effectiveRate: 0,      militaryExempt: true,  note: 'No state income tax' },
-  { code: 'UT', name: 'Utah',           effectiveRate: 0.0465, militaryExempt: false },
-  { code: 'VA', name: 'Virginia',       effectiveRate: 0.0575, militaryExempt: false },
-  { code: 'VT', name: 'Vermont',        effectiveRate: 0.066,  militaryExempt: false, exemptWhenStationedOutside: true, note: 'Exempt while stationed outside VT' },
+  { code: 'UT', name: 'Utah',           effectiveRate: 0.0289, militaryExempt: false },
+  { code: 'VA', name: 'Virginia',       effectiveRate: 0.0439, militaryExempt: false },
+  { code: 'VT', name: 'Vermont',        effectiveRate: 0.0263,  militaryExempt: false, exemptWhenStationedOutside: true, note: 'Exempt while stationed outside VT' },
   { code: 'WA', name: 'Washington',     effectiveRate: 0,      militaryExempt: true,  note: 'No state income tax' },
-  { code: 'WI', name: 'Wisconsin',      effectiveRate: 0.065,  militaryExempt: false },
-  { code: 'WV', name: 'West Virginia',  effectiveRate: 0.060,  militaryExempt: false, exemptWhenStationedOutside: true, note: 'Exempt while stationed outside WV (30 days or less in WV)' },
+  { code: 'WI', name: 'Wisconsin',      effectiveRate: 0.031,  militaryExempt: false },
+  { code: 'WV', name: 'West Virginia',  effectiveRate: 0.0327,  militaryExempt: false, exemptWhenStationedOutside: true, note: 'Exempt while stationed outside WV (30 days or less in WV)' },
   { code: 'WY', name: 'Wyoming',        effectiveRate: 0,      militaryExempt: true,  note: 'No state income tax' },
 ];
 
@@ -162,6 +166,11 @@ export function getRetirementStateTaxRate(code: string | undefined): number {
   // the active-duty rate, which is 0 in states that exempt active-duty pay
   // but still (at least partly) tax retired pay (KY, MT, NM).
   return getCivilianStateTaxRate(code);
+}
+
+/** Annual dollars of military retired pay this state excludes (0 if none modeled). */
+export function getRetirementExemptAnnual(code: string | undefined): number {
+  return getStateTaxInfo(code)?.retirementExemptAnnual ?? 0;
 }
 
 /** State tax rate on ordinary (non-military) wages, e.g. a GS paycheck. */
