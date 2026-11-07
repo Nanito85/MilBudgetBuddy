@@ -713,6 +713,7 @@ function ServiceInfoStep({
       visible={showEnlistPicker}
       value={enlistDate}
       title="Date of Enlistment / Commission"
+      notInFuture
       onConfirm={(d) => { setEnlistDate(d); setShowEnlistPicker(false); }}
       onCancel={() => setShowEnlistPicker(false)}
     />
@@ -720,6 +721,7 @@ function ServiceInfoStep({
       visible={showRankPicker}
       value={rankDate}
       title="Date of Current Rank"
+      notInFuture
       onConfirm={(d) => { setRankDate(d); setShowRankPicker(false); }}
       onCancel={() => setShowRankPicker(false)}
     />
@@ -861,6 +863,7 @@ function CivilianServiceInfoStep({
       visible={showDatePicker}
       value={startDate}
       title="Date Federal Service Began"
+      notInFuture
       onConfirm={(d) => { setStartDate(d); setShowDatePicker(false); }}
       onCancel={() => setShowDatePicker(false)}
     />
@@ -1322,7 +1325,7 @@ function NotificationsStep({ onFinish }: { onFinish: () => void }) {
         <ThemedText style={styles.heroEmoji}>✅</ThemedText>
         <ThemedText style={styles.stepTitle}>You&apos;re set!</ThemedText>
         <ThemedText type="small" themeColor="textSecondary" style={styles.stepSub}>
-          Your financial dashboard is ready. Get daily tips delivered every morning.
+          Your financial dashboard is ready. Get a weekly money tip every Monday morning.
         </ThemedText>
         <ThemedView type="backgroundElement" style={styles.toggleRow}>
           <View>

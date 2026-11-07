@@ -1,3 +1,4 @@
+import Constants from 'expo-constants';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
@@ -68,7 +69,7 @@ import { getDualVariants } from '@/data/rank-insignia';
 
 const NO_TAX_NOTE = (code: string) => (NO_INCOME_TAX_STATES.has(code) ? 'No state income tax' : undefined);
 
-const APP_VERSION = '1.0.0';
+const APP_VERSION = Constants.expoConfig?.version ?? '';
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
@@ -727,6 +728,7 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
         visible={showEnlistPicker}
         value={enlistDate}
         title="Date of Enlistment / Commission"
+        notInFuture
         onConfirm={(d) => { setEnlistDate(d); setShowEnlistPicker(false); }}
         onCancel={() => setShowEnlistPicker(false)}
       />
@@ -734,6 +736,7 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
         visible={showRankPicker}
         value={rankDate}
         title="Date of Current Rank"
+        notInFuture
         onConfirm={(d) => { setRankDate(d); setShowRankPicker(false); }}
         onCancel={() => setShowRankPicker(false)}
       />

@@ -17,8 +17,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ThemedText } from '@/components/themed-text';
 import { Brand, Fonts, Spacing } from '@/constants/theme';
 import { DEPLOYMENT_LOCATIONS, DeploymentLocation, getDeploymentLocation } from '@/data/deployment-locations';
-import { useProfileLES } from '@/features/home/hooks/useProfileLES';
-import { dentalFamilyRate, fmtPay } from '@/features/home/utils/lesCalc';
+import { useProfileLES, useProfileLESInputs } from '@/features/home/hooks/useProfileLES';
+import { calcLES, dentalFamilyRate, fmtPay } from '@/features/home/utils/lesCalc';
 import { NumberStepper } from '@/features/retirement/components/NumberStepper';
 import { useThemeColors } from '@/hooks/use-theme';
 import { useUserStore } from '@/store/user.store';
@@ -232,6 +232,16 @@ export function EditPayModal({ visible, onClose }: { visible: boolean; onClose: 
   // passed SBP, so a retiree's NET PAY here didn't match Home's.
   const calculated = useProfileLES();
 
+  // The same paycheck WITHOUT the member's base pay / BAH / BAS overrides. `calculated` already has
+  // those overrides applied, so comparing a field against it made an unchanged override look like
+  // "no override" and SAVE silently deleted it (even just after editing TSP).
+  const lesInputs = useProfileLESInputs();
+  const baseline = React.useMemo(() => {
+    if (!lesInputs.payGrade) return null;
+    const { basePayOverride: _bp, bahOverride: _bah, basOverride: _bas, ...rest } = lesInputs.overrides ?? { extraIncome: [], extraDeductions: [] };
+    return calcLES({ ...lesInputs, payGrade: lesInputs.payGrade, overrides: rest as typeof lesInputs.overrides });
+  }, [lesInputs]);
+
   // Retired pay is a pension, not earned wages — it isn't TSP-eligible (you
   // can't contribute a portion of a pension disbursement to TSP, only actual
   // payroll earnings). A member who set a TSP % while still active and then
@@ -247,13 +257,13 @@ export function EditPayModal({ visible, onClose }: { visible: boolean; onClose: 
   const [sgl, setSgl]         = useState(sglOptOut);
   const [spouseAmt, setSpouseAmt] = useState(spouseIncome > 0 ? spouseIncome.toString() : '');
   const [basePayStr, setBasePayStr] = useState(
-    lesOverrides.basePayOverride ? lesOverrides.basePayOverride.toString() : calculated ? String(Math.round(calculated.basePay)) : '',
+    lesOverrides.basePayOverride != null ? lesOverrides.basePayOverride.toString() : calculated ? String(Math.round(calculated.basePay)) : '',
   );
   const [bahStr, setBahStr]   = useState(
-    lesOverrides.bahOverride ? lesOverrides.bahOverride.toString() : calculated ? String(Math.round(calculated.bah)) : '',
+    lesOverrides.bahOverride != null ? lesOverrides.bahOverride.toString() : calculated ? String(Math.round(calculated.bah)) : '',
   );
   const [basStr, setBasStr]   = useState(
-    lesOverrides.basOverride ? lesOverrides.basOverride.toString() : calculated ? String(Math.round(calculated.bas)) : '',
+    lesOverrides.basOverride != null ? lesOverrides.basOverride.toString() : calculated ? String(Math.round(calculated.bas)) : '',
   );
 
   // Additional income/deduction line items — arbitrary label+amount pairs
@@ -295,9 +305,9 @@ export function EditPayModal({ visible, onClose }: { visible: boolean; onClose: 
       setDental(hasDentalFamily);
       setSgl(sglOptOut);
       setSpouseAmt(spouseIncome > 0 ? spouseIncome.toString() : '');
-      setBasePayStr(lesOverrides.basePayOverride ? lesOverrides.basePayOverride.toString() : calculated ? String(Math.round(calculated.basePay)) : '');
-      setBahStr(lesOverrides.bahOverride ? lesOverrides.bahOverride.toString() : calculated ? String(Math.round(calculated.bah)) : '');
-      setBasStr(lesOverrides.basOverride ? lesOverrides.basOverride.toString() : calculated ? String(Math.round(calculated.bas)) : '');
+      setBasePayStr(lesOverrides.basePayOverride != null ? lesOverrides.basePayOverride.toString() : calculated ? String(Math.round(calculated.basePay)) : '');
+      setBahStr(lesOverrides.bahOverride != null ? lesOverrides.bahOverride.toString() : calculated ? String(Math.round(calculated.bah)) : '');
+      setBasStr(lesOverrides.basOverride != null ? lesOverrides.basOverride.toString() : calculated ? String(Math.round(calculated.bas)) : '');
       setExtraIncome(lesOverrides.extraIncome);
       setExtraDeductions(lesOverrides.extraDeductions);
       setDeployed(!!isDeployed);
@@ -311,19 +321,21 @@ export function EditPayModal({ visible, onClose }: { visible: boolean; onClose: 
 
   const save = () => {
     Keyboard.dismiss();
-    const bp  = parseFloat(basePayStr);
-    const bah = parseFloat(bahStr);
-    const bas = parseFloat(basStr);
+    // "2,277" must read as 2277 (parseFloat stops at the comma and gave 2).
+    const num = (v: string) => parseFloat(v.replace(/,/g, '').trim());
+    const bp  = num(basePayStr);
+    const bah = num(bahStr);
+    const bas = num(basStr);
     // Only persist as an override if it meaningfully differs from the
     // calculated value — otherwise a pre-filled, unedited field would freeze
     // in a stale override instead of continuing to track future recalcs
     // (e.g. a rate change, or a later PCS/rank update).
-    const bpDiffers  = calculated && !isNaN(bp)  && Math.abs(bp  - calculated.basePay) > 0.5;
-    const bahDiffers = calculated && !isNaN(bah) && Math.abs(bah - calculated.bah)     > 0.5;
-    const basDiffers = calculated && !isNaN(bas) && Math.abs(bas - calculated.bas)     > 0.5;
-    const basePayOverride = bpDiffers  ? bp  : (calculated ? undefined : (parseFloat(basePayStr) || undefined));
-    const bahOverride     = bahDiffers ? bah : (calculated ? undefined : (parseFloat(bahStr) || undefined));
-    const basOverride     = basDiffers ? bas : (calculated ? undefined : (parseFloat(basStr) || undefined));
+    const bpDiffers  = baseline && !isNaN(bp)  && Math.abs(bp  - baseline.basePay) > 0.5;
+    const bahDiffers = baseline && !isNaN(bah) && Math.abs(bah - baseline.bah)     > 0.5;
+    const basDiffers = baseline && !isNaN(bas) && Math.abs(bas - baseline.bas)     > 0.5;
+    const basePayOverride = bpDiffers  ? bp  : (baseline ? undefined : (isNaN(bp) ? undefined : bp));
+    const bahOverride     = bahDiffers ? bah : (baseline ? undefined : (isNaN(bah) ? undefined : bah));
+    const basOverride     = basDiffers ? bas : (baseline ? undefined : (isNaN(bas) ? undefined : bas));
 
     setPayDetails({
       tspContribPct: tsp,
