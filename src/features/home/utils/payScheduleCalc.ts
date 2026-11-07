@@ -56,12 +56,18 @@ export function getPayDayInfo(isRetired: boolean): { label: string; daysAway: nu
   }
 
   const nextFirst = adjustedPayDay(new Date(year, month + 1, 1));
+  // When the 1st falls on a weekend/holiday the payday moves earlier, so on the
+  // last day(s) of a month the next 1st can already be in the past. These
+  // later dates make sure a future payday is always found.
+  const next15th = adjustedPayDay(new Date(year, month + 1, 15));
+  const nextNextFirst = adjustedPayDay(new Date(year, month + 2, 1));
 
   if (isRetired) {
     const adj1st = adjustedPayDay(new Date(year, month, 1));
     const candidates: Array<{ label: string; date: Date }> = [
       { label: '1st', date: adj1st },
       { label: '1st', date: nextFirst },
+      { label: '1st', date: nextNextFirst },
     ];
     for (const c of candidates) {
       const d = daysUntil(c.date);
@@ -77,6 +83,8 @@ export function getPayDayInfo(isRetired: boolean): { label: string; daysAway: nu
     { label: '1st', date: adj1st },
     { label: '15th', date: adj15th },
     { label: '1st', date: nextFirst },
+    { label: '15th', date: next15th },
+    { label: '1st', date: nextNextFirst },
   ];
 
   for (const c of candidates) {

@@ -3484,29 +3484,40 @@ export interface BahLookupResult {
  * Falls back through alias → 3-digit prefix → 2-digit prefix → 1-digit prefix
  * so arbitrary college/school ZIP codes always return a nearest-MHA estimate.
  */
+/**
+ * The MHA key in the BAH table to use for an arbitrary ZIP: the ZIP's own MHA
+ * (exact or alias) if there is one, otherwise the table key sharing the longest
+ * ZIP prefix (3, then 2, then 1 digit) and, among those, the numerically
+ * CLOSEST one. (It used to take the first key in table order, which is
+ * arbitrary: ZIP 90210 could land on an unrelated area of the same prefix.)
+ */
+export function findBahKeyApprox(zip: string): { key: string; exact: boolean } | null {
+  const resolved = resolveZip(zip);
+  if (resolved in RAW) return { key: resolved, exact: true };
+
+  const allZips = Object.keys(RAW);
+  const target = Number(zip);
+  for (const len of [3, 2, 1]) {
+    const pre = zip.slice(0, len);
+    let best: string | null = null;
+    let bestDist = Infinity;
+    for (const z of allZips) {
+      if (!z.startsWith(pre)) continue;
+      const d = Math.abs(Number(z) - target);
+      if (d < bestDist) { best = z; bestDist = d; }
+    }
+    if (best) return { key: best, exact: false };
+  }
+  return null;
+}
+
 export function findBahRateApprox(
   zip: string,
   grade: PayGrade,
   withDependents: boolean,
 ): BahLookupResult | null {
-  const allZips = Object.keys(RAW);
-
-  // 1. Exact / alias
-  const resolved = resolveZip(zip);
-  if (resolved in RAW) {
-    const pair = RAW[resolved][GRADE_INDEX[grade]];
-    return { rate: withDependents ? pair[0] : pair[1], exact: true };
-  }
-
-  // 2–4. Progressive prefix fallback (3 → 2 → 1 digit)
-  for (const len of [3, 2, 1]) {
-    const pre = zip.slice(0, len);
-    const match = allZips.find((z) => z.startsWith(pre));
-    if (match) {
-      const pair = RAW[match][GRADE_INDEX[grade]];
-      return { rate: withDependents ? pair[0] : pair[1], exact: false };
-    }
-  }
-
-  return null;
+  const match = findBahKeyApprox(zip);
+  if (!match) return null;
+  const pair = RAW[match.key][GRADE_INDEX[grade]];
+  return { rate: withDependents ? pair[0] : pair[1], exact: match.exact };
 }

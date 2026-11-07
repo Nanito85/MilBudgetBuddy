@@ -153,9 +153,9 @@ export const LES_FIELDS: LESField[] = [
     plainName: 'Social Security Tax (FICA)',
     section: 'deductions',
     summary: '6.2% of basic pay, up to the annual wage base.',
-    detail: 'Social Security tax (OASDI) is 6.2% of your basic pay up to the annual wage base ($184,500 in 2026). Note: only BASIC PAY is subject to FICA — allowances (BAH, BAS) are not. If you deploy to a combat zone, FICA is deferred (not waived) and may be collected in bulk later.',
+    detail: 'Social Security tax (OASDI) is 6.2% of your basic pay up to the annual wage base ($184,500 in 2026). Social Security applies to your basic pay and most special pays; allowances (BAH, BAS) are not subject to it. In a combat zone the Combat Zone Tax Exclusion covers INCOME tax only, so FICA is still withheld as normal.',
     formula: 'Basic Pay × 6.2% (capped at annual wage base)',
-    tip: 'Deployed to a combat zone? FICA deductions are deferred, not eliminated. They will be collected in December or when you return. Don\'t spend that money.',
+    tip: 'Deployed to a combat zone? Your federal income tax can drop to $0 (combat zone tax exclusion), but Social Security and Medicare (FICA) keep coming out. That is correct, not an error.',
   },
   {
     id: 'fica_med',
@@ -447,13 +447,6 @@ export const RED_FLAGS = [
     severity: 'MEDIUM' as const,
     body: 'If you have dependents and have been deployed for more than 30 consecutive days but FSA ($300/month) is not appearing on your LES, that is an entitlement not being paid.',
     action: 'Have your admin section initiate an FSA transaction. Retroactive payment for missed months is possible — document the deployment dates.',
-  },
-  {
-    icon: '⚠️',
-    title: 'FICA Still Deducted in Combat Zone',
-    severity: 'MEDIUM' as const,
-    body: 'In a CZTE-designated combat zone, FICA is supposed to be deferred (not collected). If you see FICA SOC SEC TAX continuing to be deducted at full rate after entering a combat zone, the CZTE flag may not have been set.',
-    action: 'Contact your unit S1 to ensure your CZTE effective date is entered. Note: deferred FICA will eventually be collected in a lump sum.',
   },
   {
     icon: '⚠️',

@@ -266,7 +266,7 @@ export function getOconusCola(locationLabel: string, grade: PayGrade, yos: numbe
   const compTable = hasDependents ? ANNUAL_COMPENSATION_WITH_DEP : ANNUAL_COMPENSATION_WITHOUT_DEP;
   const compRates = compTable[grade];
   if (!compRates) return 0;
-  const annualComp = compRates[bracketIndex(yos)] ?? 0;
+  const annualComp = compRates[Math.min(bracketIndex(yos), compRates.length - 1)] ?? 0;
   if (annualComp <= 0) return 0;
 
   const annualSpendable = annualSpendableIncome(annualComp, hasDependents);
@@ -289,7 +289,7 @@ export function getOconusColaDaily(locationLabel: string, grade: PayGrade, yos: 
   const compTable = hasDependents ? ANNUAL_COMPENSATION_WITH_DEP : ANNUAL_COMPENSATION_WITHOUT_DEP;
   const compRates = compTable[grade];
   if (!compRates) return 0;
-  const annualComp = compRates[bracketIndex(yos)] ?? 0;
+  const annualComp = compRates[Math.min(bracketIndex(yos), compRates.length - 1)] ?? 0;
   if (annualComp <= 0) return 0;
 
   const annualSpendable = annualSpendableIncome(annualComp, hasDependents);

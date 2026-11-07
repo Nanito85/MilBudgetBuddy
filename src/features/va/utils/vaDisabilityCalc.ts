@@ -105,12 +105,19 @@ export interface RatingInput {
 function combineExact(pcts: number[]): number {
   if (pcts.length === 0) return 0;
   const sorted = [...pcts].sort((a, b) => b - a);
-  let remaining = 100;
-  for (const pct of sorted) {
-    remaining = remaining * (1 - pct / 100);
+  // 38 CFR 4.25: the VA combines two ratings at a time, largest first, and
+  // rounds each intermediate result to a WHOLE number before the next pairing.
+  // Rounding only once at the end (exact math) lands a full 10% step low for
+  // some combinations, e.g. 30+20+10+10 is 55 -> 60, not 54.6 -> 50.
+  let current = sorted[0];
+  for (let i = 1; i < sorted.length; i++) {
+    current = Math.round(current + (100 - current) * (sorted[i] / 100));
   }
-  return 100 - remaining;
+  return Math.min(100, current);
 }
+
+/** Exposed for the on-screen walkthrough so it shows the same rounded steps. */
+export const combineVaRatings = combineExact;
 
 /**
  * Computes combined VA disability rating, including the bilateral factor
@@ -147,14 +154,16 @@ export function combinedRating(ratings: RatingInput[]): {
 
   if (bilateralApplied) {
     const bilateralSubtotal = combineExact(limbRatings.map((r) => r.pct));
-    bilateralBonus = bilateralSubtotal * 0.1;
-    const bilateralValue = bilateralSubtotal + bilateralBonus;
+    // 38 CFR 4.26: add 10% of the combined value, round to a whole number, and
+    // treat the result as one disability (never above 100).
+    const bilateralValue = Math.min(100, Math.round(bilateralSubtotal * 1.1));
+    bilateralBonus = bilateralValue - bilateralSubtotal;
     exact = combineExact([...otherRatings.map((r) => r.pct), bilateralValue]);
   } else {
     exact = combineExact(ratings.map((r) => r.pct));
   }
 
-  const remaining = 100 - exact;
+  const remaining = Math.max(0, 100 - exact);
   const rounded = Math.min(100, Math.round(exact / 10) * 10);
   return { exact, rounded, remaining, bilateralApplied, bilateralBonus };
 }
