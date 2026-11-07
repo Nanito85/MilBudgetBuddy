@@ -672,10 +672,10 @@ export function EditPayModal({ visible, onClose }: { visible: boolean; onClose: 
                 this toggle is hidden for isCivilianOnly the same way SGLI is
                 below — lesCalc.ts already zeroes the deduction regardless,
                 but a visible toggle that looks like it does something for a
-                civilian (and didn't) was itself the bug. Still shown for a
-                retiree who's alsoGsCivilian — they can enroll in TDP as a
-                retiree same as anyone else. */}
-            {!isCivilianOnly && (
+                civilian (and didn't) was itself the bug. Hidden for a retiree
+                too: retirees aren't TDP-eligible (they use FEDVIP), and
+                lesCalc.ts charges them nothing for it. */}
+            {!isCivilianOnly && !isRetired && (
               <View style={editStyles.toggleRow}>
                 <View style={{ flex: 1, gap: 2 }}>
                   <ThemedText style={[editStyles.toggleLabel, { color: tc.textPrimary }]}>Family Dental Plan</ThemedText>

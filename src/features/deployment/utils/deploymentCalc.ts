@@ -14,7 +14,7 @@
 import { BASIC_PAY_DATA_YEAR, getBasicPay } from '@/data/basic-pay-rates';
 import { BAS_DATA_YEAR, getBAS } from '@/data/bas-rates';
 import { PayGrade } from '@/data/bah-rates';
-import { FICA_RATE } from '@/data/federal-tax';
+import { ficaMonthly } from '@/data/federal-tax';
 import { IDP_MONTHLY } from '@/data/deployment-locations';
 
 export { BASIC_PAY_DATA_YEAR, BAS_DATA_YEAR, IDP_MONTHLY };
@@ -125,7 +125,7 @@ export function calcDeployment(inputs: DeploymentInputs): DeploymentResult {
   const federalTaxNormal = taxablePayNormal * rate;
   const federalTaxCzte = taxablePayCzte * rate;
   const czteSavings = federalTaxNormal - federalTaxCzte;
-  const fica = basicPay * FICA_RATE;
+  const fica = ficaMonthly(basicPay);
 
   const netTotal = grossTotal - federalTaxCzte - fica;
 

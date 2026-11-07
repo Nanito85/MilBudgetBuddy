@@ -19,6 +19,26 @@ export const FEDERAL_TAX_DATA_YEAR = 2026;
 // literal 0.0765 with no shared source.
 export const FICA_RATE = 0.0765;
 
+// 2026 Social Security wage base: the 6.2% Social Security part stops once a
+// year's wages pass this; the 1.45% Medicare part has no cap. (The extra 0.9%
+// Medicare tax above $200k is not modeled.) Matters only to the highest-paid
+// officers; everyone else is under the base all year.
+export const SS_WAGE_BASE = 184_500;
+const SS_RATE = 0.062;
+const MEDICARE_RATE = 0.0145;
+
+/**
+ * Monthly FICA on `monthlyWages`, with the Social Security part capped at the
+ * annual wage base (spread evenly over 12 months, like the rest of this app's
+ * monthly estimates).
+ */
+export function ficaMonthly(monthlyWages: number): number {
+  if (monthlyWages <= 0) return 0;
+  const annual = monthlyWages * 12;
+  const ssAnnual = Math.min(annual, SS_WAGE_BASE) * SS_RATE;
+  return (ssAnnual + annual * MEDICARE_RATE) / 12;
+}
+
 // Tax year 2026, Rev. Proc. 2025-32 (as amended by the 2025 reconciliation act).
 const SINGLE_STD_DEDUCTION  = 16100;
 const MARRIED_STD_DEDUCTION = 32200;

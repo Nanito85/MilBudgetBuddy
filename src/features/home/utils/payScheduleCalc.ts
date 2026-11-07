@@ -19,6 +19,9 @@ export function isPaydayHoliday(d: Date): boolean {
   const day = d.getDate();
   const y = d.getFullYear();
   if (m === 0 && day === 1) return true;
+  // New Year's Day on a Saturday is observed on Friday Dec 31, so that Friday
+  // is a federal holiday too and the Jan 1 payday moves a day earlier again.
+  if (m === 11 && day === 31 && d.getDay() === 5) return true;
   if ((m === 0 || m === 1) && day === nthMonday(y, m, 3)) return true;
   if (m === 8 && day === nthMonday(y, m, 1)) return true;
   return false;
