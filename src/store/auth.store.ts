@@ -14,7 +14,8 @@ import { create } from 'zustand';
 
 import { trackSignup } from '@/services/analytics';
 import { auth } from '@/services/firebase';
-import { deleteCloudData, stopSync } from '@/services/firestore-sync';
+import { deleteCloudData, pushToCloud, stopSync } from '@/services/firestore-sync';
+import { resetAllLocalData } from '@/services/reset-local-data';
 
 const API_BASE = process.env.EXPO_PUBLIC_API_BASE_URL ?? 'http://localhost:3000';
 
@@ -104,7 +105,26 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   signOut: async () => {
+    const current = auth.currentUser;
+    const realAccount = !!current && !current.isAnonymous;
+    if (realAccount) {
+      // Back up the latest edits first (auto-push is debounced and stopSync
+      // below would drop a pending one). If the backup can't be confirmed,
+      // keep the user signed in rather than wipe unsynced data.
+      const outcome = await Promise.race([
+        pushToCloud(current.uid).then(() => 'ok' as const, () => 'failed' as const),
+        new Promise<'timeout'>((resolve) => setTimeout(() => resolve('timeout'), 5000)),
+      ]);
+      if (outcome !== 'ok') {
+        throw new Error('Could not back up your latest changes. Check your connection and try again.');
+      }
+    }
+    stopSync();
     await signOut(auth);
+    // The previous account's data must not stay on the device: the next
+    // account to sign in would otherwise inherit it (and, with no cloud data
+    // of its own, upload it). Everything is already in the cloud copy.
+    if (realAccount) await resetAllLocalData();
     set({ user: null });
   },
 
