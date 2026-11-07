@@ -1,12 +1,13 @@
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { ActivityIndicator, Alert, Linking, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Alert, Linking, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { useThemeColors } from '@/hooks/use-theme';
+import { ConfirmPasswordModal } from '@/components/ConfirmPasswordModal';
 import { useAuthStore } from '@/store/auth.store';
 
 const SUPPORT_EMAIL = 'milbudgetbuddy@proton.me';
@@ -19,7 +20,7 @@ export default function LegalScreen() {
   const router = useRouter();
   const tc = useThemeColors();
   const [expanded, setExpanded] = useState<Section>(null);
-  const [deleting, setDeleting] = useState(false);
+  const [confirmDeleteVisible, setConfirmDeleteVisible] = useState(false);
   const { user, deleteAccount } = useAuthStore();
 
   const toggle = (section: Section) =>
@@ -54,26 +55,7 @@ export default function LegalScreen() {
         {
           text: 'Delete',
           style: 'destructive',
-          onPress: async () => {
-            setDeleting(true);
-            try {
-              await deleteAccount();
-              // Explicit confirmation of what just happened (and, just as
-              // importantly, what DIDN'T) rather than silently navigating
-              // away — a member who just deleted their account should not
-              // have to guess whether their on-device budget/profile data
-              // survived or wonder if something went wrong.
-              Alert.alert(
-                'Account Deleted',
-                'Your account and all cloud-synced data have been permanently deleted. Data stored on this device — budget, profile, and everything else — was not affected. Use Reset All Data in Settings if you want to clear that too.',
-                [{ text: 'OK', onPress: () => router.replace('/') }],
-              );
-            } catch {
-              Alert.alert('Error', 'Could not delete account. You may need to sign out and sign back in first, then try again.');
-            } finally {
-              setDeleting(false);
-            }
-          },
+          onPress: () => setConfirmDeleteVisible(true),
         },
       ],
     );
@@ -85,6 +67,26 @@ export default function LegalScreen() {
 
   return (
     <ThemedView style={styles.container}>
+      <ConfirmPasswordModal
+        visible={confirmDeleteVisible}
+        title="Confirm Delete"
+        message="Enter your password to permanently delete your account."
+        confirmLabel="DELETE"
+        onCancel={() => setConfirmDeleteVisible(false)}
+        onConfirm={async (password) => {
+          await deleteAccount(password);
+          setConfirmDeleteVisible(false);
+          // Explicit confirmation of what just happened (and, just as
+          // importantly, what DIDN'T): a member who just deleted their
+          // account should not have to guess whether their on-device data
+          // survived.
+          Alert.alert(
+            'Account Deleted',
+            'Your account and all cloud-synced data have been permanently deleted. Data stored on this device — budget, profile, and everything else — was not affected. Use Reset All Data in Settings if you want to clear that too.',
+            [{ text: 'OK', onPress: () => router.replace('/') }],
+          );
+        }}
+      />
       <SafeAreaView edges={['top']} style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
 
@@ -179,12 +181,8 @@ export default function LegalScreen() {
               You may delete your account and all associated cloud data at any time. Deletion is immediate and
               permanent. Data stored only on this device is not affected — use Reset All Data in Settings to clear that separately.
             </ThemedText>
-            <Pressable onPress={handleDeleteAccount} disabled={deleting} style={styles.deleteBtn}>
-              {deleting ? (
-                <ActivityIndicator color="#FF6666" />
-              ) : (
-                <ThemedText style={styles.deleteBtnText}>Delete Account Now</ThemedText>
-              )}
+            <Pressable onPress={handleDeleteAccount} style={styles.deleteBtn}>
+              <ThemedText style={styles.deleteBtnText}>Delete Account Now</ThemedText>
             </Pressable>
           </View>
 

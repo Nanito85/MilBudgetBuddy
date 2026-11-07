@@ -17,6 +17,7 @@ import { useIsAdmin } from '@/hooks/use-admin';
 import { useIsPro } from '@/hooks/use-is-pro';
 import { resetAllData } from '@/services/reset-local-data';
 import { ANDROID_PRODUCT_ID } from '@/services/iap';
+import { ConfirmPasswordModal } from '@/components/ConfirmPasswordModal';
 import { useAuthStore } from '@/store/auth.store';
 import { useKidModeStore } from '@/store/kid-mode.store';
 import { useUserStore } from '@/store/user.store';
@@ -210,6 +211,7 @@ export default function SettingsScreen() {
   const proExpiresAt = useUserStore((s) => s.proExpiresAt);
 
   const { user, signOut: signOutUser, deleteAccount } = useAuthStore();
+  const [confirmDeleteVisible, setConfirmDeleteVisible] = useState(false);
 
   const bg     = tc.background;
   const card   = tc.surface;
@@ -282,6 +284,23 @@ export default function SettingsScreen() {
   return (
     <ThemedView style={styles.container}>
       <TutorialModal visible={showTutorial} onDismiss={() => setShowTutorial(false)} />
+      <ConfirmPasswordModal
+        visible={confirmDeleteVisible}
+        title="Confirm Delete"
+        message="Enter your password to permanently delete your account."
+        confirmLabel="DELETE"
+        onCancel={() => setConfirmDeleteVisible(false)}
+        onConfirm={async (password) => {
+          await deleteAccount(password);
+          setConfirmDeleteVisible(false);
+          // Explicit confirmation of what just happened (and what didn't)
+          // rather than silently doing nothing visible.
+          Alert.alert(
+            'Account Deleted',
+            'Your account and all cloud-synced data have been permanently deleted. Data stored on this device was not affected — use Reset All Data above if you want to clear that too.',
+          );
+        }}
+      />
       <SafeAreaView edges={['top']}>
         <View style={[styles.header, { borderBottomColor: tc.borderColor }]}>
           <Pressable onPress={() => router.back()} style={styles.backBtn}>
@@ -792,21 +811,7 @@ export default function SettingsScreen() {
                     {
                       text: 'Delete Account',
                       style: 'destructive',
-                      onPress: async () => {
-                        try {
-                          await deleteAccount();
-                          // Explicit confirmation of what just happened (and
-                          // what didn't) rather than silently doing nothing
-                          // visible — matches legal.tsx's own Delete Account
-                          // flow, which has the same follow-up.
-                          Alert.alert(
-                            'Account Deleted',
-                            'Your account and all cloud-synced data have been permanently deleted. Data stored on this device was not affected — use Reset All Data above if you want to clear that too.',
-                          );
-                        } catch {
-                          Alert.alert('Error', 'Could not delete account. You may need to sign out and sign back in first, then try again.');
-                        }
-                      },
+                      onPress: () => setConfirmDeleteVisible(true),
                     },
                   ],
                 )
