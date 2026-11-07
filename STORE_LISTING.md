@@ -13,15 +13,15 @@ Military pay, budget, and finance tools built for service members.
 
 ## Full Description
 
-**Built for the uniform. Private and offline-first.**
+**Built for the uniform. Your data is yours, and it is never sold.**
 
-MilBudgetBuddy is the all-in-one financial companion for active duty, Guard, and Reserve service members. Every tool is purpose-built for military pay, benefits, and transitions — no account required, no data sold.
+MilBudgetBuddy is the all-in-one financial companion for active duty, Guard, and Reserve service members. Every tool is purpose-built for military pay, benefits, and transitions — an account is optional, and no data is sold.
 
 ---
 
 ### PAY & COMPENSATION
 - **LES Dashboard** — Real-time basic pay breakdown with BAH, BAS, TSP, SGLI, and dental deductions pre-loaded for your rank and ZIP
-- **Pay Chart** — FY2025 basic pay lookup for all E/W/O grades and years of service
+- **Pay Chart** — 2026 basic pay lookup for all E/W/O grades and years of service
 - **Deployment Calculator** — IDP, CZTE tax exclusions, FSA, SDP, and total deployment earnings
 - **Leave Calculator** — Terminal leave payout, use-or-lose risk, and ETS balance
 
@@ -48,9 +48,9 @@ MilBudgetBuddy is the all-in-one financial companion for active duty, Guard, and
 ### SMART FEATURES
 - **Pay Day Countdown** — Always know how many days until the 1st or 15th (adjusted for weekends)
 - **Push Notifications** — Optional daily finance tips + evening-before pay day reminders
-- **Offline-first** — All data stays on your device. No account required.
+- **Works without an account** — Your data is stored on your device. If you choose to sign in, it is also backed up and synced through your private account. The app also collects basic usage analytics and crash reports, as described in the privacy policy.
 
-**Free to download, with a 7-day free trial.** After the trial, MilBudgetBuddy Pro ($4.99/mo or $49.99/yr) is required to use the app's tools: the full pay & entitlements suite, PCS/DITY/TLE/TLA calculators, retirement/TSP/VA projections, and budget/debt/net worth tracking.
+**Free to download. A 7-day free trial is offered when you are eligible for one** (the store shows the exact terms before you subscribe). After that, MilBudgetBuddy Pro ($4.99/mo or $49.99/yr) is required to use the app's tools: the full pay & entitlements suite, PCS/DITY/TLE/TLA calculators, retirement/TSP/VA projections, and budget/debt/net worth tracking.
 
 ---
 
@@ -71,7 +71,7 @@ Everyone (no mature content, no violence). Includes in-app purchases (MilBudgetB
 
 ---
 
-## What's New (v1.0.0)
+## What's New
 Initial release. Includes pay chart, LES dashboard, budget tracker with expense logging, net worth history, TSP calculator, GI Bill calculator, VA disability calculator, debt payoff planner, SBP calculator, ETS checklist, SCRA guide, military tax guide, TRICARE estimator, and pay day push notifications.
 
 ---
@@ -120,7 +120,7 @@ Initial release. Includes pay chart, LES dashboard, budget tracker with expense 
 - [ ] Support URL: (GitHub repo or contact email)
 - [ ] Screenshots: 10 per device size listed above
 - [ ] App preview video: optional
-- [ ] Promotional text (170 chars): "The only military finance app that knows the difference between BAH and BAS — built by a service member, for service members."
+- [ ] Promotional text (170 chars): "Military pay, BAH, PCS, VA, TSP and budget tools in one app, built by a service member for service members."
 
 ---
 

@@ -63,7 +63,7 @@ export function DashboardHeader({ branch, payGrade, rankVariant, lastName, nickn
     <View style={[styles.container, { paddingTop: insets.top, backgroundColor: tc.background, borderBottomColor: tc.borderColor }]}>
       {/* Classification bar */}
       <View style={styles.classBar}>
-        <ThemedText type="classified">■ FOR OFFICIAL USE ONLY ■</ThemedText>
+        <ThemedText type="classified">■ MILBUDGETBUDDY ■</ThemedText>
       </View>
 
       {/* Main header */}
@@ -84,10 +84,6 @@ export function DashboardHeader({ branch, payGrade, rankVariant, lastName, nickn
         <View style={styles.right}>
           <ThemedText type="label" style={[styles.clock, { color: tc.tactical }]}>{timeStr}</ThemedText>
           <ThemedText type="label" style={[styles.date, { color: tc.textMuted }]}>{dateStr}</ThemedText>
-          <View style={styles.statusRow}>
-            <View style={styles.statusDot} />
-            <ThemedText type="label" style={[styles.statusText, { color: tc.success }]}>SECURE</ThemedText>
-          </View>
         </View>
       </View>
 

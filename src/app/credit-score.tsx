@@ -163,7 +163,7 @@ export default function CreditScoreScreen() {
             <ThemedText style={[ss.backText, { color: tc.tactical }]}>‹ BACK</ThemedText>
           </Pressable>
           <View style={ss.classBar}>
-            <ThemedText type="classified" style={ss.classText}>FOR OFFICIAL USE ONLY</ThemedText>
+            <ThemedText type="classified" style={ss.classText}>MILBUDGETBUDDY</ThemedText>
           </View>
         </View>
 

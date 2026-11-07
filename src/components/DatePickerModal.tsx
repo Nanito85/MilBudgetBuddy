@@ -31,6 +31,8 @@ interface Props {
   title?: string;
   maxYear?: number;
   minYear?: number;
+  // Disable days after today (for dates that must already have happened, like an enlistment date).
+  notInFuture?: boolean;
 }
 
 type Mode = 'day' | 'year';
@@ -45,6 +47,7 @@ export function DatePickerModal({
   title = 'Select Date',
   maxYear,
   minYear = 1960,
+  notInFuture = false,
 }: Props) {
   const tc = useThemeColors();
   const now = new Date();
@@ -112,10 +115,15 @@ export function DatePickerModal({
     setMode('day');
   };
 
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const isFuture = (y: number, m: number, d: number) => notInFuture && new Date(y, m, d) > todayStart;
+
   const confirm = () => {
-    const mm = String(selMonth + 1).padStart(2, '0');
-    const dd = String(selDay).padStart(2, '0');
-    onConfirm(`${selYear}-${mm}-${dd}`);
+    let y = selYear, m = selMonth, d = selDay;
+    if (isFuture(y, m, d)) { y = now.getFullYear(); m = now.getMonth(); d = now.getDate(); }
+    const mm = String(m + 1).padStart(2, '0');
+    const dd = String(d).padStart(2, '0');
+    onConfirm(`${y}-${mm}-${dd}`);
   };
 
   // Build day grid
@@ -246,12 +254,15 @@ export function DatePickerModal({
                   if (day === null) return <View key={`e-${idx}`} style={s.cell} />;
                   const selected = isSelected(day);
                   const today    = isToday(day);
+                  const future   = isFuture(viewYear, viewMonth, day);
                   return (
                     <Pressable
                       key={`d-${day}`}
                       onPress={() => selectDay(day)}
+                      disabled={future}
                       style={({ pressed }) => [
                         s.cell,
+                        future && { opacity: 0.3 },
                         selected && s.cellSelected,
                         !selected && today && s.cellToday,
                         pressed && !selected && s.cellPressed,

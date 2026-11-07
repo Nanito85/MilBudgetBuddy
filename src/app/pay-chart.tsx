@@ -16,7 +16,14 @@ const ENLISTED: PayGrade[] = ['E1','E2','E3','E4','E5','E6','E7','E8','E9'];
 const WARRANT:  PayGrade[] = ['W1','W2','W3','W4','W5'];
 const OFFICER:  PayGrade[] = ['O1','O1E','O2','O2E','O3','O3E','O4','O5','O6','O7','O8','O9','O10'];
 
-const ALL_YOS = [0,2,3,4,6,8,10,12,14,16,18,20,22,24,26,28,30];
+const ALL_YOS = [0,2,3,4,6,8,10,12,14,16,18,20,22,24,26,28,30,34,38];
+// Chips for the lookup: every early year (1, 3, 5, 7 were unreachable), then the pay-step years up to 40.
+const YOS_CHIPS = [0,1,2,3,4,5,6,7,8,10,12,14,16,18,20,22,24,26,28,30,34,38,40];
+// A chip is active from its own year up to the next chip's year.
+const chipActive = (y: number, selected: number) => {
+  const next = YOS_CHIPS[YOS_CHIPS.indexOf(y) + 1] ?? Infinity;
+  return selected >= y && selected < next;
+};
 
 function fmtPay(n: number): string {
   return '$' + n.toLocaleString('en-US');
@@ -116,12 +123,12 @@ export default function PayChartScreen() {
             <ThemedView type="backgroundElement" style={styles.card}>
               <ThemedText style={[styles.cardLabel, { color: tc.textHint }]}>YEARS OF SERVICE</ThemedText>
               <View style={styles.yosRow}>
-                {[0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30].map((y) => (
+                {YOS_CHIPS.map((y) => (
                   <Pressable
                     key={y}
                     onPress={() => setSelectedYos(y)}
-                    style={[styles.yosChip, { borderColor: tc.borderColor }, selectedYos >= y && selectedYos < y + 2 && styles.yosChipActive]}>
-                    <ThemedText style={[styles.yosChipText, { color: tc.textSecondary }, selectedYos >= y && selectedYos < y + 2 && styles.yosChipTextActive]}>
+                    style={[styles.yosChip, { borderColor: tc.borderColor }, chipActive(y, selectedYos) && styles.yosChipActive]}>
+                    <ThemedText style={[styles.yosChipText, { color: tc.textSecondary }, chipActive(y, selectedYos) && styles.yosChipTextActive]}>
                       {y}
                     </ThemedText>
                   </Pressable>
