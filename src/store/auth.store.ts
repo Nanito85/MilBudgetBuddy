@@ -4,6 +4,7 @@ import {
   EmailAuthProvider,
   linkWithCredential,
   onAuthStateChanged,
+  reauthenticateWithCredential,
   sendPasswordResetEmail,
   signInAnonymously,
   signInWithEmailAndPassword,
@@ -28,7 +29,9 @@ interface AuthState {
   signUp: (email: string, password: string) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
-  deleteAccount: () => Promise<void>;
+  // password: re-entered by the member; the server refuses to delete unless
+  // they authenticated in the last 5 minutes.
+  deleteAccount: (password: string) => Promise<void>;
   resetPassword: (email: string) => Promise<boolean>;
   clearError: () => void;
   // Returns the current Firebase user, silently creating an anonymous one
@@ -128,15 +131,23 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ user: null });
   },
 
-  deleteAccount: async () => {
+  deleteAccount: async (password) => {
     const current = auth.currentUser;
     if (!current) return;
+    if (!current.email) throw new Error('This account has no email to confirm with.');
+    // Re-authenticate first (also refreshes the token's auth_time, which the
+    // server checks). Nothing is stopped or deleted if the password is wrong.
+    try {
+      await reauthenticateWithCredential(current, EmailAuthProvider.credential(current.email, password));
+    } catch (e: any) {
+      throw new Error(e?.code === 'auth/wrong-password' || e?.code === 'auth/invalid-credential' ? 'Incorrect password.' : friendlyError(e?.code));
+    }
     // Preferred: the server purges everything tied to this account (synced
     // data, purchase/platform records, analytics, feedback) and deletes the
     // Auth user itself, so there's no requires-recent-login failure halfway.
     try {
       stopSync();
-      const token = await current.getIdToken();
+      const token = await current.getIdToken(true);
       const res = await fetch(`${API_BASE}/api/account/delete`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },

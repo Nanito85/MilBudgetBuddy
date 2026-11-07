@@ -2,13 +2,14 @@
  * Post-9/11 GI Bill (Chapter 33) calculator.
  * Rates: AY2026–2027 (effective August 1, 2026 – July 31, 2027). Source: va.gov/education/benefit-rates.
  * Tuition cap: $30,908.34/year (private/foreign schools, AY2026-27) — up 3.3% from AY2025-26's $29,920.95.
- * Online BAH rate: $1,261.00/mo (AY2026-27, all-online enrollment).
+ * Online BAH rate: $1,198.00/mo (AY2026-27, all-online enrollment: half the $2,396 national
+ * average MHA, per va.gov/education/benefit-rates/post-9-11-gi-bill-rates, checked 2026-11-07).
  * Book stipend: up to $1,000/year (pro-rated by enrollment) — stable, non-indexed.
  * BAH = E5-w/dependent rate for school's location (in-person/hybrid enrollment).
  */
 
 export const GI_BILL_TUITION_CAP_PRIVATE = 30_908.34;    // per academic year
-export const GI_BILL_BAH_ONLINE = 1_261;                 // per month, all online
+export const GI_BILL_BAH_ONLINE = 1_198;                 // per month, all online
 export const GI_BILL_BOOK_ANNUAL = 1_000;                // max per academic year
 export const GI_BILL_DATA_YEAR = '2026–2027';
 export const GI_BILL_TOTAL_MONTHS = 36;
@@ -99,7 +100,7 @@ export function calcGiBill(inputs: GiBillInputs): GiBillResult {
   // BAH — every Post-9/11 GI Bill amount (tuition, book stipend, and this)
   // scales by the member's eligibility tier %, same as annualTuitionCoverage
   // and annualBookStipend below. The online flat rate is no exception: a
-  // member at 50% eligibility gets 50% of $1,261, not the full flat rate.
+  // member at 50% eligibility gets 50% of $1,198, not the full flat rate.
   let rawBah: number;
   if (schoolType === 'online_only') {
     rawBah = GI_BILL_BAH_ONLINE * tierRate;
@@ -157,7 +158,7 @@ export function calcGiBill(inputs: GiBillInputs): GiBillResult {
     // Was displaying the raw, unscaled GI_BILL_BAH_ONLINE constant here even
     // though monthlyBah (used in monthlyTotalValue below) is correctly
     // scaled by tier % and enrollment rate — a half-time student at 50%
-    // eligibility saw "$1,261/mo" on screen while only ~$315 was actually
+    // eligibility saw "$1,198/mo" on screen while only ~$315 was actually
     // counted in their total. Show the real computed number instead.
     monthlyBahDisplay: schoolType === 'online_only' ? `$${monthlyBah.toLocaleString()}/mo (online rate)` : `$${monthlyBah.toLocaleString()}/mo`,
     monthlyBookStipend,
