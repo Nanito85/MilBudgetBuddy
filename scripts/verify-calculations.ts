@@ -15,7 +15,7 @@ import { calcLES, fersContributionRate, getDrillPay, retiredPayMultiplier } from
 import { calcRetirement } from '@/features/retirement/utils/retirementCalc';
 import { calcTspProjection } from '@/features/tsp/utils/tspCalc';
 import { estimateAnnualFedTax, ficaMonthly } from '@/data/federal-tax';
-import { getApproxInstallationForZip, getInstallationById } from '@/data/installations';
+import { getApproxInstallationForZip } from '@/data/installations';
 import { calcDITY } from '@/features/dity/utils/dityCalc';
 import { calcPayoff } from '@/features/debt/utils/debtCalc';
 import { localISODate, monthKeyLabel } from '@/utils/formatDate';
