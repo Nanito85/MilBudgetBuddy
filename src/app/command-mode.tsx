@@ -292,8 +292,8 @@ export default function CommandModeScreen() {
     : debts.map((d) => row(`${d.name} (${d.apr}% APR)`, fmt(d.balance))).join('')}
   ${row('TOTAL DEBT BALANCE', fmt(totalDebt), true)}
   ${debtPayoff ? row('Monthly Payoff Payment', fmt(debtPayoff.monthlyCost)) : ''}
-  ${debtPayoff ? row('Debt-Free Date (avalanche)', `${fmtMonths(debtPayoff.totalMonths)} — ${fmtPayoffDate(debtPayoff.payoffDate)}`) : ''}
-  ${debtPayoff ? row('Total Interest Paid (est.)', fmt(debtPayoff.totalInterest)) : ''}
+  ${debtPayoff ? row('Debt-Free Date (avalanche)', debtPayoff.stuck.length > 0 ? 'Never at this payment (below the interest)' : `${fmtMonths(debtPayoff.totalMonths)} — ${fmtPayoffDate(debtPayoff.payoffDate)}`) : ''}
+  ${debtPayoff && debtPayoff.stuck.length === 0 ? row('Total Interest Paid (est.)', fmt(debtPayoff.totalInterest)) : ''}
 </table>
 
 <table>
@@ -617,8 +617,8 @@ export default function CommandModeScreen() {
                   {debtPayoff && (
                     <>
                       <Row label="Monthly Payoff Payment" value={fmt(debtPayoff.monthlyCost)} dim />
-                      <Row label="Debt-Free By" value={`${fmtMonths(debtPayoff.totalMonths)} · ${fmtPayoffDate(debtPayoff.payoffDate)}`} dim />
-                      <Row label="Total Interest (est.)" value={fmt(debtPayoff.totalInterest)} dim />
+                      <Row label="Debt-Free By" value={debtPayoff.stuck.length > 0 ? 'Never at this payment' : `${fmtMonths(debtPayoff.totalMonths)} · ${fmtPayoffDate(debtPayoff.payoffDate)}`} dim />
+                      {debtPayoff.stuck.length === 0 && <Row label="Total Interest (est.)" value={fmt(debtPayoff.totalInterest)} dim />}
                     </>
                   )}
                 </>

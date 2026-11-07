@@ -30,9 +30,10 @@ function fvWithBalance(balance: number, monthly: number, annualRate: number, yea
 
 const fmt = (n: number) => `$${Math.round(n).toLocaleString()}`;
 
-function Stepper({ label, value, step, min, max, onChange }: {
+function Stepper({ label, value, step, min, max, onChange, plain }: {
   label: string; value: number; step: number; min: number; max: number;
   onChange: (v: number) => void;
+  plain?: boolean; // show a bare number (age) instead of dollars
 }) {
   const tc = useThemeColors();
   return (
@@ -42,7 +43,7 @@ function Stepper({ label, value, step, min, max, onChange }: {
         <Pressable accessibilityRole="button" hitSlop={8} style={[styles.stepBtn, { borderColor: tc.borderColor, backgroundColor: tc.background }]} onPress={() => onChange(Math.max(min, value - step))}>
           <ThemedText style={[styles.stepBtnText, { color: tc.tactical }]}>−</ThemedText>
         </Pressable>
-        <ThemedText style={[styles.stepperValue, { color: tc.textPrimary }]}>{fmt(value)}</ThemedText>
+        <ThemedText style={[styles.stepperValue, { color: tc.textPrimary }]}>{plain ? String(value) : fmt(value)}</ThemedText>
         <Pressable accessibilityRole="button" hitSlop={8} style={[styles.stepBtn, { borderColor: tc.borderColor, backgroundColor: tc.background }]} onPress={() => onChange(Math.min(max, value + step))}>
           <ThemedText style={[styles.stepBtnText, { color: tc.tactical }]}>+</ThemedText>
         </Pressable>
@@ -113,7 +114,7 @@ export default function RothIraScreen() {
 
         {/* Hero */}
         <ThemedView type="backgroundElement" style={styles.heroBanner}>
-          <ThemedText style={styles.heroEyebrow}>SINGLE SERVICE MEMBER</ThemedText>
+          <ThemedText style={styles.heroEyebrow}>SERVICE MEMBER</ThemedText>
           <ThemedText style={[styles.heroTitle, { color: tc.textPrimary }]}>Roth IRA Growth Engine</ThemedText>
           <ThemedText style={[styles.heroBody, { color: tc.textHint }]}>
             Start early. Military pay is low — so is your tax bracket. Roth is the best deal the IRS offers junior enlisted.
@@ -125,7 +126,7 @@ export default function RothIraScreen() {
           <ThemedText style={[styles.cardLabel, { color: tc.tactical }]}>YOUR NUMBERS</ThemedText>
           <Stepper label="Current Roth IRA balance" value={balance} step={500} min={0} max={100000} onChange={setBalance} />
           <Stepper label="Monthly contribution" value={monthly} step={50} min={0} max={ROTH_MONTHLY_LIMIT} onChange={setMonthly} />
-          <Stepper label="Your age" value={age} step={1} min={17} max={55} onChange={(v) => setAge(v)} />
+          <Stepper label="Your age" value={age} step={1} min={17} max={55} plain onChange={(v) => setAge(v)} />
         </ThemedView>
 
         {/* Headroom */}

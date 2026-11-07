@@ -43,16 +43,17 @@ export function WeightBar({ authorizedWeight, actualWeight, effectiveWeight, ove
           <ThemedText style={styles.labelValue}>
             {authorizedWeight.toLocaleString()}
           </ThemedText>
-          <ThemedText type="small" themeColor="textSecondary">Authorized (lbs)</ThemedText>
+          <ThemedText type="small" themeColor="textSecondary">Household goods allowance (lbs)</ThemedText>
         </View>
       </View>
 
       {overAllowance && (
         <View style={[styles.overBanner, { backgroundColor: `${Brand.danger}12` }]}>
           <ThemedText type="small" style={{ color: Brand.danger, lineHeight: 18 }}>
-            Your estimated weight ({actualWeight.toLocaleString()} lbs) exceeds your authorized
-            allowance. The incentive is calculated on {authorizedWeight.toLocaleString()} lbs.
-            You are responsible for any costs above your entitlement.
+            Your household goods ({actualWeight.toLocaleString()} lbs) exceed your authorized
+            allowance. The incentive is calculated on {authorizedWeight.toLocaleString()} lbs of
+            household goods (pro-gear is paid separately, on top). You are responsible for any
+            costs above your entitlement.
           </ThemedText>
         </View>
       )}

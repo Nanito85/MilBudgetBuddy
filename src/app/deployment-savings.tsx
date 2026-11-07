@@ -114,7 +114,7 @@ export default function DeploymentSavingsScreen() {
 
         {/* Hero */}
         <ThemedView type="backgroundElement" style={styles.heroBanner}>
-          <ThemedText style={styles.heroEyebrow}>SINGLE SERVICE MEMBER</ThemedText>
+          <ThemedText style={styles.heroEyebrow}>SERVICE MEMBER</ThemedText>
           <ThemedText style={[styles.heroTitle, { color: tc.textPrimary }]}>Deployment Wealth Builder</ThemedText>
           <ThemedText style={[styles.heroBody, { color: tc.textHint }]}>
             Deployment is your best financial opportunity. Low expenses, extra pay, tax breaks. Make it count.
@@ -171,6 +171,8 @@ export default function DeploymentSavingsScreen() {
           {specialPaysTotal > 0 && <Row label="Special pays (from profile)" value={fmt(specialPaysTotal)} />}
           {czte && <Row label="Federal tax avoided (CZTE)" value={fmt(taxSavings)} color={Brand.success} sub="estimated, already counted in your surplus" />}
           <View style={[styles.divider, { backgroundColor: tc.borderColor }]} />
+          <Row label="FICA (Social Security + Medicare)" value={`−${fmt(fica)}`} />
+          {!czte && <Row label="Federal income tax (estimated)" value={`−${fmt(taxDeployed)}`} sub="no combat zone exclusion" />}
           <Row label="Monthly expenses" value={`−${fmt(homeCosts)}`} />
           <Row
             label="Monthly surplus"

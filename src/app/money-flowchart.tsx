@@ -169,7 +169,7 @@ export default function MoneyFlowchartScreen() {
 
         {/* Hero */}
         <ThemedView type="backgroundElement" style={styles.heroBanner}>
-          <ThemedText style={[styles.heroEyebrow, { color: tc.tactical }]}>SINGLE SERVICE MEMBER</ThemedText>
+          <ThemedText style={[styles.heroEyebrow, { color: tc.tactical }]}>SERVICE MEMBER</ThemedText>
           <ThemedText style={[styles.heroTitle, { color: tc.textPrimary }]}>The Military Money Order</ThemedText>
           <ThemedText style={[styles.heroBody, { color: tc.textHint }]}>
             Six steps in priority order. Do Step 1 before Step 2. Check each off as you complete it.
