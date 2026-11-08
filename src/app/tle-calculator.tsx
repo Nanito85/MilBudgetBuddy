@@ -22,6 +22,7 @@ import {
 import { NumberStepper } from '@/features/retirement/components/NumberStepper';
 import { BottomTabInset, Brand, Spacing } from '@/constants/theme';
 import { useThemeColors } from '@/hooks/use-theme';
+import { useUserStore } from '@/store/user.store';
 
 export default function TLECalculatorScreen() {
   const router = useRouter();
@@ -32,7 +33,8 @@ export default function TLECalculatorScreen() {
   const [locality, setLocality] = useState<Locality | null>(null);
   const [useCustomRate, setUseCustomRate] = useState(false);
   const [customRateText, setCustomRateText] = useState('');
-  const [hasSpouse, setHasSpouse] = useState(false);
+  // Start from the profile's marital status (children's ages aren't stored, so they are still added by hand).
+  const [hasSpouse, setHasSpouse] = useState(() => useUserStore.getState().hasSpouse);
   const [childAges, setChildAges] = useState<number[]>([]);
   const [days, setDays] = useState(mode === 'tle' ? 10 : 14);
 
@@ -156,7 +158,7 @@ export default function TLECalculatorScreen() {
                 <ThemedText style={styles.dollarSign}>$</ThemedText>
                 <TextInput
                   value={customRateText}
-                  onChangeText={setCustomRateText}
+                  onChangeText={(t) => setCustomRateText(t.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1').slice(0, 6))}
                   placeholder="e.g. 185"
                   keyboardType="numeric"
                   placeholderTextColor={tc.textSecondary}

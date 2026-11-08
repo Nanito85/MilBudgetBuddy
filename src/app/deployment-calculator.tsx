@@ -27,6 +27,8 @@ import {
 } from '@/features/deployment/utils/deploymentCalc';
 import { BottomTabInset, Brand, Spacing } from '@/constants/theme';
 import { useThemeColors } from '@/hooks/use-theme';
+import { useUserStore } from '@/store/user.store';
+import { useProfileLES } from '@/features/home/hooks/useProfileLES';
 
 // ── Small reusable chips ──────────────────────────────────────────────────────
 
@@ -123,13 +125,18 @@ export default function DeploymentCalculatorScreen() {
   const insets = useSafeAreaInsets();
   const tc = useThemeColors();
 
-  const [grade, setGrade] = useState<PayGrade>('E5');
-  const [yos, setYos] = useState(6);
+  // Start from the member's own profile instead of a fixed E5 / 6 YOS / $2,000 BAH.
+  const profileLES = useProfileLES();
+  const [grade, setGrade] = useState<PayGrade>(() => useUserStore.getState().payGrade ?? 'E5');
+  const [yos, setYos] = useState(() => useUserStore.getState().yos || 6);
   const [months, setMonths] = useState(9);
   const [zoneType, setZoneType] = useState<ZoneType>('czte');
-  const [hasDependents, setHasDependents] = useState(true);
+  const [hasDependents, setHasDependents] = useState(() => {
+    const s = useUserStore.getState();
+    return s.hasSpouse || (s.numChildren ?? 0) > 0;
+  });
   const [hasBAH, setHasBAH] = useState(true);
-  const [bahText, setBahText] = useState('2000');
+  const [bahText, setBahText] = useState(() => (profileLES && profileLES.bah > 0 ? String(Math.round(profileLES.bah)) : '2000'));
   const [hdpLevel, setHdpLevel] = useState<HdpLevel>(0);
   const [taxBracket, setTaxBracket] = useState<TaxBracket>(22);
   const [sdpText, setSdpText] = useState('5000');
@@ -301,7 +308,7 @@ export default function DeploymentCalculatorScreen() {
                     style={[styles.input, { color: tc.textPrimary }]}
                     keyboardType="numeric"
                     value={bahText}
-                    onChangeText={setBahText}
+                    onChangeText={(t) => setBahText(t.replace(/[^0-9]/g, '').slice(0, 5))}
                     placeholderTextColor={tc.textMuted}
                     placeholder="0"
                   />
@@ -329,7 +336,7 @@ export default function DeploymentCalculatorScreen() {
                     style={[styles.input, { color: tc.textPrimary }]}
                     keyboardType="numeric"
                     value={sdpText}
-                    onChangeText={setSdpText}
+                    onChangeText={(t) => setSdpText(t.replace(/[^0-9]/g, '').slice(0, 5))}
                     placeholderTextColor={tc.textMuted}
                     placeholder="0"
                   />

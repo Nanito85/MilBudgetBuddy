@@ -206,7 +206,7 @@ export default function SchoolsFinderScreen() {
                     style={[styles.card, styles.cardPadded, styles.notesCard]}>
                     <ThemedText style={styles.notesLabel}>📌 NOTE</ThemedText>
                     <ThemedText type="small" style={{ lineHeight: 18 }}>
-                      {schoolInfo.sloNotes || schoolInfo.notes}
+                      {[schoolInfo.sloNotes, schoolInfo.notes].filter(Boolean).join('\n\n')}
                     </ThemedText>
                   </ThemedView>
                 )}
