@@ -139,17 +139,17 @@ const SECTIONS: TaxSection[] = [
     id: 'sgli',
     icon: '🛡️',
     title: 'SGLI / VGLI Tax Treatment',
-    summary: 'SGLI premiums are paid with pre-tax dollars. Death benefits are generally tax-free to beneficiaries.',
+    summary: 'SGLI premiums come out of your pay every month. Death benefits are generally tax-free to beneficiaries.',
     body:
       'SGLI PREMIUMS:\n' +
-      '• Deducted pre-tax from basic pay — reduces your taxable income.\n' +
-      '• Shown on your LES but NOT added back to taxable wages on W-2.\n\n' +
+      '• Deducted from your pay every month and shown on your LES.\n' +
+      '• Do not count on them lowering your taxable income: MilBudgetBuddy treats SGLI as a deduction taken after tax. Compare Box 1 of your W-2 with your LES, or ask your finance office, to see how yours was reported.\n\n' +
       'SGLI DEATH BENEFIT:\n' +
       '• Up to $500,000 paid to beneficiaries (increased from $400,000 effective March 1, 2023).\n' +
       '• Generally not subject to federal income tax (IRC §101).\n' +
       '• Interest earned on the benefit after death is taxable.\n\n' +
       'VGLI (after separation):\n' +
-      '• Premiums are NOT pre-tax — paid with after-tax dollars.\n' +
+      '• Premiums are billed to you directly instead of coming out of military pay.\n' +
       '• Death benefit still tax-free to beneficiaries.\n\n' +
       'TRAUMATIC SGLI (TSGLI):\n' +
       '• Payments for qualifying traumatic injuries are also excluded from gross income.',

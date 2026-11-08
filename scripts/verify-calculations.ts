@@ -755,7 +755,7 @@ assertEqual(retiredPayMultiplier(20, '2019-06-01'), 0.4, 'Entry on/after 2018-01
 }
 {
   const sf = getApproxInstallationForZip('94105');
-  assertTrue(!!sf && sf.mhaZip === '94102', 'A San Francisco ZIP maps to the San Francisco BAH area, not the first base in California');
+  assertTrue(!!sf && getBahRate(sf.mhaZip, 'E5', true) === getBahRate('94102', 'E5', true), 'A San Francisco ZIP maps to the San Francisco BAH area, not the first base in California');
   const nyc = getApproxInstallationForZip('10001');
   assertTrue(!!nyc && nyc.mhaZip === '10001', 'A New York City ZIP maps to its own BAH area');
 }
@@ -824,7 +824,7 @@ assertEqual(getBasicPay('O8', 22), 18999, 'O-8 over 22 years is the $18,999 cap'
 // ── Audit round 8 (2026-11-07) ────────────────────────────────────────────────
 {
   const z = getInstallationById('zip_94105');
-  assertTrue(!!z && z.mhaZip === '94102' && z.id === 'zip_94105', 'A saved ZIP station id resolves back to the same ZIP area (not another base)');
+  assertTrue(!!z && getBahRate(z.mhaZip, 'E5', true) === getBahRate('94102', 'E5', true) && z.id === 'zip_94105', 'A saved ZIP station id resolves back to the same ZIP area (not another base)');
   const z2 = getInstallationById('zip_28307');
   assertTrue(!!z2 && z2.id === 'zip_28307', 'A saved ZIP station keeps its zip_ id instead of turning into a listed base');
 }
@@ -859,6 +859,14 @@ assertEqual(getBasicPay('O8', 22), 18999, 'O-8 over 22 years is the $18,999 cap'
     assertEqual(findBahKeyApprox(zip)?.exact, true, `BAH: ${label} ZIP ${zip} is an exact match`);
     assertEqual(getBahRate(zip, 'E5', true), e5Dep, `BAH: ${label} E-5 with dependents is the official rate`);
   }
+}
+
+// ── Any ZIP DoD lists resolves to its own MHA or county cost group (ZZ###) ──
+{
+  assertEqual(findBahKeyApprox('59001')?.exact, true, 'BAH: a rural ZIP outside every named MHA is an exact county-cost-group match');
+  assertEqual(getBahRate('59001', 'E5', true), 1890, 'BAH: county cost group ZZ790 E-5 with dependents is the official rate');
+  assertEqual(getBahRate('59001', 'E5', false), 1542, 'BAH: county cost group ZZ790 E-5 without dependents is the official rate');
+  assertEqual(getBahRate('22314', 'E5', true), getBahRate('22202', 'E5', true), 'BAH: a ZIP that is not a table key resolves to its MHA (Alexandria matches Arlington area)');
 }
 
 // ── Summary ────────────────────────────────────────────────────────────────────
