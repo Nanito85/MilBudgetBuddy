@@ -130,11 +130,11 @@ function Stepper({ label, value, min, max, onChange }: {
     <View style={styles.stepperRow}>
       <ThemedText style={styles.stepperLabel}>{label}</ThemedText>
       <View style={styles.stepperCtrl}>
-        <Pressable accessibilityRole="button" hitSlop={8} onPress={() => onChange(Math.max(min, value - 1))} style={styles.stepBtn}>
+        <Pressable accessibilityLabel="Decrease" accessibilityRole="button" hitSlop={8} onPress={() => onChange(Math.max(min, value - 1))} style={styles.stepBtn}>
           <ThemedText style={styles.stepBtnTxt}>−</ThemedText>
         </Pressable>
         <ThemedText style={styles.stepVal}>{value}</ThemedText>
-        <Pressable accessibilityRole="button" hitSlop={8} onPress={() => onChange(Math.min(max, value + 1))} style={styles.stepBtn}>
+        <Pressable accessibilityLabel="Increase" accessibilityRole="button" hitSlop={8} onPress={() => onChange(Math.min(max, value + 1))} style={styles.stepBtn}>
           <ThemedText style={styles.stepBtnTxt}>+</ThemedText>
         </Pressable>
       </View>

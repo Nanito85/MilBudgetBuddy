@@ -107,13 +107,16 @@ export function PaySummaryCard({ breakdown }: Props) {
   // Drill pay is likewise one deposit per drill weekend, not semi-monthly.
   const singleMonthlyPay   = breakdown.isRetiredPay || breakdown.isDrillPay;
   const payPeriodsPerMonth = singleMonthlyPay ? 1 : 2;
-  const perPaycheck       = breakdown.netPay / payPeriodsPerMonth;
+  // Net shown on screen = the gross shown minus the deductions shown. Rounding the exact net on its own
+  // could leave the card $1 off from its own rows (gross 635 - deductions 109 showed net 525, not 526).
+  const displayNet        = Math.round(breakdown.grossPay) - Math.round(breakdown.totalDeductions);
+  const perPaycheck       = displayNet / payPeriodsPerMonth;
   // Spouse income's own pay cadence isn't tracked separately (there's no
   // spouse-pay-period field in the data model) — it's still shown on the
   // active-duty semi-monthly cadence here since that's the only one this
   // app currently models for a second income.
   const spousePerPaycheck = spouseMonthlyIncome / 2;
-  const householdMonthly  = breakdown.netPay + spouseMonthlyIncome;
+  const householdMonthly  = displayNet + spouseMonthlyIncome;
   const householdPerCheck = householdMonthly / payPeriodsPerMonth;
   const hasSpouseIncome   = spouseMonthlyIncome > 0;
 
@@ -196,7 +199,7 @@ export function PaySummaryCard({ breakdown }: Props) {
               informative, so it's only shown for the semi-monthly schedule. */}
           {!singleMonthlyPay && (
             <ThemedText style={[styles.netMonthly, { color: tc.textHint }]}>
-              {fmtPay(breakdown.netPay)}<ThemedText style={[styles.netMonthlyUnit, { color: tc.textMuted }]}> / month</ThemedText>
+              {fmtPay(displayNet)}<ThemedText style={[styles.netMonthlyUnit, { color: tc.textMuted }]}> / month</ThemedText>
             </ThemedText>
           )}
         </View>
@@ -327,14 +330,14 @@ export function PaySummaryCard({ breakdown }: Props) {
               having to dig through their profile to find out. */}
           <Row
             label="STATE TAX (EST.)"
-            value={breakdown.stateTax > 0 ? `-${fmtPay(breakdown.stateTax)}` : '$0.00'}
+            value={breakdown.stateTax > 0 ? `-${fmtPay(breakdown.stateTax)}` : '$0'}
             indent negative={breakdown.stateTax > 0}
             onInfoPress={() => Alert.alert('State Tax', stateTaxExplanation)}
           />
           {/* Retired pay isn't TSP-eligible (see lesCalc.ts) — showing a
               "$0" TSP row for a retiree implies it's a live decision to
               make, when it structurally doesn't apply anymore. */}
-          {!breakdown.isRetiredPay && (
+          {(!breakdown.isRetiredPay || breakdown.tsp > 0) && (
             <>
               {breakdown.traditionalTsp > 0 && <Row label="TSP (TRADITIONAL)" value={`-${fmtPay(breakdown.traditionalTsp)}`} indent negative />}
               {breakdown.rothTsp > 0       && <Row label="TSP (ROTH)"        value={`-${fmtPay(breakdown.rothTsp)}`}        indent negative />}
@@ -366,7 +369,7 @@ export function PaySummaryCard({ breakdown }: Props) {
 
           <View style={[styles.divider, { backgroundColor: tc.borderColor }]} />
 
-          <Row label="MONTHLY NET"      value={fmtPay(breakdown.netPay)}   bold />
+          <Row label="MONTHLY NET"      value={fmtPay(displayNet)}   bold />
           {/* Retired pay is a single monthly deposit — there's no second
               "paycheck" to break out, so this row would just repeat
               MONTHLY NET above under a misleading "÷2" label. */}
@@ -378,7 +381,7 @@ export function PaySummaryCard({ breakdown }: Props) {
             <>
               <View style={[styles.divider, { backgroundColor: tc.borderColor }]} />
               <ThemedText type="label" style={[styles.sectionHead, { color: tc.tactical }]}>{'// HOUSEHOLD COMBINED'}</ThemedText>
-              <Row label="YOUR NET/MO"        value={fmtPay(breakdown.netPay)}   indent positive />
+              <Row label="YOUR NET/MO"        value={fmtPay(displayNet)}   indent positive />
               <Row label="SPOUSE INCOME/MO"   value={fmtPay(spouseMonthlyIncome)} indent positive />
               <Row label="HOUSEHOLD MONTHLY"  value={fmtPay(householdMonthly)}   bold positive />
               <Row label="HOUSEHOLD / CHECK"  value={fmtPay(householdPerCheck)}  bold />

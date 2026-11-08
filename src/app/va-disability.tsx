@@ -7,6 +7,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Brand, Spacing } from '@/constants/theme';
 import { useThemeColors } from '@/hooks/use-theme';
+import { useUserStore } from '@/store/user.store';
 import {
   combinedRating,
   combineVaRatings,
@@ -76,8 +77,9 @@ export default function VaDisabilityScreen() {
 
   const [tab, setTab] = useState<Tab>('calculator');
   const [ratings, setRatings] = useState<RatingInput[]>([{ id: uid(), pct: 50 }]);
-  const [hasSpouse, setHasSpouse] = useState(false);
-  const [numChildren, setNumChildren] = useState(0);
+  // Start from the profile's family so the dollar amount matches the member's real situation.
+  const [hasSpouse, setHasSpouse] = useState(() => useUserStore.getState().hasSpouse);
+  const [numChildren, setNumChildren] = useState(() => useUserStore.getState().numChildren ?? 0);
   // "Additional VA Dependents / Special Circumstances" — progressive
   // disclosure, off by default so the common case (spouse + regular kids)
   // stays a simple calculator. See monthlyCompensationDetailed.
@@ -329,13 +331,13 @@ export default function VaDisabilityScreen() {
                 <View style={styles.toggleRow}>
                   <ThemedText style={[styles.toggleLabel, { color: tc.textPrimary }]}>Children ({numChildren})</ThemedText>
                   <View style={styles.childCounter}>
-                    <Pressable accessibilityRole="button"
+                    <Pressable accessibilityLabel="Decrease" accessibilityRole="button"
                       onPress={() => setNumChildren((v) => Math.max(0, v - 1))}
                       style={[styles.counterBtn, { borderColor: tc.borderColor }]}>
                       <ThemedText style={[styles.counterBtnText, { color: tc.textPrimary }]}>−</ThemedText>
                     </Pressable>
                     <ThemedText style={[styles.counterVal, { color: tc.textPrimary }]}>{numChildren}</ThemedText>
-                    <Pressable accessibilityRole="button"
+                    <Pressable accessibilityLabel="Increase" accessibilityRole="button"
                       onPress={() => setNumChildren((v) => Math.min(10, v + 1))}
                       style={[styles.counterBtn, { borderColor: tc.borderColor }]}>
                       <ThemedText style={[styles.counterBtnText, { color: tc.textPrimary }]}>+</ThemedText>
@@ -378,13 +380,13 @@ export default function VaDisabilityScreen() {
                         <ThemedText type="small" style={{ color: tc.textHint }}>In a VA-qualifying school program — a higher add-on than a regular child</ThemedText>
                       </View>
                       <View style={styles.childCounter}>
-                        <Pressable accessibilityRole="button"
+                        <Pressable accessibilityLabel="Decrease" accessibilityRole="button"
                           onPress={() => setNumSchoolChildren((v) => Math.max(0, v - 1))}
                           style={[styles.counterBtn, { borderColor: tc.borderColor }]}>
                           <ThemedText style={[styles.counterBtnText, { color: tc.textPrimary }]}>−</ThemedText>
                         </Pressable>
                         <ThemedText style={[styles.counterVal, { color: tc.textPrimary }]}>{numSchoolChildren}</ThemedText>
-                        <Pressable accessibilityRole="button"
+                        <Pressable accessibilityLabel="Increase" accessibilityRole="button"
                           onPress={() => setNumSchoolChildren((v) => Math.min(10, v + 1))}
                           style={[styles.counterBtn, { borderColor: tc.borderColor }]}>
                           <ThemedText style={[styles.counterBtnText, { color: tc.textPrimary }]}>+</ThemedText>

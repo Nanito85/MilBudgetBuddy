@@ -84,7 +84,14 @@ export default function RetirementCalculatorScreen() {
   const [system, setSystem] = useState<RetirementSystem>(
     profileEnlisted && profileEnlisted >= '2018-01-01' ? 'brs' : 'both',
   );
-  const [tspContribIdx, setTspContribIdx] = useState(4);  // 5%
+  // Start at the member's own TSP percent (nearest step) instead of a fixed 5%; falls back to 5%.
+  const [tspContribIdx, setTspContribIdx] = useState(() => {
+    const own = useUserStore.getState().tspContribPct;
+    if (typeof own !== 'number' || own <= 0) return 4;
+    let best = 0;
+    CONTRIB_STEPS.forEach((v, i) => { if (Math.abs(v - own) < Math.abs(CONTRIB_STEPS[best] - own)) best = i; });
+    return best;
+  });
   const [tspReturnIdx, setTspReturnIdx] = useState(3);    // 7%
   const [vaRating, setVaRating] = useState(0);
   // Family + state pre-fill from the profile but stay editable here — the

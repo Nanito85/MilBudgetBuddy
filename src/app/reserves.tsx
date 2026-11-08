@@ -401,11 +401,11 @@ export default function ReservesScreen() {
               <View style={styles.rowItem}>
                 <ThemedText style={[styles.rowLabel, { color: tc.textSecondary }]}>Good Years (qualifying)</ThemedText>
                 <View style={styles.stepperWrap}>
-                  <Pressable accessibilityRole="button" hitSlop={8} onPress={() => setGoodYears(Math.max(0, goodYears - 1))} style={[styles.stepBtn, { backgroundColor: tc.borderColor }]}>
+                  <Pressable accessibilityLabel="Decrease" accessibilityRole="button" hitSlop={8} onPress={() => setGoodYears(Math.max(0, goodYears - 1))} style={[styles.stepBtn, { backgroundColor: tc.borderColor }]}>
                     <ThemedText style={[styles.stepBtnText, { color: tc.textPrimary }]}>−</ThemedText>
                   </Pressable>
                   <ThemedText style={[styles.stepValue, { color: tc.textPrimary }]}>{goodYears}</ThemedText>
-                  <Pressable accessibilityRole="button" hitSlop={8} onPress={() => setGoodYears(Math.min(40, goodYears + 1))} style={[styles.stepBtn, { backgroundColor: tc.borderColor }]}>
+                  <Pressable accessibilityLabel="Increase" accessibilityRole="button" hitSlop={8} onPress={() => setGoodYears(Math.min(40, goodYears + 1))} style={[styles.stepBtn, { backgroundColor: tc.borderColor }]}>
                     <ThemedText style={[styles.stepBtnText, { color: tc.textPrimary }]}>+</ThemedText>
                   </Pressable>
                 </View>
@@ -414,11 +414,11 @@ export default function ReservesScreen() {
               <View style={styles.rowItem}>
                 <ThemedText style={[styles.rowLabel, { color: tc.textSecondary }]}>Total Retirement Points</ThemedText>
                 <View style={styles.stepperWrap}>
-                  <Pressable accessibilityRole="button" hitSlop={8} onPress={() => setRetirementPoints(Math.max(0, retirementPoints - 50))} style={[styles.stepBtn, { backgroundColor: tc.borderColor }]}>
+                  <Pressable accessibilityLabel="Decrease" accessibilityRole="button" hitSlop={8} onPress={() => setRetirementPoints(Math.max(0, retirementPoints - 50))} style={[styles.stepBtn, { backgroundColor: tc.borderColor }]}>
                     <ThemedText style={[styles.stepBtnText, { color: tc.textPrimary }]}>−</ThemedText>
                   </Pressable>
                   <ThemedText style={[styles.stepValue, { color: tc.textPrimary }]}>{retirementPoints.toLocaleString()}</ThemedText>
-                  <Pressable accessibilityRole="button" hitSlop={8} onPress={() => setRetirementPoints(retirementPoints + 50)} style={[styles.stepBtn, { backgroundColor: tc.borderColor }]}>
+                  <Pressable accessibilityLabel="Increase" accessibilityRole="button" hitSlop={8} onPress={() => setRetirementPoints(retirementPoints + 50)} style={[styles.stepBtn, { backgroundColor: tc.borderColor }]}>
                     <ThemedText style={[styles.stepBtnText, { color: tc.textPrimary }]}>+</ThemedText>
                   </Pressable>
                 </View>

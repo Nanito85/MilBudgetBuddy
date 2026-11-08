@@ -498,13 +498,13 @@ export function KidModeScreen() {
             <View style={screen.tipHeader}>
               <ThemedText style={[screen.tipLabel, { color: theme.accent }]}>💰 MONEY INTEL</ThemedText>
               <View style={screen.tipNav}>
-                <Pressable accessibilityRole="button"
+                <Pressable accessibilityLabel="Go back" accessibilityRole="button"
                   onPress={() => setTipIdx((i) => (i - 1 + MONEY_TIPS.length) % MONEY_TIPS.length)}
                   hitSlop={10} style={screen.tipNavBtn}>
                   <ThemedText style={[screen.tipNavText, { color: theme.primary }]}>‹</ThemedText>
                 </Pressable>
                 <ThemedText style={screen.tipCounter}>{tipIdx + 1}/{MONEY_TIPS.length}</ThemedText>
-                <Pressable accessibilityRole="button"
+                <Pressable accessibilityLabel="Next" accessibilityRole="button"
                   onPress={() => setTipIdx((i) => (i + 1) % MONEY_TIPS.length)}
                   hitSlop={10} style={screen.tipNavBtn}>
                   <ThemedText style={[screen.tipNavText, { color: theme.primary }]}>›</ThemedText>

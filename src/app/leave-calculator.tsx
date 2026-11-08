@@ -98,6 +98,7 @@ export default function LeaveCalculatorScreen() {
   const [plannedLeaveDays, setPlannedLeaveDays] = useState(10);
   const [terminalLeaveDays, setTerminalLeaveDays] = useState(30);
   const [useOrLoseExempt, setUseOrLoseExempt] = useState(false);
+  const [daysAlreadySold, setDaysAlreadySold] = useState(0);
 
   const result = useMemo(
     () =>
@@ -109,8 +110,9 @@ export default function LeaveCalculatorScreen() {
         plannedLeaveDays,
         terminalLeaveDays,
         useOrLoseExempt,
+        daysAlreadySold,
       }),
-    [grade, yos, currentBalance, monthsUntilEts, plannedLeaveDays, terminalLeaveDays, useOrLoseExempt],
+    [grade, yos, currentBalance, monthsUntilEts, plannedLeaveDays, terminalLeaveDays, useOrLoseExempt, daysAlreadySold],
   );
 
   const {
@@ -118,6 +120,7 @@ export default function LeaveCalculatorScreen() {
     monthlyBasicPay,
     accrualTotal,
     projectedBalance,
+    balanceAtEts,
     payableDays,
     payoutValue,
     terminalLeaveValue,
@@ -250,6 +253,23 @@ export default function LeaveCalculatorScreen() {
               <ThemedText type="small" themeColor="textSecondary" style={styles.hint}>
                 Terminal leave starts ~{terminalStartOffset.toFixed(1)} months from now.
                 You receive full basic pay during terminal leave (DoD FMR Vol 7A Ch 35).
+                {result.terminalLeaveDaysUsed < terminalLeaveDays
+                  ? ` You only have ${fmtDays(result.terminalLeaveDaysUsed)} of leave available for it.`
+                  : ''}
+              </ThemedText>
+            </View>
+            <View style={styles.divider} />
+            <View style={styles.cardPadded}>
+              <NumberStepper
+                label="Leave Already Sold (career)"
+                value={daysAlreadySold}
+                min={0}
+                max={60}
+                onChange={setDaysAlreadySold}
+                unit="days"
+              />
+              <ThemedText type="small" themeColor="textSecondary" style={styles.hint}>
+                You can sell back at most 60 days of leave in your whole career. Enter any days you sold before.
               </ThemedText>
             </View>
             <View style={styles.divider} />
@@ -288,11 +308,11 @@ export default function LeaveCalculatorScreen() {
           <ThemedView type="backgroundElement" style={[styles.card, styles.cardPadded]}>
             <LeaveBar label="Current Balance" value={currentBalance} max={maxCarryover} color="#208AEF" />
             <LeaveBar label="Will Accrue" value={accrualTotal} max={maxCarryover} color="#00C8A8" />
-            <LeaveBar label="Planned Use" value={plannedLeaveDays + terminalLeaveDays} max={maxCarryover} color="#C8A800" />
+            <LeaveBar label="Planned Use" value={plannedLeaveDays + result.terminalLeaveDaysUsed} max={maxCarryover} color="#C8A800" />
             <View style={styles.projDivider} />
             <LeaveBar
               label="Remaining at ETS (for payout)"
-              value={Math.min(projectedBalance, MAX_PAYOUT_DAYS)}
+              value={balanceAtEts}
               max={MAX_PAYOUT_DAYS}
               color={projectedBalance > MAX_PAYOUT_DAYS ? '#FF6B35' : Brand.accent}
             />
@@ -335,7 +355,7 @@ export default function LeaveCalculatorScreen() {
               <ResultRow
                 label="Terminal Leave Pay"
                 value={fmtMoney(terminalLeaveValue)}
-                sub={`${fmtDays(terminalLeaveDays)} on full pay — received as regular paychecks (DoD FMR Vol 7A Ch 35)`}
+                sub={`${fmtDays(result.terminalLeaveDaysUsed)} on full pay — received as regular paychecks (DoD FMR Vol 7A Ch 35)`}
               />
               <View style={styles.totalDivider} />
               <ResultRow

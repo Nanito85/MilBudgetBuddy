@@ -1,4 +1,6 @@
 # MilBudgetBuddy — Feature Reference
+
+> **Out of date (2026-11-07).** This file describes an earlier build. The AI Chat tab (section 7), `src/app/chat.tsx`, `chat.store.ts` and the `EXPO_PUBLIC_ANTHROPIC_API_KEY` setting no longer exist: chat was removed and the backend `/api/chat` route is gone. Never put an Anthropic key in the app. For current behavior see `README.md`, `RELEASING.md` and the code.
 **Last updated:** 2026-05-18 (session 2)  
 **Stack:** Expo ~55 / React Native 0.83.2 / React 19 / TypeScript / Expo Router / Zustand v5 / AsyncStorage  
 **Build ID:** nanito85 · project efdc8b09-9740-4992-bd14-1200d6d0e133  

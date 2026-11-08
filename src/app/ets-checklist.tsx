@@ -89,7 +89,7 @@ const SECTIONS: CheckSection[] = [
       {
         id: 'tricare_plan',
         label: 'Plan TRICARE transition',
-        detail: 'Active duty TRICARE Prime ends on ETS date. Options: the Transitional Assistance Management Program (TAMP) for up to 180 days (no premium), the Continued Health Care Benefit Program (CHCBP, premium-based, 18-36 months) after that, VA healthcare enrollment, employer insurance, or a marketplace plan. Enroll before coverage lapses.',
+        detail: 'Active duty TRICARE Prime ends on ETS date. Options: the Continued Health Care Benefit Program (CHCBP, premium-based, 18-36 months, the usual choice if you leave voluntarily), VA healthcare enrollment, employer insurance, or a marketplace plan. The Transitional Assistance Management Program (TAMP: 180 days, no premium) is only for certain separations, such as involuntary separation, so ask your transition office if you qualify. Enroll before coverage lapses.',
         timeframe: '90 days',
       },
       {

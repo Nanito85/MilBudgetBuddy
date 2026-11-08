@@ -315,7 +315,7 @@ export const TIPS: Tip[] = [
   {
     id: 'housing-004',
     title: 'SCRA Lets You Break a Lease for PCS',
-    body: 'Federal law (SCRA) gives you the right to terminate any housing lease early with 30 days notice when you receive PCS orders or deploy for 90+ days. Any landlord who refuses is violating federal law.',
+    body: 'Federal law (SCRA) lets you terminate a housing lease early when you receive PCS orders or deploy for 90+ days. You give written notice with a copy of your orders, and the termination takes effect 30 days after the next rent payment is due. A landlord who refuses is violating federal law.',
     category: 'housing',
     tags: ['SCRA', 'lease', 'PCS'],
   },
@@ -350,7 +350,7 @@ export const TIPS: Tip[] = [
   {
     id: 'housing-009',
     title: 'Renters Insurance Is Cheap and Essential',
-    body: "Renters insurance costs $15–$30 per month and covers your belongings if they are stolen, damaged in a fire, or destroyed by flooding. If you live off post, get it. On-post housing often requires it anyway.",
+    body: "Renters insurance costs $15–$30 per month and covers your belongings if they are stolen or damaged in a fire. Flooding is usually NOT covered: that takes a separate flood policy, which is worth asking about if you live near water or on low ground. If you live off post, get renters insurance. On-post housing often requires it anyway.",
     category: 'housing',
     tags: ['renters insurance', 'off-post', 'belongings'],
   },
@@ -423,8 +423,8 @@ export const TIPS: Tip[] = [
   // ─── RESERVE / GUARD ───────────────────────────────────────────────────────
   {
     id: 'tsp-011',
-    title: 'BRS Auto 1% Still Hits Your Drill Pay — Even Without Matching',
-    body: 'Under BRS, your service automatically contributes 1% of your pay to TSP once you have 2 years of service — and for Selected Reserve members, that 1% applies to your drill (IDT) pay too, not just active duty. The up-to-4% matching contribution, though, only kicks in during actual active-duty periods (AT, ADOS, mobilization) — it does not match your regular drill weekends. Don\'t assume "no match this month" means "no TSP contribution at all."',
+    title: 'BRS Auto 1% Starts Early; Matching Comes After 2 Years',
+    body: 'Under BRS, your service automatically contributes 1% of your basic pay to your TSP within about 60 days of joining, whether or not you put in anything yourself. The matching contribution (up to 4% on top) begins after 2 years of service. Reserve and Guard members should confirm with their unit or DFAS how government contributions apply to drill pay. Don\'t assume "no match yet" means "no TSP contribution at all."',
     category: 'tsp',
     tags: ['reserve', 'guard', 'BRS', 'drill pay', 'match', 'IDT'],
   },

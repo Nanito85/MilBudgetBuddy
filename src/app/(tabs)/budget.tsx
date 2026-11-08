@@ -548,13 +548,13 @@ function TipRotator() {
       <View style={styles.tipHeader}>
         <ThemedText style={[styles.tipLabel, { color: tc.tactical }]}>{'// FIN-OPS INTEL'}</ThemedText>
         <View style={styles.tipNav}>
-          <Pressable accessibilityRole="button" onPress={prev} hitSlop={8} style={styles.tipNavBtn}>
+          <Pressable accessibilityLabel="Go back" accessibilityRole="button" onPress={prev} hitSlop={8} style={styles.tipNavBtn}>
             <ThemedText style={[styles.tipNavText, { color: tc.tactical }]}>‹</ThemedText>
           </Pressable>
           <ThemedText style={[styles.tipCounter, { color: tc.textMuted }]}>
             {idx + 1}/{MIL_TIPS.length}
           </ThemedText>
-          <Pressable accessibilityRole="button" onPress={next} hitSlop={8} style={styles.tipNavBtn}>
+          <Pressable accessibilityLabel="Next" accessibilityRole="button" onPress={next} hitSlop={8} style={styles.tipNavBtn}>
             <ThemedText style={[styles.tipNavText, { color: tc.tactical }]}>›</ThemedText>
           </Pressable>
         </View>

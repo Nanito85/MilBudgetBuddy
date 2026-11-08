@@ -215,7 +215,7 @@ const SELECT_PROS: Record<CoverageStatus, string[]> = {
   retired: ['No PCM referral needed', 'Flat network copays', 'Good for low/occasional use'],
 };
 const SELECT_CONS: Record<CoverageStatus, string[]> = {
-  active:  ['Annual deductible applies', 'Non-network care costs more (20%)', 'Now also has an enrollment-style deductible'],
+  active:  ['Annual deductible applies', 'Non-network care costs more (20%)', 'Costs more than Prime for frequent users'],
   reserve: ['TRS monthly premium', 'Annual deductible applies', 'Non-network care costs more (20%)'],
   retired: ['Annual enrollment fee (new since 2021)', 'Annual deductible applies', 'Non-network care costs more (25%)'],
 };
@@ -301,7 +301,7 @@ export function calcTricare(inputs: TricareInputs): TricareResult {
   if (status === 'active') {
     note = 'Active Duty families pay $0 enrollment on both plans. Prime offers $0 copays at MTFs; Select gives referral-free civilian access with a deductible plus flat network copays per visit.';
   } else if (status === 'reserve') {
-    note = 'TRICARE Reserve Select requires a monthly premium. Coverage and cost-shares mirror TRICARE Select. Prime Remote is an option near MTFs.';
+    note = 'TRICARE Reserve Select requires a monthly premium. Coverage and cost-shares mirror TRICARE Select. Prime Remote is only available to some members and families (for example on active-duty orders for more than 30 days, or living far from a military hospital); drilling Selected Reserve members normally use TRS.';
   } else {
     note = 'Retired under-65. Both Prime and Select now charge an annual enrollment fee. Prime has fixed copays and no deductible; Select has a deductible plus flat network copays — better for low-use families.';
   }

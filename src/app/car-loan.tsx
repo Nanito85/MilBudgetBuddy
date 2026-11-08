@@ -176,11 +176,11 @@ export default function CarLoanScreen() {
           <View style={s.inlineRow}>
             <ThemedText style={[s.inlineLabel, { color: tc.textPrimary }]}>Vehicle Price</ThemedText>
             <View style={s.stepCtrl}>
-              <Pressable accessibilityRole="button" onPress={() => setPrice(Math.max(1000, price - 1000))} style={s.stepBtn}>
+              <Pressable accessibilityLabel="Decrease" accessibilityRole="button" onPress={() => setPrice(Math.max(1000, price - 1000))} style={s.stepBtn}>
                 <ThemedText style={s.stepTxt}>−</ThemedText>
               </Pressable>
               <ThemedText style={[s.stepVal, { color: tc.textPrimary }]}>{fmt(price)}</ThemedText>
-              <Pressable accessibilityRole="button" onPress={() => setPrice(Math.min(150000, price + 1000))} style={s.stepBtn}>
+              <Pressable accessibilityLabel="Increase" accessibilityRole="button" onPress={() => setPrice(Math.min(150000, price + 1000))} style={s.stepBtn}>
                 <ThemedText style={s.stepTxt}>+</ThemedText>
               </Pressable>
             </View>
@@ -188,11 +188,11 @@ export default function CarLoanScreen() {
           <View style={s.inlineRow}>
             <ThemedText style={[s.inlineLabel, { color: tc.textPrimary }]}>Down Payment</ThemedText>
             <View style={s.stepCtrl}>
-              <Pressable accessibilityRole="button" onPress={() => setDownPmt(Math.max(0, downPmt - 500))} style={s.stepBtn}>
+              <Pressable accessibilityLabel="Decrease" accessibilityRole="button" onPress={() => setDownPmt(Math.max(0, downPmt - 500))} style={s.stepBtn}>
                 <ThemedText style={s.stepTxt}>−</ThemedText>
               </Pressable>
               <ThemedText style={[s.stepVal, { color: tc.textPrimary }]}>{fmt(downPmt)}</ThemedText>
-              <Pressable accessibilityRole="button" onPress={() => setDownPmt(Math.min(price, downPmt + 500))} style={s.stepBtn}>
+              <Pressable accessibilityLabel="Increase" accessibilityRole="button" onPress={() => setDownPmt(Math.min(price, downPmt + 500))} style={s.stepBtn}>
                 <ThemedText style={s.stepTxt}>+</ThemedText>
               </Pressable>
             </View>

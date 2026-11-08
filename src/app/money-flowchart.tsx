@@ -1,5 +1,6 @@
 ﻿import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -143,11 +144,22 @@ export default function MoneyFlowchartScreen() {
   const tc = useThemeColors();
   const [checked, setChecked] = useState<Record<string, boolean>>({});
 
+  // Remember checked steps on this device (progress used to vanish when you left the screen).
+  useEffect(() => {
+    AsyncStorage.getItem('mbb_money_flowchart')
+      .then((raw) => { if (raw) setChecked(JSON.parse(raw)); })
+      .catch(() => {});
+  }, []);
+
   const completedCount = Object.values(checked).filter(Boolean).length;
   const progressPct = (completedCount / STEPS.length) * 100;
 
   const toggle = (id: string) => {
-    setChecked((prev) => ({ ...prev, [id]: !prev[id] }));
+    setChecked((prev) => {
+      const next = { ...prev, [id]: !prev[id] };
+      AsyncStorage.setItem('mbb_money_flowchart', JSON.stringify(next)).catch(() => {});
+      return next;
+    });
   };
 
   return (

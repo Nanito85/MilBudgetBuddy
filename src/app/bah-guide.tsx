@@ -401,10 +401,11 @@ export default function BahGuideScreen() {
 
   const storedGrade = useUserStore((s) => s.payGrade);
   const storedZip   = useUserStore((s) => s.mhaZip);
+  const profileHasDependents = useUserStore((s) => s.hasSpouse || s.numChildren > 0);
 
   const [tab, setTab]           = useState<TabMode>('bah');
   const [grade, setGrade]       = useState<PayGrade>(storedGrade ?? 'E5');
-  const [depStatus, setDepStatus] = useState<DepStatus>('without');
+  const [depStatus, setDepStatus] = useState<DepStatus>(profileHasDependents ? 'with' : 'without');
 
   // BAH search state — pre-fill from profile
   const [bahSearch, setBahSearch]             = useState('');

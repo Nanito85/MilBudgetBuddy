@@ -46,6 +46,9 @@ export interface LeaveInputs {
   plannedLeaveDays: number;   // leave you plan to use before terminal (R&R, vacation, etc.)
   terminalLeaveDays: number;  // days of terminal leave at the end
   useOrLoseExempt: boolean;   // true = Special Leave Accrual allows 90-day carryover
+  // Days of leave already sold back earlier in the career (the 60-day sell-back cap is for the
+  // whole career, not per separation). Optional; defaults to 0.
+  daysAlreadySold?: number;
 }
 
 export interface LeaveResult {
@@ -62,7 +65,8 @@ export interface LeaveResult {
   payoutValue: number;          // payableDays × dailyRate
 
   // Terminal leave window
-  terminalLeaveValue: number;   // terminalLeaveDays × dailyRate (paid as regular pay)
+  terminalLeaveValue: number;   // terminalLeaveDaysUsed × dailyRate (paid as regular pay)
+  terminalLeaveDaysUsed: number; // terminal days you actually have the leave for (capped by balance)
   terminalStartOffset: number;  // months before ETS terminal leave begins
 
   // Use-or-lose warning
@@ -76,7 +80,7 @@ export interface LeaveResult {
 }
 
 export function calcLeave(inputs: LeaveInputs): LeaveResult {
-  const { grade, yos, currentBalance, monthsUntilEts, plannedLeaveDays, terminalLeaveDays, useOrLoseExempt } = inputs;
+  const { grade, yos, currentBalance, monthsUntilEts, plannedLeaveDays, terminalLeaveDays, useOrLoseExempt, daysAlreadySold = 0 } = inputs;
 
   const monthlyBasicPay = getBasicPay(grade, yos);
   const dailyRate = monthlyBasicPay / DAYS_PER_MONTH;
@@ -90,12 +94,17 @@ export function calcLeave(inputs: LeaveInputs): LeaveResult {
     currentBalance + accrualTotal - plannedLeaveDays - terminalLeaveDays,
   );
 
-  const balanceAtEts = Math.min(projectedBalance, MAX_PAYOUT_DAYS);
+  // Only what is left of the 60-day career cap can be sold back.
+  const payoutCapLeft = Math.max(0, MAX_PAYOUT_DAYS - Math.max(0, daysAlreadySold));
+  const balanceAtEts = Math.min(projectedBalance, payoutCapLeft);
   const payableDays = balanceAtEts;
   const payoutValue = payableDays * dailyRate;
 
-  // Terminal leave: member is still on the rolls and receiving full pay
-  const safeTerm = Math.max(0, terminalLeaveDays);
+  // Terminal leave: member is still on the rolls and receiving full pay. It is taken FROM the leave
+  // balance, so you cannot take (or be paid for) more terminal leave days than you will have after
+  // your other planned leave: a 0-day balance with 30 terminal days used to "pay" 30 days.
+  const leaveAvailableForTerminal = Math.max(0, currentBalance + accrualTotal - plannedLeaveDays);
+  const safeTerm = Math.min(Math.max(0, terminalLeaveDays), leaveAvailableForTerminal);
   const terminalLeaveValue = safeTerm * dailyRate;
 
   // Months into ETS when terminal leave begins
@@ -126,6 +135,7 @@ export function calcLeave(inputs: LeaveInputs): LeaveResult {
     payableDays,
     payoutValue,
     terminalLeaveValue,
+    terminalLeaveDaysUsed: safeTerm,
     terminalStartOffset,
     maxCarryover,
     uyLossRisk,

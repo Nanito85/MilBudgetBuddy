@@ -587,10 +587,10 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
               </ThemedText>
               <ThemedText style={{ fontSize: 18, paddingRight: 4 }}>📅</ThemedText>
             </Pressable>
-            {enlistDate && !isRetired && yearsFromDate(enlistDate) !== null && (
+            {!!enlistDate && !isRetired && yearsFromDate(enlistDate) !== null && (
               <ThemedText style={[editStyles.dateHint, { color: tc.tactical }]}>↳ {yearsFromDate(enlistDate)} years of service (auto-calculated)</ThemedText>
             )}
-            {enlistDate && isRetired && yearsBetweenDates(enlistDate, retirementDate) !== null && (
+            {!!enlistDate && isRetired && yearsBetweenDates(enlistDate, retirementDate) !== null && (
               <ThemedText style={[editStyles.dateHint, { color: tc.tactical }]}>↳ {yearsBetweenDates(enlistDate, retirementDate)} years of service at retirement (auto-calculated)</ThemedText>
             )}
 
@@ -603,7 +603,7 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
               </ThemedText>
               <ThemedText style={{ fontSize: 18, paddingRight: 4 }}>📅</ThemedText>
             </Pressable>
-            {rankDate && yearsFromDate(rankDate) !== null && (
+            {!!rankDate && yearsFromDate(rankDate) !== null && (
               <ThemedText style={[editStyles.dateHint, { color: tc.tactical }]}>↳ {yearsFromDate(rankDate)} years in grade · Used for High-3 calculator</ThemedText>
             )}
 
@@ -814,7 +814,8 @@ export default function ProfileScreen() {
   // actually drives the retired-pay calculation everywhere else in the app,
   // so fall back to it here instead of a continuously-recomputed enlistment
   // age that would silently disagree with the stat driving their own pay.
-  const enlistYears   = serviceStatus === 'retired' ? null : yearsFromDate(dateOfEnlist);
+  // The stat shown here is the SAME years-of-service value every pay screen uses (`yos`). It used to be
+  // recomputed from the enlistment date for active members, so Profile could say 5 while Home paid at 6.
 
   // All pending completions across all kids
   const allPending: Array<{ kid: KidProfile; completion: PendingCompletion }> = kids.flatMap((kid) =>
@@ -899,7 +900,7 @@ export default function ProfileScreen() {
           <View style={[styles.identityStats, { backgroundColor: tc.surfaceInner }]}>
             <View style={styles.identityStat}>
               <ThemedText style={[styles.identityStatVal, { color: tc.textPrimary, fontFamily: Fonts.data }]}>
-                {enlistYears !== null ? enlistYears : yos}
+                {yos}
               </ThemedText>
               <ThemedText type="label" style={[styles.identityStatLabel, { color: tc.textSecondary }]}>YRS SVC</ThemedText>
             </View>
@@ -934,7 +935,7 @@ export default function ProfileScreen() {
               {payGrade && <ThemedText style={[styles.tileSummaryLine, { color: tc.textSecondary }]}>{payGrade} · {lastName?.toUpperCase() || 'NAME NOT SET'}</ThemedText>}
               {installName ? <ThemedText style={[styles.tileSummaryLine, { color: tc.textSecondary }]} numberOfLines={1}>{installName}</ThemedText> : mhaZip ? <ThemedText style={[styles.tileSummaryLine, { color: tc.textSecondary }]}>ZIP {mhaZip}</ThemedText> : null}
               {stateResidence && <ThemedText style={[styles.tileSummaryLine, { color: tc.textSecondary }]}>Residence: {stateResidence}</ThemedText>}
-              {dateOfEnlist && <ThemedText style={[styles.tileSummaryLine, { color: tc.textSecondary }]}>Enl: {dateOfEnlist}</ThemedText>}
+              {!!dateOfEnlist && <ThemedText style={[styles.tileSummaryLine, { color: tc.textSecondary }]}>Enl: {dateOfEnlist}</ThemedText>}
             </View>
             <View style={[styles.tileEditBtn, { borderTopColor: tc.borderColor }]}>
               <ThemedText style={[styles.tileEditBtnText, { color: tc.accent }]}>EDIT PERSONAL ›</ThemedText>

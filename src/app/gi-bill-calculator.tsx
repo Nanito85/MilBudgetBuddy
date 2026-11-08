@@ -165,18 +165,14 @@ export default function GiBillCalculatorScreen() {
             tc={tc}
           />
 
-          {schoolType !== 'online_only' && (
-            <>
-              <NumberStepper
-                label={`Annual Tuition: ${fmtDollar(tuitionPerYear)}`}
-                value={tuitionPerYear}
-                min={0}
-                max={60_000}
-                step={500}
-                onChange={setTuitionPerYear}
-              />
-            </>
-          )}
+          <NumberStepper
+            label={`Annual Tuition: ${fmtDollar(tuitionPerYear)}`}
+            value={tuitionPerYear}
+            min={0}
+            max={60_000}
+            step={500}
+            onChange={setTuitionPerYear}
+          />
         </ThemedView>
 
         {/* BAH Lookup */}
@@ -255,15 +251,13 @@ export default function GiBillCalculatorScreen() {
               <ThemedText style={[styles.breakdownVal, { color: tc.textPrimary }]}>${result.monthlyBookStipend}/mo avg</ThemedText>
             </View>
 
-            {schoolType !== 'online_only' && (
-              <View style={styles.breakdownRow}>
-                <View style={styles.breakdownLeft}>
-                  <ThemedText style={styles.breakdownDot}>🎓</ThemedText>
-                  <ThemedText style={[styles.breakdownLabel, { color: tc.textHint }]}>Tuition Coverage</ThemedText>
-                </View>
-                <ThemedText style={[styles.breakdownVal, { color: tc.textPrimary }]}>{result.monthlyTuitionCoveredDisplay}</ThemedText>
+            <View style={styles.breakdownRow}>
+              <View style={styles.breakdownLeft}>
+                <ThemedText style={styles.breakdownDot}>🎓</ThemedText>
+                <ThemedText style={[styles.breakdownLabel, { color: tc.textHint }]}>Tuition Coverage</ThemedText>
               </View>
-            )}
+              <ThemedText style={[styles.breakdownVal, { color: tc.textPrimary }]}>{result.monthlyTuitionCoveredDisplay}</ThemedText>
+            </View>
           </View>
 
           <View style={[styles.annualBox, { backgroundColor: tc.background }]}>
