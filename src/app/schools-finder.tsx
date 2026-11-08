@@ -161,7 +161,7 @@ export default function SchoolsFinderScreen() {
                   <>
                     <View style={styles.resultHeader}>
                       <View style={[styles.dodeaBadge]}>
-                        <ThemedText style={styles.dodeaBadgeText}>DoDEA ON-POST</ThemedText>
+                        <ThemedText style={[styles.dodeaBadgeText, { color: tc.primaryText }]}>DoDEA ON-POST</ThemedText>
                       </View>
                       <ThemedText type="small" themeColor="textSecondary">
                         {installation.name}
@@ -204,7 +204,7 @@ export default function SchoolsFinderScreen() {
                   <ThemedView
                     type="backgroundElement"
                     style={[styles.card, styles.cardPadded, styles.notesCard]}>
-                    <ThemedText style={styles.notesLabel}>📌 NOTE</ThemedText>
+                    <ThemedText style={[styles.notesLabel, { color: tc.primaryText }]}>📌 NOTE</ThemedText>
                     <ThemedText type="small" style={{ lineHeight: 18 }}>
                       {[schoolInfo.sloNotes, schoolInfo.notes].filter(Boolean).join('\n\n')}
                     </ThemedText>
@@ -251,7 +251,7 @@ export default function SchoolsFinderScreen() {
                   <View style={{ flex: 1 }}>
                     <ThemedText style={styles.resourceName}>{r.name}</ThemedText>
                     <ThemedText type="small" themeColor="textSecondary">{r.desc}</ThemedText>
-                    <ThemedText type="small" style={styles.resourceUrl}>{r.url}</ThemedText>
+                    <ThemedText type="small" style={[styles.resourceUrl, { color: tc.primaryText }]}>{r.url}</ThemedText>
                   </View>
                 </ThemedView>
               ))}
@@ -292,7 +292,7 @@ export default function SchoolsFinderScreen() {
             <View style={styles.sloCallout}>
               <ThemedText style={styles.sloIcon}>📞</ThemedText>
               <View style={{ flex: 1 }}>
-                <ThemedText style={styles.sloTitle}>School Liaison Officer (SLO)</ThemedText>
+                <ThemedText style={[styles.sloTitle, { color: tc.primaryText }]}>School Liaison Officer (SLO)</ThemedText>
                 <ThemedText type="small" style={styles.sloBody}>
                   Every major installation has a free SLO service. They know the local
                   districts inside-out, have relationships with school principals, and can

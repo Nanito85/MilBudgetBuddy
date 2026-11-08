@@ -247,7 +247,7 @@ export default function TaxGuideScreen() {
         <Pressable hitSlop={8} accessibilityRole="button" accessibilityLabel="Go back"
           onPress={() => (router.back())}
           style={styles.back}>
-          <ThemedText style={styles.backChevron}>‹</ThemedText>
+          <ThemedText style={[styles.backChevron, { color: tc.primaryText }]}>‹</ThemedText>
         </Pressable>
         <ThemedText style={styles.title}>Military Tax Guide</ThemedText>
         <View style={{ width: 40 }} />

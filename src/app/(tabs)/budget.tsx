@@ -160,7 +160,7 @@ function CategoryRow({ cat, netPay }: { cat: BudgetCategory; netPay: number }) {
               onBlur={commitName}
               onSubmitEditing={commitName}
               autoFocus
-              style={styles.nameInput}
+              style={[styles.nameInput, { color: tc.primaryText }]}
               placeholder="Category name"
               returnKeyType="done"
             />
@@ -181,7 +181,7 @@ function CategoryRow({ cat, netPay }: { cat: BudgetCategory; netPay: number }) {
               onSubmitEditing={commitAmount}
               keyboardType="decimal-pad"
               autoFocus
-              style={styles.input}
+              style={[styles.input, { color: tc.primaryText }]}
               placeholder="0"
             />
           ) : (
@@ -190,7 +190,7 @@ function CategoryRow({ cat, netPay }: { cat: BudgetCategory; netPay: number }) {
                 setAmountVal(cat.monthlyBudget > 0 ? String(cat.monthlyBudget) : '');
                 setEditingAmount(true);
               }}>
-              <ThemedText style={[styles.catAmount, cat.monthlyBudget === 0 && [styles.unset, { color: tc.accent }]]}>
+              <ThemedText style={[[styles.catAmount, { color: tc.primaryText }], cat.monthlyBudget === 0 && [styles.unset, { color: tc.accent }]]}>
                 {cat.monthlyBudget > 0 ? fmtPay(cat.monthlyBudget) : 'Set'}
               </ThemedText>
             </Pressable>
@@ -429,6 +429,7 @@ function ExpenseItem({
   catName: string;
   catEmoji: string;
 }) {
+  const tc = useThemeColors();
   const removeExpense = useExpensesStore((s) => s.removeExpense);
 
   const handleLongPress = () => {
@@ -460,7 +461,7 @@ function ExpenseItem({
           ) : null}
         </View>
         <View style={styles.expenseRight}>
-          <ThemedText style={styles.expenseAmt}>{fmtPay(expense.amount)}</ThemedText>
+          <ThemedText style={[styles.expenseAmt, { color: tc.primaryText }]}>{fmtPay(expense.amount)}</ThemedText>
           <ThemedText type="small" themeColor="textSecondary">
             {dateLabel}
           </ThemedText>
@@ -515,14 +516,14 @@ function AddExpensePanel({
         placeholderTextColor={tc.textHint}
         keyboardType="decimal-pad"
         autoFocus
-        style={styles.panelInput}
+        style={[styles.panelInput, { color: tc.primaryText }]}
       />
       <TextInput
         value={note}
         onChangeText={setNote}
         placeholder="Note (optional)"
         placeholderTextColor={tc.textHint}
-        style={styles.panelInput}
+        style={[styles.panelInput, { color: tc.primaryText }]}
         returnKeyType="done"
         onSubmitEditing={submit}
       />

@@ -14,6 +14,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Brand, Colors, Spacing } from '@/constants/theme';
 import { Locality, searchLocalities } from '@/data/per-diem-rates';
+import { useThemeColors } from '@/hooks/use-theme';
 
 interface Props {
   selected: Locality | null;
@@ -22,6 +23,7 @@ interface Props {
 }
 
 export function LocalityPicker({ selected, oconus, onSelect }: Props) {
+  const tc = useThemeColors();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const insets = useSafeAreaInsets();
@@ -67,7 +69,7 @@ export function LocalityPicker({ selected, oconus, onSelect }: Props) {
           <View style={styles.sheetHeader}>
             <ThemedText style={styles.sheetTitle}>Select Location</ThemedText>
             <Pressable accessibilityRole="button" onPress={() => { setOpen(false); setQuery(''); }}>
-              <ThemedText style={styles.closeBtn}>Done</ThemedText>
+              <ThemedText style={[styles.closeBtn, { color: tc.primaryText }]}>Done</ThemedText>
             </Pressable>
           </View>
 
@@ -98,7 +100,7 @@ export function LocalityPicker({ selected, oconus, onSelect }: Props) {
                     <ThemedText style={styles.rowName}>{item.name}</ThemedText>
                     <ThemedText type="small" themeColor="textSecondary">{item.area}</ThemedText>
                   </View>
-                  <ThemedText style={styles.rowRate}>${item.perDiem}/day</ThemedText>
+                  <ThemedText style={[styles.rowRate, { color: tc.primaryText }]}>${item.perDiem}/day</ThemedText>
                 </Pressable>
               </>
             )}

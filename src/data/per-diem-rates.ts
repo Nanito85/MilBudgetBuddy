@@ -1,8 +1,12 @@
 /**
  * Per diem rates for overseas (OCONUS) locations.
  * CONUS rates now live in gsa-per-diem.ts (296 GSA destinations, 15,157 ZIP codes).
- * OCONUS rates: State Dept Foreign Per Diem Rates (DSSR 925 / aoprals.state.gov), the source
- * DoD PDTATAC uses for JTR OCONUS per diem. Where the exact base town isn't separately listed,
+ * OCONUS rates: DoD's official "Maximum Per Diem Rates Outside the Continental United States" PDF
+ * (travel.dod.mil Current_OCONUS_Rates.pdf, effective 1 Oct 2026, read 2026-11-08 from the 2026-10-02
+ * Wayback snapshot; DTMO revises it monthly, so re-check before travel). Each app location points at one
+ * row of that PDF: lodging is the row's lodging rate and M&IE is its local meal rate plus local incidentals
+ * (lodging + M&IE = the row's Maximum Per Diem). Unlisted places use the country's [Other] row. The notes below
+ * describe the earlier State Dept DSSR sourcing and are kept for history. Where the exact base town isn't separately listed,
  * the country's "[Other]" rate is used (or the nearest listed city, where that's the applicable
  * DoD PDTATAC convention — e.g. Osan AB uses the Pyeongtaek rate, RAF Alconbury uses the UK
  * "[Other]" rate rather than distant Cambridge). Where multiple seasonal rates exist for a
@@ -50,52 +54,54 @@ export interface OconusLocation {
 }
 
 // ── OCONUS Locations ─────────────────────────────────────────────────────────
-// State Dept Foreign Per Diem Rates, effective January 2026. Always verify at travel.dod.mil
+// DoD Maximum Per Diem Rates (OCONUS), effective 1 Oct 2026 snapshot. Always verify at travel.dod.mil
 // or your installation's finance office before travel — rates update monthly.
 
 export const OCONUS_LOCATIONS: OconusLocation[] = [
 
   // ── Korea ──────────────────────────────────────────────────────────────────
-  { id: 'oc_humphreys', name: 'Camp Humphreys', area: 'Pyeongtaek', country: 'South Korea', countryCode: 'KOR', lodging: 64, meals: 49, total: 113 },
-  { id: 'oc_osan', name: 'Osan AB', area: 'Gyeonggi-do', country: 'South Korea', countryCode: 'KOR', lodging: 64, meals: 49, total: 113 },
-  { id: 'oc_camp_casey', name: 'Camp Casey / Red Cloud', area: 'Dongducheon', country: 'South Korea', countryCode: 'KOR', lodging: 60, meals: 40, total: 100 },
-  { id: 'oc_daegu', name: 'Camp Walker / Henry', area: 'Daegu', country: 'South Korea', countryCode: 'KOR', lodging: 116, meals: 103, total: 219 },
+  { id: 'oc_humphreys', name: 'Camp Humphreys', area: 'Pyeongtaek', country: 'South Korea', countryCode: 'KOR', lodging: 70, meals: 54, total: 124 },
+  { id: 'oc_osan', name: 'Osan AB', area: 'Gyeonggi-do', country: 'South Korea', countryCode: 'KOR', lodging: 66, meals: 44, total: 110 },
+  { id: 'oc_camp_casey', name: 'Camp Casey / Red Cloud', area: 'Dongducheon', country: 'South Korea', countryCode: 'KOR', lodging: 66, meals: 44, total: 110 },
+  { id: 'oc_kunsan', name: 'Kunsan AB', area: 'Gunsan', country: 'South Korea', countryCode: 'KOR', lodging: 70, meals: 54, total: 124 },
+  { id: 'oc_camp_carroll', name: 'Camp Carroll', area: 'Waegwan', country: 'South Korea', countryCode: 'KOR', lodging: 121, meals: 112, total: 233 },
+  { id: 'oc_daegu', name: 'Camp Walker / Henry', area: 'Daegu', country: 'South Korea', countryCode: 'KOR', lodging: 121, meals: 112, total: 233 },
 
   // ── Japan ──────────────────────────────────────────────────────────────────
-  { id: 'oc_kadena', name: 'Kadena AB', area: 'Okinawa', country: 'Japan', countryCode: 'JPN', lodging: 344, meals: 125, total: 469 },
-  { id: 'oc_camp_foster', name: 'Camp Foster / Kinser / Courtney', area: 'Okinawa', country: 'Japan', countryCode: 'JPN', lodging: 344, meals: 125, total: 469 },
-  { id: 'oc_yokosuka', name: 'Naval Base Yokosuka', area: 'Kanagawa', country: 'Japan', countryCode: 'JPN', lodging: 193, meals: 124, total: 317 },
-  { id: 'oc_yokota', name: 'Yokota AB', area: 'Fussa / Tokyo', country: 'Japan', countryCode: 'JPN', lodging: 358, meals: 125, total: 483 },
-  { id: 'oc_zama', name: 'Camp Zama / Tokyo', area: 'Kanagawa / Tokyo', country: 'Japan', countryCode: 'JPN', lodging: 358, meals: 125, total: 483 },
-  { id: 'oc_misawa', name: 'Misawa AB', area: 'Aomori', country: 'Japan', countryCode: 'JPN', lodging: 208, meals: 107, total: 315 },
-  { id: 'oc_iwakuni', name: 'MCAS Iwakuni', area: 'Yamaguchi', country: 'Japan', countryCode: 'JPN', lodging: 208, meals: 107, total: 315 },
-  { id: 'oc_sasebo', name: 'Naval Station Sasebo', area: 'Nagasaki', country: 'Japan', countryCode: 'JPN', lodging: 160, meals: 92, total: 252 },
-  { id: 'oc_atsugi', name: 'NAF Atsugi', area: 'Kanagawa', country: 'Japan', countryCode: 'JPN', lodging: 193, meals: 124, total: 317 },
-  { id: 'oc_camp_pendleton_jp', name: 'Camp Pendleton (Okinawa)', area: 'Okinawa', country: 'Japan', countryCode: 'JPN', lodging: 344, meals: 125, total: 469 },
+  { id: 'oc_kadena', name: 'Kadena AB', area: 'Okinawa', country: 'Japan', countryCode: 'JPN', lodging: 333, meals: 120, total: 453 },
+  { id: 'oc_camp_foster', name: 'Camp Foster / Kinser / Courtney', area: 'Okinawa', country: 'Japan', countryCode: 'JPN', lodging: 333, meals: 120, total: 453 },
+  { id: 'oc_yokosuka', name: 'Naval Base Yokosuka', area: 'Kanagawa', country: 'Japan', countryCode: 'JPN', lodging: 201, meals: 104, total: 305 },
+  { id: 'oc_yokota', name: 'Yokota AB', area: 'Fussa / Tokyo', country: 'Japan', countryCode: 'JPN', lodging: 201, meals: 104, total: 305 },
+  { id: 'oc_zama', name: 'Camp Zama', area: 'Kanagawa', country: 'Japan', countryCode: 'JPN', lodging: 201, meals: 104, total: 305 },
+  { id: 'oc_misawa', name: 'Misawa AB', area: 'Aomori', country: 'Japan', countryCode: 'JPN', lodging: 201, meals: 104, total: 305 },
+  { id: 'oc_iwakuni', name: 'MCAS Iwakuni', area: 'Yamaguchi', country: 'Japan', countryCode: 'JPN', lodging: 201, meals: 104, total: 305 },
+  { id: 'oc_sasebo', name: 'Naval Station Sasebo', area: 'Nagasaki', country: 'Japan', countryCode: 'JPN', lodging: 201, meals: 104, total: 305 },
+  { id: 'oc_atsugi', name: 'NAF Atsugi', area: 'Kanagawa', country: 'Japan', countryCode: 'JPN', lodging: 201, meals: 104, total: 305 },
+  { id: 'oc_camp_pendleton_jp', name: 'Camp Pendleton (Okinawa)', area: 'Okinawa', country: 'Japan', countryCode: 'JPN', lodging: 333, meals: 120, total: 453 },
 
   // ── Germany ────────────────────────────────────────────────────────────────
-  { id: 'oc_ramstein', name: 'Ramstein AB', area: 'Kaiserslautern', country: 'Germany', countryCode: 'DEU', lodging: 237, meals: 140, total: 377 },
-  { id: 'oc_grafenwoehr', name: 'Grafenwöhr / Rose Barracks', area: 'Bavaria', country: 'Germany', countryCode: 'DEU', lodging: 237, meals: 140, total: 377 },
-  { id: 'oc_spangdahlem', name: 'Spangdahlem AB', area: 'Eifel', country: 'Germany', countryCode: 'DEU', lodging: 237, meals: 140, total: 377 },
-  { id: 'oc_wiesbaden', name: 'Wiesbaden / USAREUR-AF HQ', area: 'Hesse', country: 'Germany', countryCode: 'DEU', lodging: 247, meals: 132, total: 379 },
-  { id: 'oc_patch', name: 'Patch Barracks / Stuttgart', area: 'Baden-Württemberg', country: 'Germany', countryCode: 'DEU', lodging: 251, meals: 147, total: 398 },
-  { id: 'oc_kaiserslautern', name: 'Kaiserslautern (KTown)', area: 'Rhineland-Palatinate', country: 'Germany', countryCode: 'DEU', lodging: 237, meals: 140, total: 377 },
-  { id: 'oc_ansbach', name: 'Ansbach (Storck Barracks)', area: 'Bavaria', country: 'Germany', countryCode: 'DEU', lodging: 237, meals: 140, total: 377 },
-  { id: 'oc_baumholder', name: 'Baumholder (Smith Barracks)', area: 'Rhineland-Palatinate', country: 'Germany', countryCode: 'DEU', lodging: 237, meals: 140, total: 377 },
-  { id: 'oc_vilseck', name: 'Vilseck (Rose Barracks area)', area: 'Bavaria', country: 'Germany', countryCode: 'DEU', lodging: 237, meals: 140, total: 377 },
-  { id: 'oc_heidelberg', name: 'Heidelberg area', area: 'Baden-Württemberg', country: 'Germany', countryCode: 'DEU', lodging: 276, meals: 151, total: 427 },
+  { id: 'oc_ramstein', name: 'Ramstein AB', area: 'Kaiserslautern', country: 'Germany', countryCode: 'DEU', lodging: 229, meals: 133, total: 362 },
+  { id: 'oc_grafenwoehr', name: 'Grafenwöhr / Rose Barracks', area: 'Bavaria', country: 'Germany', countryCode: 'DEU', lodging: 229, meals: 133, total: 362 },
+  { id: 'oc_spangdahlem', name: 'Spangdahlem AB', area: 'Eifel', country: 'Germany', countryCode: 'DEU', lodging: 229, meals: 133, total: 362 },
+  { id: 'oc_wiesbaden', name: 'Wiesbaden / USAREUR-AF HQ', area: 'Hesse', country: 'Germany', countryCode: 'DEU', lodging: 234, meals: 132, total: 366 },
+  { id: 'oc_patch', name: 'Patch Barracks / Stuttgart', area: 'Baden-Württemberg', country: 'Germany', countryCode: 'DEU', lodging: 259, meals: 136, total: 395 },
+  { id: 'oc_kaiserslautern', name: 'Kaiserslautern (KTown)', area: 'Rhineland-Palatinate', country: 'Germany', countryCode: 'DEU', lodging: 229, meals: 133, total: 362 },
+  { id: 'oc_ansbach', name: 'Ansbach (Storck Barracks)', area: 'Bavaria', country: 'Germany', countryCode: 'DEU', lodging: 229, meals: 133, total: 362 },
+  { id: 'oc_baumholder', name: 'Baumholder (Smith Barracks)', area: 'Rhineland-Palatinate', country: 'Germany', countryCode: 'DEU', lodging: 229, meals: 133, total: 362 },
+  { id: 'oc_vilseck', name: 'Vilseck (Rose Barracks area)', area: 'Bavaria', country: 'Germany', countryCode: 'DEU', lodging: 229, meals: 133, total: 362 },
+  { id: 'oc_heidelberg', name: 'Heidelberg area', area: 'Baden-Württemberg', country: 'Germany', countryCode: 'DEU', lodging: 234, meals: 144, total: 378 },
 
   // ── Italy ──────────────────────────────────────────────────────────────────
   { id: 'oc_aviano', name: 'Aviano AB', area: 'Friuli-Venezia Giulia', country: 'Italy', countryCode: 'ITA', lodging: 117, meals: 89, total: 206 },
   { id: 'oc_naples', name: 'NSA Naples / Capodichino', area: 'Campania', country: 'Italy', countryCode: 'ITA', lodging: 377, meals: 169, total: 546 },
-  { id: 'oc_sigonella', name: 'NAS Sigonella', area: 'Sicily', country: 'Italy', countryCode: 'ITA', lodging: 177, meals: 128, total: 305 },
+  { id: 'oc_sigonella', name: 'NAS Sigonella', area: 'Sicily', country: 'Italy', countryCode: 'ITA', lodging: 280, meals: 135, total: 415 },
   { id: 'oc_vicenza', name: 'Caserma Ederle / Del Din', area: 'Veneto', country: 'Italy', countryCode: 'ITA', lodging: 237, meals: 127, total: 364 },
-  { id: 'oc_camp_darby', name: 'Camp Darby', area: 'Tuscany (Livorno)', country: 'Italy', countryCode: 'ITA', lodging: 280, meals: 135, total: 415 },
+  { id: 'oc_camp_darby', name: 'Camp Darby', area: 'Tuscany (Livorno)', country: 'Italy', countryCode: 'ITA', lodging: 144, meals: 96, total: 240 },
   { id: 'oc_rome', name: 'Rome (embassy / liaison)', area: 'Lazio', country: 'Italy', countryCode: 'ITA', lodging: 489, meals: 179, total: 668 },
 
   // ── Spain ──────────────────────────────────────────────────────────────────
-  { id: 'oc_rota', name: 'Naval Station Rota', area: 'Rota, Cadiz', country: 'Spain', countryCode: 'ESP', lodging: 153, meals: 100, total: 253 },
-  { id: 'oc_moron', name: 'Morón AB', area: 'Sevilla', country: 'Spain', countryCode: 'ESP', lodging: 153, meals: 100, total: 253 },
+  { id: 'oc_rota', name: 'Naval Station Rota', area: 'Rota, Cadiz', country: 'Spain', countryCode: 'ESP', lodging: 246, meals: 146, total: 392 },
+  { id: 'oc_moron', name: 'Morón AB', area: 'Sevilla', country: 'Spain', countryCode: 'ESP', lodging: 246, meals: 146, total: 392 },
   { id: 'oc_madrid', name: 'Madrid (embassy / NATO)', area: 'Madrid', country: 'Spain', countryCode: 'ESP', lodging: 399, meals: 139, total: 538 },
 
   // ── United Kingdom ─────────────────────────────────────────────────────────
@@ -103,7 +109,7 @@ export const OCONUS_LOCATIONS: OconusLocation[] = [
   { id: 'oc_uk_lakenheath', name: 'RAF Lakenheath / Feltwell', area: 'Suffolk', country: 'United Kingdom', countryCode: 'GBR', lodging: 252, meals: 108, total: 360 },
   { id: 'oc_uk_croughton', name: 'RAF Croughton', area: 'Northamptonshire', country: 'United Kingdom', countryCode: 'GBR', lodging: 252, meals: 108, total: 360 },
   { id: 'oc_uk_london', name: 'London (embassy / MOD)', area: 'Greater London', country: 'United Kingdom', countryCode: 'GBR', lodging: 424, meals: 174, total: 598 },
-  { id: 'oc_uk_edinburgh', name: 'Edinburgh / Faslane', area: 'Scotland', country: 'United Kingdom', countryCode: 'GBR', lodging: 674, meals: 170, total: 844 },
+  { id: 'oc_uk_edinburgh', name: 'Edinburgh', area: 'Scotland', country: 'United Kingdom', countryCode: 'GBR', lodging: 621, meals: 173, total: 794 },
 
   // ── Portugal / Azores ──────────────────────────────────────────────────────
   { id: 'oc_lajes', name: 'Lajes Field', area: 'Azores', country: 'Portugal', countryCode: 'PRT', lodging: 102, meals: 67, total: 169 },
@@ -122,21 +128,21 @@ export const OCONUS_LOCATIONS: OconusLocation[] = [
   { id: 'oc_athens', name: 'Athens (embassy)', area: 'Attica', country: 'Greece', countryCode: 'GRC', lodging: 341, meals: 144, total: 485 },
 
   // ── Turkey ─────────────────────────────────────────────────────────────────
-  { id: 'oc_incirlik', name: 'Incirlik AB', area: 'Adana', country: 'Turkey', countryCode: 'TUR', lodging: 163, meals: 97, total: 260 },
+  { id: 'oc_incirlik', name: 'Incirlik AB', area: 'Adana', country: 'Turkey', countryCode: 'TUR', lodging: 163, meals: 79, total: 242 },
   { id: 'oc_ankara', name: 'Ankara (embassy / TUSLOG)', area: 'Ankara', country: 'Turkey', countryCode: 'TUR', lodging: 230, meals: 119, total: 349 },
 
   // ── Poland / Romania / Baltics ─────────────────────────────────────────────
-  { id: 'oc_warsaw', name: 'Warsaw / Camp Miron', area: 'Masovian', country: 'Poland', countryCode: 'POL', lodging: 198, meals: 108, total: 306 },
-  { id: 'oc_poznan', name: 'Poznań (Camp Kosciuszko)', area: 'Greater Poland', country: 'Poland', countryCode: 'POL', lodging: 128, meals: 102, total: 230 },
-  { id: 'oc_camp_silva', name: 'Camp Silva / Dragão', area: 'Sintra, Portugal', country: 'Portugal', countryCode: 'PRT', lodging: 280, meals: 112, total: 392 },
-  { id: 'oc_bucharest', name: 'Bucharest / Mihail Kogalniceanu', area: 'Constanta', country: 'Romania', countryCode: 'ROU', lodging: 124, meals: 90, total: 214 },
+  { id: 'oc_warsaw', name: 'Warsaw / Camp Miron', area: 'Masovian', country: 'Poland', countryCode: 'POL', lodging: 191, meals: 104, total: 295 },
+  { id: 'oc_poznan', name: 'Poznań (Camp Kosciuszko)', area: 'Greater Poland', country: 'Poland', countryCode: 'POL', lodging: 123, meals: 98, total: 221 },
+  { id: 'oc_camp_silva', name: 'Camp Silva / Dragão', area: 'Sintra, Portugal', country: 'Portugal', countryCode: 'PRT', lodging: 102, meals: 67, total: 169 },
+  { id: 'oc_bucharest', name: 'Mihail Kogalniceanu AB', area: 'Constanta', country: 'Romania', countryCode: 'ROU', lodging: 124, meals: 87, total: 211 },
   { id: 'oc_tallinn', name: 'Tallinn / eFP Estonia', area: 'Harju', country: 'Estonia', countryCode: 'EST', lodging: 217, meals: 139, total: 356 },
   { id: 'oc_riga', name: 'Riga / eFP Latvia', area: 'Riga', country: 'Latvia', countryCode: 'LVA', lodging: 217, meals: 132, total: 349 },
-  { id: 'oc_vilnius', name: 'Vilnius / eFP Lithuania', area: 'Vilnius', country: 'Lithuania', countryCode: 'LTU', lodging: 240, meals: 144, total: 384 },
+  { id: 'oc_vilnius', name: 'Vilnius / eFP Lithuania', area: 'Vilnius', country: 'Lithuania', countryCode: 'LTU', lodging: 255, meals: 150, total: 405 },
 
   // ── Norway / Scandinavia ───────────────────────────────────────────────────
-  { id: 'oc_oslo', name: 'Oslo / Camp Vaernes', area: 'Oslo / Trøndelag', country: 'Norway', countryCode: 'NOR', lodging: 247, meals: 148, total: 395 },
-  { id: 'oc_stockholm', name: 'Stockholm (embassy)', area: 'Stockholm County', country: 'Sweden', countryCode: 'SWE', lodging: 289, meals: 152, total: 441 },
+  { id: 'oc_oslo', name: 'Oslo / Camp Vaernes', area: 'Oslo / Trøndelag', country: 'Norway', countryCode: 'NOR', lodging: 259, meals: 155, total: 414 },
+  { id: 'oc_stockholm', name: 'Stockholm (embassy)', area: 'Stockholm County', country: 'Sweden', countryCode: 'SWE', lodging: 279, meals: 147, total: 426 },
   { id: 'oc_copenhagen', name: 'Copenhagen (embassy)', area: 'Capital Region', country: 'Denmark', countryCode: 'DNK', lodging: 309, meals: 141, total: 450 },
 
   // ── Middle East ────────────────────────────────────────────────────────────
@@ -146,40 +152,43 @@ export const OCONUS_LOCATIONS: OconusLocation[] = [
   { id: 'oc_abu_dhabi', name: 'Al Dhafra AB / NAVCENT', area: 'Abu Dhabi', country: 'UAE', countryCode: 'ARE', lodging: 328, meals: 149, total: 477 },
   { id: 'oc_dubai', name: 'Dubai (liaison / port visits)', area: 'Dubai', country: 'UAE', countryCode: 'ARE', lodging: 383, meals: 173, total: 556 },
   { id: 'oc_riyadh', name: 'Prince Sultan AB / Riyadh', area: 'Riyadh', country: 'Saudi Arabia', countryCode: 'SAU', lodging: 416, meals: 178, total: 594 },
+  { id: 'oc_muwaffaq_salti', name: 'Muwaffaq Salti AB', area: 'Azraq', country: 'Jordan', countryCode: 'JOR', lodging: 149, meals: 128, total: 277 },
   { id: 'oc_amman', name: 'Amman (embassy / exercises)', area: 'Amman', country: 'Jordan', countryCode: 'JOR', lodging: 242, meals: 102, total: 344 },
-  { id: 'oc_tel_aviv', name: 'Tel Aviv / EUCOM visits', area: 'Tel Aviv-Yafo', country: 'Israel', countryCode: 'ISR', lodging: 590, meals: 209, total: 799 },
+  { id: 'oc_tel_aviv', name: 'Tel Aviv / EUCOM visits', area: 'Tel Aviv-Yafo', country: 'Israel', countryCode: 'ISR', lodging: 590, meals: 219, total: 809 },
 
   // ── Africa ─────────────────────────────────────────────────────────────────
-  { id: 'oc_djibouti', name: 'Camp Lemonnier', area: 'Djibouti City', country: 'Djibouti', countryCode: 'DJI', lodging: 260, meals: 120, total: 380 },
+  { id: 'oc_kwajalein', name: 'Kwajalein Atoll (USAG-KA)', area: 'Marshall Islands', country: 'Marshall Islands', countryCode: 'MHL', lodging: 130, meals: 46, total: 176 },
+  { id: 'oc_thule', name: 'Pituffik SB (Thule AB)', area: 'Greenland', country: 'Greenland', countryCode: 'GRL', lodging: 210, meals: 68, total: 278 },
+  { id: 'oc_djibouti', name: 'Camp Lemonnier', area: 'Djibouti City', country: 'Djibouti', countryCode: 'DJI', lodging: 85, meals: 98, total: 183 },
   { id: 'oc_nairobi', name: 'Nairobi (embassy / AFRICOM)', area: 'Nairobi County', country: 'Kenya', countryCode: 'KEN', lodging: 250, meals: 77, total: 327 },
   { id: 'oc_manda_bay', name: 'Manda Bay (CJTF-HOA)', area: 'Lamu County', country: 'Kenya', countryCode: 'KEN', lodging: 231, meals: 87, total: 318 },
-  { id: 'oc_stuttgart', name: 'Stuttgart / AFRICOM HQ', area: 'Baden-Württemberg', country: 'Germany', countryCode: 'DEU', lodging: 251, meals: 147, total: 398 },
+  { id: 'oc_stuttgart', name: 'Stuttgart / AFRICOM HQ', area: 'Baden-Württemberg', country: 'Germany', countryCode: 'DEU', lodging: 259, meals: 136, total: 395 },
   { id: 'oc_accra', name: 'Accra (embassy / exercises)', area: 'Greater Accra', country: 'Ghana', countryCode: 'GHA', lodging: 497, meals: 123, total: 620 },
-  { id: 'oc_kampala', name: 'Kampala (SOCOM activities)', area: 'Kampala', country: 'Uganda', countryCode: 'UGA', lodging: 250, meals: 71, total: 321 },
+  { id: 'oc_kampala', name: 'Kampala (SOCOM activities)', area: 'Kampala', country: 'Uganda', countryCode: 'UGA', lodging: 240, meals: 99, total: 339 },
 
   // ── Pacific / Indo-Pacific ─────────────────────────────────────────────────
-  { id: 'oc_guam',         name: 'Andersen AFB / NS Guam',     area: 'Guam',                 country: 'Guam (US)',     countryCode: 'GUM', lodging: 179, meals: 124, total: 303 },
-  { id: 'oc_tinian',       name: 'Tinian / CNMI',              area: 'Northern Mariana Is.',  country: 'CNMI (US)',    countryCode: 'MNP', lodging: 161, meals: 95,  total: 256 },
-  { id: 'oc_darwin', name: 'Robertson Barracks', area: 'Northern Territory', country: 'Australia', countryCode: 'AUS', lodging: 192, meals: 117, total: 309 },
-  { id: 'oc_sydney', name: 'Sydney (embassy / exercises)', area: 'New South Wales', country: 'Australia', countryCode: 'AUS', lodging: 260, meals: 136, total: 396 },
+  { id: 'oc_guam',         name: 'Andersen AFB / NS Guam',     area: 'Guam',                 country: 'Guam (US)',     countryCode: 'GUM', lodging: 179, meals: 138, total: 317 },
+  { id: 'oc_tinian',       name: 'Tinian / CNMI',              area: 'Northern Mariana Is.',  country: 'CNMI (US)',    countryCode: 'MNP', lodging: 179, meals: 138,  total: 317 },
+  { id: 'oc_darwin', name: 'Robertson Barracks', area: 'Northern Territory', country: 'Australia', countryCode: 'AUS', lodging: 203, meals: 124, total: 327 },
+  { id: 'oc_sydney', name: 'Sydney (embassy / exercises)', area: 'New South Wales', country: 'Australia', countryCode: 'AUS', lodging: 280, meals: 147, total: 427 },
   { id: 'oc_singapore', name: 'Sembawang (RSN) / PACOM', area: 'Singapore', country: 'Singapore', countryCode: 'SGP', lodging: 302, meals: 162, total: 464 },
-  { id: 'oc_philippines', name: 'Clark / Subic Bay / EDCAs', area: 'Luzon', country: 'Philippines', countryCode: 'PHL', lodging: 131, meals: 90, total: 221 },
-  { id: 'oc_manila', name: 'Manila (embassy)', area: 'Metro Manila', country: 'Philippines', countryCode: 'PHL', lodging: 198, meals: 91, total: 289 },
+  { id: 'oc_philippines', name: 'Clark / Subic Bay / EDCAs', area: 'Luzon', country: 'Philippines', countryCode: 'PHL', lodging: 125, meals: 86, total: 211 },
+  { id: 'oc_manila', name: 'Manila (embassy)', area: 'Metro Manila', country: 'Philippines', countryCode: 'PHL', lodging: 189, meals: 87, total: 276 },
   { id: 'oc_diego_garcia', name: 'Diego Garcia (BIOT)', area: 'Indian Ocean', country: 'Diego Garcia', countryCode: 'IOT', lodging: 147, meals: 80, total: 227 },
-  { id: 'oc_bangkok', name: 'Bangkok (embassy / exercises)', area: 'Bangkok', country: 'Thailand', countryCode: 'THA', lodging: 259, meals: 118, total: 377 },
+  { id: 'oc_bangkok', name: 'Bangkok (embassy / exercises)', area: 'Bangkok', country: 'Thailand', countryCode: 'THA', lodging: 259, meals: 115, total: 374 },
   { id: 'oc_kuala_lumpur', name: 'Kuala Lumpur (embassy)', area: 'Selangor', country: 'Malaysia', countryCode: 'MYS', lodging: 210, meals: 84, total: 294 },
 
   // ── Latin America / Caribbean ──────────────────────────────────────────────
   { id: 'oc_soto_cano', name: 'Soto Cano AB (JTF-B)', area: 'Comayagua', country: 'Honduras', countryCode: 'HND', lodging: 130, meals: 80, total: 210 },
-  { id: 'oc_guantanamo',   name: 'GTMO / Naval Station',       area: 'Guantánamo Bay',       country: 'Cuba (US base)',countryCode: 'CUB', lodging: 65,  meals: 45,  total: 110 },
-  { id: 'oc_miami_jiatf',  name: 'JIATF-S / SOUTHCOM',        area: 'Miami, FL / Doral',    country: 'United States', countryCode: 'USA', lodging: 156, meals: 80,  total: 236 },
-  { id: 'oc_colombia', name: 'Larandia / Bogotá (COLAR)', area: 'Cundinamarca', country: 'Colombia', countryCode: 'COL', lodging: 141, meals: 88, total: 229 },
+  { id: 'oc_guantanamo',   name: 'GTMO / Naval Station',       area: 'Guantánamo Bay',       country: 'Cuba (US base)',countryCode: 'CUB', lodging: 125,  meals: 52,  total: 177 },
+  { id: 'oc_miami_jiatf',  name: 'JIATF-S / SOUTHCOM',        area: 'Miami, FL / Doral',    country: 'United States', countryCode: 'USA', lodging: 244, meals: 92,  total: 336 },
+  { id: 'oc_colombia', name: 'Bogotá (embassy / exercises)', area: 'Cundinamarca', country: 'Colombia', countryCode: 'COL', lodging: 405, meals: 193, total: 598 },
   { id: 'oc_peru', name: 'Lima / SOF exercises', area: 'Lima', country: 'Peru', countryCode: 'PER', lodging: 250, meals: 103, total: 353 },
   { id: 'oc_panama', name: 'Panama (embassy / exercises)', area: 'Panama City', country: 'Panama', countryCode: 'PAN', lodging: 173, meals: 99, total: 272 },
-  { id: 'oc_puerto_rico',  name: 'Camp Santiago / Fort Buchanan', area: 'Puerto Rico (US)', country: 'Puerto Rico (US)',countryCode: 'PRI', lodging: 245, meals: 148, total: 393 },
+  { id: 'oc_puerto_rico',  name: 'Fort Buchanan / San Juan', area: 'Puerto Rico (US)', country: 'Puerto Rico (US)',countryCode: 'PRI', lodging: 295, meals: 148, total: 443 },
 
   // ── Afghanistan / Iraq / Hazardous Duty ───────────────────────────────────
-  { id: 'oc_bagram',       name: 'Bagram / USFOR-A (legacy)',  area: 'Parwan Province',      country: 'Afghanistan',   countryCode: 'AFG', lodging: 50,  meals: 40,  total: 90  },
+  { id: 'oc_bagram',       name: 'Bagram / USFOR-A (legacy)',  area: 'Parwan Province',      country: 'Afghanistan',   countryCode: 'AFG', lodging: 51,  meals: 50,  total: 101  },
   { id: 'oc_baghdad', name: 'Baghdad / Victory Base', area: 'Baghdad', country: 'Iraq', countryCode: 'IRQ', lodging: 247, meals: 82, total: 329 },
   { id: 'oc_erbil', name: 'Erbil AB (Kurdistan Region)', area: 'Erbil', country: 'Iraq', countryCode: 'IRQ', lodging: 211, meals: 65, total: 276 },
   { id: 'oc_niger_ag', name: 'Air Base 101 / 201 (Niger)', area: 'Agadez / Niamey', country: 'Niger', countryCode: 'NER', lodging: 177, meals: 84, total: 261 },

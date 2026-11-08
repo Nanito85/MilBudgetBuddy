@@ -102,11 +102,12 @@ function StepHeader({
   total: number;
   onBack?: () => void;
 }) {
+  const tc = useThemeColors();
   return (
     <View style={styles.stepHeader}>
       {onBack ? (
         <Pressable accessibilityRole="button" onPress={onBack} hitSlop={12} style={styles.backBtn}>
-          <ThemedText style={styles.backText}>‹ Back</ThemedText>
+          <ThemedText style={[styles.backText, { color: tc.primaryText }]}>‹ Back</ThemedText>
         </Pressable>
       ) : (
         <View style={styles.backPlaceholder} />
@@ -238,7 +239,7 @@ function AuthModal({
 
             {mode === 'signin' && (
               <Pressable accessibilityRole="button" onPress={forgotPassword} hitSlop={8} style={authModalStyles.forgotBtn}>
-                <ThemedText style={[authModalStyles.forgotText, { color: Brand.primary }]}>Forgot password?</ThemedText>
+                <ThemedText style={[authModalStyles.forgotText, { color: tc.primaryText }]}>Forgot password?</ThemedText>
               </Pressable>
             )}
 
@@ -305,13 +306,14 @@ const authModalStyles = StyleSheet.create({
 });
 
 function AuthStep({ onSkip }: { onSkip: () => void }) {
+  const tc = useThemeColors();
   const [authMode, setAuthMode] = useState<'signin' | 'signup' | null>(null);
   return (
     <View style={styles.step}>
       <View style={styles.heroArea}>
         <ThemedText style={styles.heroEmoji}>🪖</ThemedText>
         <ThemedText style={styles.heroTitle}>MilBudgetBuddy</ThemedText>
-        <ThemedText style={styles.heroSlogan}>Your Money. Your Mission.</ThemedText>
+        <ThemedText style={[styles.heroSlogan, { color: tc.primaryText }]}>Your Money. Your Mission.</ThemedText>
         <ThemedText type="small" themeColor="textSecondary" style={styles.heroBody}>
           Sign in to sync your data across devices — or continue without an account.
         </ThemedText>
@@ -325,7 +327,7 @@ function AuthStep({ onSkip }: { onSkip: () => void }) {
         <Pressable accessibilityRole="button"
           onPress={() => setAuthMode('signup')}
           style={({ pressed }) => [styles.secondaryBtn, pressed && styles.btnPressed]}>
-          <ThemedText style={styles.secondaryBtnText}>Create Account</ThemedText>
+          <ThemedText style={[styles.secondaryBtnText, { color: tc.primaryText }]}>Create Account</ThemedText>
         </Pressable>
         <Pressable accessibilityRole="button" onPress={onSkip} hitSlop={8} style={styles.skipBtn}>
           <ThemedText type="small" themeColor="textSecondary">Continue without account (local only)</ThemedText>
@@ -343,12 +345,13 @@ function AuthStep({ onSkip }: { onSkip: () => void }) {
 // ── Step 1: Welcome ────────────────────────────────────────────────────────────
 
 function WelcomeStep({ onNext }: { onNext: () => void }) {
+  const tc = useThemeColors();
   return (
     <View style={styles.step}>
       <View style={styles.heroArea}>
         <ThemedText style={styles.heroEmoji}>🪖</ThemedText>
         <ThemedText style={styles.heroTitle}>MilBudgetBuddy</ThemedText>
-        <ThemedText style={styles.heroSlogan}>Your Money. Your Mission.</ThemedText>
+        <ThemedText style={[styles.heroSlogan, { color: tc.primaryText }]}>Your Money. Your Mission.</ThemedText>
         <ThemedText type="small" themeColor="textSecondary" style={styles.heroBody}>
           Know your pay, plan your budget, and make the most of every dollar — built for servicemembers and their families.
         </ThemedText>
@@ -415,6 +418,7 @@ function ServiceStatusStep({
   onNext: (status?: ServiceStatus) => void;
   onBack: () => void;
 }) {
+  const tc = useThemeColors();
   const [selected, setSelected] = useState<ServiceStatus | undefined>(
     isCivilianBranch(branch) ? 'civilian' : undefined,
   );
@@ -434,14 +438,14 @@ function ServiceStatusStep({
               style={[styles.optionCard, selected === opt.value && styles.optionCardActive]}>
               <ThemedText style={styles.optionEmoji}>{opt.emoji}</ThemedText>
               <View style={{ flex: 1 }}>
-                <ThemedText style={[styles.optionLabel, selected === opt.value && styles.optionLabelActive]}>
+                <ThemedText style={[styles.optionLabel, selected === opt.value && [styles.optionLabelActive, { color: tc.primaryText }]]}>
                   {opt.label}
                 </ThemedText>
                 <ThemedText type="small" themeColor="textSecondary" style={styles.optionSub}>
                   {opt.sub}
                 </ThemedText>
               </View>
-              {selected === opt.value && <ThemedText style={styles.optionCheck}>✓</ThemedText>}
+              {selected === opt.value && <ThemedText style={[styles.optionCheck, { color: tc.primaryText }]}>✓</ThemedText>}
             </Pressable>
           ))}
         </View>
@@ -683,7 +687,7 @@ function ServiceInfoStep({
               key={s}
               onPress={() => setGuardDutyStatus(s)}
               style={[styles.radioRow, guardDutyStatus === s && styles.radioRowActive]}>
-              <ThemedText style={[styles.radioLabel, guardDutyStatus === s && styles.radioLabelActive]}>
+              <ThemedText style={[styles.radioLabel, guardDutyStatus === s && [styles.radioLabelActive, { color: tc.primaryText }]]}>
                 {GUARD_DUTY_STATUS_LABELS[s]}
               </ThemedText>
               <ThemedText type="small" themeColor="textSecondary" style={styles.radioDesc}>
@@ -771,7 +775,7 @@ function CivilianServiceInfoStep({
               key={g}
               onPress={() => setGsGrade(g)}
               style={[styles.gradeChip, gsGrade === g && styles.gradeChipActive]}>
-              <ThemedText style={[styles.gradeChipText, gsGrade === g && styles.gradeChipTextActive]}>
+              <ThemedText style={[styles.gradeChipText, gsGrade === g && [styles.gradeChipTextActive, { color: tc.primaryText }]]}>
                 GS-{g}
               </ThemedText>
             </Pressable>
@@ -788,7 +792,7 @@ function CivilianServiceInfoStep({
               key={s}
               onPress={() => setGsStep(s)}
               style={[styles.gradeChip, gsStep === s && styles.gradeChipActive]}>
-              <ThemedText style={[styles.gradeChipText, gsStep === s && styles.gradeChipTextActive]}>
+              <ThemedText style={[styles.gradeChipText, gsStep === s && [styles.gradeChipTextActive, { color: tc.primaryText }]]}>
                 {s}
               </ThemedText>
             </Pressable>
@@ -807,7 +811,7 @@ function CivilianServiceInfoStep({
               accessibilityState={{ selected: gsLocality === loc.key }}
               onPress={() => setGsLocality(loc.key)}
               style={[styles.gradeChip, { width: undefined, minWidth: 0, paddingHorizontal: 10 }, gsLocality === loc.key && styles.gradeChipActive]}>
-              <ThemedText style={[styles.gradeChipText, gsLocality === loc.key && styles.gradeChipTextActive]}>
+              <ThemedText style={[styles.gradeChipText, gsLocality === loc.key && [styles.gradeChipTextActive, { color: tc.primaryText }]]}>
                 {loc.label}
               </ThemedText>
             </Pressable>
@@ -1065,7 +1069,7 @@ function RetiredServiceInfoStep({
               key={p}
               onPress={() => setVaPercent(p)}
               style={[styles.gradeChip, vaPercent === p && styles.gradeChipActive]}>
-              <ThemedText style={[styles.gradeChipText, vaPercent === p && styles.gradeChipTextActive]}>
+              <ThemedText style={[styles.gradeChipText, vaPercent === p && [styles.gradeChipTextActive, { color: tc.primaryText }]]}>
                 {p}%
               </ThemedText>
             </Pressable>
@@ -1192,7 +1196,7 @@ function LocationFamilyStep({
                     <ThemedText style={styles.stateOptionCode}>{s.code}</ThemedText>
                     <ThemedText type="small" themeColor="textSecondary">{s.name}</ThemedText>
                     {stateTaxBadge(s.code, retired, civilian) && (
-                      <ThemedText type="small" style={{ color: Brand.primary, marginLeft: 'auto' as any }}>{stateTaxBadge(s.code, retired, civilian)}</ThemedText>
+                      <ThemedText type="small" style={{ color: tc.primaryText, marginLeft: 'auto' as any }}>{stateTaxBadge(s.code, retired, civilian)}</ThemedText>
                     )}
                   </Pressable>
                 ))}
@@ -1280,6 +1284,7 @@ function FinancialGoalStep({
 }: {
   onNext: (goal?: FinancialGoal) => void;
 }) {
+  const tc = useThemeColors();
   const [selected, setSelected] = useState<FinancialGoal | undefined>();
   return (
     <View style={styles.step}>
@@ -1295,7 +1300,7 @@ function FinancialGoalStep({
               onPress={() => setSelected(goal)}
               style={[styles.goalCard, selected === goal && styles.goalCardActive]}>
               <ThemedText style={styles.goalEmoji}>{FINANCIAL_GOAL_ICONS[goal]}</ThemedText>
-              <ThemedText style={[styles.goalLabel, selected === goal && styles.goalLabelActive]}>
+              <ThemedText style={[styles.goalLabel, selected === goal && [styles.goalLabelActive, { color: tc.primaryText }]]}>
                 {FINANCIAL_GOAL_LABELS[goal]}
               </ThemedText>
             </Pressable>
@@ -1319,6 +1324,7 @@ function FinancialGoalStep({
 // ── Step 7: Notifications ──────────────────────────────────────────────────────
 
 function NotificationsStep({ onFinish }: { onFinish: () => void }) {
+  const tc = useThemeColors();
   const [enabled, setEnabled]       = useState(false);
   const setNotifications            = useUserStore((s) => s.setNotifications);
   const notificationHour            = useUserStore((s) => s.notificationHour);
@@ -1382,7 +1388,7 @@ function NotificationsStep({ onFinish }: { onFinish: () => void }) {
                   accessibilityState={{ selected: (storedTsp ?? 0) === p }}
                   onPress={() => updateProfile({ tspContribPct: p })}
                   style={[styles.gradeChip, { width: undefined, minWidth: 0, paddingHorizontal: 12 }, (storedTsp ?? 0) === p && styles.gradeChipActive]}>
-                  <ThemedText style={[styles.gradeChipText, (storedTsp ?? 0) === p && styles.gradeChipTextActive]}>{p}%</ThemedText>
+                  <ThemedText style={[styles.gradeChipText, (storedTsp ?? 0) === p && [styles.gradeChipTextActive, { color: tc.primaryText }]]}>{p}%</ThemedText>
                 </Pressable>
               ))}
             </View>

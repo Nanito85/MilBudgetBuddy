@@ -59,7 +59,7 @@ export function OHACard({ installation, area, grade, withDep }: Props) {
           </ThemedText>
         </View>
         <View style={[styles.badge, { backgroundColor: 'rgba(0,200,168,0.12)' }]}>
-          <ThemedText style={styles.badgeText}>OHA</ThemedText>
+          <ThemedText style={[styles.badgeText, { color: tc.primaryText }]}>OHA</ThemedText>
         </View>
       </View>
 
@@ -166,7 +166,7 @@ export function OHACard({ installation, area, grade, withDep }: Props) {
         <Pressable accessibilityRole="button"
           onPress={openDTMO}
           style={({ pressed }) => [styles.dtmoBtn, pressed && { opacity: 0.7 }]}>
-          <ThemedText style={styles.dtmoBtnText}>DTMO ↗</ThemedText>
+          <ThemedText style={[styles.dtmoBtnText, { color: tc.primaryText }]}>DTMO ↗</ThemedText>
         </Pressable>
       </View>
     </ThemedView>

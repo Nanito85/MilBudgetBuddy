@@ -385,7 +385,7 @@ export default function PCSCalculatorScreen() {
           <Pressable accessibilityRole="button"
             onPress={swapStations}
             style={({ pressed }) => [styles.swapBtn, pressed && styles.pressed]}>
-            <ThemedText style={styles.swapIcon}>⇅</ThemedText>
+            <ThemedText style={[styles.swapIcon, { color: tc.primaryText }]}>⇅</ThemedText>
             <ThemedText type="small" themeColor="textSecondary">Swap</ThemedText>
           </Pressable>
 
@@ -633,7 +633,7 @@ export default function PCSCalculatorScreen() {
                   )}
                   <View style={[styles.tleDetailRow, { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: 'rgba(128,128,128,0.2)', marginTop: 4, paddingTop: 4 }]}>
                     <ThemedText style={[styles.tleDetailLabel, { fontWeight: '700', color: tc.textSecondary }]}>Total departure {currentPD?.oconus ? 'TLA' : 'TLE'}</ThemedText>
-                    <ThemedText style={[styles.entitlementAmt, { color: Brand.primary }]}>{fmt(tleDepartTotal)}</ThemedText>
+                    <ThemedText style={[styles.entitlementAmt, { color: tc.primaryText }]}>{fmt(tleDepartTotal)}</ThemedText>
                   </View>
                   {bothConus && tleDepartDays > effectiveDepartDays && (
                     <ThemedText type="small" themeColor="textSecondary" style={styles.hint}>
@@ -681,7 +681,7 @@ export default function PCSCalculatorScreen() {
                   )}
                   <View style={[styles.tleDetailRow, { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: 'rgba(128,128,128,0.2)', marginTop: 4, paddingTop: 4 }]}>
                     <ThemedText style={[styles.tleDetailLabel, { fontWeight: '700', color: tc.textSecondary }]}>Total gaining {gainingPD?.oconus ? 'TLA' : 'TLE'}</ThemedText>
-                    <ThemedText style={[styles.entitlementAmt, { color: Brand.primary }]}>{fmt(tleGainTotal)}</ThemedText>
+                    <ThemedText style={[styles.entitlementAmt, { color: tc.primaryText }]}>{fmt(tleGainTotal)}</ThemedText>
                   </View>
                   {bothConus && tleGainDays > effectiveGainDays && (
                     <ThemedText type="small" themeColor="textSecondary" style={styles.hint}>

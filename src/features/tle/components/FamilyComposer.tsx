@@ -67,7 +67,7 @@ export function FamilyComposer({ hasSpouse, childAges, onSpouseChange, onChildAg
         </View>
         {childAges.length < 8 && (
           <Pressable accessibilityRole="button" onPress={addChild} style={styles.addChildBtn}>
-            <ThemedText style={styles.addChildBtnText}>+ Add</ThemedText>
+            <ThemedText style={[styles.addChildBtnText, { color: tc.primaryText }]}>+ Add</ThemedText>
           </Pressable>
         )}
       </View>

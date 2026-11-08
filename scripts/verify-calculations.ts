@@ -29,6 +29,7 @@ import { getOconusCola } from '@/data/oconus-cola';
 import { getDeploymentLocation } from '@/data/deployment-locations';
 import { findBahKeyApprox, getBahRate } from '@/data/bah-rates';
 import { getStationPerDiem } from '@/features/pcs/utils/pcsCalc';
+import { lookupNonForeignOconus } from '@/data/nonforeign-oconus-rates';
 import { calcCzteExcludedBasicPay } from '@/features/deployment/utils/deploymentCalc';
 import {
   classifyGuardStatus,
@@ -532,7 +533,7 @@ console.log('\n[15] Okinawa OCONUS: OHA / COLA / no-hazard-pay / TLA per-diem lo
     const inst = getInstallationById(id);
     if (!inst) throw new Error(`Fixture installation "${id}" not found in installations.ts`);
     const pd = getStationPerDiem(inst);
-    assertEqual(pd.total, 469, `${id}: TLA per diem resolves to Okinawa's real $469/day rate, not a wrong-region fallback`);
+    assertEqual(pd.total, 453, `${id}: TLA per diem resolves to Okinawa's DoD rate ($453/day), not a wrong-region fallback`);
     assertTrue(pd.matched, `${id}: per diem lookup reports a real match (not the unmatched placeholder)`);
   }
 
@@ -787,8 +788,12 @@ assertEqual(localISODate(new Date(2026, 10, 30, 23, 30)), '2026-11-30', 'Local d
 {
   const pd = (id: string) => getStationPerDiem(getInstallationById(id)!);
   assertEqual(pd('vicenza').total, 364, 'Per diem: Vicenza uses its own rate ($364), not the Aviano rate');
-  assertEqual(pd('sasebo').total, 252, 'Per diem: Sasebo uses its own rate ($252), not the Yokosuka rate');
-  assertTrue(pd('kunsan').matched === false, 'Per diem: a base with no entry of its own is flagged as approximate');
+  assertEqual(pd('sasebo').label, 'Naval Station Sasebo', 'Per diem: Sasebo resolves to its own entry, not Yokosuka');
+  assertEqual(pd('kunsan').total, 124, 'Per diem: Kunsan AB uses the official DoD rate ($124: $70 lodging + $54 M&IE)');
+  assertEqual(pd('camp_carroll').total, 233, 'Per diem: Camp Carroll uses its own DoD row ($233)');
+  assertTrue(pd('kunsan').matched === true && pd('thule').matched === true, 'Per diem: Kunsan and Thule resolve to their own entries');
+  assertTrue(pd('kwajalein').total === 176, 'Per diem: Kwajalein uses the Marshall Islands Kwajalein Atoll row ($176)');
+  assertEqual(lookupNonForeignOconus('Anchorage', 'AK').total, 477, 'Per diem: Anchorage peak season is $477 per the DoD rate PDF');
 }
 
 // ── Audit round 5 (2026-11-07) ────────────────────────────────────────────────

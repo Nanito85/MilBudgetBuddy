@@ -39,8 +39,13 @@ const PERDIEM_ID_OVERRIDE: Record<string, string> = {
   // Vicenza matched Aviano ($206 instead of $364) and Sasebo matched Yokosuka ($317 instead of $252).
   vicenza: 'oc_vicenza',
   sasebo: 'oc_sasebo',
-  // Camp Carroll (Waegwan) has no entry of its own; Daegu is the nearest listed locality.
-  camp_carroll: 'oc_daegu',
+  camp_carroll: 'oc_camp_carroll',
+  kunsan: 'oc_kunsan',
+  kleber: 'oc_kaiserslautern',
+  camp_blaz: 'oc_guam',
+  kwajalein: 'oc_kwajalein',
+  thule: 'oc_thule',
+  muwaffaq_salti: 'oc_muwaffaq_salti',
 };
 
 export interface StationPerDiem {

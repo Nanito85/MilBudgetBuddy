@@ -1,4 +1,4 @@
-import { Brand, BrandLightText, Colors } from '@/constants/theme';
+import { Brand, BrandDarkText, BrandLightText, Colors } from '@/constants/theme';
 import { useUserStore } from '@/store/user.store';
 
 export function useTheme() {
@@ -40,6 +40,8 @@ export function useThemeColors() {
     accent:        isLight ? BrandLightText.accent   : Brand.accent,
     tactical:      isLight ? BrandLightText.tactical : Brand.tactical,
     primary:       Brand.primary,
+    // Brand blue for TEXT/ICONS only (see BrandDarkText in constants/theme.ts).
+    primaryText:   isLight ? Brand.primary : BrandDarkText.primary,
     danger:        Brand.danger,
     success:       isLight ? BrandLightText.success  : Brand.success,
     warning:       isLight ? BrandLightText.warning  : Brand.warning,

@@ -21,12 +21,13 @@ interface Props {
 }
 
 function RateCol({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
+  const tc = useThemeColors();
   return (
     <View style={styles.col}>
       <ThemedText type="small" themeColor="textSecondary" style={styles.colLabel} numberOfLines={1}>
         {label}
       </ThemedText>
-      <ThemedText style={[styles.colValue, highlight && styles.colValueHighlight]}>
+      <ThemedText style={[styles.colValue, highlight && [styles.colValueHighlight, { color: tc.primaryText }]]}>
         {value}
       </ThemedText>
     </View>
