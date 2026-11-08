@@ -17,6 +17,8 @@ import { calcTspProjection } from '@/features/tsp/utils/tspCalc';
 import { estimateAnnualFedTax, ficaMonthly } from '@/data/federal-tax';
 import { getApproxInstallationForZip } from '@/data/installations';
 import { calcDITY } from '@/features/dity/utils/dityCalc';
+import { calcLeave } from '@/features/leave/utils/leaveCalc';
+import { calcGiBill } from '@/features/gi-bill/utils/giBillCalc';
 import { calcPayoff } from '@/features/debt/utils/debtCalc';
 import { localISODate, monthKeyLabel } from '@/utils/formatDate';
 import { getBasicPay, getHigh3Average, getHigh3AverageDetailed } from '@/data/basic-pay-rates';
@@ -824,6 +826,23 @@ assertEqual(getBasicPay('O8', 22), 18999, 'O-8 over 22 years is the $18,999 cap'
   assertTrue(!!z && z.mhaZip === '94102' && z.id === 'zip_94105', 'A saved ZIP station id resolves back to the same ZIP area (not another base)');
   const z2 = getInstallationById('zip_28307');
   assertTrue(!!z2 && z2.id === 'zip_28307', 'A saved ZIP station keeps its zip_ id instead of turning into a listed base');
+}
+
+// ── Consolidated fixes (2026-11-07) ───────────────────────────────────────────
+{
+  const base = { grade: 'E5' as const, yos: 6, monthsUntilEts: 0, plannedLeaveDays: 0, useOrLoseExempt: false };
+  const empty = calcLeave({ ...base, currentBalance: 0, terminalLeaveDays: 30 });
+  assertEqual(empty.terminalLeaveValue, 0, 'Leave: a 0-day balance pays no terminal leave');
+  assertEqual(empty.terminalLeaveDaysUsed, 0, 'Leave: terminal days used are capped by the balance');
+  const some = calcLeave({ ...base, currentBalance: 20, terminalLeaveDays: 30 });
+  assertEqual(some.terminalLeaveDaysUsed, 20, 'Leave: only the 20 days available can be taken as terminal leave');
+  const sold = calcLeave({ ...base, currentBalance: 50, terminalLeaveDays: 0, daysAlreadySold: 40 });
+  assertEqual(sold.payableDays, 20, 'Leave: the 60-day career sell-back cap counts days already sold (60 - 40 = 20)');
+}
+{
+  const online = calcGiBill({ eligibilityPct: 100, schoolType: 'online_only', enrollment: 'full', monthlyBahAtSchool: 0, tuitionPerYear: 9000, monthsUsed: 0 });
+  assertEqual(online.annualTuitionCoverage, 9000, 'GI Bill: online students get the entered tuition covered (up to the cap)');
+  assertTrue(online.monthlyTuitionCoveredDisplay.startsWith('~$'), 'GI Bill: online tuition row is shown, not hidden as N/A');
 }
 
 // ── Summary ────────────────────────────────────────────────────────────────────
