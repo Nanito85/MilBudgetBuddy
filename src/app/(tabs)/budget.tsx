@@ -766,7 +766,7 @@ function AddGoalModal({
             style={{ marginBottom: Spacing.two, flexGrow: 0, flexShrink: 0 }}
             contentContainerStyle={{ gap: Spacing.one, paddingVertical: Spacing.one }}>
             {CATS.map(([key, meta]) => (
-              <Pressable accessibilityRole="button"
+              <Pressable accessibilityState={{ selected: category === key }} accessibilityRole="button"
                 key={key}
                 onPress={() => setCategory(key)}
                 style={[
@@ -980,7 +980,7 @@ export default function BudgetScreen() {
         {/* Mode toggle — 3 tabs */}
         <View style={styles.modeRow}>
           {(['budget', 'spending', 'goals'] as Mode[]).map((m) => (
-            <Pressable accessibilityRole="button"
+            <Pressable accessibilityState={{ selected: mode === m }} accessibilityRole="button"
               key={m}
               onPress={() => setMode(m)}
               style={[styles.modeBtn, { borderColor: tc.borderColor }, mode === m && styles.modeBtnActive]}>

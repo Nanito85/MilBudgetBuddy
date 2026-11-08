@@ -165,7 +165,7 @@ export default function SbpCalculatorScreen() {
             <ThemedText style={[styles.fieldLabel, { color: tc.textHint }]}>COVERAGE BASE</ThemedText>
             <View style={styles.chipRow}>
               {COVERAGE_OPTIONS.map((opt) => (
-                <Pressable accessibilityRole="button"
+                <Pressable accessibilityState={{ selected: coverage === opt.value }} accessibilityRole="button"
                   key={opt.value}
                   onPress={() => setCoverage(opt.value)}
                   style={[styles.chip, { borderColor: tc.borderColor }, coverage === opt.value && styles.chipActive]}>

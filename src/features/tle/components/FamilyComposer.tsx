@@ -41,7 +41,7 @@ export function FamilyComposer({ hasSpouse, childAges, onSpouseChange, onChildAg
         <ThemedText style={styles.label}>Married (Spouse)</ThemedText>
         <View style={styles.toggle}>
           {([false, true] as const).map((val) => (
-            <Pressable accessibilityRole="button"
+            <Pressable accessibilityState={{ selected: hasSpouse === val }} accessibilityRole="button"
               key={String(val)}
               onPress={() => onSpouseChange(val)}
               style={[styles.toggleBtn, hasSpouse === val && styles.toggleBtnActive]}>

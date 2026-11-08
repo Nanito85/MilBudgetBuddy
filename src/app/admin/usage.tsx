@@ -106,7 +106,7 @@ export default function AdminUsageScreen() {
 
       <View style={s.windowRow}>
         {WINDOWS.map((w) => (
-          <Pressable accessibilityRole="button"
+          <Pressable accessibilityState={{ selected: days === w.days }} accessibilityRole="button"
             key={w.days}
             onPress={() => setDays(w.days)}
             style={[

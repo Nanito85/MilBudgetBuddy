@@ -112,7 +112,7 @@ function StepCard({ step, checked, onToggle }: {
             </ThemedText>
             <ThemedText style={[styles.stepTarget, { color: tc.textHint }]}>{step.target}</ThemedText>
           </View>
-          <Pressable accessibilityRole="button"
+          <Pressable accessibilityState={{ checked }} accessibilityRole="button"
             onPress={onToggle}
             style={[styles.checkBox, { borderColor: tc.borderColor }, checked && { backgroundColor: step.color, borderColor: step.color }]}>
             {checked && <ThemedText style={styles.checkMark}>✓</ThemedText>}

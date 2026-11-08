@@ -62,7 +62,7 @@ function PayTypePickerModal({ visible, selected, onSelect, onClose }: {
             {ALL_TYPES.map((type) => {
               const isSelected = selected === type;
               return (
-                <Pressable accessibilityRole="button"
+                <Pressable accessibilityState={{ selected: isSelected }} accessibilityRole="button"
                   key={type}
                   onPress={() => { onSelect(type); onClose(); }}
                   style={[ptStyles.row, { borderColor: tc.borderColor }, isSelected && ptStyles.rowSelected]}>
@@ -140,7 +140,7 @@ function DeploymentLocationPickerModal({ visible, selectedId, onSelect, onClose 
             {filtered.map((loc) => {
               const isSelected = selectedId === loc.id;
               return (
-                <Pressable accessibilityRole="button"
+                <Pressable accessibilityState={{ selected: isSelected }} accessibilityRole="button"
                   key={loc.id}
                   onPress={() => handleSelect(loc)}
                   style={[dlStyles.row, { borderColor: tc.borderColor }, isSelected && dlStyles.rowSelected]}>

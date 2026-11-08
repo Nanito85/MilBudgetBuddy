@@ -54,7 +54,7 @@ export const GsPaySelector = React.memo(function GsPaySelector({ gsGrade, gsStep
                 <ThemedText style={[editStyles.fieldLabel, { color: tc.textHint }]}>GS GRADE</ThemedText>
                 <View style={editStyles.gsRow}>
                   {Array.from({ length: 15 }, (_, i) => i + 1).map((g) => (
-                    <Pressable accessibilityRole="button"
+                    <Pressable accessibilityState={{ selected: gsGrade === g }} accessibilityRole="button"
                       key={g}
                       onPress={() => setGsGrade(g)}
                       style={[editStyles.gsChip, { borderColor: tc.borderColor, backgroundColor: tc.surface }, gsGrade === g && editStyles.gsChipActive]}>
@@ -68,7 +68,7 @@ export const GsPaySelector = React.memo(function GsPaySelector({ gsGrade, gsStep
                 <ThemedText style={[editStyles.fieldLabel, { color: tc.textHint }]}>GS STEP</ThemedText>
                 <View style={editStyles.gsRow}>
                   {Array.from({ length: 10 }, (_, i) => i + 1).map((s) => (
-                    <Pressable accessibilityRole="button"
+                    <Pressable accessibilityState={{ selected: gsStep === s }} accessibilityRole="button"
                       key={s}
                       onPress={() => setGsStep(s)}
                       style={[editStyles.gsChip, { borderColor: tc.borderColor, backgroundColor: tc.surface }, gsStep === s && editStyles.gsChipActive]}>
@@ -239,7 +239,7 @@ export const VaDisabilitySection = React.memo(function VaDisabilitySection({ vaP
             </ThemedText>
             <View style={editStyles.gsRow}>
               {VA_PICKER_OPTIONS.map((p) => (
-                <Pressable accessibilityRole="button"
+                <Pressable accessibilityState={{ selected: vaPercent === p }} accessibilityRole="button"
                   key={p}
                   onPress={() => setVaPercent(p)}
                   style={[editStyles.gsChip, { width: 52, borderColor: tc.borderColor, backgroundColor: tc.surface }, vaPercent === p && editStyles.gsChipActive]}>
@@ -317,7 +317,7 @@ export const RetiredPaySection = React.memo(function RetiredPaySection({
                     </ThemedText>
                     <View style={editStyles.gsRow}>
                       {[1, 0.75, 0.5, 0.25].map((pct) => (
-                        <Pressable accessibilityRole="button"
+                        <Pressable accessibilityState={{ selected: sbpCoveragePct === pct }} accessibilityRole="button"
                           key={pct}
                           onPress={() => setSbpCoveragePctLocal(pct)}
                           style={[editStyles.gsChip, { width: 60, borderColor: tc.borderColor, backgroundColor: tc.surface }, sbpCoveragePct === pct && editStyles.gsChipActive]}>

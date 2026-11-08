@@ -32,7 +32,7 @@ export default function OffbaseCalculatorScreen() {
     label, selected, onPress,
   }: { label: string; selected: boolean; onPress: () => void }) {
     return (
-      <Pressable accessibilityRole="button"
+      <Pressable accessibilityState={{ selected: selected }} accessibilityRole="button"
         onPress={onPress}
         style={[styles.chip, { backgroundColor: tc.background, borderColor: tc.borderColor }, selected && styles.chipSelected]}>
         <ThemedText style={[styles.chipText, { color: tc.textHint }, selected && [styles.chipTextSelected, { color: tc.tactical }]]}>

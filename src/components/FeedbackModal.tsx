@@ -142,7 +142,7 @@ export function FeedbackModal({ visible, onClose }: Props) {
                 {CATEGORIES.map((cat) => {
                   const active = category === cat;
                   return (
-                    <Pressable accessibilityRole="button"
+                    <Pressable accessibilityState={{ selected: active }} accessibilityRole="button"
                       key={cat}
                       onPress={() => setCategory(cat)}
                       style={[

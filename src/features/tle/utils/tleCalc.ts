@@ -95,8 +95,10 @@ export function calcTLE(inputs: TLEInputs): TLEResult {
 
   // Lodging and M&IE are each calculated separately at the family percentage,
   // then combined — only the combined total is subject to the $290 cap.
-  const lodgingRaw = lodging * familyPct;
-  const mieRaw = meals * familyPct;
+  // Round each component to cents first so the displayed lines always add up to the displayed daily total.
+  const cents = (n: number) => Math.round(n * 100) / 100;
+  const lodgingRaw = cents(lodging * familyPct);
+  const mieRaw = cents(meals * familyPct);
   const dailyRaw = lodgingRaw + mieRaw;
   const capped = mode === 'tle' && dailyRaw > TLE_DAILY_CAP;
   const dailyTotal = capped ? TLE_DAILY_CAP : dailyRaw;
@@ -104,8 +106,8 @@ export function calcTLE(inputs: TLEInputs): TLEResult {
   // If the combined cap reduced the total, scale lodging and M&IE down by the
   // same ratio so the two components still sum to dailyTotal.
   const scale = capped && dailyRaw > 0 ? dailyTotal / dailyRaw : 1;
-  const lodgingPaid = lodgingRaw * scale;
-  const miePaid = mieRaw * scale;
+  const lodgingPaid = capped ? cents(lodgingRaw * scale) : lodgingRaw;
+  const miePaid = capped ? cents(dailyTotal - lodgingPaid) : mieRaw;
 
   return {
     familyPct,
@@ -116,7 +118,7 @@ export function calcTLE(inputs: TLEInputs): TLEResult {
     miePaid,
     dailyTotal,
     capped,
-    totalEntitlement: dailyTotal * cappedDays,
+    totalEntitlement: cents(dailyTotal * cappedDays),
     days: cappedDays,
     maxDays,
     childrenUnder12: under12,

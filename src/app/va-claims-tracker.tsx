@@ -208,7 +208,7 @@ function ClaimFormModal({
       <ThemedText style={[styles.fieldLabel, { color: tc.textHint }]}>CLAIM TYPE</ThemedText>
       <View style={styles.chipRow}>
         {CLAIM_TYPES.map((t) => (
-          <Pressable accessibilityRole="button"
+          <Pressable accessibilityState={{ selected: claimType === t.value }} accessibilityRole="button"
             key={t.value}
             onPress={() => setClaimType(t.value)}
             style={[
@@ -226,7 +226,7 @@ function ClaimFormModal({
       <ThemedText style={[styles.fieldLabel, { color: tc.textHint }]}>STAGE</ThemedText>
       <View style={styles.chipRow}>
         {CLAIM_STAGES.map((s) => (
-          <Pressable accessibilityRole="button"
+          <Pressable accessibilityState={{ selected: stage === s.value }} accessibilityRole="button"
             key={s.value}
             onPress={() => setStage(s.value)}
             style={[

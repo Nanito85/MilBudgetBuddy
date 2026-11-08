@@ -279,7 +279,7 @@ export default function LeaveCalculatorScreen() {
               </ThemedText>
               <View style={styles.toggleRow}>
                 {[false, true].map((val) => (
-                  <Pressable accessibilityRole="button"
+                  <Pressable accessibilityState={{ selected: useOrLoseExempt === val }} accessibilityRole="button"
                     key={String(val)}
                     onPress={() => setUseOrLoseExempt(val)}
                     style={[styles.toggleBtn, useOrLoseExempt === val && styles.toggleBtnActive]}>

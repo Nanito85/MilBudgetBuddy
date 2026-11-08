@@ -46,7 +46,7 @@ function ChipRow<T extends string | number | boolean>({
       {options.map((o) => {
         const active = o.value === selected;
         return (
-          <Pressable accessibilityRole="button"
+          <Pressable accessibilityState={{ selected: active }} accessibilityRole="button"
             key={String(o.value)}
             onPress={() => onSelect(o.value)}
             style={[styles.chip, active && styles.chipActive]}>

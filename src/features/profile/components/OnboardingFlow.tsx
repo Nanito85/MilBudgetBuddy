@@ -428,7 +428,7 @@ function ServiceStatusStep({
         </ThemedText>
         <View style={{ gap: Spacing.two, marginTop: Spacing.three }}>
           {STATUS_OPTIONS.map((opt) => (
-            <Pressable accessibilityRole="button"
+            <Pressable accessibilityState={{ selected: selected === opt.value }} accessibilityRole="button"
               key={opt.value}
               onPress={() => setSelected(opt.value)}
               style={[styles.optionCard, selected === opt.value && styles.optionCardActive]}>
@@ -537,7 +537,7 @@ function ServiceInfoStep({
           <ThemedText type="smallBold" themeColor="textSecondary" style={styles.fieldLabel}>RANK TITLE</ThemedText>
           <View style={styles.toggle}>
             {variants.map((v) => (
-              <Pressable accessibilityRole="button"
+              <Pressable accessibilityState={{ selected: rankVariant === v.variant }} accessibilityRole="button"
                 key={v.variant}
                 onPress={() => setRankVariant(v.variant)}
                 style={[styles.toggleBtn, rankVariant === v.variant && styles.toggleBtnActive]}>
@@ -649,7 +649,7 @@ function ServiceInfoStep({
           </ThemedText>
           <View style={styles.toggle}>
             {(['guard', 'reserve'] as const).map((c) => (
-              <Pressable accessibilityRole="button"
+              <Pressable accessibilityState={{ selected: reserveComponent === c }} accessibilityRole="button"
                 key={c}
                 onPress={() => setReserveComponentLocal(c)}
                 style={[styles.toggleBtn, reserveComponent === c && styles.toggleBtnActive]}>
@@ -679,7 +679,7 @@ function ServiceInfoStep({
             {GUARD_DUTY_STATUS_FIELD_HINT} This affects your TRICARE, SCRA, and retirement-point eligibility, so keep it current — you can update it any time in your Profile.
           </ThemedText>
           {(['title32', 'title10', 'sad'] as const).map((s) => (
-            <Pressable accessibilityRole="button"
+            <Pressable accessibilityState={{ selected: guardDutyStatus === s }} accessibilityRole="button"
               key={s}
               onPress={() => setGuardDutyStatus(s)}
               style={[styles.radioRow, guardDutyStatus === s && styles.radioRowActive]}>
@@ -767,7 +767,7 @@ function CivilianServiceInfoStep({
         <ThemedText type="smallBold" themeColor="textSecondary" style={styles.fieldLabel}>GS GRADE</ThemedText>
         <View style={styles.chipGrid}>
           {GS_GRADES.map((g) => (
-            <Pressable accessibilityRole="button"
+            <Pressable accessibilityState={{ selected: gsGrade === g }} accessibilityRole="button"
               key={g}
               onPress={() => setGsGrade(g)}
               style={[styles.gradeChip, gsGrade === g && styles.gradeChipActive]}>
@@ -784,7 +784,7 @@ function CivilianServiceInfoStep({
         <ThemedText type="smallBold" themeColor="textSecondary" style={styles.fieldLabel}>STEP</ThemedText>
         <View style={styles.chipGrid}>
           {GS_STEPS.map((s) => (
-            <Pressable accessibilityRole="button"
+            <Pressable accessibilityState={{ selected: gsStep === s }} accessibilityRole="button"
               key={s}
               onPress={() => setGsStep(s)}
               style={[styles.gradeChip, gsStep === s && styles.gradeChipActive]}>
@@ -966,7 +966,7 @@ function RetiredServiceInfoStep({
           <ThemedText type="smallBold" themeColor="textSecondary" style={styles.fieldLabel}>RANK TITLE</ThemedText>
           <View style={styles.toggle}>
             {variants.map((v) => (
-              <Pressable accessibilityRole="button"
+              <Pressable accessibilityState={{ selected: rankVariant === v.variant }} accessibilityRole="button"
                 key={v.variant}
                 onPress={() => setRankVariant(v.variant)}
                 style={[styles.toggleBtn, rankVariant === v.variant && styles.toggleBtnActive]}>
@@ -1061,7 +1061,7 @@ function RetiredServiceInfoStep({
         </ThemedText>
         <View style={styles.chipGrid}>
           {VA_PERCENT_OPTIONS.map((p) => (
-            <Pressable accessibilityRole="button"
+            <Pressable accessibilityState={{ selected: vaPercent === p }} accessibilityRole="button"
               key={p}
               onPress={() => setVaPercent(p)}
               style={[styles.gradeChip, vaPercent === p && styles.gradeChipActive]}>
@@ -1212,7 +1212,7 @@ function LocationFamilyStep({
         <ThemedText type="smallBold" themeColor="textSecondary" style={styles.fieldLabel}>MARRIED (SPOUSE)</ThemedText>
         <View style={styles.toggle}>
           {([false, true] as const).map((val) => (
-            <Pressable accessibilityRole="button"
+            <Pressable accessibilityState={{ selected: hasSpouse === val }} accessibilityRole="button"
               key={String(val)}
               onPress={() => setHasSpouse(val)}
               style={[styles.toggleBtn, hasSpouse === val && styles.toggleBtnActive]}>
@@ -1235,7 +1235,7 @@ function LocationFamilyStep({
         </ThemedText>
         <View style={{ gap: Spacing.one }}>
           {HOUSING_STATUS_ORDER.map((hs) => (
-            <Pressable accessibilityRole="button"
+            <Pressable accessibilityState={{ selected: housingStatus === hs }} accessibilityRole="button"
               key={hs}
               onPress={() => setHousingStatus(hs)}
               style={[styles.housingOption, housingStatus === hs && styles.housingOptionActive]}>
@@ -1290,7 +1290,7 @@ function FinancialGoalStep({
         </ThemedText>
         <View style={styles.goalGrid}>
           {GOAL_ORDER.map((goal) => (
-            <Pressable accessibilityRole="button"
+            <Pressable accessibilityState={{ selected: selected === goal }} accessibilityRole="button"
               key={goal}
               onPress={() => setSelected(goal)}
               style={[styles.goalCard, selected === goal && styles.goalCardActive]}>

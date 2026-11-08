@@ -112,7 +112,7 @@ export default function TipLibraryScreen() {
         {filterChips.map((c) => {
           const active = filter === c.value;
           return (
-            <Pressable accessibilityRole="button"
+            <Pressable accessibilityState={{ selected: active }} accessibilityRole="button"
               key={c.value}
               onPress={() => setFilter(c.value)}
               style={[styles.chip, { borderColor: tc.borderColor }, active && { backgroundColor: Brand.accent, borderColor: Brand.accent }]}>

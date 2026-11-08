@@ -159,7 +159,7 @@ export default function AdminAccountsScreen() {
               ] as { mode: SortMode; label: string }[]).map(({ mode, label }) => {
                 const active = sortMode === mode;
                 return (
-                  <Pressable accessibilityRole="button"
+                  <Pressable accessibilityState={{ selected: active }} accessibilityRole="button"
                     key={mode}
                     onPress={() => setSortMode(mode)}
                     style={[

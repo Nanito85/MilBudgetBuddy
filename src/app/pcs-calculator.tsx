@@ -360,7 +360,7 @@ export default function PCSCalculatorScreen() {
               </ThemedText>
               <View style={styles.depToggle}>
                 {[true, false].map((val) => (
-                  <Pressable accessibilityRole="button"
+                  <Pressable accessibilityState={{ selected: withDep === val }} accessibilityRole="button"
                     key={String(val)}
                     onPress={() => setWithDep(val)}
                     style={[styles.depBtn, withDep === val && styles.depBtnActive]}>
@@ -406,7 +406,7 @@ export default function PCSCalculatorScreen() {
               </ThemedText>
               <View style={styles.depToggle}>
                 {[true, false].map((val) => (
-                  <Pressable accessibilityRole="button"
+                  <Pressable accessibilityState={{ selected: isDriving === val }} accessibilityRole="button"
                     key={String(val)}
                     onPress={() => setIsDriving(val)}
                     style={[styles.depBtn, isDriving === val && styles.depBtnActive]}>
@@ -459,7 +459,7 @@ export default function PCSCalculatorScreen() {
                   </ThemedText>
                   <View style={styles.depToggle}>
                     {([1, 2] as const).map((v) => (
-                      <Pressable accessibilityRole="button"
+                      <Pressable accessibilityState={{ selected: vehicles === v }} accessibilityRole="button"
                         key={v}
                         onPress={() => setVehicles(v)}
                         style={[styles.depBtn, vehicles === v && styles.depBtnActive]}>
