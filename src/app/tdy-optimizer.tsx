@@ -121,7 +121,11 @@ export default function TdyOptimizerScreen() {
   const mieSavings       = kitchenette ? KITCHENETTE_SAVINGS : 0;
   const dailySavings     = mieSavings;
   const totalSavings     = dailySavings * days;
-  const totalAuthorized  = authorizedTotal * days;
+  // Lodging is paid per NIGHT (days - 1), and M&IE is 75% on the first and last day of travel, so a
+  // trip is not simply (daily total) x (days). Long-TDY reductions are not modeled.
+  const nights           = Math.max(0, days - 1);
+  const mieDayEquivalents = days <= 1 ? 0.75 : (days - 2) + 2 * 0.75;
+  const totalAuthorized  = authorizedLodging * nights + authorizedMie * mieDayEquivalents;
   const pocketPct        = authorizedTotal > 0 ? (dailySavings / authorizedTotal) * 100 : 0;
 
   function Stepper({ value, step, min, max, onChange }: { value: number; step: number; min: number; max: number; onChange: (v: number) => void }) {

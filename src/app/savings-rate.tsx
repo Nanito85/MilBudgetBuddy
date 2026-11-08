@@ -98,7 +98,8 @@ export default function SavingsRateScreen() {
 
   const [monthlyIncome,   setMonthlyIncome]   = useState(netPayFromStore || 2500);
   const [monthlyExpenses, setMonthlyExpenses] = useState(budgetTotal || 1500);
-  const [invested,        setInvested]        = useState(10000);
+  // Starts at $0, not an invented $10,000 (that produced a made-up "7 yr to FI" for people who had entered nothing).
+  const [invested,        setInvested]        = useState(0);
 
   React.useEffect(() => {
     if (netPayFromStore > 0) setMonthlyIncome(netPayFromStore);
@@ -157,6 +158,11 @@ export default function SavingsRateScreen() {
                 ✓ Income auto-filled from your pay profile. Expenses auto-filled from budget.
               </ThemedText>
             </View>
+          )}
+          {(netPayFromStore <= 0 || budgetTotal <= 0) && (
+            <ThemedText type="small" themeColor="textSecondary" style={{ lineHeight: 18 }}>
+              Example numbers: the income and expenses below are placeholders until you set up your pay and your budget. Adjust them to match your real situation.
+            </ThemedText>
           )}
           <Stepper label="Monthly take-home income" value={monthlyIncome} step={100} min={0} max={20000} onChange={setMonthlyIncome} />
           <Stepper label="Monthly expenses" value={monthlyExpenses} step={50} min={0} max={15000} onChange={setMonthlyExpenses} />

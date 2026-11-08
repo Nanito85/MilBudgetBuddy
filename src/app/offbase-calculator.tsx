@@ -218,7 +218,7 @@ export default function OffbaseCalculatorScreen() {
         {/* BAH display */}
         <ThemedView type="backgroundElement" style={[styles.card, styles.bahCard]}>
           <View>
-            <ThemedText style={[styles.bahLabel, { color: tc.textHint }]}>YOUR BAH (WITHOUT DEPENDENTS)</ThemedText>
+            <ThemedText style={[styles.bahLabel, { color: tc.textHint }]}>{profileHasDependents ? 'YOUR BAH (WITH DEPENDENTS)' : 'YOUR BAH (WITHOUT DEPENDENTS)'}</ThemedText>
             <ThemedText style={[styles.bahAmount, { color: tc.accent }]}>{fmt(bah)}<ThemedText style={[styles.bahUnit, { color: tc.textHint }]}>/mo</ThemedText></ThemedText>
           </View>
           {isRequired && (

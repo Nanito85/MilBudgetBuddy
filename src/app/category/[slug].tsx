@@ -25,6 +25,20 @@ export default function CategoryScreen() {
     else router.push('/browse');
   };
 
+  // An unknown slug (old link, typo) used to show the raw slug as a title with "0 tips".
+  if (!CATEGORY_LABELS[category]) {
+    return (
+      <ThemedView style={styles.container}>
+        <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
+          <Pressable accessibilityRole="button" onPress={handleBack} hitSlop={12} style={styles.backBtn}>
+            <ThemedText style={styles.backText}>← Back</ThemedText>
+          </Pressable>
+          <ThemedText type="subtitle" style={styles.title}>Category not found</ThemedText>
+        </View>
+      </ThemedView>
+    );
+  }
+
   return (
     <ThemedView style={styles.container}>
       <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>

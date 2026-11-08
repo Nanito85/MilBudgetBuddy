@@ -302,7 +302,7 @@ export default function DashboardScreen() {
             ) : null}
           </Pressable>
         ) : (
-          !editProfileDismissed && (
+          !editProfileDismissed && serviceStatus !== 'civilian' && (
             <View style={styles.editProfileRow}>
               <Pressable accessibilityRole="button"
                 onPress={() => router.push('/profile' as any)}

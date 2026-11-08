@@ -55,7 +55,8 @@ function EntryRow({ entry, isDefault }: EntryRowProps) {
 
   const commitAmount = () => {
     const n = parseFloat(val);
-    updateEntry(entry.id, isNaN(n) ? 0 : Math.max(0, n));
+    // Whole cents only, never negative, and never Infinity ("1e400" parsed to Infinity and showed "$∞").
+    updateEntry(entry.id, Number.isFinite(n) ? Math.min(1e12, Math.round(Math.max(0, n) * 100) / 100) : 0);
     setEditing(false);
   };
 
