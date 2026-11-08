@@ -27,6 +27,7 @@ import { getInstallationById } from '@/data/installations';
 import { getOhaAreaForInstallation, getOhaRate } from '@/data/oha-rates';
 import { getOconusCola } from '@/data/oconus-cola';
 import { getDeploymentLocation } from '@/data/deployment-locations';
+import { findBahKeyApprox, getBahRate } from '@/data/bah-rates';
 import { getStationPerDiem } from '@/features/pcs/utils/pcsCalc';
 import { calcCzteExcludedBasicPay } from '@/features/deployment/utils/deploymentCalc';
 import {
@@ -843,6 +844,21 @@ assertEqual(getBasicPay('O8', 22), 18999, 'O-8 over 22 years is the $18,999 cap'
   const online = calcGiBill({ eligibilityPct: 100, schoolType: 'online_only', enrollment: 'full', monthlyBahAtSchool: 0, tuitionPerYear: 9000, monthsUsed: 0 });
   assertEqual(online.annualTuitionCoverage, 9000, 'GI Bill: online students get the entered tuition covered (up to the cap)');
   assertTrue(online.monthlyTuitionCoveredDisplay.startsWith('~$'), 'GI Bill: online tuition row is shown, not hidden as N/A');
+}
+
+// ── BAH areas added from DoD BAH-ASCII-2026 (previously approximated from a neighbor) ──
+{
+  const cases: Array<[string, string, number]> = [
+    ['70301', 'LA326 St Mary/Terrebonne', 1620],
+    ['01831', 'MA125 Essex Co', 3477],
+    ['21804', 'MD432 Eastern Shore', 2121],
+    ['04353', 'ME141 Coastal Maine', 2193],
+    ['11096', 'NY218 Long Island', 4425],
+  ];
+  for (const [zip, label, e5Dep] of cases) {
+    assertEqual(findBahKeyApprox(zip)?.exact, true, `BAH: ${label} ZIP ${zip} is an exact match`);
+    assertEqual(getBahRate(zip, 'E5', true), e5Dep, `BAH: ${label} E-5 with dependents is the official rate`);
+  }
 }
 
 // ── Summary ────────────────────────────────────────────────────────────────────
