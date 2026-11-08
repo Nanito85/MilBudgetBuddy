@@ -454,7 +454,7 @@ export default function BahGuideScreen() {
           <Pressable hitSlop={8} accessibilityRole="button" accessibilityLabel="Go back"
             onPress={() => (router.back())}
             style={styles.back}>
-            <ThemedText style={styles.backChevron}>‹</ThemedText>
+            <ThemedText style={[styles.backChevron, { color: tc.primaryText }]}>‹</ThemedText>
           </Pressable>
           <ThemedText style={styles.title}>BAH / OHA Guide</ThemedText>
           <View style={{ width: 40 }} />
@@ -487,7 +487,7 @@ export default function BahGuideScreen() {
           {tab === 'bah' && (
             <>
               <ThemedView type="backgroundElement" style={styles.heroBanner}>
-                <ThemedText style={styles.heroEyebrow}>BASIC ALLOWANCE FOR HOUSING</ThemedText>
+                <ThemedText style={[styles.heroEyebrow, { color: tc.primaryText }]}>BASIC ALLOWANCE FOR HOUSING</ThemedText>
                 <ThemedText style={[styles.heroTitle, { color: tc.textPrimary }]}>BAH Eligibility & Rates</ThemedText>
                 <ThemedText style={[styles.heroBody, { color: tc.textHint }]}>
                   FY2026 rates. Find your monthly housing allowance by duty station — then learn how to maximize it.
@@ -631,7 +631,7 @@ export default function BahGuideScreen() {
           {tab === 'oha' && (
             <>
               <ThemedView type="backgroundElement" style={styles.heroBanner}>
-                <ThemedText style={styles.heroEyebrow}>OVERSEAS HOUSING ALLOWANCE</ThemedText>
+                <ThemedText style={[styles.heroEyebrow, { color: tc.primaryText }]}>OVERSEAS HOUSING ALLOWANCE</ThemedText>
                 <ThemedText style={[styles.heroTitle, { color: tc.textPrimary }]}>OHA — OCONUS Housing</ThemedText>
                 <ThemedText style={[styles.heroBody, { color: tc.textHint }]}>
                   Stationed overseas? OHA replaces BAH and covers your actual rent up to a quarterly ceiling set by DTMO. Find your location below, then look up exact rates at dtmo.mil.

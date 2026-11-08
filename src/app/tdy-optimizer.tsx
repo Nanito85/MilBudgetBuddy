@@ -147,7 +147,7 @@ export default function TdyOptimizerScreen() {
     <ThemedView style={{ flex: 1 }}>
       <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
         <Pressable hitSlop={8} accessibilityRole="button" accessibilityLabel="Go back" onPress={() => router.back()} style={styles.back}>
-          <ThemedText style={styles.backChevron}>‹</ThemedText>
+          <ThemedText style={[styles.backChevron, { color: tc.primaryText }]}>‹</ThemedText>
         </Pressable>
         <ThemedText style={styles.title}>TDY Per Diem</ThemedText>
         <View style={{ width: 40 }} />

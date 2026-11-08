@@ -38,7 +38,7 @@ export default function TipDetailScreen() {
     <ThemedView style={styles.container}>
       <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
         <Pressable accessibilityRole="button" onPress={handleBack} hitSlop={12} style={styles.backBtn}>
-          <ThemedText style={styles.backText}>← Back</ThemedText>
+          <ThemedText style={[styles.backText, { color: tc.primaryText }]}>← Back</ThemedText>
         </Pressable>
       </View>
 

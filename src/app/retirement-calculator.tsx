@@ -198,7 +198,7 @@ export default function RetirementCalculatorScreen() {
               <ThemedText type="small" themeColor="textSecondary" style={styles.fieldLabel}>
                 Current Basic Pay
               </ThemedText>
-              <ThemedText style={styles.payPreview}>
+              <ThemedText style={[styles.payPreview, { color: tc.primaryText }]}>
                 {formatMoney(currentPay)}/mo
               </ThemedText>
             </View>
@@ -265,13 +265,13 @@ export default function RetirementCalculatorScreen() {
           {/* Quick stats */}
           <View style={styles.quickStats}>
             <ThemedView type="backgroundElement" style={styles.quickStat}>
-              <ThemedText style={[styles.quickStatVal, { color: Brand.primary }]}>
+              <ThemedText style={[styles.quickStatVal, { color: tc.primaryText }]}>
                 {result.retirementAge}
               </ThemedText>
               <ThemedText type="small" themeColor="textSecondary">Age at retirement</ThemedText>
             </ThemedView>
             <ThemedView type="backgroundElement" style={styles.quickStat}>
-              <ThemedText style={[styles.quickStatVal, { color: Brand.primary }]}>
+              <ThemedText style={[styles.quickStatVal, { color: tc.primaryText }]}>
                 {result.yearsToRetirement}
               </ThemedText>
               <ThemedText type="small" themeColor="textSecondary">Years remaining</ThemedText>
@@ -323,7 +323,7 @@ export default function RetirementCalculatorScreen() {
                       {formatMoney(currentPay * tspContribRate)}/mo
                     </ThemedText>
                   </View>
-                  <ThemedText style={[styles.sliderValue, { color: Brand.primary }]}>
+                  <ThemedText style={[styles.sliderValue, { color: tc.primaryText }]}>
                     {CONTRIB_STEPS[tspContribIdx]}%
                   </ThemedText>
                 </View>
@@ -359,7 +359,7 @@ export default function RetirementCalculatorScreen() {
                       S&P 500 historical avg ≈ 10% (7% inflation-adjusted)
                     </ThemedText>
                   </View>
-                  <ThemedText style={[styles.sliderValue, { color: Brand.primary }]}>
+                  <ThemedText style={[styles.sliderValue, { color: tc.primaryText }]}>
                     {RETURN_STEPS[tspReturnIdx]}%
                   </ThemedText>
                 </View>
@@ -580,7 +580,7 @@ export default function RetirementCalculatorScreen() {
                   {crdpEligible && (
                     <View style={styles.quickStats}>
                       <ThemedView type="backgroundElement" style={styles.quickStat}>
-                        <ThemedText style={[styles.quickStatVal, { fontSize: 18, color: Brand.primary }]}>
+                        <ThemedText style={[styles.quickStatVal, { fontSize: 18, color: tc.primaryText }]}>
                           {formatMoney(pensionMonthly)}
                         </ThemedText>
                         <ThemedText type="small" themeColor="textSecondary">Pension/mo</ThemedText>

@@ -230,7 +230,7 @@ export default function ReservesScreen() {
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
         <Pressable hitSlop={8} accessibilityRole="button" accessibilityLabel="Go back" onPress={() => router.back()} style={styles.back}>
-          <ThemedText style={styles.backChevron}>‹</ThemedText>
+          <ThemedText style={[styles.backChevron, { color: tc.primaryText }]}>‹</ThemedText>
         </Pressable>
         <View style={{ flex: 1 }}>
           <ThemedText style={[styles.eyebrow, { color: tc.tactical }]}>{'// RESERVE & GUARD'}</ThemedText>

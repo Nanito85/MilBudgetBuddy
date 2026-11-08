@@ -83,7 +83,7 @@ function EntryRow({ entry, isDefault }: EntryRowProps) {
               onBlur={commitLabel}
               onSubmitEditing={commitLabel}
               autoFocus
-              style={styles.labelInput}
+              style={[styles.labelInput, { color: tc.primaryText }]}
               returnKeyType="done"
             />
           ) : (
@@ -260,7 +260,7 @@ export default function NetWorthScreen() {
           <Pressable hitSlop={8} accessibilityRole="button" accessibilityLabel="Go back"
             onPress={() => (router.back())}
             style={styles.back}>
-            <ThemedText style={styles.backChevron}>‹</ThemedText>
+            <ThemedText style={[styles.backChevron, { color: tc.primaryText }]}>‹</ThemedText>
           </Pressable>
           <ThemedText style={styles.title}>Net Worth</ThemedText>
           <View style={{ width: 40 }} />

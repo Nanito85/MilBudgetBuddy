@@ -180,7 +180,7 @@ function DebtCard({
               {debt.apr}%
             </ThemedText>
             <Pressable accessibilityRole="button" onPress={onEdit} style={styles.editBtn} hitSlop={8}>
-              <ThemedText style={styles.editBtnText}>✏ EDIT</ThemedText>
+              <ThemedText style={[styles.editBtnText, { color: tc.primaryText }]}>✏ EDIT</ThemedText>
             </Pressable>
           </View>
         </View>
@@ -240,7 +240,7 @@ export default function DebtPayoffScreen() {
       <ThemedView style={{ flex: 1 }}>
         <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
           <Pressable hitSlop={8} accessibilityRole="button" accessibilityLabel="Go back" onPress={() => router.back()} style={styles.back}>
-            <ThemedText style={styles.backChevron}>‹</ThemedText>
+            <ThemedText style={[styles.backChevron, { color: tc.primaryText }]}>‹</ThemedText>
           </Pressable>
           <ThemedText style={styles.title}>Debt Payoff</ThemedText>
           <View style={{ width: 40 }} />
@@ -291,7 +291,7 @@ export default function DebtPayoffScreen() {
           )}
 
           <Pressable accessibilityRole="button" onPress={openAdd} style={styles.addDebtBtn}>
-            <ThemedText style={styles.addDebtBtnText}>＋ Add Debt</ThemedText>
+            <ThemedText style={[styles.addDebtBtnText, { color: tc.primaryText }]}>＋ Add Debt</ThemedText>
           </Pressable>
 
           {debts.length > 0 && (

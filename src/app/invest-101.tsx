@@ -8,6 +8,7 @@ import { ThemedView } from '@/components/themed-view';
 import { IRA_LIMIT, LIMITS_YEAR, TSP_ELECTIVE_LIMIT, usd } from '@/data/annual-limits';
 import { getBasicPay } from '@/data/basic-pay-rates';
 import { Brand, Spacing } from '@/constants/theme';
+import { useThemeColors } from '@/hooks/use-theme';
 
 interface Topic {
   id: string;
@@ -178,6 +179,7 @@ function TopicCard({ topic }: { topic: Topic }) {
 }
 
 export default function Invest101Screen() {
+  const tc = useThemeColors();
   const router = useRouter();
   const insets = useSafeAreaInsets();
 
@@ -185,7 +187,7 @@ export default function Invest101Screen() {
     <ThemedView style={styles.container}>
       <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
         <Pressable accessibilityRole="button" onPress={() => router.back()} hitSlop={12}>
-          <ThemedText style={styles.backText}>← Back</ThemedText>
+          <ThemedText style={[styles.backText, { color: tc.primaryText }]}>← Back</ThemedText>
         </Pressable>
       </View>
 

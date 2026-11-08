@@ -379,7 +379,7 @@ export default function DITYCalculatorScreen() {
                 <ThemedText type="small" themeColor="textSecondary" style={styles.fieldLabel}>
                   PPM INCENTIVE (100% GCC)
                 </ThemedText>
-                <ThemedText style={[styles.bigValue, { color: Brand.primary }]}>
+                <ThemedText style={[styles.bigValue, { color: tc.primaryText }]}>
                   {fmtMoney(result.incentive)}
                 </ThemedText>
               </View>

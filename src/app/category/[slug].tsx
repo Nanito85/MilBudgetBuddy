@@ -9,8 +9,10 @@ import { TipListItem } from '@/features/browse/components/TipListItem';
 import { useTipsByCategory } from '@/features/browse/hooks/useCategories';
 import { BottomTabInset, Brand, Spacing } from '@/constants/theme';
 import { CATEGORY_COLORS, CATEGORY_LABELS, TipCategory } from '@/types/tip.types';
+import { useThemeColors } from '@/hooks/use-theme';
 
 export default function CategoryScreen() {
+  const tc = useThemeColors();
   const { slug } = useLocalSearchParams<{ slug: string }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -31,7 +33,7 @@ export default function CategoryScreen() {
       <ThemedView style={styles.container}>
         <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
           <Pressable accessibilityRole="button" onPress={handleBack} hitSlop={12} style={styles.backBtn}>
-            <ThemedText style={styles.backText}>← Back</ThemedText>
+            <ThemedText style={[styles.backText, { color: tc.primaryText }]}>← Back</ThemedText>
           </Pressable>
           <ThemedText type="subtitle" style={styles.title}>Category not found</ThemedText>
         </View>
@@ -43,7 +45,7 @@ export default function CategoryScreen() {
     <ThemedView style={styles.container}>
       <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
         <Pressable accessibilityRole="button" onPress={handleBack} hitSlop={12} style={styles.backBtn}>
-          <ThemedText style={styles.backText}>← Back</ThemedText>
+          <ThemedText style={[styles.backText, { color: tc.primaryText }]}>← Back</ThemedText>
         </Pressable>
         <View style={styles.titleRow}>
           <View style={[styles.categoryDot, { backgroundColor: bg }]} />

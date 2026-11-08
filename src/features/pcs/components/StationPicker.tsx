@@ -78,7 +78,7 @@ export function StationPicker({ label, selected, onSelect, conusOnly = false }: 
           <View style={styles.sheetHeader}>
             <ThemedText style={styles.sheetTitle}>{label}</ThemedText>
             <Pressable accessibilityRole="button" onPress={() => { setOpen(false); setQuery(''); }}>
-              <ThemedText style={styles.closeBtn}>Done</ThemedText>
+              <ThemedText style={[styles.closeBtn, { color: tc.primaryText }]}>Done</ThemedText>
             </Pressable>
           </View>
 

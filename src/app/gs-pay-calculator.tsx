@@ -115,14 +115,14 @@ function LocalityModal({
                 onPress={() => { onSelect(loc); onClose(); }}
                 style={[modal.row, { borderBottomColor: tc.borderColor }, selected === loc.key && modal.rowActive]}>
                 <View style={{ flex: 1 }}>
-                  <ThemedText style={[modal.locLabel, { color: tc.textPrimary }, selected === loc.key && modal.locLabelActive]}>
+                  <ThemedText style={[modal.locLabel, { color: tc.textPrimary }, selected === loc.key && [modal.locLabelActive, { color: tc.primaryText }]]}>
                     {loc.label}
                   </ThemedText>
                   {loc.notes && (
                     <ThemedText style={[modal.locNote, { color: tc.textHint }]}>{loc.notes}</ThemedText>
                   )}
                 </View>
-                <ThemedText style={[modal.locRate, { color: tc.textHint }, selected === loc.key && modal.locRateActive]}>
+                <ThemedText style={[modal.locRate, { color: tc.textHint }, selected === loc.key && [modal.locRateActive, { color: tc.primaryText }]]}>
                   +{(loc.rate * 100).toFixed(2)}%
                 </ThemedText>
               </TouchableOpacity>
@@ -190,7 +190,7 @@ export default function GSPayCalculatorScreen() {
     <ThemedView style={{ flex: 1 }}>
       <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
         <Pressable hitSlop={8} accessibilityRole="button" accessibilityLabel="Go back" onPress={() => router.back()} style={styles.back}>
-          <ThemedText style={styles.backChevron}>‹</ThemedText>
+          <ThemedText style={[styles.backChevron, { color: tc.primaryText }]}>‹</ThemedText>
         </Pressable>
         <ThemedText style={[styles.title, { color: tc.tactical }]}>GS Pay Calculator</ThemedText>
         <View style={{ width: 40 }} />
@@ -296,7 +296,7 @@ export default function GSPayCalculatorScreen() {
                   key={s}
                   onPress={() => setStep(s)}
                   style={[styles.stepsRow, { borderBottomColor: tc.borderColor + '50' }, isSelected && styles.stepsRowSelected]}>
-                  <ThemedText style={[styles.stepsCell, styles.stepsCellLabel, { color: tc.textSecondary }, isSelected && { color: Brand.primary }]}>
+                  <ThemedText style={[styles.stepsCell, styles.stepsCellLabel, { color: tc.textSecondary }, isSelected && { color: tc.primaryText }]}>
                     {s}
                   </ThemedText>
                   <ThemedText style={[styles.stepsCell, styles.stepsCellValue, { color: tc.textSecondary }, isSelected && { color: tc.textPrimary }]}>

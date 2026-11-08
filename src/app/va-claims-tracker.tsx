@@ -363,7 +363,7 @@ export default function VaClaimsTrackerScreen() {
       <ThemedView style={{ flex: 1 }}>
         <View style={[styles.header, { paddingTop: insets.top + Spacing.two }]}>
           <Pressable hitSlop={8} accessibilityRole="button" accessibilityLabel="Go back" onPress={() => router.back()} style={styles.back}>
-            <ThemedText style={styles.backChevron}>‹</ThemedText>
+            <ThemedText style={[styles.backChevron, { color: tc.primaryText }]}>‹</ThemedText>
           </Pressable>
           <ThemedText style={styles.title}>VA Claims & Appeals</ThemedText>
           <View style={{ width: 40 }} />
@@ -410,7 +410,7 @@ export default function VaClaimsTrackerScreen() {
           )}
 
           <Pressable accessibilityRole="button" onPress={openAdd} style={styles.addBtn}>
-            <ThemedText style={styles.addBtnText}>＋ Add Claim</ThemedText>
+            <ThemedText style={[styles.addBtnText, { color: tc.primaryText }]}>＋ Add Claim</ThemedText>
           </Pressable>
 
           <ThemedView type="backgroundElement" style={styles.footer}>

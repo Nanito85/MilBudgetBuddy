@@ -32,13 +32,13 @@ export function High3Card({ result, retirementAge }: High3Props) {
 
       <View style={styles.bigRow}>
         <View style={styles.bigStat}>
-          <ThemedText style={[styles.bigValue, { color: Brand.primary }]}>
+          <ThemedText style={[styles.bigValue, { color: tc.primaryText }]}>
             {formatMoney(result.monthlyPension)}
           </ThemedText>
           <ThemedText type="small" themeColor="textSecondary">per month</ThemedText>
         </View>
         <View style={styles.bigStat}>
-          <ThemedText style={[styles.bigValue, { color: Brand.primary }]}>
+          <ThemedText style={[styles.bigValue, { color: tc.primaryText }]}>
             {formatMoney(result.annualPension)}
           </ThemedText>
           <ThemedText type="small" themeColor="textSecondary">per year</ThemedText>
@@ -63,7 +63,7 @@ export function High3Card({ result, retirementAge }: High3Props) {
       </View>
 
       <View style={[styles.noteBox, { backgroundColor: `${Brand.primary}10` }]}>
-        <ThemedText type="small" style={{ color: Brand.primaryLight, lineHeight: 18 }}>
+        <ThemedText type="small" style={{ color: tc.primaryText, lineHeight: 18 }}>
           Cliff-vests at 20 years. No TSP government match. Available to members who entered service before Jan 1, 2018 and did not opt into BRS.
         </ThemedText>
       </View>

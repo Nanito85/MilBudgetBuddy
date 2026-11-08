@@ -137,7 +137,7 @@ export default function CarLoanScreen() {
     <ThemedView style={{ flex: 1 }}>
       <View style={[s.header, { paddingTop: insets.top + Spacing.two }]}>
         <Pressable accessibilityRole="button" accessibilityLabel="Go back" onPress={() => router.back()} style={s.back}>
-          <ThemedText style={s.chevron}>‹</ThemedText>
+          <ThemedText style={[s.chevron, { color: tc.primaryText }]}>‹</ThemedText>
         </Pressable>
         <ThemedText style={s.title}>Car Loan Check</ThemedText>
         <View style={{ width: 40 }} />

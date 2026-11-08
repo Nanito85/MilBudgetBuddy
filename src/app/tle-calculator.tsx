@@ -147,7 +147,7 @@ export default function TLECalculatorScreen() {
                 }}
               />
               <Pressable accessibilityRole="button" onPress={() => { setLocality(null); setUseCustomRate(true); }}>
-                <ThemedText style={styles.customRateLink}>
+                <ThemedText style={[styles.customRateLink, { color: tc.primaryText }]}>
                   My location isn&apos;t listed — enter a custom rate
                 </ThemedText>
               </Pressable>
@@ -155,7 +155,7 @@ export default function TLECalculatorScreen() {
           ) : (
             <ThemedView type="backgroundElement" style={styles.customRateCard}>
               <View style={styles.customRateRow}>
-                <ThemedText style={styles.dollarSign}>$</ThemedText>
+                <ThemedText style={[styles.dollarSign, { color: tc.primaryText }]}>$</ThemedText>
                 <TextInput
                   value={customRateText}
                   onChangeText={(t) => setCustomRateText(t.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1').slice(0, 6))}
@@ -174,7 +174,7 @@ export default function TLECalculatorScreen() {
               <Pressable accessibilityRole="button"
                 onPress={() => { setUseCustomRate(false); setCustomRateText(''); }}
                 style={styles.backToListBtn}>
-                <ThemedText style={styles.customRateLink}>← Back to installation list</ThemedText>
+                <ThemedText style={[styles.customRateLink, { color: tc.primaryText }]}>← Back to installation list</ThemedText>
               </Pressable>
               <ThemedText type="small" themeColor="textSecondary" style={{ lineHeight: 18, marginTop: Spacing.one }}>
                 Find your rate at gsa.gov (CONUS) or defensetravel.dod.mil (OCONUS).
@@ -218,7 +218,7 @@ export default function TLECalculatorScreen() {
             <ThemedText type="small" themeColor="textSecondary" style={styles.fieldLabel}>
               ESTIMATED {mode === 'tle' ? 'TLE' : 'TLA'} TOTAL ({result.days} DAYS)
             </ThemedText>
-            <ThemedText style={[styles.previewTotalValue, { color: Brand.primary }]}>
+            <ThemedText style={[styles.previewTotalValue, { color: tc.primaryText }]}>
               {fmtMoneyRound(result.totalEntitlement)}
             </ThemedText>
             <ThemedText type="small" themeColor="textSecondary">
@@ -279,7 +279,7 @@ export default function TLECalculatorScreen() {
                   <ThemedText type="small" themeColor="textSecondary" style={styles.fieldLabel}>
                     {mode === 'tle' ? 'TLE' : 'TLA'} TOTAL ({result.days} days)
                   </ThemedText>
-                  <ThemedText style={[styles.bigValue, { color: Brand.primary }]}>
+                  <ThemedText style={[styles.bigValue, { color: tc.primaryText }]}>
                     {fmtMoneyRound(result.totalEntitlement)}
                   </ThemedText>
                 </View>
@@ -340,14 +340,14 @@ export default function TLECalculatorScreen() {
                 <ThemedText style={styles.grandTotalLabel}>
                   Total {mode === 'tle' ? 'TLE' : 'TLA'} entitlement
                 </ThemedText>
-                <ThemedText style={[styles.grandTotalValue, { color: Brand.primary }]}>
+                <ThemedText style={[styles.grandTotalValue, { color: tc.primaryText }]}>
                   {fmtMoneyRound(result.totalEntitlement)}
                 </ThemedText>
               </View>
 
               {/* Family & locality summary */}
               <View style={[styles.summaryBox, { backgroundColor: `${Brand.primary}10` }]}>
-                <ThemedText type="small" style={{ color: Brand.primaryLight, lineHeight: 18 }}>
+                <ThemedText type="small" style={{ color: tc.primaryText, lineHeight: 18 }}>
                   Family: {familyLabel(hasSpouse, childAges)}
                   {'\n'}
                   Locality: {locality ? locality.name : 'Custom rate'}

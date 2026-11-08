@@ -113,3 +113,10 @@ export const BrandLightText = {
   success:  '#046A46',
   warning:  '#8A5A00',
 } as const;
+
+// Brand blue as TEXT/ICON color. Brand.primary (#1565C0) is 5.2-5.8:1 on the light backgrounds but only
+// 2.6-3.5:1 on the dark ones (below the 4.5:1 AA minimum for body text); the lighter blue below is
+// 6.8-9.1:1 on every dark surface. Use via useThemeColors().primaryText. Not for fills.
+export const BrandDarkText = {
+  primary: '#64B5F6',
+} as const;
