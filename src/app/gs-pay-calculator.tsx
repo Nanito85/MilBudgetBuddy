@@ -46,7 +46,7 @@ function GradePicker({ value, onChange }: { value: number; onChange: (v: number)
   return (
     <View style={pick.row}>
       {GRADES.map((g) => (
-        <Pressable accessibilityRole="button"
+        <Pressable accessibilityState={{ selected: value === g }} accessibilityRole="button"
           key={g}
           onPress={() => onChange(g)}
           style={[pick.btn, { backgroundColor: tc.surface, borderColor: tc.borderColor }, value === g && pick.btnActive]}>
@@ -64,7 +64,7 @@ function StepPicker({ value, onChange }: { value: number; onChange: (v: number) 
   return (
     <View style={pick.row}>
       {STEPS.map((s) => (
-        <Pressable accessibilityRole="button"
+        <Pressable accessibilityState={{ selected: value === s }} accessibilityRole="button"
           key={s}
           onPress={() => onChange(s)}
           style={[pick.btn, { backgroundColor: tc.surface, borderColor: tc.borderColor }, value === s && pick.btnActive]}>
@@ -225,7 +225,7 @@ export default function GSPayCalculatorScreen() {
           <StepPicker value={step} onChange={setStep} />
           {nextStepDelta !== null && (
             <ThemedText style={[styles.cardHint, { color: tc.textSecondary }]}>
-              Next step increase: +{fmt(nextStepDelta)}/yr · Step increases typically require 1–3 years depending on step level
+              Next step increase: +{fmt(nextStepDelta)}/yr · Waiting time is 1 year for steps 1–3, 2 years for steps 4–6 and 3 years for steps 7–9, if your performance is acceptable
             </ThemedText>
           )}
         </ThemedView>
@@ -292,7 +292,7 @@ export default function GSPayCalculatorScreen() {
               const mon = getGSMonthly(grade, s, localityKey);
               const isSelected = s === step;
               return (
-                <Pressable accessibilityRole="button"
+                <Pressable accessibilityState={{ selected: isSelected }} accessibilityRole="button"
                   key={s}
                   onPress={() => setStep(s)}
                   style={[styles.stepsRow, { borderBottomColor: tc.borderColor + '50' }, isSelected && styles.stepsRowSelected]}>

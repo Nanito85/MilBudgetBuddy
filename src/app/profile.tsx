@@ -160,7 +160,7 @@ const StatePickerModal = React.memo(function StatePickerModal({ visible, selecte
             {filtered.map((s) => {
               const isSelected = selected === s.code;
               return (
-                <Pressable accessibilityRole="button"
+                <Pressable accessibilityState={{ selected: isSelected }} accessibilityRole="button"
                   key={s.code}
                   onPress={() => { onSelect(s.code); onClose(); }}
                   style={[stateStyles.row, { borderColor: tc.borderColor }, isSelected && stateStyles.rowSelected]}>
@@ -246,7 +246,7 @@ function TimePickerModal({ visible, selectedHour, selectedMinute, onSelect, onCl
             {TIME_PRESETS.map((t) => {
               const isSelected = selectedHour === t.hour && selectedMinute === t.minute;
               return (
-                <Pressable accessibilityRole="button"
+                <Pressable accessibilityState={{ selected: isSelected }} accessibilityRole="button"
                   key={`${t.hour}-${t.minute}`}
                   onPress={() => onSelect(t.hour, t.minute)}
                   style={[timeStyles.chip, { borderColor: tc.borderColor }, isSelected && timeStyles.chipActive]}>
@@ -507,7 +507,7 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
               {STATUS_CHOICES.map((opt) => {
                 const active = status === opt.value;
                 return (
-                  <Pressable accessibilityRole="button"
+                  <Pressable accessibilityState={{ selected: active }} accessibilityRole="button"
                     key={opt.value}
                     onPress={() => setStatus(opt.value)}
                     style={[editStyles.statusChip, { borderColor: tc.borderColor, backgroundColor: tc.surface }, active && editStyles.statusChipActive]}>
@@ -550,7 +550,7 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
                     {variants.map((opt) => {
                       const active = rankVariant === opt.variant;
                       return (
-                        <Pressable accessibilityRole="button"
+                        <Pressable accessibilityState={{ selected: active }} accessibilityRole="button"
                           key={opt.variant}
                           onPress={() => setRankVariant(opt.variant)}
                           style={[editStyles.variantChip, { borderColor: tc.borderColor }, active && editStyles.variantChipActive]}>
@@ -977,7 +977,7 @@ export default function ProfileScreen() {
                 : `${rankAbbrev || 'SGT'} ${lastName?.toUpperCase() || 'SMITH'}`;
               const active = (greetingStyle ?? 'nickname') === style;
               return (
-                <Pressable accessibilityRole="button" key={style} onPress={() => setGreetingStyle(style)}
+                <Pressable accessibilityState={{ selected: active }} accessibilityRole="button" key={style} onPress={() => setGreetingStyle(style)}
                   style={[styles.greetingBtn, { borderColor: tc.borderColor }, active && { borderColor: Brand.accent, backgroundColor: Brand.accent + '15' }]}>
                   <ThemedText style={[styles.greetingBtnLabel, { color: tc.textHint }, active && { color: tc.accent }]}>
                     {style === 'nickname' ? '😎 NICKNAME' : '🪖 RANK'}

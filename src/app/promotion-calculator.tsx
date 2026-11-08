@@ -135,7 +135,7 @@ export default function PromotionCalculatorScreen() {
           </View>
           <View style={s.retirementToggleRow}>
             {(['brs', 'high3'] as const).map((sys) => (
-              <Pressable accessibilityRole="button"
+              <Pressable accessibilityState={{ selected: retirementSystem === sys }} accessibilityRole="button"
                 key={sys}
                 onPress={() => setRetirementSystem(sys)}
                 style={[

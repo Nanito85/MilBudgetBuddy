@@ -109,7 +109,7 @@ function getEligibility(grade: PayGrade, depStatus: DepStatus, tc: { success: st
 function Chip({ label, selected, onPress }: { label: string; selected: boolean; onPress: () => void }) {
   const tc = useThemeColors();
   return (
-    <Pressable accessibilityRole="button"
+    <Pressable accessibilityState={{ selected: selected }} accessibilityRole="button"
       onPress={onPress}
       style={[styles.chip, { backgroundColor: tc.background }, selected && styles.chipSelected]}>
       <ThemedText style={[styles.chipText, { color: tc.textHint }, selected && [styles.chipTextSelected, { color: tc.tactical }]]}>{label}</ThemedText>
@@ -466,7 +466,7 @@ export default function BahGuideScreen() {
             { key: 'bah' as TabMode, label: '🏠  BAH (CONUS)' },
             { key: 'oha' as TabMode, label: '✈️  OHA (OCONUS)' },
           ] as const).map((t) => (
-            <Pressable accessibilityRole="button"
+            <Pressable accessibilityState={{ selected: tab === t.key }} accessibilityRole="button"
               key={t.key}
               onPress={() => setTab(t.key)}
               style={[styles.tabBtn, tab === t.key && styles.tabBtnActive]}>

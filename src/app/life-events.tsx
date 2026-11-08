@@ -62,14 +62,14 @@ export default function LifeEventsScreen() {
 
         {/* Tab bar */}
         <View style={[styles.tabBar, { borderBottomColor: tc.borderColor }]}>
-          <Pressable accessibilityRole="button"
+          <Pressable accessibilityState={{ selected: tab === 'active' }} accessibilityRole="button"
             style={[styles.tab, tab === 'active' && styles.tabActive]}
             onPress={() => setTab('active')}>
             <ThemedText style={[styles.tabText, { color: tc.textMuted }, tab === 'active' && [styles.tabTextActive, { color: tc.accent }]]}>
               ACTIVE {activeEvents.length > 0 ? `(${activeEvents.length})` : ''}
             </ThemedText>
           </Pressable>
-          <Pressable accessibilityRole="button"
+          <Pressable accessibilityState={{ selected: tab === 'browse' }} accessibilityRole="button"
             style={[styles.tab, tab === 'browse' && styles.tabActive]}
             onPress={() => setTab('browse')}>
             <ThemedText style={[styles.tabText, { color: tc.textMuted }, tab === 'browse' && [styles.tabTextActive, { color: tc.accent }]]}>

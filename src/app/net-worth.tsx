@@ -1,7 +1,7 @@
-﻿import { useRouter } from 'expo-router';
+﻿import { confirmAction, notify } from '@/utils/confirm';
+import { useRouter } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
 import {
-  Alert,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -68,10 +68,7 @@ function EntryRow({ entry, isDefault }: EntryRowProps) {
 
   const handleLongPress = () => {
     if (isDefault) return;
-    Alert.alert('Remove Entry', `Remove "${entry.label}"?`, [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Remove', style: 'destructive', onPress: () => removeEntry(entry.id) },
-    ]);
+    confirmAction('Remove Entry', `Remove "${entry.label}"?`, 'Remove', () => removeEntry(entry.id));
   };
 
   return (
@@ -243,14 +240,11 @@ export default function NetWorthScreen() {
 
   const handleSaveSnapshot = () => {
     saveSnapshot(totalAssets, totalLiabilities);
-    Alert.alert('Snapshot Saved', `Net worth of ${fmtFull(netWorth)} saved for ${new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}.`);
+    notify('Snapshot Saved', `Net worth of ${fmtFull(netWorth)} saved for ${new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}.`);
   };
 
   const handleClearHistory = () => {
-    Alert.alert('Clear History', 'Delete all historical snapshots? This cannot be undone.', [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Clear', style: 'destructive', onPress: clearHistory },
-    ]);
+    confirmAction('Clear History', 'Delete all historical snapshots? This cannot be undone.', 'Clear', clearHistory);
   };
 
   // Net worth change since earliest snapshot
@@ -274,10 +268,10 @@ export default function NetWorthScreen() {
 
         {/* Mode toggle */}
         <View style={styles.modeRow}>
-          <Pressable accessibilityRole="button" onPress={() => setMode('tracker')} style={[styles.modeBtn, { borderColor: tc.borderColor }, mode === 'tracker' && styles.modeBtnActive]}>
+          <Pressable accessibilityState={{ selected: mode === 'tracker' }} accessibilityRole="button" onPress={() => setMode('tracker')} style={[styles.modeBtn, { borderColor: tc.borderColor }, mode === 'tracker' && styles.modeBtnActive]}>
             <ThemedText style={[styles.modeBtnText, { color: tc.textMuted }, mode === 'tracker' && styles.modeBtnTextActive]}>TRACKER</ThemedText>
           </Pressable>
-          <Pressable accessibilityRole="button" onPress={() => setMode('history')} style={[styles.modeBtn, { borderColor: tc.borderColor }, mode === 'history' && styles.modeBtnActive]}>
+          <Pressable accessibilityState={{ selected: mode === 'history' }} accessibilityRole="button" onPress={() => setMode('history')} style={[styles.modeBtn, { borderColor: tc.borderColor }, mode === 'history' && styles.modeBtnActive]}>
             <ThemedText style={[styles.modeBtnText, { color: tc.textMuted }, mode === 'history' && styles.modeBtnTextActive]}>
               HISTORY {snapshots.length > 0 ? `(${snapshots.length})` : ''}
             </ThemedText>

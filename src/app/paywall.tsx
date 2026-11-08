@@ -579,14 +579,14 @@ export default function PaywallScreen() {
               </View>
 
               <View style={styles.planRow}>
-                <Pressable accessibilityRole="button"
+                <Pressable accessibilityState={{ selected: selected === 'monthly' }} accessibilityRole="button"
                   onPress={() => setSelected('monthly')}
                   style={[styles.planCard, { borderColor: tc.borderColor }, selected === 'monthly' && styles.planCardActive]}>
                   <ThemedText style={[styles.planLabel, { color: tc.textPrimary }]}>Monthly</ThemedText>
                   <ThemedText style={[styles.planPrice, { color: tc.textPrimary }]}>{monthlyDisplayPrice ?? '—'}</ThemedText>
                   <ThemedText type="small" themeColor="textSecondary">per month</ThemedText>
                 </Pressable>
-                <Pressable accessibilityRole="button"
+                <Pressable accessibilityState={{ selected: selected === 'annual' }} accessibilityRole="button"
                   onPress={() => setSelected('annual')}
                   style={[styles.planCard, { borderColor: tc.borderColor }, selected === 'annual' && styles.planCardActive]}>
                   <View style={styles.bestValueBadge}>

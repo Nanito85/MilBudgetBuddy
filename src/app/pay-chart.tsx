@@ -58,7 +58,7 @@ export default function PayChartScreen() {
         <ThemedText style={[styles.gradeGroupLabel, { color: tc.textMuted }]}>{label}</ThemedText>
         <View style={styles.gradeRow}>
           {grades.map((g) => (
-            <Pressable accessibilityRole="button"
+            <Pressable accessibilityState={{ selected: selectedGrade === g }} accessibilityRole="button"
               key={g}
               onPress={() => setSelectedGrade(g)}
               style={[styles.gradeChip, { borderColor: tc.borderColor }, selectedGrade === g && styles.gradeChipActive]}>
@@ -86,13 +86,13 @@ export default function PayChartScreen() {
 
       {/* Mode toggle */}
       <View style={styles.modeRow}>
-        <Pressable accessibilityRole="button" onPress={() => setMode('lookup')} style={[styles.modeBtn, { borderColor: tc.borderColor }, mode === 'lookup' && styles.modeBtnActive]}>
+        <Pressable accessibilityState={{ selected: mode === 'lookup' }} accessibilityRole="button" onPress={() => setMode('lookup')} style={[styles.modeBtn, { borderColor: tc.borderColor }, mode === 'lookup' && styles.modeBtnActive]}>
           <ThemedText style={[styles.modeBtnText, { color: tc.textMuted }, mode === 'lookup' && styles.modeBtnTextActive]}>LOOKUP</ThemedText>
         </Pressable>
-        <Pressable accessibilityRole="button" onPress={() => setMode('table')} style={[styles.modeBtn, { borderColor: tc.borderColor }, mode === 'table' && styles.modeBtnActive]}>
+        <Pressable accessibilityState={{ selected: mode === 'table' }} accessibilityRole="button" onPress={() => setMode('table')} style={[styles.modeBtn, { borderColor: tc.borderColor }, mode === 'table' && styles.modeBtnActive]}>
           <ThemedText style={[styles.modeBtnText, { color: tc.textMuted }, mode === 'table' && styles.modeBtnTextActive]}>FULL TABLE</ThemedText>
         </Pressable>
-        <Pressable accessibilityRole="button" onPress={() => setMode('reserve')} style={[styles.modeBtn, { borderColor: tc.borderColor }, mode === 'reserve' && styles.modeBtnActive]}>
+        <Pressable accessibilityState={{ selected: mode === 'reserve' }} accessibilityRole="button" onPress={() => setMode('reserve')} style={[styles.modeBtn, { borderColor: tc.borderColor }, mode === 'reserve' && styles.modeBtnActive]}>
           <ThemedText style={[styles.modeBtnText, { color: tc.textMuted }, mode === 'reserve' && styles.modeBtnTextActive]}>RESERVE/DRILL</ThemedText>
         </Pressable>
       </View>

@@ -73,7 +73,7 @@ function SectionHeader({ title, subtitle }: { title: string; subtitle?: string }
 function GradeChip({ grade, selected, onPress }: { grade: PayGrade; selected: boolean; onPress: () => void }) {
   const tc = useThemeColors();
   return (
-    <Pressable accessibilityRole="button" onPress={onPress} style={[styles.gradeChip, { borderColor: tc.borderColor }, selected && styles.gradeChipActive]}>
+    <Pressable accessibilityState={{ selected: selected }} accessibilityRole="button" onPress={onPress} style={[styles.gradeChip, { borderColor: tc.borderColor }, selected && styles.gradeChipActive]}>
       <ThemedText style={[styles.gradeChipText, { color: tc.textHint }, selected && styles.gradeChipTextActive]}>{grade}</ThemedText>
     </Pressable>
   );
@@ -255,7 +255,7 @@ export default function ReservesScreen() {
         style={styles.tabBarScroll}
         contentContainerStyle={[styles.tabBar, { borderBottomColor: tc.borderColor }]}>
         {TABS.map((t) => (
-          <Pressable accessibilityRole="button"
+          <Pressable accessibilityState={{ selected: activeTab === t.id }} accessibilityRole="button"
             key={t.id}
             onPress={() => setActiveTab(t.id)}
             style={[
@@ -378,7 +378,7 @@ export default function ReservesScreen() {
                 <ThemedText style={[styles.rowLabel, { color: tc.textSecondary }]}>Retirement System</ThemedText>
                 <View style={styles.stepperWrap}>
                   {(['brs', 'high3'] as const).map((sys) => (
-                    <Pressable accessibilityRole="button"
+                    <Pressable accessibilityState={{ selected: retirementSystem === sys }} accessibilityRole="button"
                       key={sys}
                       onPress={() => setRetirementSystem(sys)}
                       style={[
@@ -566,7 +566,7 @@ export default function ReservesScreen() {
               <ThemedText style={[styles.cardLabel, { color: tc.textSecondary }]}>DEPLOYMENT DURATION</ThemedText>
               <View style={styles.yosRow}>
                 {[3, 6, 9, 12, 15, 18].map((m) => (
-                  <Pressable accessibilityRole="button"
+                  <Pressable accessibilityState={{ selected: deployMonths === m }} accessibilityRole="button"
                     key={m}
                     onPress={() => setDeployMonths(m)}
                     style={[styles.yosChip, { borderColor: tc.borderColor }, deployMonths === m && styles.yosChipActive]}>

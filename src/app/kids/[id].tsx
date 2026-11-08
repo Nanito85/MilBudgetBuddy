@@ -94,7 +94,7 @@ function AddGoalModal({ visible, accentColor, onClose, onAdd }: {
               style={addGoalStyles.emojiScrollWrap}
               contentContainerStyle={addGoalStyles.emojiScroll}>
               {GOAL_EMOJIS.map((e) => (
-                <Pressable accessibilityRole="button"
+                <Pressable accessibilityState={{ selected: emoji === e }} accessibilityRole="button"
                   key={e}
                   onPress={() => setEmoji(e)}
                   style={[
@@ -240,6 +240,7 @@ function EditGoalModal({ visible, goal, accentColor, onClose, onSave, onDelete }
   const [target, setTarget] = useState(goal?.targetAmount?.toString() ?? '');
   const [current, setCurrent] = useState(goal?.currentAmount?.toString() ?? '');
   const [emoji, setEmoji]   = useState(goal?.emoji ?? '🎮');
+  const [error, setError] = useState('');
 
   // Sync state when goal changes
   React.useEffect(() => {
@@ -256,7 +257,9 @@ function EditGoalModal({ visible, goal, accentColor, onClose, onSave, onDelete }
   const submit = () => {
     const t = parseFloat(target);
     const c = parseFloat(current);
-    if (!name.trim() || isNaN(t) || t <= 0) return;
+    if (!name.trim()) { setError('Give the goal a name.'); return; }
+    if (isNaN(t) || t <= 0) { setError('Enter a goal cost greater than $0.'); return; }
+    setError('');
     onSave(goal.id, name.trim(), emoji, t, isNaN(c) ? goal.currentAmount : c);
     Keyboard.dismiss();
     onClose();
@@ -298,7 +301,7 @@ function EditGoalModal({ visible, goal, accentColor, onClose, onSave, onDelete }
               style={addGoalStyles.emojiScrollWrap}
               contentContainerStyle={addGoalStyles.emojiScroll}>
               {GOAL_EMOJIS.map((e) => (
-                <Pressable accessibilityRole="button"
+                <Pressable accessibilityState={{ selected: emoji === e }} accessibilityRole="button"
                   key={e}
                   onPress={() => setEmoji(e)}
                   style={[
@@ -330,7 +333,7 @@ function EditGoalModal({ visible, goal, accentColor, onClose, onSave, onDelete }
               <ThemedText style={[addGoalStyles.dollarSign, { color: tc.textSecondary }]}>$</ThemedText>
               <TextInput
                 value={target}
-                onChangeText={setTarget}
+                onChangeText={(v) => { setTarget(v); setError(''); }}
                 placeholder="Total cost (e.g. 299.99)"
                 placeholderTextColor={tc.textHint}
                 keyboardType="decimal-pad"
@@ -338,6 +341,10 @@ function EditGoalModal({ visible, goal, accentColor, onClose, onSave, onDelete }
                 returnKeyType="next"
               />
             </View>
+
+            {!!error && (
+              <ThemedText accessibilityRole="alert" style={{ color: '#FF6B6B', fontSize: 13, fontWeight: '600' }}>{error}</ThemedText>
+            )}
 
             <ThemedText style={[addGoalStyles.fieldLabel, { color: tc.textSecondary }]}>AMOUNT SAVED SO FAR</ThemedText>
             <View style={[addGoalStyles.inputWrap, { backgroundColor: tc.inputBg, borderColor: tc.borderColor }]}>
@@ -430,7 +437,7 @@ function AddChoreModal({ visible, defaultFrequency, accentColor, onClose, onAdd 
             <ThemedText style={[addGoalStyles.fieldLabel, { color: tc.textSecondary }]}>FREQUENCY</ThemedText>
             <View style={choreStyles.freqRow}>
               {FREQ_OPTIONS.map((f) => (
-                <Pressable accessibilityRole="button"
+                <Pressable accessibilityState={{ selected: frequency === f.key }} accessibilityRole="button"
                   key={f.key}
                   onPress={() => setFrequency(f.key)}
                   style={[
@@ -569,7 +576,7 @@ function EditKidModal({ visible, nickname, gender, onClose, onSave }: {
                 const gTheme = getKidTheme(g);
                 const isSelected = selectedGender === g;
                 return (
-                  <Pressable accessibilityRole="button"
+                  <Pressable accessibilityState={{ selected: isSelected }} accessibilityRole="button"
                     key={g}
                     onPress={() => setSelectedGender(g)}
                     style={[

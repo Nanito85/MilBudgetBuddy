@@ -176,7 +176,7 @@ export default function TdyOptimizerScreen() {
         {/* Mode tabs */}
         <View style={[styles.tabRow, { borderColor: tc.borderColor }]}>
           {(['conus', 'oconus'] as Mode[]).map((m) => (
-            <Pressable accessibilityRole="button" key={m} onPress={() => { setMode(m); setCitySearch(''); setZipInput(''); }} style={[styles.tab, { backgroundColor: tc.background }, mode === m && styles.tabActive]}>
+            <Pressable accessibilityState={{ selected: mode === m }} accessibilityRole="button" key={m} onPress={() => { setMode(m); setCitySearch(''); setZipInput(''); }} style={[styles.tab, { backgroundColor: tc.background }, mode === m && styles.tabActive]}>
               <ThemedText style={[styles.tabText, { color: tc.textHint }, mode === m && styles.tabTextActive]}>
                 {m === 'conus' ? 'CONUS' : 'OCONUS'}
               </ThemedText>
@@ -238,7 +238,7 @@ export default function TdyOptimizerScreen() {
               <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginHorizontal: -Spacing.three, flexGrow: 0, flexShrink: 0 }}>
                 <View style={[styles.chipRow, { paddingHorizontal: Spacing.three }]}>
                   {conusResults.map((d) => (
-                    <Pressable accessibilityRole="button" key={d.did} onPress={() => { setSelected(destToRate(d)); setCitySearch(''); Keyboard.dismiss(); }} style={[styles.locChip, { backgroundColor: tc.background, borderColor: tc.borderColor }, selected.label === `${d.city}, ${d.state}` && styles.locChipSelected]}>
+                    <Pressable accessibilityState={{ selected: selected.label === `${d.city}, ${d.state}` }} accessibilityRole="button" key={d.did} onPress={() => { setSelected(destToRate(d)); setCitySearch(''); Keyboard.dismiss(); }} style={[styles.locChip, { backgroundColor: tc.background, borderColor: tc.borderColor }, selected.label === `${d.city}, ${d.state}` && styles.locChipSelected]}>
                       <ThemedText style={[styles.locChipText, { color: tc.textHint }, selected.label === `${d.city}, ${d.state}` && [styles.locChipTextSelected, { color: tc.tactical }]]}>{d.city}, {d.state}</ThemedText>
                       <ThemedText style={[styles.locChipRate, { color: tc.textMuted }, selected.label === `${d.city}, ${d.state}` && { color: tc.accent }]}>{fmtDay(d.total)}/day</ThemedText>
                     </Pressable>
@@ -265,7 +265,7 @@ export default function TdyOptimizerScreen() {
               <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginHorizontal: -Spacing.three, flexGrow: 0, flexShrink: 0 }}>
                 <View style={[styles.chipRow, { paddingHorizontal: Spacing.three }]}>
                   {oconusResults.map((l) => (
-                    <Pressable accessibilityRole="button" key={l.id} onPress={() => { setSelected(oconusToRate(l)); setCitySearch(''); Keyboard.dismiss(); }} style={[styles.locChip, { backgroundColor: tc.background, borderColor: tc.borderColor }, selected.label === l.name && styles.locChipSelected]}>
+                    <Pressable accessibilityState={{ selected: selected.label === l.name }} accessibilityRole="button" key={l.id} onPress={() => { setSelected(oconusToRate(l)); setCitySearch(''); Keyboard.dismiss(); }} style={[styles.locChip, { backgroundColor: tc.background, borderColor: tc.borderColor }, selected.label === l.name && styles.locChipSelected]}>
                       <ThemedText style={[styles.locChipText, { color: tc.textHint }, selected.label === l.name && [styles.locChipTextSelected, { color: tc.tactical }]]}>{l.name}</ThemedText>
                       <ThemedText style={[styles.locChipRate, { color: tc.textMuted }, selected.label === l.name && { color: tc.accent }]}>{fmtDay(l.total)}/day</ThemedText>
                     </Pressable>
@@ -350,7 +350,7 @@ export default function TdyOptimizerScreen() {
             </View>
             <View style={styles.kToggle}>
               {([false, true] as const).map((val) => (
-                <Pressable accessibilityRole="button" key={String(val)} onPress={() => setKitchenette(val)} style={[styles.kToggleBtn, kitchenette === val && styles.kToggleBtnActive]}>
+                <Pressable accessibilityState={{ selected: kitchenette === val }} accessibilityRole="button" key={String(val)} onPress={() => setKitchenette(val)} style={[styles.kToggleBtn, kitchenette === val && styles.kToggleBtnActive]}>
                   <ThemedText style={[styles.kToggleTxt, { color: tc.textHint }, kitchenette === val && styles.kToggleTxtActive]}>{val ? 'Yes' : 'No'}</ThemedText>
                 </Pressable>
               ))}

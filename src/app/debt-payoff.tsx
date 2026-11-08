@@ -321,7 +321,7 @@ export default function DebtPayoffScreen() {
               {/* Strategy toggle */}
               <SectionLabel text="PAYOFF STRATEGY" />
               <View style={styles.strategyRow}>
-                <Pressable accessibilityRole="button"
+                <Pressable accessibilityState={{ selected: strategy === 'avalanche' }} accessibilityRole="button"
                   onPress={() => setStrategy('avalanche')}
                   style={[styles.stratBtn, { borderColor: tc.borderColor }, strategy === 'avalanche' && styles.stratBtnActiveAvalanche]}>
                   <ThemedText style={[styles.stratLabel, { color: tc.textHint }, strategy === 'avalanche' && { color: tc.textPrimary }]}>
@@ -331,7 +331,7 @@ export default function DebtPayoffScreen() {
                     Highest APR first · saves most interest
                   </ThemedText>
                 </Pressable>
-                <Pressable accessibilityRole="button"
+                <Pressable accessibilityState={{ selected: strategy === 'snowball' }} accessibilityRole="button"
                   onPress={() => setStrategy('snowball')}
                   style={[styles.stratBtn, { borderColor: tc.borderColor }, strategy === 'snowball' && styles.stratBtnActiveSnowball]}>
                   <ThemedText style={[styles.stratLabel, { color: tc.textHint }, strategy === 'snowball' && { color: tc.textPrimary }]}>

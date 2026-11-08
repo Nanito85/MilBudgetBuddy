@@ -114,7 +114,7 @@ export default function TLECalculatorScreen() {
           <View style={styles.modeToggle}>
             {([['tle', '🏠  CONUS (TLE)', 'Up to 21 days'], ['tla', '✈️  OCONUS (TLA)', 'Up to 60 days']] as [MoveMode, string, string][]).map(
               ([val, label, sub]) => (
-                <Pressable accessibilityRole="button"
+                <Pressable accessibilityState={{ selected: mode === val }} accessibilityRole="button"
                   key={val}
                   onPress={() => handleModeChange(val)}
                   style={[styles.modeBtn, mode === val && styles.modeBtnActive]}>

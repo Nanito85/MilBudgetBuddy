@@ -107,7 +107,7 @@ export default function CarLoanScreen() {
   function GradeChip({ g }: { g: PayGrade }) {
     const active = grade === g;
     return (
-      <Pressable accessibilityRole="button" onPress={() => setGrade(g)} style={[s.chip, { borderColor: tc.borderColor }, active && { backgroundColor: Brand.accent, borderColor: Brand.accent }]}>
+      <Pressable accessibilityState={{ selected: active }} accessibilityRole="button" onPress={() => setGrade(g)} style={[s.chip, { borderColor: tc.borderColor }, active && { backgroundColor: Brand.accent, borderColor: Brand.accent }]}>
         <ThemedText style={[s.chipTxt, { color: tc.textHint }, active && { color: '#000' }]}>{g}</ThemedText>
       </Pressable>
     );
@@ -115,7 +115,7 @@ export default function CarLoanScreen() {
 
   function PriceBtn({ amount, label }: { amount: number; label: string }) {
     return (
-      <Pressable accessibilityRole="button" onPress={() => setPrice(amount)} style={[s.presetBtn, { borderColor: tc.borderColor }, price === amount && s.presetActive]}>
+      <Pressable accessibilityState={{ selected: price === amount }} accessibilityRole="button" onPress={() => setPrice(amount)} style={[s.presetBtn, { borderColor: tc.borderColor }, price === amount && s.presetActive]}>
         <ThemedText style={[s.presetTxt, { color: tc.textHint }, price === amount && [s.presetActiveTxt, { color: tc.accent }]]}>{label}</ThemedText>
       </Pressable>
     );
@@ -124,7 +124,7 @@ export default function CarLoanScreen() {
   function AprBtn({ rate }: { rate: number }) {
     const active = apr === rate;
     return (
-      <Pressable accessibilityRole="button"
+      <Pressable accessibilityState={{ selected: active }} accessibilityRole="button"
         onPress={() => { setApr(rate); setAprInput(String(rate)); }}
         style={[s.chip, { borderColor: tc.borderColor }, active && { backgroundColor: Brand.primary, borderColor: Brand.primary }]}>
         <ThemedText style={[s.chipTxt, { color: tc.textHint }, active && { color: '#fff' }]}>{rate}%</ThemedText>
@@ -237,7 +237,7 @@ export default function CarLoanScreen() {
           <ThemedText style={[s.cardLabel, { color: tc.textHint, marginTop: Spacing.two }]}>LOAN TERM</ThemedText>
           <View style={s.chipRow}>
             {TERMS.map((t) => (
-              <Pressable accessibilityRole="button" key={t} onPress={() => setTerm(t)} style={[s.chip, { borderColor: tc.borderColor }, term === t && { backgroundColor: Brand.primary, borderColor: Brand.primary }]}>
+              <Pressable accessibilityState={{ selected: term === t }} accessibilityRole="button" key={t} onPress={() => setTerm(t)} style={[s.chip, { borderColor: tc.borderColor }, term === t && { backgroundColor: Brand.primary, borderColor: Brand.primary }]}>
                 <ThemedText style={[s.chipTxt, { color: tc.textHint }, term === t && { color: '#fff' }]}>{t}mo</ThemedText>
               </Pressable>
             ))}

@@ -254,7 +254,7 @@ export default function LESDecoderScreen() {
               const meta = s === 'all' ? null : SECTION_META[s];
               const active = activeSection === s;
               return (
-                <Pressable accessibilityRole="button"
+                <Pressable accessibilityState={{ selected: active }} accessibilityRole="button"
                   key={s}
                   onPress={() => setActiveSection(s)}
                   style={[

@@ -114,7 +114,7 @@ function DetailModal({ item, onClose, onUpdate }: { item: FeedbackRow; onClose: 
           <ThemedText style={[detail.sectionLabel, { color: tc.textMuted }]}>UPDATE STATUS</ThemedText>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={detail.statusRowScroll} contentContainerStyle={detail.statusRow}>
             {STATUSES.filter((s) => s !== 'All').map((s) => (
-              <Pressable accessibilityRole="button"
+              <Pressable accessibilityState={{ selected: status === s }} accessibilityRole="button"
                 key={s}
                 onPress={() => setStatus(s)}
                 style={[detail.statusChip, { borderColor: tc.borderColor, backgroundColor: tc.surface }, status === s && { borderColor: STATUS_COLOR[s] ?? '#888', backgroundColor: (STATUS_COLOR[s] ?? '#888') + '20' }]}>
@@ -292,7 +292,7 @@ export default function AdminFeedbackScreen() {
       {/* Category filter */}
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterRowScroll} contentContainerStyle={styles.filterRow}>
         {CATEGORIES.map((cat) => (
-          <Pressable accessibilityRole="button" key={cat} onPress={() => setCatFilter(cat)}
+          <Pressable accessibilityState={{ selected: catFilter === cat }} accessibilityRole="button" key={cat} onPress={() => setCatFilter(cat)}
             style={[styles.filterChip, { borderColor: tc.borderColor, backgroundColor: tc.surface }, catFilter === cat && styles.filterChipActive]}>
             <ThemedText style={[styles.filterChipText, { color: tc.textHint }, catFilter === cat && [styles.filterChipTextActive, { color: tc.tactical }]]}>
               {cat}
@@ -304,7 +304,7 @@ export default function AdminFeedbackScreen() {
       {/* Status filter */}
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterRowScroll} contentContainerStyle={[styles.filterRow, { paddingTop: 0 }]}>
         {STATUSES.map((s) => (
-          <Pressable accessibilityRole="button" key={s} onPress={() => setStatus(s)}
+          <Pressable accessibilityState={{ selected: statusFilter === s }} accessibilityRole="button" key={s} onPress={() => setStatus(s)}
             style={[styles.filterChip, { borderColor: tc.borderColor, backgroundColor: tc.surface }, statusFilter === s && styles.filterChipActive]}>
             <ThemedText style={[styles.filterChipText, { color: tc.textHint }, statusFilter === s && [styles.filterChipTextActive, { color: tc.tactical }]]}>
               {s === 'All' ? 'All status' : STATUS_LABEL[s]}

@@ -60,7 +60,7 @@ export function AddKidModal({ visible, onClose, onAdd }: {
               const theme = getKidTheme(g);
               const isSelected = gender === g;
               return (
-                <Pressable accessibilityRole="button"
+                <Pressable accessibilityState={{ selected: isSelected }} accessibilityRole="button"
                   key={g}
                   onPress={() => setGender(g)}
                   style={[styles.themeBtn, { borderColor: tc.borderColor }, isSelected && { borderColor: theme.primary, backgroundColor: theme.bg }]}>

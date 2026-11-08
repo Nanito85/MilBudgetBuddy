@@ -27,7 +27,7 @@ function fmtM(n: number): string {
 function TabBtn({ label, active, onPress }: { label: string; active: boolean; onPress: () => void }) {
   const tc = useThemeColors();
   return (
-    <Pressable accessibilityRole="button"
+    <Pressable accessibilityState={{ selected: active }} accessibilityRole="button"
       onPress={onPress}
       style={[styles.tabBtn, { borderColor: tc.borderColor }, active && styles.tabBtnActive]}>
       <ThemedText style={[styles.tabBtnText, { color: tc.textMuted }, active && styles.tabBtnTextActive]}>

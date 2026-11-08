@@ -131,7 +131,7 @@ export default function DITYCalculatorScreen() {
               </ThemedText>
               <View style={styles.toggleRow}>
                 {([true, false] as const).map((val) => (
-                  <Pressable accessibilityRole="button"
+                  <Pressable accessibilityState={{ selected: withDep === val }} accessibilityRole="button"
                     key={String(val)}
                     onPress={() => setWithDep(val)}
                     style={[styles.toggleBtn, withDep === val && styles.toggleBtnActive]}>
@@ -164,7 +164,7 @@ export default function DITYCalculatorScreen() {
               </ThemedText>
               <View style={styles.toggleRow}>
                 {([['full','Full PPM'],['partial','Partial PPM']] as [MoveType, string][]).map(([val, label]) => (
-                  <Pressable accessibilityRole="button"
+                  <Pressable accessibilityState={{ selected: moveType === val }} accessibilityRole="button"
                     key={val}
                     onPress={() => setMoveType(val)}
                     style={[styles.toggleBtn, moveType === val && styles.toggleBtnActive]}>
@@ -347,7 +347,7 @@ export default function DITYCalculatorScreen() {
             <View style={styles.cardPadded}>
               <View style={styles.chipRow}>
                 {TAX_BRACKETS.map((bracket) => (
-                  <Pressable accessibilityRole="button"
+                  <Pressable accessibilityState={{ selected: taxBracket === bracket }} accessibilityRole="button"
                     key={bracket}
                     onPress={() => setTaxBracket(bracket)}
                     style={[styles.chip, taxBracket === bracket && styles.chipActive]}>

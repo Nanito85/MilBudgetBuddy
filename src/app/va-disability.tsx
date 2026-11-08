@@ -40,7 +40,7 @@ type Tab = 'calculator' | 'rates';
 function TabBtn({ label, active, onPress }: { label: string; active: boolean; onPress: () => void }) {
   const tc = useThemeColors();
   return (
-    <Pressable accessibilityRole="button"
+    <Pressable accessibilityState={{ selected: active }} accessibilityRole="button"
       onPress={onPress}
       style={[styles.tabBtn, { borderColor: tc.borderColor }, active && styles.tabBtnActive]}>
       <ThemedText
@@ -56,7 +56,7 @@ function RatingPicker({ value, onChange }: { value: number; onChange: (v: number
   return (
     <View style={styles.ratingPicker}>
       {VALID_RATINGS.map((r) => (
-        <Pressable accessibilityRole="button"
+        <Pressable accessibilityState={{ selected: value === r }} accessibilityRole="button"
           key={r}
           onPress={() => onChange(r)}
           style={[styles.ratingChip, { borderColor: tc.borderColor }, value === r && styles.ratingChipActive]}>
@@ -197,7 +197,7 @@ export default function VaDisabilityScreen() {
                         <ThemedText style={[styles.limbChipText, { color: tc.textHint }, !r.limb && styles.limbChipTextActive]}>N/A</ThemedText>
                       </Pressable>
                       {LIMB_OPTIONS.map((opt) => (
-                        <Pressable accessibilityRole="button"
+                        <Pressable accessibilityState={{ selected: r.limb === opt.value }} accessibilityRole="button"
                           key={opt.value}
                           onPress={() => updateLimb(r.id, opt.value)}
                           style={[styles.limbChip, { borderColor: tc.borderColor }, r.limb === opt.value && styles.limbChipActive]}>
@@ -398,7 +398,7 @@ export default function VaDisabilityScreen() {
                       <ThemedText style={[styles.toggleLabel, { color: tc.textPrimary }]}>Dependent parent(s)</ThemedText>
                       <View style={styles.childCounter}>
                         {([0, 1, 2] as const).map((n) => (
-                          <Pressable accessibilityRole="button"
+                          <Pressable accessibilityState={{ selected: numDependentParents === n }} accessibilityRole="button"
                             key={n}
                             onPress={() => setNumDependentParents(n)}
                             style={[styles.counterBtn, { borderColor: tc.borderColor, width: 32 }, numDependentParents === n && styles.toggleActive]}>
