@@ -400,13 +400,12 @@ export default function DashboardScreen() {
                     // Calculator's CRDP section already explains in more
                     // depth — this just makes sure nobody adds the two
                     // card totals together and gets a number too high.
-                    ? ((vaDisabilityPercent ?? 0) >= 50
-                        ? 'You qualify for CRDP (50%+ rating) — this is fully in addition to your retired pay above.'
-                        : 'Below the 50% CRDP threshold, this amount offsets your retired pay above rather than adding to it — see the Retirement Calculator for the full breakdown.')
-                    // Not retired — no retired pay to interact with at all,
-                    // so this is simply separate, tax-free income with no
-                    // offset consideration.
-                    : 'This is separate, tax-free income — it does not affect or get affected by any other pay shown on this screen.'}
+                    ? ((vaDisabilityPercent ?? 0) >= 50 && yos >= 20
+                        ? 'You qualify for CRDP — this is included in your estimated net pay above, in addition to your retired pay.'
+                        : 'Below the 50% / 20-year CRDP threshold, this amount is deducted from your retired pay (VA waiver) — your estimated net above reflects both.')
+                    : serviceStatus === 'active'
+                      ? 'VA compensation is not paid while on active duty, so it is not counted in your pay above.'
+                      : 'This is tax-free income and is included in your estimated net pay above.'}
                 </ThemedText>
               </View>
             </View>

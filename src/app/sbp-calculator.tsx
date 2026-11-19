@@ -6,8 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Brand, Spacing } from '@/constants/theme';
-import { getHigh3Average } from '@/data/basic-pay-rates';
-import { retiredPayMultiplier } from '@/features/home/utils/lesCalc';
+import { retiredPayMonthly } from '@/features/home/utils/lesCalc';
 import { NumberStepper } from '@/features/retirement/components/NumberStepper';
 import { SBP_ANNUITY_PCT, SBP_PREMIUM_PCT } from '@/features/retirement/utils/sbpCalc';
 import { useThemeColors } from '@/hooks/use-theme';
@@ -82,6 +81,7 @@ export default function SbpCalculatorScreen() {
   const storeGrade = useUserStore((s) => s.payGrade);
   const storeYos   = useUserStore((s) => s.yos);
   const storeEntryDate = useUserStore((s) => s.dateOfEnlistment);
+  const storeRetirementDate = useUserStore((s) => s.retirementDate);
 
   // Estimated retirement pay — same formula as the authoritative retired-pay
   // calculation in lesCalc.ts (High-3 average x retiredPayMultiplier), not a
@@ -94,8 +94,7 @@ export default function SbpCalculatorScreen() {
   // pre-fill; the NumberStepper below lets the user override it.
   const [retirementPay, setRetirementPay] = useState<number>(() => {
     const yos = storeYos ?? 20;
-    const high3 = getHigh3Average(storeGrade ?? 'E7', yos);
-    return Math.round(high3 * retiredPayMultiplier(yos, storeEntryDate));
+    return Math.round(retiredPayMonthly(storeGrade ?? 'E7', yos, storeEntryDate, storeRetirementDate));
   });
   const [coverage, setCoverage] = useState(1.0);
   const [spouseAge, setSpouseAge] = useState(45);

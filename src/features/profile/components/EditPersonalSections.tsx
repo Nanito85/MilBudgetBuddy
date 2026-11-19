@@ -4,10 +4,9 @@ import { Pressable, Switch, View } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { Brand, Spacing } from '@/constants/theme';
 import { PayGrade } from '@/data/bah-rates';
-import { getHigh3Average } from '@/data/basic-pay-rates';
 import { GS_LOCALITIES } from '@/data/gs-pay-rates';
 import { Installation } from '@/data/installations';
-import { FSA_MONTHLY, fmtPay, getDrillPay, retiredPayMultiplier } from '@/features/home/utils/lesCalc';
+import { FSA_MONTHLY, fmtPay, getDrillPay, retiredPayMonthly } from '@/features/home/utils/lesCalc';
 import { StationPicker } from '@/features/pcs/components/StationPicker';
 import { NumberStepper } from '@/features/retirement/components/NumberStepper';
 import { calcSbpPremium } from '@/features/retirement/utils/sbpCalc';
@@ -284,6 +283,7 @@ export const RetiredPaySection = React.memo(function RetiredPaySection({
 }) {
   const tc = useThemeColors();
   const entryDate = useUserStore((s) => s.dateOfEnlistment);
+  const retDate = useUserStore((s) => s.retirementDate);
   return (
     <>
                 {/* Retired + currently working GS civilian — retired pay, VA
@@ -328,7 +328,7 @@ export const RetiredPaySection = React.memo(function RetiredPaySection({
                       ))}
                     </View>
                     <ThemedText style={[editStyles.dateHint, { color: tc.tactical }]}>
-                      ↳ Est. premium: {fmtPay(calcSbpPremium(getHigh3Average(grade, y) * retiredPayMultiplier(y, entryDate), sbpCoveragePct))}/mo, deducted from retired pay
+                      ↳ Est. premium: {fmtPay(calcSbpPremium(retiredPayMonthly(grade, y, entryDate, retDate), sbpCoveragePct))}/mo, deducted from retired pay
                     </ThemedText>
                   </>
                 )}

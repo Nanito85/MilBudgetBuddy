@@ -10,7 +10,9 @@ import { getOconusCola } from '@/data/oconus-cola';
 import { getOhaAreaForInstallation, getOhaRate } from '@/data/oha-rates';
 import { getInstallationById, getInstallationByZip } from '@/data/installations';
 import { getActiveDutyStateTaxRate, getCivilianStateTaxRate, getRetirementExemptAnnual, getRetirementStateTaxRate, getStateTaxInfo } from '@/data/state-tax';
+import { getRetiredPayHistory } from '@/data/pay-history';
 import { calcSbpPremium } from '@/features/retirement/utils/sbpCalc';
+import { monthlyCompensation } from '@/features/va/utils/vaDisabilityCalc';
 import { HousingStatus, LESOverrides, ServiceStatus } from '@/types/user.types';
 
 // Family Separation Allowance — flat monthly rate, effective January 1, 2026
@@ -97,6 +99,16 @@ export interface LESBreakdown {
   // (always-zero, unless overridden) BAH/BAS rows for a retired member.
   isRetiredPay: boolean;
   retiredPayPct: number; // 0-100, e.g. 50 at exactly 20 YOS — for display only
+  // True when retired pay was built from the member's actual retirement date
+  // (pay tables of that era + retiree COLAs since) rather than today's table.
+  retiredPayFromHistory: boolean;
+  // VA disability compensation (tax-free). vaDisability is the monthly amount
+  // received and is part of grossPay. vaWaiver is the retired pay a retiree
+  // under 50% must give up to receive it (dollar-for-dollar, no CRDP) — it is
+  // included in totalDeductions and removed from taxable retired pay.
+  vaDisability: number;
+  vaWaiver: number;
+  vaRatingPct: number;
   // True when family-separation pay applies (member stationed unaccompanied,
   // e.g. an OCONUS tour or sea duty, with dependents living elsewhere).
   familySeparated: boolean;
@@ -179,6 +191,13 @@ export interface LESInputs {
   // Retirees only: the date they entered military service (profile
   // dateOfEnlistment). Entering on/after 2018-01-01 means BRS (2.0%/yr).
   militaryEntryDate?: string;
+  // Retirees only: the date they retired. Retired pay is the High-3 average of
+  // the 36 months BEFORE this date (that era's pay tables) grown by every
+  // retiree COLA since — not today's pay table. Omitted → today's table.
+  retirementDate?: string;
+  // VA disability rating (10-100). Tax-free income for a retiree, civilian or
+  // reservist; ignored for someone on active duty (VA pay is waived then).
+  vaDisabilityPercent?: number;
   // Deployment / hazard pay — independent of familySeparated above (a
   // single deployed member has no one to be "separated" from but still
   // draws IDP/CZTE; a member on an unaccompanied OCONUS tour draws FSA but
@@ -276,6 +295,22 @@ export function retiredPayMultiplier(yos: number, militaryEntryDate?: string): n
   return Math.min(1, Math.max(0, yos * rate));
 }
 
+/**
+ * Monthly retired pay today. With a retirement date it uses the pay tables in
+ * effect for the 36 months before retiring plus the retiree COLAs since; with
+ * none it falls back to today's pay table.
+ */
+export function retiredPayMonthly(
+  grade: PayGrade,
+  yos: number,
+  militaryEntryDate?: string,
+  retirementDate?: string,
+): number {
+  const mult = retiredPayMultiplier(yos, militaryEntryDate);
+  const hist = getRetiredPayHistory(grade, yos, retirementDate);
+  return hist ? hist.high3 * mult * hist.colaFactor : getHigh3Average(grade, yos) * mult;
+}
+
 export function isBlendedRetirement(militaryEntryDate: string | undefined): boolean {
   return !!militaryEntryDate && /^\d{4}-\d{2}-\d{2}/.test(militaryEntryDate) && militaryEntryDate.slice(0, 10) >= '2018-01-01';
 }
@@ -286,7 +321,7 @@ export function calcLES(inputs: LESInputs): LESBreakdown {
     tspContribPct, rothTspPct = 0, hasDentalFamily, sglOptOut, stateResidence, overrides, serviceStatus,
     familySeparated, dependentsMhaZip, alsoGsCivilian, gsGrade, gsStep, gsLocalityKey,
     isDeployed, deploymentLocationId, sbpEnabled, sbpCoveragePct = 1,
-    drillsPerMonth = 4, reserveOnOrders, civilianStartDate,
+    drillsPerMonth = 4, reserveOnOrders, civilianStartDate, retirementDate, vaDisabilityPercent = 0,
   } = inputs;
 
   const isRetired = serviceStatus === 'retired';
@@ -322,7 +357,7 @@ export function calcLES(inputs: LESInputs): LESBreakdown {
   // is handled entirely separately (see monthlyCompensation in va-disability
   // utils) and is unaffected by any of this.
   const calcBasePay = isRetired
-    ? getHigh3Average(payGrade as PayGrade, yos) * retiredPct
+    ? retiredPayMonthly(payGrade as PayGrade, yos, inputs.militaryEntryDate, retirementDate)
     : isCivilianOnly
       ? 0
       : isDrillOnly
@@ -340,6 +375,19 @@ export function calcLES(inputs: LESInputs): LESBreakdown {
   const basePay = overrides?.basePayOverride ?? calcBasePay;
   const bah     = overrides?.bahOverride     ?? calcBah;
   const bas     = overrides?.basOverride     ?? calcBas;
+
+  // VA disability compensation: tax-free, paid on top of everything else for a
+  // retiree, civilian or reservist. (Someone on active duty can't draw it —
+  // it's waived against active pay — so it's left out for them.) A retiree
+  // only keeps retired pay AND VA together (CRDP) with 20+ years and a 50%+
+  // rating; otherwise the VA amount is deducted from retired pay dollar for
+  // dollar (the "VA waiver"), which also lowers the taxable retired pay.
+  const vaEligible = isRetired || isCivilianOnly || serviceStatus === 'reserve';
+  const vaDisability = (vaEligible && vaDisabilityPercent > 0)
+    ? monthlyCompensation(vaDisabilityPercent, hasSpouse, numChildren)
+    : 0;
+  const crdp = vaDisabilityPercent >= 50 && yos >= 20;
+  const vaWaiver = (isRetired && !crdp) ? Math.min(vaDisability, basePay) : 0;
 
   // Family BAH — with-dependents rate at the dependents' actual home, looked
   // up the same way the member's own BAH is. A ZIP that doesn't resolve to
@@ -412,7 +460,7 @@ export function calcLES(inputs: LESInputs): LESBreakdown {
   // be credited twice once the deployment toggle adds IDP.
   const specialPays = deploymentLoc ? Math.max(0, specialPaysTotal - hostileFireTotal) : specialPaysTotal;
 
-  const grossPay = basePay + bah + bas + cola + specialPays + extraIncome + familyBah + fsa + gsGrossMonthly + idp;
+  const grossPay = basePay + bah + bas + cola + specialPays + extraIncome + familyBah + fsa + gsGrossMonthly + idp + vaDisability;
 
   // TSP is only ever deducted from actual PAYROLL wages, never from a
   // pension — so which paycheck it comes off of depends on which one the
@@ -469,7 +517,7 @@ export function calcLES(inputs: LESInputs): LESBreakdown {
   // not each paycheck). Retired pay is not wages.
   const milWages = isRetired ? 0 : basePay + specialPays + idp;
   const fica    = ficaMonthly(milWages + gsGrossMonthly);
-  const taxableBasePay = basePay - czteExcluded;
+  const taxableBasePay = basePay - czteExcluded - vaWaiver;
   const fedTaxableMonthly = Math.max(0, taxableBasePay + taxablePays + gsGrossMonthly - traditionalTsp - sbp);
   // Children feed the Child Tax Credit and, for an unmarried parent, head-
   // of-household filing. Every child is counted; one 17 or older doesn't
@@ -515,7 +563,7 @@ export function calcLES(inputs: LESInputs): LESBreakdown {
   const fersRate = gsGrossMonthly > 0 ? fersContributionRate(civilianStartDate) : 0;
   const fers = gsGrossMonthly * fersRate;
 
-  const totalDeductions = fica + fedTax + stateTax + tsp + sgli + sbp + dental + fers + extraDeductions;
+  const totalDeductions = fica + fedTax + stateTax + tsp + sgli + sbp + dental + fers + vaWaiver + extraDeductions;
   const netPay = grossPay - totalDeductions;
 
   return {
@@ -547,6 +595,8 @@ export function calcLES(inputs: LESInputs): LESBreakdown {
     isDrillPay: isDrillOnly,
     drillsPerMonth,
     retiredPayPct: Math.round(retiredPct * 100),
+    retiredPayFromHistory: isRetired && !!retirementDate && getRetiredPayHistory(payGrade as PayGrade, yos, retirementDate) !== null,
+    vaDisability, vaWaiver, vaRatingPct: vaDisability > 0 ? vaDisabilityPercent : 0,
   };
 }
 
