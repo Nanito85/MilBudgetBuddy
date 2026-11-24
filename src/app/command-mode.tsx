@@ -10,7 +10,6 @@ import { ThemedView } from '@/components/themed-view';
 import { Brand, Spacing } from '@/constants/theme';
 import { useProfileLES } from '@/features/home/hooks/useProfileLES';
 import { calcPayoff, fmtDate as fmtPayoffDate, fmtMonths } from '@/features/debt/utils/debtCalc';
-import { monthlyCompensation } from '@/features/va/utils/vaDisabilityCalc';
 import { useThemeColors } from '@/hooks/use-theme';
 import { useBudgetStore } from '@/store/budget.store';
 import { useDebtStore } from '@/store/debt.store';
@@ -165,27 +164,9 @@ export default function CommandModeScreen() {
   // Same shared engine + inputs as Home (see useProfileLES).
   const breakdown = useProfileLES();
 
-  // VA disability compensation — available regardless of service status (a
-  // member doesn't need to be retired to have a service-connected rating).
-  // The CRDP offset only matters for someone actually drawing retired pay:
-  // below 50%, federal law requires waiving an equal amount of retired pay
-  // to receive this tax-free instead — breakdown.netPay above already
-  // reflects the full pre-waiver entitlement, so adding VA compensation on
-  // top of it would double-count for a retiree under the CRDP threshold.
-  // A non-retiree has no retired pay to waive at all, so their VA
-  // compensation is always fully additive regardless of rating %. Still
-  // shown as its own line either way (see the income rows below) since
-  // it's real money physically received — this only controls whether it's
-  // summed into the worksheet's totals. Same rule the Retirement
-  // Calculator's CRDP section and Home screen's VA Disability card apply.
-  const isRetired = serviceStatus === 'retired';
   const isCivilianOnly = serviceStatus === 'civilian';
-  const vaMonthly = useMemo(() => {
-    if (!vaDisabilityPercent) return 0;
-    return monthlyCompensation(vaDisabilityPercent, hasSpouse, numChildren);
-  }, [vaDisabilityPercent, hasSpouse, numChildren]);
-  const crdpEligible = !isRetired || (vaDisabilityPercent ?? 0) >= 50;
-  const vaInTotal = crdpEligible ? vaMonthly : 0;
+  // VA compensation (and any waiver against retired pay) is part of the shared
+  // pay breakdown, so it's already inside grossPay/netPay — don't add it again.
 
   const totalBudgeted = useMemo(
     () => budgetCategories.reduce((s, c) => s + c.monthlyBudget, 0),
@@ -195,7 +176,7 @@ export default function CommandModeScreen() {
   const budgetWithEntries = budgetCategories.filter((c) => c.monthlyBudget > 0);
 
   const netAfterExpenses = breakdown
-    ? breakdown.netPay + spouseIncome + vaInTotal - totalBudgeted
+    ? breakdown.netPay + spouseIncome - totalBudgeted
     : null;
 
   const handleShare = async () => {
@@ -245,13 +226,14 @@ export default function CommandModeScreen() {
   ${breakdown.alsoGsCivilian ? row('GS Civilian Pay', fmt(breakdown.gsGrossMonthly)) : ''}
   ${breakdown.specialPays > 0 ? specialPays.map((p) => row('· ' + (p.customLabel ?? SPECIAL_PAY_LABELS[p.type]), fmt(p.monthlyAmount))).join('') : ''}
   ${breakdown.extraIncomeItems.map((i) => row('· ' + i.label, fmt(i.amount))).join('')}
-  ${vaMonthly > 0 ? row(`VA Disability Compensation (${vaDisabilityPercent}%)${crdpEligible ? '' : ' — offsets retired pay, not additive'}`, fmt(vaMonthly)) : ''}
+  ${breakdown.vaDisability > 0 ? row(`VA Disability Compensation (${vaDisabilityPercent}%, tax-free)`, fmt(breakdown.vaDisability)) : ''}
   ${spouseIncome > 0 ? row('Spouse / Household Income', fmt(spouseIncome)) : ''}
-  ${row(spouseIncome > 0 || vaInTotal > 0 ? 'TOTAL GROSS (HOUSEHOLD, incl. spouse/VA)' : 'TOTAL GROSS', fmt(breakdown.grossPay + spouseIncome + vaInTotal), true)}
+  ${row(spouseIncome > 0 ? 'TOTAL GROSS (HOUSEHOLD, incl. spouse)' : 'TOTAL GROSS', fmt(breakdown.grossPay + spouseIncome), true)}
 
   ${sectionHeader('DEDUCTIONS', '#B71C1C')}
   ${row(breakdown.isCzte && breakdown.czteExcluded > 0 ? 'Federal Income Tax (est., combat zone exclusion applied)' : 'Federal Income Tax (est.)', fmt(breakdown.fedTax))}
   ${breakdown.stateTax > 0 ? row('State Income Tax (est.)', fmt(breakdown.stateTax)) : ''}
+  ${breakdown.vaWaiver > 0 ? row('VA Waiver (offset to retired pay)', fmt(breakdown.vaWaiver)) : ''}
   ${row('FICA (Social Security + Medicare)', fmt(breakdown.fica))}
   ${breakdown.traditionalTsp > 0 ? row(`Traditional TSP (${tspContribPct}%)`, fmt(breakdown.traditionalTsp)) : ''}
   ${breakdown.rothTsp > 0 ? row(`Roth TSP (${rothTspPct}%)`, fmt(breakdown.rothTsp)) : ''}
@@ -265,7 +247,7 @@ export default function CommandModeScreen() {
 
 <table>
   <tr class="net-row">
-    <td>${spouseIncome > 0 || vaInTotal > 0 ? 'YOUR NET TAKE-HOME PAY (excludes spouse/VA)' : 'NET TAKE-HOME PAY'}</td>
+    <td>${spouseIncome > 0 ? 'YOUR NET TAKE-HOME PAY (excludes spouse)' : 'NET TAKE-HOME PAY'}</td>
     <td style="text-align:right;font-family:monospace;">${fmt(breakdown.netPay)}</td>
   </tr>
 </table>
@@ -458,16 +440,16 @@ export default function CommandModeScreen() {
                 </Pressable>
               )}
 
-              {vaMonthly > 0 && (
+              {breakdown.vaDisability > 0 && (
                 <>
                   <Row
                     label={`VA Disability Compensation (${vaDisabilityPercent}%)`}
-                    value={fmt(vaMonthly)}
+                    value={fmt(breakdown.vaDisability)}
                   />
-                  {!crdpEligible && (
+                  {breakdown.vaWaiver > 0 && (
                     <ThemedText type="small" themeColor="textSecondary" style={styles.crdpNote}>
-                      Below the 50% CRDP threshold — this offsets your retired pay above rather than
-                      adding to it, so it is shown here but excluded from TOTAL GROSS below.
+                      Below the 50% / 20-year CRDP threshold — an equal amount ({fmt(breakdown.vaWaiver)}) is
+                      deducted from your retired pay (VA waiver), shown under deductions below.
                     </ThemedText>
                   )}
                 </>
@@ -479,8 +461,8 @@ export default function CommandModeScreen() {
 
               <Divider />
               <Row
-                label={spouseIncome > 0 || vaInTotal > 0 ? 'TOTAL GROSS (HOUSEHOLD)' : 'TOTAL GROSS'}
-                value={fmt(breakdown.grossPay + spouseIncome + vaInTotal)}
+                label={spouseIncome > 0 ? 'TOTAL GROSS (HOUSEHOLD)' : 'TOTAL GROSS'}
+                value={fmt(breakdown.grossPay + spouseIncome)}
                 bold
                 accent={Brand.success}
               />
@@ -496,6 +478,7 @@ export default function CommandModeScreen() {
               {breakdown.stateTax > 0 && (
                 <Row label="State Income Tax (est.)" value={fmt(breakdown.stateTax)} />
               )}
+              {breakdown.vaWaiver > 0 && <Row label="VA Waiver (offset to retired pay)" value={fmt(breakdown.vaWaiver)} />}
               <Row label="FICA" value={fmt(breakdown.fica)} />
               {breakdown.traditionalTsp > 0 && <Row label={`Traditional TSP (${tspContribPct}%)`} value={fmt(breakdown.traditionalTsp)} />}
               {breakdown.rothTsp > 0       && <Row label={`Roth TSP (${rothTspPct}%)`}           value={fmt(breakdown.rothTsp)} />}
@@ -537,12 +520,12 @@ export default function CommandModeScreen() {
             {/* ── NET PAY ── */}
             <View style={[styles.card, styles.netCard]}>
               <View style={styles.netRow}>
-                <ThemedText style={[styles.netLabel, { color: tc.success }]}>{spouseIncome > 0 || vaInTotal > 0 ? 'YOUR NET TAKE-HOME (EXCL. SPOUSE/VA)' : 'NET TAKE-HOME PAY'}</ThemedText>
+                <ThemedText style={[styles.netLabel, { color: tc.success }]}>{spouseIncome > 0 ? 'YOUR NET TAKE-HOME (EXCL. SPOUSE)' : 'NET TAKE-HOME PAY'}</ThemedText>
                 <ThemedText style={[styles.netValue, { color: tc.success }]}>{fmt(breakdown.netPay)}</ThemedText>
               </View>
-              {(spouseIncome > 0 || vaInTotal > 0) && (
+              {(spouseIncome > 0) && (
                 <ThemedText style={styles.netSub}>
-                  Combined household: {fmt(breakdown.netPay + spouseIncome + vaInTotal)}/mo
+                  Combined household: {fmt(breakdown.netPay + spouseIncome)}/mo
                 </ThemedText>
               )}
             </View>

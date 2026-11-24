@@ -4,16 +4,13 @@ import { Pressable, Switch, View } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { Brand, Spacing } from '@/constants/theme';
 import { PayGrade } from '@/data/bah-rates';
-import { getHigh3Average } from '@/data/basic-pay-rates';
 import { GS_LOCALITIES } from '@/data/gs-pay-rates';
 import { Installation } from '@/data/installations';
-import { FSA_MONTHLY, fmtPay, getDrillPay, retiredPayMultiplier } from '@/features/home/utils/lesCalc';
+import { FSA_MONTHLY, fmtPay, getDrillPay } from '@/features/home/utils/lesCalc';
 import { StationPicker } from '@/features/pcs/components/StationPicker';
 import { NumberStepper } from '@/features/retirement/components/NumberStepper';
-import { calcSbpPremium } from '@/features/retirement/utils/sbpCalc';
-import { VALID_RATINGS, monthlyCompensation } from '@/features/va/utils/vaDisabilityCalc';
 import { useThemeColors } from '@/hooks/use-theme';
-import { useUserStore } from '@/store/user.store';
+import { SbpFields } from './RetiredBenefitsFields';
 import {
   GUARD_DUTY_STATUS_DESCRIPTIONS,
   GUARD_DUTY_STATUS_FIELD_HINT,
@@ -34,7 +31,6 @@ import { editStyles } from './editStyles';
 // props change. Callback props are state setters from the parent, so they're
 // referentially stable.
 
-const VA_PICKER_OPTIONS = [0, ...VALID_RATINGS];
 const HOUSING_STATUS_ORDER: HousingStatus[] = ['off_base', 'barracks', 'on_base_family_housing'];
 
 // ── GS grade / step / locality ─────────────────────────────────────────────────
@@ -222,53 +218,17 @@ export const ReserveSection = React.memo(function ReserveSection({
   );
 });
 
-// ── VA disability rating ───────────────────────────────────────────────────────
-
-export const VaDisabilitySection = React.memo(function VaDisabilitySection({ vaPercent, onChange: setVaPercent, spouse, childCount }: {
-  vaPercent: number;
-  onChange: (p: number) => void;
-  spouse: boolean;
-  childCount: number;
-}) {
-  const tc = useThemeColors();
-  return (
-    <>
-            <ThemedText style={[editStyles.fieldLabel, { color: tc.textHint }]}>VA DISABILITY RATING (IF ANY)</ThemedText>
-            <ThemedText style={[editStyles.fieldHint, { color: tc.textHint, marginTop: -Spacing.two }]}>
-              Optional — set this even if you&apos;re still serving or separated without retiring. VA compensation is separate, tax-free income independent of any other pay.
-            </ThemedText>
-            <View style={editStyles.gsRow}>
-              {VA_PICKER_OPTIONS.map((p) => (
-                <Pressable accessibilityState={{ selected: vaPercent === p }} accessibilityRole="button"
-                  key={p}
-                  onPress={() => setVaPercent(p)}
-                  style={[editStyles.gsChip, { width: 52, borderColor: tc.borderColor, backgroundColor: tc.surface }, vaPercent === p && editStyles.gsChipActive]}>
-                  <ThemedText style={[editStyles.gsChipText, { color: tc.textHint }, vaPercent === p && { color: tc.accent }]}>
-                    {p}%
-                  </ThemedText>
-                </Pressable>
-              ))}
-            </View>
-            {vaPercent > 0 && (
-              <ThemedText style={[editStyles.dateHint, { color: tc.tactical }]}>
-                ↳ Est. VA compensation: {fmtPay(monthlyCompensation(vaPercent, spouse, childCount))}/mo
-              </ThemedText>
-            )}
-    </>
-  );
-});
-
 // ── Retired-only: GS side job + SBP ────────────────────────────────────────────
 
 export const RetiredPaySection = React.memo(function RetiredPaySection({
-  grade, y,
+  retiredMonthly,
   alsoGsCivilian, onAlsoGsCivilianChange: setAlsoGsCivilianLocal,
   gsGrade, gsStep, gsLocality, setGsGrade, setGsStep, setGsLocality,
   sbpEnabled, onSbpEnabledChange: setSbpEnabledLocal,
   sbpCoveragePct, onSbpCoveragePctChange: setSbpCoveragePctLocal,
 }: {
-  grade: PayGrade;
-  y: number;
+  /** Retired pay as currently edited (from the local, unsaved fields). */
+  retiredMonthly: number;
   alsoGsCivilian: boolean;
   onAlsoGsCivilianChange: (v: boolean) => void;
   gsGrade: number;
@@ -283,7 +243,6 @@ export const RetiredPaySection = React.memo(function RetiredPaySection({
   onSbpCoveragePctChange: (pct: number) => void;
 }) {
   const tc = useThemeColors();
-  const entryDate = useUserStore((s) => s.dateOfEnlistment);
   return (
     <>
                 {/* Retired + currently working GS civilian — retired pay, VA
@@ -306,32 +265,7 @@ export const RetiredPaySection = React.memo(function RetiredPaySection({
                     never be assumed on for every retiree (a real share of
                     retirees decline it), and it has no active-duty
                     equivalent (see lesCalc.ts). */}
-                <View style={editStyles.toggleRow}>
-                  <ThemedText style={[editStyles.toggleLabel, { color: tc.textPrimary }]}>Survivor Benefit Plan (SBP)</ThemedText>
-                  <Switch value={sbpEnabled} onValueChange={setSbpEnabledLocal} trackColor={{ true: Brand.accent }} thumbColor="#FFF" />
-                </View>
-                {sbpEnabled && (
-                  <>
-                    <ThemedText style={[editStyles.fieldHint, { color: tc.textHint, marginTop: -Spacing.two }]}>
-                      Coverage — the % of your retired pay your spouse/beneficiary is insured for. Deducted from retired pay at 6.5% of the covered amount.
-                    </ThemedText>
-                    <View style={editStyles.gsRow}>
-                      {[1, 0.75, 0.5, 0.25].map((pct) => (
-                        <Pressable accessibilityState={{ selected: sbpCoveragePct === pct }} accessibilityRole="button"
-                          key={pct}
-                          onPress={() => setSbpCoveragePctLocal(pct)}
-                          style={[editStyles.gsChip, { width: 60, borderColor: tc.borderColor, backgroundColor: tc.surface }, sbpCoveragePct === pct && editStyles.gsChipActive]}>
-                          <ThemedText style={[editStyles.gsChipText, { color: tc.textHint }, sbpCoveragePct === pct && { color: tc.accent }]}>
-                            {Math.round(pct * 100)}%
-                          </ThemedText>
-                        </Pressable>
-                      ))}
-                    </View>
-                    <ThemedText style={[editStyles.dateHint, { color: tc.tactical }]}>
-                      ↳ Est. premium: {fmtPay(calcSbpPremium(getHigh3Average(grade, y) * retiredPayMultiplier(y, entryDate), sbpCoveragePct))}/mo, deducted from retired pay
-                    </ThemedText>
-                  </>
-                )}
+                <SbpFields enabled={sbpEnabled} onEnabledChange={setSbpEnabledLocal} coveragePct={sbpCoveragePct} onCoveragePctChange={setSbpCoveragePctLocal} retiredMonthly={retiredMonthly} />
     </>
   );
 });

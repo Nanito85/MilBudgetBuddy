@@ -390,6 +390,8 @@ function snapshotUser() {
     reserveOnOrders: s.reserveOnOrders ?? null,
     retirementDate: s.retirementDate ?? null,
     vaDisabilityPercent: s.vaDisabilityPercent ?? null,
+    retiredFromReserve: s.retiredFromReserve ?? false,
+    reserveRetirementPoints: s.reserveRetirementPoints ?? null,
     sbpEnabled: s.sbpEnabled ?? false,
     sbpCoveragePct: s.sbpCoveragePct ?? null,
     tspContribPct: s.tspContribPct,

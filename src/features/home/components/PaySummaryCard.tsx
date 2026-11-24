@@ -304,6 +304,16 @@ export function PaySummaryCard({ breakdown }: Props) {
           {breakdown.alsoGsCivilian && (
             <Row label="GS CIVILIAN PAY" value={fmtPay(breakdown.gsGrossMonthly)} indent positive />
           )}
+          {breakdown.vaDisability > 0 && (
+            <Row
+              label={`VA DISABILITY (${breakdown.vaRatingPct}%, TAX-FREE)`}
+              value={fmtPay(breakdown.vaDisability)}
+              indent positive
+              onInfoPress={() => Alert.alert('VA Disability', breakdown.vaWaiver > 0
+                ? 'VA compensation is tax-free. Because retired pay and VA pay only stack (CRDP) with 20+ years and a 50%+ rating, the same amount is deducted from your retired pay (the "VA waiver") — shown under deductions.'
+                : 'VA compensation is tax-free and paid on top of your other income.')}
+            />
+          )}
           {breakdown.specialPays > 0 && (
             <Row label="SPECIAL PAYS" value={fmtPay(breakdown.specialPays)} indent positive />
           )}
@@ -353,6 +363,7 @@ export function PaySummaryCard({ breakdown }: Props) {
               onInfoPress={() => Alert.alert('Survivor Benefit Plan', 'You elected SBP coverage — 6.5% of your covered retired pay is deducted each month so your spouse/beneficiary can receive a 55% annuity if you die first. Change this in Profile.')}
             />
           )}
+          {breakdown.vaWaiver > 0 && <Row label="VA WAIVER (OFFSET TO RETIRED PAY)" value={`-${fmtPay(breakdown.vaWaiver)}`} indent negative />}
           {breakdown.dental > 0 && <Row label="DENTAL (TDP)" value={`-${fmtPay(breakdown.dental)}`} indent negative />}
           {breakdown.fers > 0 && (
             <Row
@@ -394,10 +405,16 @@ export function PaySummaryCard({ breakdown }: Props) {
             </ThemedText>
           )}
 
+          {breakdown.isRetiredPay && !breakdown.basePayOverridden && breakdown.retiredHigh3 > 0 && (
+            <ThemedText type="label" style={[styles.disclaimer, { color: tc.textHint, marginTop: Spacing.one }]}>
+              {`RETIRED PAY MATH: HIGH-3 ${fmtPay(breakdown.retiredHigh3)} × ${breakdown.retiredPayPct}% (${breakdown.retiredFromReserve ? 'RESERVE POINTS ÷ 360' : 'YEARS'} × ${(breakdown.retiredAccrualRate * 100).toFixed(1)}%)`}
+              {breakdown.retiredColaFactor > 1.0001 ? ` = ${fmtPay(breakdown.retiredInitialMonthly)} AT RETIREMENT × ${breakdown.retiredColaFactor.toFixed(3)} COLAS = ${fmtPay(breakdown.basePay)}` : ` = ${fmtPay(breakdown.basePay)}`}
+            </ThemedText>
+          )}
           <ThemedText type="label" style={[styles.disclaimer, { color: tc.textMuted }]}>
             * ESTIMATE ONLY — VERIFY AT MYPAY.DFAS.MIL{'\n'}
             {breakdown.isRetiredPay
-              ? 'RETIRED PAY EXCLUDES BAH/BAS (NOT PAID TO RETIREES). SEE VA DISABILITY BELOW FOR COMPENSATION.'
+              ? `RETIRED PAY EXCLUDES BAH/BAS (NOT PAID TO RETIREES). ${breakdown.retiredPayFromHistory ? 'BASED ON YOUR RETIREMENT DATE: HIGH-3 FROM THAT ERA’S PAY TABLES PLUS ANNUAL RETIREE COLAS SINCE.' : 'ADD YOUR RETIREMENT DATE IN PROFILE FOR A MORE ACCURATE FIGURE.'}`
               : breakdown.isDrillPay
                 ? 'DRILL PAY ONLY — NO BAH/BAS WHILE NOT ON ORDERS. ON ORDERS OR AGR? TURN IT ON IN PROFILE.'
                 : hasOverrides ? '✎ SOME VALUES MANUALLY ADJUSTED FROM LES' : 'SET HOME STATE IN PROFILE FOR STATE TAX ESTIMATE'}
