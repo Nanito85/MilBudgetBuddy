@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import {
   Modal,
   Pressable,
-  SafeAreaView,
   ScrollView,
   StyleSheet,
   View,
 } from 'react-native';
+
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
@@ -389,6 +390,7 @@ export function KidModeScreen() {
   const deactivate = useKidModeStore((s) => s.deactivate);
   const pin = useKidModeStore((s) => s.pin);
   const kidId = useKidModeStore((s) => s.kidId);
+  const insets = useSafeAreaInsets();
   const kids = useKidsStore((s) => s.kids);
   const kidsHydrated = useKidsStore((s) => s.hydrated);
   const [showExit, setShowExit] = useState(false);
@@ -434,7 +436,7 @@ export function KidModeScreen() {
 
   return (
     <View style={[screen.container, { backgroundColor: theme.bg }]}>
-      <SafeAreaView style={{ flex: 1 }}>
+      <View style={{ flex: 1, paddingTop: insets.top, paddingBottom: insets.bottom, paddingLeft: insets.left, paddingRight: insets.right }}>
 
         {/* Header */}
         <View style={[screen.header, { borderBottomColor: theme.primary + '30' }]}>
@@ -444,7 +446,8 @@ export function KidModeScreen() {
               {kid.nickname.toUpperCase()}
             </ThemedText>
           </View>
-          <Pressable accessibilityRole="button"
+          <Pressable accessibilityRole="button" accessibilityLabel="Parent lock"
+            hitSlop={12}
             onPress={() => setShowExit(true)}
             style={[screen.lockBtn, { backgroundColor: theme.primary + '20', borderColor: theme.primary + '40' }]}>
             <ThemedText style={[screen.lockIcon, { color: theme.primary }]}>🔒</ThemedText>
@@ -521,7 +524,7 @@ export function KidModeScreen() {
           </View>
 
         </ScrollView>
-      </SafeAreaView>
+      </View>
 
       {/* Exit PIN modal */}
       <ExitPINModal
@@ -543,7 +546,8 @@ const screen = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.two,
+    paddingTop: Spacing.three,
+    paddingBottom: Spacing.two,
     borderBottomWidth: 1,
   },
   headerLeft: { gap: 2 },
@@ -556,7 +560,8 @@ const screen = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 6,
     paddingHorizontal: Spacing.two,
-    paddingVertical: Spacing.one + 2,
+    paddingVertical: Spacing.two,
+    minHeight: 44,
   },
   lockIcon: { fontSize: 14, lineHeight: 18 },
   lockLabel: { fontSize: 10, fontWeight: '900', letterSpacing: 0.5 },
