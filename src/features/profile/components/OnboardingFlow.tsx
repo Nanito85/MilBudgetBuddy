@@ -52,7 +52,8 @@ import {
 
 const HOUSING_STATUS_ORDER: HousingStatus[] = ['off_base', 'barracks', 'on_base_family_housing'];
 import { RankVariant, getDualVariants } from '@/data/rank-insignia';
-import { VALID_RATINGS } from '@/features/va/utils/vaDisabilityCalc';
+import { retiredPayMonthly } from '@/features/home/utils/lesCalc';
+import { ReserveRetireeFields, RetiredPayMathPreview, SbpFields, VaRatingHelper } from './RetiredBenefitsFields';
 import { getDefaultQuickAccessIds } from '@/data/quick-actions';
 import { Installation } from '@/data/installations';
 
@@ -901,15 +902,24 @@ function CivilianServiceInfoStep({
 
 // ── Step 4c: Retired Service Info ──────────────────────────────────────────────
 
-const VA_PERCENT_OPTIONS = [0, ...VALID_RATINGS];
+interface RetiredExtras {
+  retiredFromReserve: boolean;
+  reserveRetirementPoints?: number;
+  sbpEnabled: boolean;
+  sbpCoveragePct: number;
+}
 
 function RetiredServiceInfoStep({
   branch,
   onNext,
 }: {
   branch?: MilitaryBranch;
-  onNext: (grade: PayGrade | undefined, lastName: string, nickname: string, retirementDate: string, vaDisabilityPercent: number, yos: number, enlistDate: string) => void;
+  onNext: (grade: PayGrade | undefined, lastName: string, nickname: string, retirementDate: string, vaDisabilityPercent: number, yos: number, enlistDate: string, extras?: RetiredExtras) => void;
 }) {
+  const [retiredFromReserve, setRetiredFromReserve] = useState(false);
+  const [reservePoints, setReservePoints] = useState(0);
+  const [sbpEnabled, setSbpEnabled] = useState(false);
+  const [sbpCoveragePct, setSbpCoveragePct] = useState(1);
   const [grade, setGrade]         = useState<PayGrade>('E7');
   const [rankVariant, setRankVariant] = useState<RankVariant>('default');
   const [lastName, setLastName]   = useState('');
@@ -1052,34 +1062,43 @@ function RetiredServiceInfoStep({
         />
         <ThemedText type="small" themeColor="textSecondary" style={{ lineHeight: 18, marginTop: 4 }}>
           Determines your retired pay: 50% of your High-3 average base pay at 20 years, +2.5% for every year beyond that.
+          Your pay is figured from the pay tables of the year you retired, then grown by the yearly retiree COLAs since.
         </ThemedText>
       </View>
 
-      {/* VA Disability Percentage */}
+      {/* Reserve/Guard retirees are paid by points, not years */}
       <View style={styles.fieldBlock}>
-        <ThemedText type="smallBold" themeColor="textSecondary" style={styles.fieldLabel}>
-          VA DISABILITY RATING
-        </ThemedText>
-        <ThemedText type="small" themeColor="textSecondary" style={{ lineHeight: 18 }}>
-          We&apos;ll estimate your monthly VA disability compensation based on this rating and your dependents.
-        </ThemedText>
-        <View style={styles.chipGrid}>
-          {VA_PERCENT_OPTIONS.map((p) => (
-            <Pressable accessibilityState={{ selected: vaPercent === p }} accessibilityRole="button"
-              key={p}
-              onPress={() => setVaPercent(p)}
-              style={[styles.gradeChip, vaPercent === p && styles.gradeChipActive]}>
-              <ThemedText style={[styles.gradeChipText, vaPercent === p && [styles.gradeChipTextActive, { color: tc.primaryText }]]}>
-                {p}%
-              </ThemedText>
-            </Pressable>
-          ))}
-        </View>
+        <ReserveRetireeFields
+          retiredFromReserve={retiredFromReserve} onRetiredFromReserveChange={setRetiredFromReserve}
+          points={reservePoints} onPointsChange={setReservePoints} />
+      </View>
+
+      {/* The math, so a retiree can sanity-check it against their DFAS statement */}
+      <View style={styles.fieldBlock}>
+        <RetiredPayMathPreview grade={grade} yos={yos} entryDate={enlistDate || undefined} retirementDate={retirementDate || undefined}
+          reservePoints={retiredFromReserve ? reservePoints : undefined} />
+      </View>
+
+      {/* VA Disability — rating picker plus the built-in combiner */}
+      <View style={styles.fieldBlock}>
+        <VaRatingHelper vaPercent={vaPercent} onChange={setVaPercent} spouse={false} childCount={0} yos={yos} isRetired dependentsPending
+          retiredMonthly={retiredPayMonthly(grade, yos, enlistDate || undefined, retirementDate || undefined, retiredFromReserve ? reservePoints : undefined)} />
+      </View>
+
+      {/* Survivor Benefit Plan — the one standard deduction taken from retired pay */}
+      <View style={styles.fieldBlock}>
+        <SbpFields enabled={sbpEnabled} onEnabledChange={setSbpEnabled} coveragePct={sbpCoveragePct} onCoveragePctChange={setSbpCoveragePct}
+          retiredMonthly={retiredPayMonthly(grade, yos, enlistDate || undefined, retirementDate || undefined, retiredFromReserve ? reservePoints : undefined)} />
       </View>
 
       <View style={styles.btnGroup}>
         <Pressable accessibilityRole="button"
-          onPress={() => onNext(grade, lastName, nickname, retirementDate, vaPercent, yos, enlistDate)}
+          onPress={() => onNext(grade, lastName, nickname, retirementDate, vaPercent, yos, enlistDate, {
+            retiredFromReserve,
+            reserveRetirementPoints: retiredFromReserve && reservePoints > 0 ? reservePoints : undefined,
+            sbpEnabled,
+            sbpCoveragePct,
+          })}
           style={({ pressed }) => [styles.primaryBtn, pressed && styles.btnPressed]}>
           <ThemedText style={styles.primaryBtnText}>Continue  →</ThemedText>
         </Pressable>
@@ -1422,6 +1441,7 @@ export function OnboardingFlow() {
   const setGSInfo         = useUserStore((s) => s.setGSInfo);
   const setReserveInfo    = useUserStore((s) => s.setReserveInfo);
   const setRetiredInfo    = useUserStore((s) => s.setRetiredInfo);
+  const updateProfile     = useUserStore((s) => s.updateProfile);
   const setLocationFamily = useUserStore((s) => s.setLocationFamily);
   const setStateResidence = useUserStore((s) => s.setStateResidence);
   const setQuickAccessIds = useUserStore((s) => s.setQuickAccessIds);
@@ -1483,6 +1503,7 @@ export function OnboardingFlow() {
     vaDisabilityPercent: number,
     yos: number,
     enlistDate: string,
+    extras?: RetiredExtras,
   ) => {
     if (grade) {
       // yos here is years of service AS OF RETIREMENT (frozen), not years
@@ -1493,6 +1514,14 @@ export function OnboardingFlow() {
       setServiceInfo(grade, lastName, nickname, yos, enlistDate || undefined, undefined);
     }
     setRetiredInfo(retirementDate || undefined, vaDisabilityPercent);
+    if (extras) {
+      updateProfile({
+        retiredFromReserve: extras.retiredFromReserve,
+        reserveRetirementPoints: extras.reserveRetirementPoints,
+        sbpEnabled: extras.sbpEnabled,
+        sbpCoveragePct: extras.sbpCoveragePct,
+      });
+    }
     setStep(5);
   };
 

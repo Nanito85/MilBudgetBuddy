@@ -52,6 +52,8 @@ export function useProfileLESInputs(): ProfileLESInputs {
     militaryEntryDate: s.serviceStatus === 'retired' ? s.dateOfEnlistment : undefined,
     retirementDate: s.serviceStatus === 'retired' ? s.retirementDate : undefined,
     vaDisabilityPercent: s.vaDisabilityPercent,
+    retiredFromReserve: s.serviceStatus === 'retired' ? s.retiredFromReserve : undefined,
+    reserveRetirementPoints: s.serviceStatus === 'retired' ? s.reserveRetirementPoints : undefined,
     // Not set yet → a Guard member who marked Title 10 status is on federal
     // orders; everyone else defaults to drill-only.
     reserveOnOrders: s.reserveOnOrders ?? s.guardDutyStatus === 'title10',

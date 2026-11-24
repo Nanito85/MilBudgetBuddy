@@ -34,8 +34,9 @@ import {
   HousingSection,
   ReserveSection,
   RetiredPaySection,
-  VaDisabilitySection,
 } from '@/features/profile/components/EditPersonalSections';
+import { ReserveRetireeFields, RetiredPayMathPreview, VaRatingHelper } from '@/features/profile/components/RetiredBenefitsFields';
+import { retiredPayMonthly } from '@/features/home/utils/lesCalc';
 import { StationPicker } from '@/features/pcs/components/StationPicker';
 import { useThemeColors } from '@/hooks/use-theme';
 import {
@@ -305,6 +306,8 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
   const storedReserveOnOrders = useUserStore((s) => s.reserveOnOrders);
   const storedRetDate  = useUserStore((s) => s.retirementDate);
   const storedVaPct    = useUserStore((s) => s.vaDisabilityPercent);
+  const storedRetiredFromReserve = useUserStore((s) => s.retiredFromReserve);
+  const storedReservePoints = useUserStore((s) => s.reserveRetirementPoints);
   const storedSbpEnabled = useUserStore((s) => s.sbpEnabled);
   const storedSbpCoveragePct = useUserStore((s) => s.sbpCoveragePct);
   const storedGsLocality  = useUserStore((s) => s.gsLocalityKey);
@@ -327,6 +330,8 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
   const [retirementDate, setRetDate] = useState(storedRetDate ?? '');
   const [vaPercent, setVaPercent]    = useState(storedVaPct ?? 0);
   const [showRetDatePicker, setShowRetDatePicker] = useState(false);
+  const [retiredFromReserve, setRetiredFromReserve] = useState(storedRetiredFromReserve ?? false);
+  const [reservePoints, setReservePoints] = useState(storedReservePoints ?? 0);
   const [sbpEnabled, setSbpEnabledLocal] = useState(storedSbpEnabled ?? false);
   const [sbpCoveragePct, setSbpCoveragePctLocal] = useState(storedSbpCoveragePct ?? 1);
 
@@ -392,6 +397,8 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
     setOnOrders(storedReserveOnOrders ?? storedGuardDutyStatus === 'title10');
     setRetDate(storedRetDate ?? '');
     setVaPercent(storedVaPct ?? 0);
+    setRetiredFromReserve(storedRetiredFromReserve ?? false);
+    setReservePoints(storedReservePoints ?? 0);
     setSbpEnabledLocal(storedSbpEnabled ?? false);
     setSbpCoveragePctLocal(storedSbpCoveragePct ?? 1);
     setGrade(payGrade ?? 'E5');
@@ -451,6 +458,8 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
       // silently discarded on save even after the UI let them pick one.
       retirementDate: isRetired ? (retirementDate || undefined) : undefined,
       vaDisabilityPercent: vaPercent,
+      retiredFromReserve: isRetired ? retiredFromReserve : false,
+      reserveRetirementPoints: isRetired && retiredFromReserve && reservePoints > 0 ? reservePoints : undefined,
       // SBP is a retiree-only election — never persist it as "on" for someone
       // who isn't retired (e.g. if they were retired earlier, un-set it, then
       // switched status back before saving).
@@ -648,6 +657,11 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
                   </ThemedText>
                   <ThemedText style={{ fontSize: 18, paddingRight: 4 }}>📅</ThemedText>
                 </Pressable>
+                <ReserveRetireeFields
+                  retiredFromReserve={retiredFromReserve} onRetiredFromReserveChange={setRetiredFromReserve}
+                  points={reservePoints} onPointsChange={setReservePoints} />
+                <RetiredPayMathPreview grade={grade} yos={y} entryDate={enlistDate || undefined} retirementDate={retirementDate || undefined}
+                  reservePoints={retiredFromReserve ? reservePoints : undefined} />
               </>
             )}
 
@@ -658,12 +672,13 @@ function EditPersonalModal({ visible, onClose }: { visible: boolean; onClose: ()
                 under isRetired, so anyone else had no way to enter one at all
                 and the Home screen's VA card silently never showed for them,
                 even though they may be owed real, separate compensation. */}
-            <VaDisabilitySection vaPercent={vaPercent} onChange={setVaPercent} spouse={spouse} childCount={children} />
+            <VaRatingHelper vaPercent={vaPercent} onChange={setVaPercent} spouse={spouse} childCount={children} yos={y} isRetired={isRetired}
+              retiredMonthly={isRetired ? retiredPayMonthly(grade, y, enlistDate || undefined, retirementDate || undefined, retiredFromReserve ? reservePoints : undefined) : undefined} />
 
             {/* Retired-only settings continue below */}
             {isRetired && (
               <>
-              <RetiredPaySection grade={grade} y={y} alsoGsCivilian={alsoGsCivilian} onAlsoGsCivilianChange={setAlsoGsCivilianLocal} gsGrade={gsGrade} gsStep={gsStep} gsLocality={gsLocality} setGsGrade={setGsGrade} setGsStep={setGsStep} setGsLocality={setGsLocality} sbpEnabled={sbpEnabled} onSbpEnabledChange={setSbpEnabledLocal} sbpCoveragePct={sbpCoveragePct} onSbpCoveragePctChange={setSbpCoveragePctLocal} />
+              <RetiredPaySection retiredMonthly={retiredPayMonthly(grade, y, enlistDate || undefined, retirementDate || undefined, retiredFromReserve ? reservePoints : undefined)} alsoGsCivilian={alsoGsCivilian} onAlsoGsCivilianChange={setAlsoGsCivilianLocal} gsGrade={gsGrade} gsStep={gsStep} gsLocality={gsLocality} setGsGrade={setGsGrade} setGsStep={setGsStep} setGsLocality={setGsLocality} sbpEnabled={sbpEnabled} onSbpEnabledChange={setSbpEnabledLocal} sbpCoveragePct={sbpCoveragePct} onSbpCoveragePctChange={setSbpCoveragePctLocal} />
               </>
             )}
 

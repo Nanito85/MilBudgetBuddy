@@ -241,6 +241,16 @@ export default function VaDisabilityScreen() {
                 </View>
               </View>
 
+              {/* Save this rating to the profile so the Pay Statement uses it. */}
+              <Pressable accessibilityRole="button"
+                onPress={() => {
+                  useUserStore.getState().updateProfile({ vaDisabilityPercent: combined.rounded });
+                  Alert.alert('Saved', `${combined.rounded}% is now your VA rating in your profile.`);
+                }}
+                style={{ marginTop: Spacing.two, backgroundColor: Brand.accent, borderRadius: 8, paddingVertical: Spacing.two, alignItems: 'center' }}>
+                <ThemedText style={{ color: '#FFF', fontWeight: '700' }}>Use {combined.rounded}% in my profile</ThemedText>
+              </Pressable>
+
               {/* Bilateral factor banner (38 CFR §4.26) — only when the
                   member has at least one left-limb AND one right-limb
                   rating. Plain-English explanation, not the regulation

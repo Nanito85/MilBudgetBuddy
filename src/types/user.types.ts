@@ -241,6 +241,10 @@ export interface UserPreferences {
   // Retired info
   retirementDate?: string;      // YYYY-MM-DD (date of retirement)
   vaDisabilityPercent?: number; // 0-100, in 10% increments
+  // Retired from the Reserve/Guard: retired pay = (points ÷ 360) × rate × High-3
+  // rather than years-of-service × rate. Pay normally begins at age 60.
+  retiredFromReserve?: boolean;
+  reserveRetirementPoints?: number; // total career retirement points (from the RPAS/ARCNET statement)
   // Survivor Benefit Plan — an opt-in premium deducted from retired pay
   // (never active-duty pay; see lesCalc.ts). Defaults to false/undefined
   // rather than assuming every retiree elected it — SBP is a real choice

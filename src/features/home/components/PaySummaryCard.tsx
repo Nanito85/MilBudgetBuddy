@@ -405,6 +405,12 @@ export function PaySummaryCard({ breakdown }: Props) {
             </ThemedText>
           )}
 
+          {breakdown.isRetiredPay && !breakdown.basePayOverridden && breakdown.retiredHigh3 > 0 && (
+            <ThemedText type="label" style={[styles.disclaimer, { color: tc.textHint, marginTop: Spacing.one }]}>
+              {`RETIRED PAY MATH: HIGH-3 ${fmtPay(breakdown.retiredHigh3)} × ${breakdown.retiredPayPct}% (${breakdown.retiredFromReserve ? 'RESERVE POINTS ÷ 360' : 'YEARS'} × ${(breakdown.retiredAccrualRate * 100).toFixed(1)}%)`}
+              {breakdown.retiredColaFactor > 1.0001 ? ` = ${fmtPay(breakdown.retiredInitialMonthly)} AT RETIREMENT × ${breakdown.retiredColaFactor.toFixed(3)} COLAS = ${fmtPay(breakdown.basePay)}` : ` = ${fmtPay(breakdown.basePay)}`}
+            </ThemedText>
+          )}
           <ThemedText type="label" style={[styles.disclaimer, { color: tc.textMuted }]}>
             * ESTIMATE ONLY — VERIFY AT MYPAY.DFAS.MIL{'\n'}
             {breakdown.isRetiredPay

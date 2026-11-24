@@ -102,6 +102,13 @@ export interface LESBreakdown {
   // True when retired pay was built from the member's actual retirement date
   // (pay tables of that era + retiree COLAs since) rather than today's table.
   retiredPayFromHistory: boolean;
+  // The retired-pay formula pieces, for the "see the math" display (all 0/1
+  // for a non-retiree). retiredInitialMonthly is High-3 × % before COLAs.
+  retiredHigh3: number;
+  retiredAccrualRate: number;
+  retiredColaFactor: number;
+  retiredInitialMonthly: number;
+  retiredFromReserve: boolean;
   // VA disability compensation (tax-free). vaDisability is the monthly amount
   // received and is part of grossPay. vaWaiver is the retired pay a retiree
   // under 50% must give up to receive it (dollar-for-dollar, no CRDP) — it is
@@ -195,6 +202,11 @@ export interface LESInputs {
   // the 36 months BEFORE this date (that era's pay tables) grown by every
   // retiree COLA since — not today's pay table. Omitted → today's table.
   retirementDate?: string;
+  // Retired from the Reserve/Guard: retired pay is (total retirement points ÷
+  // 360) × accrual rate × High-3, instead of years of service × rate.
+  // reserveRetirementPoints of 0/undefined falls back to the years formula.
+  retiredFromReserve?: boolean;
+  reserveRetirementPoints?: number;
   // VA disability rating (10-100). Tax-free income for a retiree, civilian or
   // reservist; ignored for someone on active duty (VA pay is waived then).
   vaDisabilityPercent?: number;
@@ -287,28 +299,64 @@ export function fersContributionRate(startDate: string | undefined): number {
  * +2.5% for every year served beyond that (e.g. 30 YOS = 75%). Clamped to
  * [0, 1] since DoD never pays out more than 100% of High-3 pay.
  */
-export function retiredPayMultiplier(yos: number, militaryEntryDate?: string): number {
+export function retiredPayMultiplier(yos: number, militaryEntryDate?: string, reservePoints?: number): number {
   // Blended Retirement System: 2.0% per year instead of 2.5%, for anyone who
   // entered service on/after Jan 1, 2018 (members who opted in during 2018 have
   // an earlier entry date and are not detected — they can use the override).
   const rate = isBlendedRetirement(militaryEntryDate) ? 0.02 : 0.025;
-  return Math.min(1, Math.max(0, yos * rate));
+  // Reserve/Guard retirement counts retirement POINTS, not calendar years:
+  // years-equivalent = total points ÷ 360 (DoD's "creditable service").
+  const years = reservePoints && reservePoints > 0 ? reservePoints / 360 : yos;
+  return Math.min(1, Math.max(0, years * rate));
+}
+
+export interface RetiredPayMath {
+  /** 36-month average basic pay (in the pay-table dollars of the retirement era). */
+  high3: number;
+  /** Multiplier as a fraction (0.5 = 50%). */
+  multiplier: number;
+  /** Per-year accrual rate: 0.025 legacy, 0.02 BRS. */
+  accrualRate: number;
+  /** Cumulative retiree COLA growth since retirement (1 = none). */
+  colaFactor: number;
+  /** High-3 × multiplier, before COLAs — what the first check looked like. */
+  initialMonthly: number;
+  /** Today's monthly retired pay (initial × COLAs). */
+  monthly: number;
+  fromHistory: boolean;
 }
 
 /**
- * Monthly retired pay today. With a retirement date it uses the pay tables in
- * effect for the 36 months before retiring plus the retiree COLAs since; with
- * none it falls back to today's pay table.
+ * Full breakdown of the retired-pay formula so the UI can show the math.
+ * With a retirement date it uses the pay tables in effect for the 36 months
+ * before retiring plus the retiree COLAs since; with none it falls back to
+ * today's pay table.
  */
+export function retiredPayBreakdown(
+  grade: PayGrade,
+  yos: number,
+  militaryEntryDate?: string,
+  retirementDate?: string,
+  reservePoints?: number,
+): RetiredPayMath {
+  const multiplier = retiredPayMultiplier(yos, militaryEntryDate, reservePoints);
+  const accrualRate = isBlendedRetirement(militaryEntryDate) ? 0.02 : 0.025;
+  const hist = getRetiredPayHistory(grade, yos, retirementDate);
+  const high3 = hist ? hist.high3 : getHigh3Average(grade, yos);
+  const colaFactor = hist ? hist.colaFactor : 1;
+  const initialMonthly = high3 * multiplier;
+  return { high3, multiplier, accrualRate, colaFactor, initialMonthly, monthly: initialMonthly * colaFactor, fromHistory: !!hist };
+}
+
+/** Monthly retired pay today (see retiredPayBreakdown). */
 export function retiredPayMonthly(
   grade: PayGrade,
   yos: number,
   militaryEntryDate?: string,
   retirementDate?: string,
+  reservePoints?: number,
 ): number {
-  const mult = retiredPayMultiplier(yos, militaryEntryDate);
-  const hist = getRetiredPayHistory(grade, yos, retirementDate);
-  return hist ? hist.high3 * mult * hist.colaFactor : getHigh3Average(grade, yos) * mult;
+  return retiredPayBreakdown(grade, yos, militaryEntryDate, retirementDate, reservePoints).monthly;
 }
 
 export function isBlendedRetirement(militaryEntryDate: string | undefined): boolean {
@@ -340,7 +388,11 @@ export function calcLES(inputs: LESInputs): LESBreakdown {
   const isDrillOnly = serviceStatus === 'reserve' && !reserveOnOrders && !isDeployed;
   // Pays that only exist for someone on full-time active duty.
   const noActiveAllowances = isRetired || isCivilianOnly || isDrillOnly;
-  const retiredPct = isRetired ? retiredPayMultiplier(yos, inputs.militaryEntryDate) : 0;
+  const reservePts = inputs.retiredFromReserve ? inputs.reserveRetirementPoints : undefined;
+  const retiredMath = isRetired
+    ? retiredPayBreakdown(payGrade as PayGrade, yos, inputs.militaryEntryDate, retirementDate, reservePts)
+    : null;
+  const retiredPct = retiredMath?.multiplier ?? 0;
 
   // Family separation: a member stationed unaccompanied (OCONUS tour, sea
   // duty, etc.) with dependents living elsewhere draws BAH at the DEPENDENTS'
@@ -356,8 +408,8 @@ export function calcLES(inputs: LESInputs): LESBreakdown {
   // subject to FICA (it's a pension, not wages). VA disability compensation
   // is handled entirely separately (see monthlyCompensation in va-disability
   // utils) and is unaffected by any of this.
-  const calcBasePay = isRetired
-    ? retiredPayMonthly(payGrade as PayGrade, yos, inputs.militaryEntryDate, retirementDate)
+  const calcBasePay = retiredMath
+    ? retiredMath.monthly
     : isCivilianOnly
       ? 0
       : isDrillOnly
@@ -595,7 +647,12 @@ export function calcLES(inputs: LESInputs): LESBreakdown {
     isDrillPay: isDrillOnly,
     drillsPerMonth,
     retiredPayPct: Math.round(retiredPct * 100),
-    retiredPayFromHistory: isRetired && !!retirementDate && getRetiredPayHistory(payGrade as PayGrade, yos, retirementDate) !== null,
+    retiredPayFromHistory: !!retiredMath?.fromHistory,
+    retiredHigh3: retiredMath?.high3 ?? 0,
+    retiredAccrualRate: retiredMath?.accrualRate ?? 0,
+    retiredColaFactor: retiredMath?.colaFactor ?? 1,
+    retiredInitialMonthly: retiredMath?.initialMonthly ?? 0,
+    retiredFromReserve: !!reservePts && reservePts > 0,
     vaDisability, vaWaiver, vaRatingPct: vaDisability > 0 ? vaDisabilityPercent : 0,
   };
 }
